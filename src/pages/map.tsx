@@ -62,7 +62,6 @@ const MapPage: React.FC = () => {
             ></iframe>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-            <h2>Property Listings</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }} className={styles.propertyGrid}>
               {propertyLocations.map((property) => (
                 <PropertyCard
