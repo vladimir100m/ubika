@@ -1,0 +1,152 @@
+[
+  {
+    "imageUrl": "/properties/apartamento-ciudad.jpg",
+    "description": "Apartamento en la ciudad con diseño moderno y vistas espectaculares.",
+    "price": "$300,000",
+    "address": "Costa Rica al 5400, Palermo Soho, Palermo",
+    "rooms": 2,
+    "bathrooms": 1,
+    "squareMeters": 90,
+    "yearBuilt": 2018
+  },
+  {
+    "imageUrl": "/properties/apartamento-moderno.jpg",
+    "description": "Apartamento moderno con acabados de lujo.",
+    "price": "$350,000",
+    "address": "Guemes 4400, Palermo Soho, Buenos Aires",
+    "rooms": 3,
+    "bathrooms": 2,
+    "squareMeters": 110,
+    "yearBuilt": 2020
+  },
+  {
+    "imageUrl": "/properties/cabana-bosque.jpg",
+    "description": "Cabaña acogedora en el bosque, ideal para desconectar.",
+    "price": "$150,000",
+    "address": "Torre Bella - Guatemala 5100, Palermo Soho, Buenos Aires",
+    "rooms": 2,
+    "bathrooms": 1,
+    "squareMeters": 80,
+    "yearBuilt": 2010
+  },
+  {
+    "imageUrl": "/properties/cabana-montana.jpg",
+    "description": "Cabaña en la montaña con vistas panorámicas.",
+    "price": "$200,000",
+    "address": "Paraguay al 4300, Palermo Soho, Palermo",
+    "rooms": 3,
+    "bathrooms": 2,
+    "squareMeters": 100,
+    "yearBuilt": 2015
+  },
+  {
+    "imageUrl": "/properties/cabana-playa.jpg",
+    "description": "Cabaña frente al mar con acceso privado a la playa.",
+    "price": "$250,000",
+    "address": "Santa María. De Oro al 1900, Palermo Soho, Palermo",
+    "rooms": 2,
+    "bathrooms": 1,
+    "squareMeters": 85,
+    "yearBuilt": 2012
+  },
+  {
+    "imageUrl": "/properties/casa-campo.jpg",
+    "description": "Casa rústica en el campo con amplios jardines.",
+    "price": "$400,000",
+    "address": "Fray Justo Santamaria De Oro 2400, Palermo, Capital Federal",
+    "rooms": 4,
+    "bathrooms": 3,
+    "squareMeters": 200,
+    "yearBuilt": 2012
+  },
+  {
+    "imageUrl": "/properties/casa-colonial.jpg",
+    "description": "Casa colonial con detalles arquitectónicos únicos.",
+    "price": "$500,000",
+    "address": "Guatemala 5100, Palermo Soho, Palermo",
+    "rooms": 5,
+    "bathrooms": 4,
+    "squareMeters": 250,
+    "yearBuilt": 1900
+  },
+  {
+    "imageUrl": "/properties/casa-lago.jpg",
+    "description": "Casa junto al lago con muelle privado.",
+    "price": "$600,000",
+    "address": "Pasaje Soria 5000, Palermo Soho, Palermo",
+    "rooms": 4,
+    "bathrooms": 3,
+    "squareMeters": 220,
+    "yearBuilt": 2010
+  },
+  {
+    "imageUrl": "/properties/casa-moderna.jpg",
+    "description": "Casa moderna con diseño minimalista y amplios espacios.",
+    "price": "$700,000",
+    "address": "Armenia 1200, Palermo Soho, Palermo",
+    "rooms": 5,
+    "bathrooms": 4,
+    "squareMeters": 300,
+    "yearBuilt": 2020
+  },
+  {
+    "imageUrl": "/properties/casa-playa.jpg",
+    "description": "Casa frente al mar con acceso privado a la playa.",
+    "price": "$850,000",
+    "address": "José A. Cabrera al 3900, Palermo Soho, Palermo",
+    "rooms": 5,
+    "bathrooms": 4,
+    "squareMeters": 300,
+    "yearBuilt": 2018
+  },
+  {
+    "imageUrl": "/properties/departamento-familiar.jpg",
+    "description": "Departamento familiar con áreas comunes y seguridad 24/7.",
+    "price": "$400,000",
+    "address": "Scalabrini Ortiz 1564, Palermo Soho, Palermo",
+    "rooms": 4,
+    "bathrooms": 3,
+    "squareMeters": 180,
+    "yearBuilt": 2015
+  },
+  {
+    "imageUrl": "/properties/duplex-moderno.jpg",
+    "description": "Dúplex moderno con jardín privado.",
+    "price": "$450,000",
+    "address": "Honduras 5348, Palermo, Capital Federal",
+    "rooms": 3,
+    "bathrooms": 2,
+    "squareMeters": 150,
+    "yearBuilt": 2017
+  },
+  {
+    "imageUrl": "/properties/loft-urbano.jpg",
+    "description": "Loft urbano con diseño industrial.",
+    "price": "$300,000",
+    "address": "Charcas al 4700, Palermo Soho, Palermo",
+    "rooms": 1,
+    "bathrooms": 1,
+    "squareMeters": 70,
+    "yearBuilt": 2019
+  },
+  {
+    "imageUrl": "/properties/penthouse-lujo.jpg",
+    "description": "Penthouse de lujo con vistas espectaculares de la ciudad.",
+    "price": "$1,200,000",
+    "address": "Av. Scalabrini Ortiz 2069, Palermo Soho, Palermo",
+    "rooms": 4,
+    "bathrooms": 3,
+    "squareMeters": 250,
+    "yearBuilt": 2020
+  },
+  {
+    "imageUrl": "/properties/villa-lujo.jpg",
+    "description": "Villa de lujo con piscina y amplios jardines.",
+    "price": "$2,000,000",
+    "address": "Scalabrini Ortiz al 1700, Palermo Soho, Palermo",
+    "rooms": 6,
+    "bathrooms": 5,
+    "squareMeters": 500,
+    "yearBuilt": 2021
+  }
+]

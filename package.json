@@ -2,6 +2,7 @@
   "name": "ubika",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,6 +12,7 @@
   "dependencies": {
     "@react-google-maps/api": "^2.20.6",
     "next": "latest",
+    "pg": "^8.16.0",
     "react": "latest",
     "react-dom": "latest"
   },

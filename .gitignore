@@ -1,11 +1,27 @@
-node_modules
-.next
+# Ignore environment-specific files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Ignore database-related files
+infra/postgres_data/
+
+# Ignore log files
+*.log
+
+# Ignore node_modules
+node_modules/
+
+# Ignore build output
+.next
 dist
 out
 build
+
+# Ignore system files
 .DS_Store
+
+# Ignore scripts output
+infra/scripts/*.js.map
