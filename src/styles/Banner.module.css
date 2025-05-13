@@ -1,0 +1,60 @@
+/* Updated styles for the enhanced Banner */
+.Banner_banner__biC5I {
+  position: relative;
+  background-image: url('/departamento-familiar.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: 'Inter', sans-serif;
+}
+
+.Banner_content__biC5I {
+  text-align: center;
+  z-index: 1;
+}
+
+.Banner_content__biC5I h1 {
+  font-size: 3.5rem;
+  margin: 0;
+}
+
+.Banner_content__biC5I p {
+  font-size: 1.5rem;
+  margin: 15px 0;
+}
+
+.Banner_ctaButton__biC5I {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #0070f3;
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.Banner_ctaButton__biC5I:hover {
+  background-color: #005bb5;
+}
+
+.banner {
+  position: relative;
+  background-image: url('/properties/loft-urbano.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
