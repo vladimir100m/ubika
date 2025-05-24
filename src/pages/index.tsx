@@ -43,7 +43,7 @@ const Home: React.FC = () => {
           {properties.map((property) => (
             <PropertyCard
               key={property.id}
-              imageUrl={property.imageurl}
+              imageUrl={property.image_url}
               description={property.description}
               price={`$${property.price}`}
               address={property.address}

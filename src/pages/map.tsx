@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
 import { PropertyCard } from '../components';
 import axios from 'axios';
+import { Loader } from '@googlemaps/js-api-loader';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
   const [address, setAddress] = useState<string | null>(null);
   const [propertyLocations, setPropertyLocations] = useState([]);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: -34.5897318, lng: -58.4232065 });
+  const [markers, setMarkers] = useState<{ id: number; lat: number; lng: number }[]>([]);
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstance = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
     if (router.query.address) {
@@ -26,6 +31,81 @@ const MapPage: React.FC = () => {
     };
 
     fetchProperties();
+  }, [router.query]);
+
+  useEffect(() => {
+    if (propertyLocations.length > 0) {
+      const firstProperty = propertyLocations[0];
+      if (firstProperty.geocode) {
+        setMapCenter(firstProperty.geocode);
+      }
+      const propertyMarkers = propertyLocations
+        .filter((property) => property.geocode)
+        .map((property) => ({ id: property.id, ...property.geocode }));
+      setMarkers(propertyMarkers);
+    }
+  }, [propertyLocations]);
+
+  useEffect(() => {
+    const loader = new Loader({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      version: 'weekly',
+    });
+
+    loader.load().then(() => {
+      if (mapRef.current) {
+        mapInstance.current = new google.maps.Map(mapRef.current, {
+          center: mapCenter,
+          zoom: 15,
+        });
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (mapInstance.current && markers.length > 0) {
+      markers.forEach((marker) => {
+        new google.maps.Marker({
+          position: { lat: marker.lat, lng: marker.lng },
+          map: mapInstance.current,
+        });
+      });
+    }
+  }, [markers]);
+
+  useEffect(() => {
+    const { address } = router.query;
+
+    if (address && typeof address === 'string' && mapInstance.current && window.google) {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const bounds = results[0].geometry.bounds;
+          if (bounds) {
+            const polygonCoords = [
+              { lat: bounds.getNorthEast().lat(), lng: bounds.getNorthEast().lng() },
+              { lat: bounds.getSouthWest().lat(), lng: bounds.getNorthEast().lng() },
+              { lat: bounds.getSouthWest().lat(), lng: bounds.getSouthWest().lng() },
+              { lat: bounds.getNorthEast().lat(), lng: bounds.getSouthWest().lng() },
+            ];
+
+            new window.google.maps.Polygon({
+              paths: polygonCoords,
+              strokeColor: '#FF0000',
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              fillColor: '#FF0000',
+              fillOpacity: 0.35,
+              map: mapInstance.current,
+            });
+
+            mapInstance.current.fitBounds(bounds);
+          }
+        } else {
+          console.error('Geocode was not successful for the following reason:', status);
+        }
+      });
+    }
   }, [router.query]);
 
   return (
@@ -51,28 +131,19 @@ const MapPage: React.FC = () => {
           </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-          <div style={{ flex: 1.5, height: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }} className={styles.mapContainer}>
-            <iframe
-              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(address || 'San Francisco, CA')}`}
-              width="100%"
-              height="100%"
-              style={{ border: '2px solid #ccc', aspectRatio: '1 / 1' }}
-              allowFullScreen={true}
-              loading="lazy"
-            ></iframe>
-          </div>
+          <div style={{ flex: 1.5, height: '90vh', position: 'relative' }} className={styles.mapContainer} ref={mapRef}></div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }} className={styles.propertyGrid}>
               {propertyLocations.map((property) => (
                 <PropertyCard
                   key={property.id}
-                  imageUrl={property.imageurl}
+                  imageUrl={property.image_url}
                   description={property.description}
                   price={`$${property.price}`}
                   address={property.address}
-                  rooms={property.rooms}
+                  rooms={property.room}
                   bathrooms={property.bathrooms}
-                  squareMeters={property.squaremeters}
+                  squareMeters={property.area}
                   yearBuilt={property.yearbuilt}
                 />
               ))}
