@@ -1,0 +1,55 @@
+/* Mobile.module.css */
+.onlyMobile { display: none; }
+.onlyDesktop { display: block; }
+
+@media (max-width: 768px) {
+  .onlyMobile { display: block !important; }
+  .onlyDesktop { display: none !important; }
+}
+
+.mobileDrawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: #ffffff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileDrawer.open {
+  transform: translateY(0);
+}
+
+.drawerHandle {
+  width: 40px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+  margin: 8px auto;
+  cursor: pointer;
+}
+
+.drawerContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.drawerToggleButton {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background-color: #0070f3;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1001;
+  font-size: 14px;
+}

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
+import mobileStyles from '../styles/Mobile.module.css';
 import { PropertyCard } from '../components';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
@@ -18,6 +19,7 @@ const MapPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false); // Track favorite status
+  const [drawerOpen, setDrawerOpen] = useState(false); // Mobile drawer state
   
   // Create a ref object for each property card
   const propertyRefs = useRef<{[key: number]: HTMLDivElement | null}>({});
@@ -386,6 +388,13 @@ const MapPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      {/* Mobile drawer toggle button */}
+      <button
+        className={mobileStyles.drawerToggleButton + ' ' + mobileStyles.onlyMobile}
+        onClick={() => setDrawerOpen(!drawerOpen)}
+      >
+        {drawerOpen ? 'Close' : 'Browse Properties'}
+      </button>
       <header className={styles.navbar}>
         <div className={styles.logo} onClick={() => router.push('/')}>Ubika</div>
         <nav>
@@ -410,29 +419,39 @@ const MapPage: React.FC = () => {
           <div className={styles.mapWrapper}>
             <div className={styles.mapContainer} ref={mapRef}></div>
           </div>
-          <div className={styles.propertiesListContainer}>
+          {/* Desktop property list */}
+          <div className={styles.propertiesListContainer + ' ' + mobileStyles.onlyDesktop}>
             <div className={styles.propertyGrid}>
               {propertyLocations.map((property) => (
-                <div 
+                <div
                   key={property.id}
                   style={{ cursor: 'pointer' }}
-                  ref={el => propertyRefs.current[property.id] = el} // Assign ref to each property card
+                  ref={el => { setPropertyRef(el, property.id); }}
                 >
-                  <PropertyCard
-                    image_url={property.image_url}
-                    description={property.description}
-                    price={`$${property.price}`}
-                    address={property.address}
-                    rooms={property.rooms}
-                    bathrooms={property.bathrooms}
-                    squareMeters={property.squareMeters}
-                    yearBuilt={property.yearBuilt}
-                    latitude={property.latitude ?? property.geocode?.lat}
-                    longitude={property.longitude ?? property.geocode?.lng}
-                    onClick={() => handlePropertyClick(property)} // Use the onClick prop
-                  />
+                  <PropertyCard {...property} onClick={() => handlePropertyClick(property)} />
                 </div>
               ))}
+            </div>
+          </div>
+          {/* Mobile drawer with property list */}
+          <div className={mobileStyles.mobileDrawer + (drawerOpen ? ' ' + mobileStyles.open : '')}>
+            <div className={mobileStyles.drawerHandle} onClick={() => setDrawerOpen(false)} />
+            <div className={mobileStyles.drawerContent}>
+              <div className={styles.propertyGrid}>
+                {propertyLocations.map((property) => (
+                  <div
+                    key={property.id}
+                    style={{ cursor: 'pointer' }}
+                    ref={el => { setPropertyRef(el, property.id); }}
+                    onClick={() => {
+                      handlePropertyClick(property);
+                      setDrawerOpen(false);
+                    }}
+                  >
+                    <PropertyCard {...property} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
