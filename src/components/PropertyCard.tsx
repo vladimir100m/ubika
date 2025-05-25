@@ -16,6 +16,7 @@ export type PropertyCardProps = Pick<
   yearBuilt?: number;
   latitude?: number;
   longitude?: number;
+  onClick?: () => void; // Add onClick prop
 };
 
 const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => void }> = ({ property, onClose }) => {
@@ -55,10 +56,14 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
 const PropertyCard: React.FC<PropertyCardProps> = (props) => {
   const [isDialogOpen, setDialogOpen] = useState(false);
 
-  console.log('PropertyCard props:', props); // Add this line to debug
-
   const handleCardClick = () => {
-    setDialogOpen(true);
+    // If an external onClick handler is provided, use it
+    if (props.onClick) {
+      props.onClick();
+    } else {
+      // Otherwise, use the default dialog behavior
+      setDialogOpen(true);
+    }
   };
 
   const handleCloseDialog = () => {
