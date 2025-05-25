@@ -1121,3 +1121,160 @@
     max-height: 50vh;
   }
 }
+
+/* Floating Gallery Styles */
+.floatingGalleryOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.floatingGalleryContent {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  height: 90vh;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.floatingGalleryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.floatingGalleryBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.floatingGalleryMainImageWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.floatingGalleryMainImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.floatingGalleryThumbnails {
+  height: 100px;
+  background-color: #2a2a2a;
+  padding: 0.5rem;
+  display: flex;
+  overflow-x: auto;
+  gap: 0.5rem;
+}
+
+.thumbnailItem {
+  height: 80px;
+  width: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.thumbnailItem:hover {
+  transform: scale(1.05);
+}
+
+.thumbnailItem.active {
+  border-color: #0070f3;
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoCountInfo {
+  background-color: #3a3a3a;
+  padding: 0.25rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.currentImageIndex {
+  font-weight: bold;
+  color: #0070f3;
+}
+
+.floatingGalleryNav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.navButton {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+}
+
+.navButton:hover {
+  background-color: #0070f3;
+  transform: scale(1.1);
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

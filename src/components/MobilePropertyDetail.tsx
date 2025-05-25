@@ -89,10 +89,6 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
           src={allImages[0]} 
           alt={`Primary view of ${property.address}`}
           className={styles.mainPropertyImage}
-          onClick={() => {
-            setCurrentImageIndex(0);
-            openGallery();
-          }}
         />
         <div className={styles.detailHeader}>
           <button 
@@ -110,28 +106,17 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
             {isFavorite ? '❤️' : '🤍'}
           </button>
         </div>
-        
-        <button 
-          className={styles.headerViewPhotosButton} 
-          onClick={openGallery}
-        >
-          🖼️ View All Photos ({allImages.length})
-        </button>
       </div>
-      
+
       {/* Image Gallery Grid - Zillow Style */}
       <div className={styles.imageGalleryGrid}>
-        {allImages.slice(1, 5).map((image, index) => (
+        {allImages.slice(0, 5).map((image, index) => (
           <div 
             key={index} 
             className={styles.galleryThumbnail}
-            onClick={() => {
-              setCurrentImageIndex(index + 1);
-              openGallery();
-            }}
           >
-            <img src={image} alt={`Property view ${index + 2}`} />
-            {index === 3 && allImages.length > 5 && (
+            <img src={image} alt={`Property view ${index + 1}`} />
+            {index === 4 && allImages.length > 5 && (
               <div className={styles.morePhotosOverlay}>
                 +{allImages.length - 5} more
               </div>
@@ -230,10 +215,6 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
                 )}
               </div>
             </div>
-
-            <button className={styles.viewPhotosButton} onClick={openGallery}>
-              View all photos ({allImages.length})
-            </button>
           </div>
         )}
 
@@ -325,11 +306,6 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
           Schedule Tour
         </button>
       </div>
-
-      {/* We don't need this anymore since we have thumbnails and a button in the header */}
-      {/* <button className={styles.viewAllPhotosBottom} onClick={openGallery}>
-        View All Photos ({allImages.length})
-      </button> */}
 
       {/* Floating Gallery Overlay - Zillow Style */}
       {isGalleryOpen && (

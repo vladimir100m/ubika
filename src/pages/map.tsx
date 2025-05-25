@@ -323,81 +323,18 @@ const MapPage: React.FC = () => {
     setCurrentImageIndex(index);
   };
 
-  useEffect(() => {
-    if (mapInstance.current && selectedProperty) {
-      // If we have a selected property with geocode, center the map on it
-      if (selectedProperty.geocode) {
-        mapInstance.current.setCenter(selectedProperty.geocode);
-        mapInstance.current.setZoom(17); // Zoom in closer
-      } else if (selectedProperty.latitude && selectedProperty.longitude) {
-        mapInstance.current.setCenter({ lat: selectedProperty.latitude, lng: selectedProperty.longitude });
-        mapInstance.current.setZoom(17);
-      }
-      
-      // After markers are created and we have a selected property, highlight its marker
-      if (markersRef.current.length > 0) {
-        setTimeout(() => {
-          // Find the marker corresponding to the selected property
-          const markerPosition = selectedProperty.geocode || 
-            (selectedProperty.latitude && selectedProperty.longitude ? 
-              { lat: selectedProperty.latitude, lng: selectedProperty.longitude } : null);
-              
-          if (markerPosition) {
-            const marker = markersRef.current.find(marker => {
-              const position = marker.getPosition();
-              return position && 
-                Math.abs(position.lat() - markerPosition.lat) < 0.0001 && 
-                Math.abs(position.lng() - markerPosition.lng) < 0.0001;
-            });
-            
-            if (marker) {
-              // Animate the marker
-              marker.setAnimation(google.maps.Animation.BOUNCE);
-              setTimeout(() => {
-                marker.setAnimation(null);
-              }, 750);
-              
-              // Change the marker icon to highlight it
-              marker.setIcon({
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 12,
-                fillColor: '#ff4500',
-                fillOpacity: 0.9,
-                strokeWeight: 2,
-                strokeColor: '#ffffff'
-              });
-              
-              // Reset other markers
-              markersRef.current.forEach(m => {
-                if (m !== marker) {
-                  m.setIcon({
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: '#0070f3',
-                    fillOpacity: 0.9,
-                    strokeWeight: 2,
-                    strokeColor: '#ffffff'
-                  });
-                }
-              });
-            }
-          }
-        }, 500); // Short delay to ensure markers are fully initialized
-      }
-    }
-  }, [selectedProperty, mapInstance.current, markersRef.current]);
+  // Add state for floating gallery
+  const [showFloatingGallery, setShowFloatingGallery] = useState(false);
 
-  // Add useEffect to scroll to the selected property when it changes
-  useEffect(() => {
-    // If we have a selected property and a ref for it, scroll to it
-    if (selectedProperty && propertyRefs.current[selectedProperty.id]) {
-      // Scroll the property into view with a smooth effect
-      propertyRefs.current[selectedProperty.id]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  }, [selectedProperty]);
+  // Handler to toggle the full-screen gallery view
+  const toggleGalleryView = () => {
+    setShowFloatingGallery(true);
+  };
+
+  // Handler to close the floating gallery
+  const closeFloatingGallery = () => {
+    setShowFloatingGallery(false);
+  };
 
   return (
     <div className={styles.container}>
@@ -475,7 +412,6 @@ const MapPage: React.FC = () => {
         <div className={styles.propertyDetailOverlay} onClick={handleClosePropertyDetail}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeButton} onClick={handleClosePropertyDetail}>×</button>
-            
             {/* Favorite button */}
             <button 
               className={`${galleryStyles.favoriteButton} ${isFavorite ? galleryStyles.favoriteActive : ''}`} 
@@ -488,13 +424,10 @@ const MapPage: React.FC = () => {
               <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
                 <path 
                   d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
+                  fill="currentColor" 
                 />
               </svg>
             </button>
-            
-            {/* Property Gallery/Header */}
             <div className={styles.propertyDetailHeader}>
               <div className={`${styles.styledGallery} ${galleryStyles.styledGallery}`}>
                 {/* Main large image */}
@@ -503,10 +436,8 @@ const MapPage: React.FC = () => {
                     src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
                     alt={`Property image ${currentImageIndex + 1}`} 
                     className={`${styles.galleryMainImage} ${galleryStyles.galleryMainImageHover}`}
-                    onClick={() => handleImageChange('next')}
                   />
                 )}
-                
                 {/* Secondary images */}
                 {additionalImages.slice(0, 3).map((img, index) => (
                   <img 
@@ -514,49 +445,24 @@ const MapPage: React.FC = () => {
                     src={img} 
                     alt={`Property image ${index + 2}`}
                     className={`${styles.gallerySecondaryImage} ${galleryStyles.gallerySecondaryImage}`}
-                    onClick={() => handleThumbnailClick(index + 1)}
                   />
                 ))}
               </div>
-              
-              {/* Gallery Controls */}
-              <div className={styles.galleryControls}>
+              {/* Photo count overlay with "See all photos" button */}
+              <div className={styles.photoCountOverlay}>
                 <button 
-                  className={`${styles.galleryButton} ${galleryStyles.galleryButton}`} 
-                  onClick={() => handleImageChange('prev')}
-                  aria-label="Previous photo"
+                  className={`${styles.seeAllPhotosButton} ${styles.modernButton} ${styles.curvedButton}`} 
+                  onClick={toggleGalleryView}
+                  style={{ borderRadius: '50px', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s ease' }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-                <button 
-                  className={`${styles.galleryButton} ${galleryStyles.galleryButton}`} 
-                  onClick={() => handleImageChange('next')}
-                  aria-label="Next photo"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <span className={styles.buttonIcon} style={{ fontSize: '1.25rem' }}>📷</span>
+                  <span className={styles.buttonText} style={{ fontWeight: 'bold', fontSize: '1rem' }}>View All Photos</span>
+                  <span className={styles.photoCount} style={{ fontSize: '0.9rem', opacity: 0.8 }}>({additionalImages.length + 1})</span>
                 </button>
               </div>
-              
-              {/* Photo count overlay */}
-              <div className={`${styles.photoCountOverlay} ${galleryStyles.photoCountOverlay}`}>
-                {currentImageIndex + 1} of {additionalImages.length + 1} Photos
-              </div>
-              
-              {/* View all photos button */}
-              <button className={`${styles.viewAllPhotosButton} ${galleryStyles.viewAllPhotosButton}`} onClick={() => setActiveTab('photos')}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M4 16L8 12L12 16L20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="18" cy="6" r="2" fill="currentColor"/>
-                </svg>
-                <span>View all photos</span>
-              </button>
             </div>
-            
             <div className={styles.propertyDetailContent}>
               <div className={styles.propertyDetailBody}>
                 {/* Property Basic Info */}
@@ -565,7 +471,6 @@ const MapPage: React.FC = () => {
                   <h1 className={styles.propertyTitle}>{selectedProperty.title || 'Beautiful Property'}</h1>
                   <h2 className={styles.propertyPrice}>${selectedProperty.price}</h2>
                   <p className={styles.propertyAddress}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</p>
-                  
                   <div className={styles.propertyStats}>
                     <div className={styles.propertyStat}>
                       <span className={styles.statValue}>{selectedProperty.rooms}</span>
@@ -591,7 +496,6 @@ const MapPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
                 {/* Tabs Navigation */}
                 <div className={styles.tabsContainer}>
                   <ul className={styles.tabsList}>
@@ -621,15 +525,13 @@ const MapPage: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-                
-                {/* Tab Content - Overview */}
+                {/* Tab Content */}
                 <div className={`${styles.tabContent} ${activeTab === 'overview' ? styles.active : ''}`}>
                   {/* Description Section */}
                   <div>
                     <h3 className={styles.sectionHeading}>Description</h3>
                     <p className={styles.descriptionText}>{selectedProperty.description}</p>
                   </div>
-                  
                   {/* Features Section */}
                   <div>
                     <h3 className={styles.sectionHeading}>Features & Amenities</h3>
@@ -660,7 +562,6 @@ const MapPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
                   {/* Map Section */}
                   <div>
                     <h3 className={styles.sectionHeading}>Location</h3>
@@ -679,7 +580,6 @@ const MapPage: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  
                   {/* Mortgage Calculator */}
                   <div className={styles.calculatorSection}>
                     <h3 className={styles.sectionHeading}>Mortgage Calculator</h3>
@@ -717,7 +617,6 @@ const MapPage: React.FC = () => {
                         />
                       </div>
                     </div>
-                    
                     <div className={styles.calculatorResult}>
                       <h4 className={styles.resultHeading}>Your Monthly Payment</h4>
                       <div className={styles.monthlyPayment}>
@@ -743,7 +642,6 @@ const MapPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
                   {/* Contact Agent Section */}
                   <div className={styles.agentSection}>
                     <img 
@@ -830,6 +728,21 @@ const MapPage: React.FC = () => {
                       <div className={styles.photoCaption}>Balcony</div>
                     </div>
                   </div>
+                  
+                  {/* Photo count overlay with "See all photos" button */}
+                  <div className={styles.photoCountOverlay}>
+                    <button 
+                      className={`${styles.seeAllPhotosButton} ${styles.modernButton} ${styles.curvedButton}`} 
+                      onClick={toggleGalleryView}
+                      style={{ borderRadius: '50px', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s ease' }}
+                      onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                      onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      <span className={styles.buttonIcon} style={{ fontSize: '1.25rem' }}>📷</span>
+                      <span className={styles.buttonText} style={{ fontWeight: 'bold', fontSize: '1rem' }}>View All Photos</span>
+                      <span className={styles.photoCount} style={{ fontSize: '0.9rem', opacity: 0.8 }}>({additionalImages.length + 1})</span>
+                    </button>
+                  </div>
                 </div>
                 
                 {/* Tab Content - Details */}
@@ -912,7 +825,11 @@ const MapPage: React.FC = () => {
                     <div className={styles.featuresGrid}>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>Private Pool</span>
+                        <span>Swimming Pool</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Outdoor Kitchen</span>
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
@@ -920,40 +837,90 @@ const MapPage: React.FC = () => {
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>BBQ Area</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Outdoor Shower</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
                         <span>Terrace</span>
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>Security Cameras</span>
+                        <span>Security System</span>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.detailsSection}>
-                    <h3 className={styles.sectionHeading}>Neighborhood</h3>
-                    <p className={styles.neighborhoodDescription}>No description available.</p>
-                    
-                    <h4 className={styles.subSectionHeading}>Nearby Schools</h4>
-                    <ul className={styles.schoolsList}>
-                      <li className={styles.schoolItem}>No schools found in the vicinity.</li>
-                    </ul>
-                    
-                    <h4 className={styles.subSectionHeading}>Walk Score</h4>
-                    <div className={styles.walkScoreContainer}>
-                      <div className={styles.walkScoreBar} style={{ width: '80%' }}></div>
-                      <div className={styles.walkScoreLabel}>Very Walkable - 80/100</div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Solar Panels</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Floating gallery view */}
+      {showFloatingGallery && selectedProperty && (
+        <div className={styles.floatingGalleryOverlay} onClick={closeFloatingGallery}>
+          <div className={styles.floatingGalleryContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeButton} onClick={closeFloatingGallery}>×</button>
+            <div className={styles.floatingGalleryHeader}>
+              <h3 className={styles.sectionHeading}>Property Photos</h3>
+              <div className={styles.photoCountInfo}>
+                <span className={styles.currentImageIndex}>{currentImageIndex + 1}</span> / <span className={styles.totalImages}>{additionalImages.length + 1}</span>
+              </div>
+            </div>
+            <div className={styles.floatingGalleryBody}>
+              {/* Main image display */}
+              <div className={styles.floatingGalleryMainImageWrapper}>
+                <img 
+                  src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
+                  alt={`Property image ${currentImageIndex + 1}`} 
+                  className={styles.floatingGalleryMainImage}
+                />
+              </div>
+              
+              {/* Thumbnails for additional images */}
+              <div className={styles.floatingGalleryThumbnails}>
+                <div 
+                  className={`${styles.thumbnailItem} ${currentImageIndex === 0 ? styles.active : ''}`}
+                  onClick={() => setCurrentImageIndex(0)}
+                >
+                  <img 
+                    src={selectedProperty.image_url} 
+                    alt="Property Main" 
+                    className={styles.thumbnailImage}
+                  />
+                </div>
+                {additionalImages.map((img, index) => (
+                  <div 
+                    key={index}
+                    className={`${styles.thumbnailItem} ${currentImageIndex === index + 1 ? styles.active : ''}`}
+                    onClick={() => setCurrentImageIndex(index + 1)}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`Property image ${index + 2}`} 
+                      className={styles.thumbnailImage}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Navigation buttons */}
+            <div className={styles.floatingGalleryNav}>
+              <button 
+                className={styles.navButton} 
+                onClick={() => handleImageChange('prev')}
+                aria-label="Previous image"
+              >
+                ◀
+              </button>
+              <button 
+                className={styles.navButton} 
+                onClick={() => handleImageChange('next')}
+                aria-label="Next image"
+              >
+                ▶
+              </button>
             </div>
           </div>
         </div>
