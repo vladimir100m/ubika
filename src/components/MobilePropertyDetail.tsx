@@ -16,7 +16,6 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
   isFavorite = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'map' | 'contact'>('info');
-  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -28,7 +27,10 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
       `/properties/casa-moderna.jpg`, 
       `/properties/casa-colonial.jpg`, 
       `/properties/casa-lago.jpg`,
-      `/properties/villa-lujo.jpg`
+      `/properties/villa-lujo.jpg`,
+      `/properties/apartamento-moderno.jpg`,
+      `/properties/loft-urbano.jpg`,
+      `/properties/penthouse-lujo.jpg`
     ];
     
     // Filter out any undefined images
@@ -39,10 +41,6 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
     if (onFavoriteToggle) {
       onFavoriteToggle(property.id);
     }
-  };
-
-  const toggleImageFullscreen = () => {
-    setIsImageFullscreen(!isImageFullscreen);
   };
 
   const openGallery = () => {
@@ -85,21 +83,61 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
 
   return (
     <div className={styles.mobilePropertyDetail}>
-      <div className={styles.detailHeader}>
+      {/* Property Header Image */}
+      <div className={styles.propertyHeaderImage}>
+        <img 
+          src={allImages[0]} 
+          alt={`Primary view of ${property.address}`}
+          className={styles.mainPropertyImage}
+          onClick={() => {
+            setCurrentImageIndex(0);
+            openGallery();
+          }}
+        />
+        <div className={styles.detailHeader}>
+          <button 
+            className={styles.backButton} 
+            onClick={onClose}
+            aria-label="Go back"
+          >
+            ←
+          </button>
+          <button 
+            className={`${styles.favoriteDetailButton} ${isFavorite ? styles.isFavorite : ''}`}
+            onClick={handleFavoriteToggle}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            {isFavorite ? '❤️' : '🤍'}
+          </button>
+        </div>
+        
         <button 
-          className={styles.backButton} 
-          onClick={onClose}
-          aria-label="Go back"
+          className={styles.headerViewPhotosButton} 
+          onClick={openGallery}
         >
-          ←
+          🖼️ View All Photos ({allImages.length})
         </button>
-        <button 
-          className={`${styles.favoriteDetailButton} ${isFavorite ? styles.isFavorite : ''}`}
-          onClick={handleFavoriteToggle}
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          {isFavorite ? '❤️' : '🤍'}
-        </button>
+      </div>
+      
+      {/* Image Gallery Grid - Zillow Style */}
+      <div className={styles.imageGalleryGrid}>
+        {allImages.slice(1, 5).map((image, index) => (
+          <div 
+            key={index} 
+            className={styles.galleryThumbnail}
+            onClick={() => {
+              setCurrentImageIndex(index + 1);
+              openGallery();
+            }}
+          >
+            <img src={image} alt={`Property view ${index + 2}`} />
+            {index === 3 && allImages.length > 5 && (
+              <div className={styles.morePhotosOverlay}>
+                +{allImages.length - 5} more
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       <div className={styles.detailPrice}>
@@ -288,11 +326,12 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
         </button>
       </div>
 
-      <button className={styles.viewAllPhotosBottom} onClick={openGallery}>
+      {/* We don't need this anymore since we have thumbnails and a button in the header */}
+      {/* <button className={styles.viewAllPhotosBottom} onClick={openGallery}>
         View All Photos ({allImages.length})
-      </button>
+      </button> */}
 
-      {/* Floating Gallery Overlay */}
+      {/* Floating Gallery Overlay - Zillow Style */}
       {isGalleryOpen && (
         <div className={styles.galleryOverlay} onClick={closeGallery}>
           <div className={styles.galleryContent} onClick={(e) => e.stopPropagation()}>
@@ -302,6 +341,19 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
                 alt={`Property image ${currentImageIndex + 1}`} 
                 className={styles.galleryImage}
               />
+            </div>
+            
+            {/* Thumbnail strip at bottom */}
+            <div className={styles.galleryThumbnailStrip}>
+              {allImages.map((image, index) => (
+                <div 
+                  key={index}
+                  className={`${styles.galleryThumbnailItem} ${index === currentImageIndex ? styles.active : ''}`}
+                  onClick={() => setCurrentImageIndex(index)}
+                >
+                  <img src={image} alt={`Thumbnail ${index + 1}`} />
+                </div>
+              ))}
             </div>
             
             <div className={styles.galleryNavigation}>

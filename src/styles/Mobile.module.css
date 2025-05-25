@@ -606,7 +606,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.95);
   z-index: 1200;
   display: flex;
   justify-content: center;
@@ -640,6 +640,7 @@
   max-width: 100%;
   max-height: 85vh;
   object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
 .galleryNavigation {
@@ -656,42 +657,88 @@
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  font-size: 20px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.galleryNav:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .galleryCounter {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 8px 12px;
+  padding: 8px 16px;
   border-radius: 20px;
   font-size: 14px;
   position: absolute;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 10;
 }
 
 .closeGalleryButton {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   border: none;
   color: white;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  font-size: 20px;
+  font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1201;
+  transition: background-color 0.2s ease;
+}
+
+.closeGalleryButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.galleryThumbnailStrip {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.galleryThumbnailItem {
+  width: 60px;
+  height: 60px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.galleryThumbnailItem.active {
+  border-color: #3498db;
+  opacity: 1;
+}
+
+.galleryThumbnailItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .viewPhotosButton,
@@ -714,4 +761,126 @@
 .viewPhotosButton:hover,
 .viewAllPhotosBottom:hover {
   background: #2980b9;
+}
+
+/* Property Header Image */
+.propertyHeaderImage {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.mainPropertyImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.mainPropertyImage:hover {
+  opacity: 0.95;
+  cursor: pointer;
+}
+
+.imageGalleryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.galleryThumbnail {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.galleryThumbnail:hover {
+  opacity: 0.9;
+}
+
+.galleryThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.galleryThumbnail:hover img {
+  transform: scale(1.05);
+}
+
+.morePhotosOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.headerViewPhotosButton {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 5;
+}
+
+/* Detail Header Styles */
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  z-index: 10;
+}
+
+.backButton, 
+.favoriteDetailButton {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.backButton:hover,
+.favoriteDetailButton:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
 }
