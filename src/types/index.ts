@@ -7,3 +7,32 @@ export type SearchBarProps = {
 export type BannerProps = {
   title: string;
 };
+
+export interface Geocode {
+  lat: number;
+  lng: number;
+}
+
+export interface Property {
+  id: number;
+  title: string;
+  description: string;
+  price: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zip_code?: string;
+  type: string;
+  rooms: number;
+  bathrooms: number;
+  squareMeters: number; // Corresponds to 'area' in some parts of the DB/scripts
+  image_url: string;
+  status: string;
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
+  yearBuilt?: number;   // Corresponds to 'yearbuilt' in some parts of the DB/scripts
+  geocode?: Geocode;
+  latitude?: number;  // Often derived from geocode or a separate field
+  longitude?: number; // Often derived from geocode or a separate field
+}

@@ -1,12 +1,20 @@
 import { Client } from 'pg';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env.local') }); // Adjust path as necessary
 
 const createPropertiesTable = async () => {
   const client = new Client({
-    user: 'admin',
-    host: 'localhost',
-    database: 'ubika',
-    password: 'admin',
-    port: 5432,
+    user: process.env.POSTGRES_USER,
+    host: process.env.POSTGRES_HOST,
+    database: process.env.POSTGRES_DB,
+    password: String(process.env.POSTGRES_PASSWORD), // Explicitly cast to string
+    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
   });
 
   try {
@@ -29,6 +37,7 @@ const createPropertiesTable = async () => {
         area INTEGER NOT NULL,
         image_url TEXT NOT NULL,
         status TEXT NOT NULL,
+        year_built INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -48,6 +57,11 @@ const createPropertiesTable = async () => {
     await client.query(`
       ALTER TABLE properties
       ADD COLUMN IF NOT EXISTS geocode JSON;
+    `);
+
+    await client.query(`
+      ALTER TABLE properties
+      ADD COLUMN IF NOT EXISTS year_built INTEGER;
     `);
 
     console.log('Table "properties" created successfully!');

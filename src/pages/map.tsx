@@ -5,12 +5,13 @@ import styles from '../styles/Home.module.css';
 import { PropertyCard } from '../components';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
+import { Property, Geocode } from '../types'; // Import Property and Geocode types
 
 const MapPage: React.FC = () => {
   const router = useRouter();
   const [address, setAddress] = useState<string | null>(null);
-  const [propertyLocations, setPropertyLocations] = useState([]);
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: -34.5897318, lng: -58.4232065 });
+  const [propertyLocations, setPropertyLocations] = useState<Property[]>([]); // Typed state
+  const [mapCenter, setMapCenter] = useState<Geocode>({ lat: -34.5897318, lng: -58.4232065 });
   const [markers, setMarkers] = useState<{ id: number; lat: number; lng: number }[]>([]);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
@@ -23,10 +24,16 @@ const MapPage: React.FC = () => {
     // Fetch properties from the database
     const fetchProperties = async () => {
       try {
-        const response = await axios.get('/api/properties');
-        setPropertyLocations(response.data);
+        const response = await axios.get<Property[]>('/api/properties'); // Expect Property[]
+        if (Array.isArray(response.data)) {
+          setPropertyLocations(response.data);
+        } else {
+          console.error('Error fetching properties: Data is not an array', response.data);
+          setPropertyLocations([]);
+        }
       } catch (error) {
         console.error('Error fetching properties:', error);
+        setPropertyLocations([]);
       }
     };
 
@@ -41,7 +48,7 @@ const MapPage: React.FC = () => {
       }
       const propertyMarkers = propertyLocations
         .filter((property) => property.geocode)
-        .map((property) => ({ id: property.id, ...property.geocode }));
+        .map((property) => ({ id: property.id, ...property.geocode! })); // Added non-null assertion for geocode
       setMarkers(propertyMarkers);
     }
   }, [propertyLocations]);
@@ -53,60 +60,86 @@ const MapPage: React.FC = () => {
     });
 
     loader.load().then(() => {
-      if (mapRef.current) {
+      if (mapRef.current && !mapInstance.current) { // Ensure map is initialized only once
         mapInstance.current = new google.maps.Map(mapRef.current, {
           center: mapCenter,
           zoom: 15,
         });
       }
+    }).catch(e => {
+      console.error("Error loading Google Maps API", e);
     });
-  }, []);
+    // Cleanup function to prevent issues with HMR or multiple initializations
+    // return () => {
+    //   if (mapInstance.current) {
+    //     // Potentially unmount/destroy map instance if API supports it
+    //   }
+    // };
+  }, []); // Removed mapCenter from dependencies to avoid re-creating map on center change
 
   useEffect(() => {
     if (mapInstance.current && markers.length > 0) {
+      // Clear existing markers before adding new ones (optional, depends on desired behavior)
+      // markersRef.current.forEach(marker => marker.setMap(null));
+      // markersRef.current = []; 
       markers.forEach((marker) => {
         new google.maps.Marker({
           position: { lat: marker.lat, lng: marker.lng },
           map: mapInstance.current,
         });
+        // Store marker instance if you need to clear them later
+        // markersRef.current.push(gMarker);
       });
     }
-  }, [markers]);
+  }, [markers, mapInstance.current]); // Added mapInstance.current to dependencies
 
   useEffect(() => {
-    const { address } = router.query;
+    const currentAddress = router.query.address;
 
-    if (address && typeof address === 'string' && mapInstance.current && window.google) {
+    if (currentAddress && typeof currentAddress === 'string' && mapInstance.current && window.google && window.google.maps && window.google.maps.Geocoder) {
       const geocoder = new window.google.maps.Geocoder();
-      geocoder.geocode({ address }, (results, status) => {
-        if (status === 'OK' && results[0]) {
-          const bounds = results[0].geometry.bounds;
-          if (bounds) {
-            const polygonCoords = [
-              { lat: bounds.getNorthEast().lat(), lng: bounds.getNorthEast().lng() },
-              { lat: bounds.getSouthWest().lat(), lng: bounds.getNorthEast().lng() },
-              { lat: bounds.getSouthWest().lat(), lng: bounds.getSouthWest().lng() },
-              { lat: bounds.getNorthEast().lat(), lng: bounds.getSouthWest().lng() },
-            ];
+      geocoder.geocode({ address: currentAddress }, (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
+        if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
+          const geometry = results[0].geometry;
+          const location = geometry.location;
+          const bounds = geometry.viewport || geometry.bounds; // viewport is often preferred
 
-            new window.google.maps.Polygon({
-              paths: polygonCoords,
-              strokeColor: '#FF0000',
-              strokeOpacity: 0.8,
-              strokeWeight: 2,
-              fillColor: '#FF0000',
-              fillOpacity: 0.35,
-              map: mapInstance.current,
-            });
+          if (bounds && mapInstance.current) {
+            // Polygon drawing logic (ensure it's what you need)
+            // const polygonCoords = [
+            //   { lat: bounds.getNorthEast().lat(), lng: bounds.getNorthEast().lng() },
+            //   { lat: bounds.getSouthWest().lat(), lng: bounds.getNorthEast().lng() },
+            //   { lat: bounds.getSouthWest().lat(), lng: bounds.getSouthWest().lng() },
+            //   { lat: bounds.getNorthEast().lat(), lng: bounds.getSouthWest().lng() },
+            // ];
+            // new window.google.maps.Polygon({
+            //   paths: polygonCoords,
+            //   strokeColor: '#FF0000',
+            //   strokeOpacity: 0.8,
+            //   strokeWeight: 2,
+            //   fillColor: '#FF0000',
+            //   fillOpacity: 0.35,
+            //   map: mapInstance.current,
+            // });
 
             mapInstance.current.fitBounds(bounds);
+            // Optionally, also set a marker at the geocoded location
+            // new google.maps.Marker({
+            //   position: location,
+            //   map: mapInstance.current,
+            //   title: currentAddress
+            // });
+          } else if (location && mapInstance.current) {
+            mapInstance.current.setCenter(location);
+            // Set a default zoom if bounds are not available
+            mapInstance.current.setZoom(15); 
           }
         } else {
-          console.error('Geocode was not successful for the following reason:', status);
+          console.error(`Geocode was not successful for the following reason: ${status}`);
         }
       });
     }
-  }, [router.query]);
+  }, [router.query.address, mapInstance.current]); // Added mapInstance.current to dependencies
 
   return (
     <div className={styles.container}>
@@ -137,14 +170,16 @@ const MapPage: React.FC = () => {
               {propertyLocations.map((property) => (
                 <PropertyCard
                   key={property.id}
-                  imageUrl={property.image_url}
+                  image_url={property.image_url} // Corrected from imageUrl
                   description={property.description}
                   price={`$${property.price}`}
                   address={property.address}
-                  rooms={property.room}
+                  rooms={property.rooms}
                   bathrooms={property.bathrooms}
-                  squareMeters={property.area}
-                  yearBuilt={property.yearbuilt}
+                  squareMeters={property.squareMeters}
+                  yearBuilt={property.yearBuilt} // Keep as is, PropertyCard will handle undefined
+                  latitude={property.latitude ?? property.geocode?.lat}
+                  longitude={property.longitude ?? property.geocode?.lng}
                 />
               ))}
             </div>
