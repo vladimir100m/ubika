@@ -19,6 +19,16 @@ const MapPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false); // Track favorite status
   
+  // Create a ref object for each property card
+  const propertyRefs = useRef<{[key: number]: HTMLDivElement | null}>({});
+  
+  // Function to set the ref for a property card
+  const setPropertyRef = (el: HTMLDivElement | null, id: number) => {
+    if (el) {
+      propertyRefs.current[id] = el;
+    }
+  };
+  
   // Sample additional images for the gallery
   const additionalImages = [
     '/properties/casa-moderna.jpg',
@@ -42,6 +52,23 @@ const MapPage: React.FC = () => {
         const response = await axios.get<Property[]>('/api/properties'); // Expect Property[]
         if (Array.isArray(response.data)) {
           setPropertyLocations(response.data);
+          
+          // Check if we have a selectedPropertyId from the URL query
+          const selectedPropertyId = router.query.selectedPropertyId;
+          if (selectedPropertyId && typeof selectedPropertyId === 'string') {
+            const propertyId = parseInt(selectedPropertyId, 10);
+            const property = response.data.find(p => p.id === propertyId);
+            if (property) {
+              // Set the selected property
+              setSelectedProperty(property);
+              // Center the map on this property if it has geocode
+              if (property.geocode) {
+                setMapCenter(property.geocode);
+              } else if (property.latitude && property.longitude) {
+                setMapCenter({ lat: property.latitude, lng: property.longitude });
+              }
+            }
+          }
         } else {
           console.error('Error fetching properties: Data is not an array', response.data);
           setPropertyLocations([]);
@@ -281,6 +308,82 @@ const MapPage: React.FC = () => {
     setCurrentImageIndex(index);
   };
 
+  useEffect(() => {
+    if (mapInstance.current && selectedProperty) {
+      // If we have a selected property with geocode, center the map on it
+      if (selectedProperty.geocode) {
+        mapInstance.current.setCenter(selectedProperty.geocode);
+        mapInstance.current.setZoom(17); // Zoom in closer
+      } else if (selectedProperty.latitude && selectedProperty.longitude) {
+        mapInstance.current.setCenter({ lat: selectedProperty.latitude, lng: selectedProperty.longitude });
+        mapInstance.current.setZoom(17);
+      }
+      
+      // After markers are created and we have a selected property, highlight its marker
+      if (markersRef.current.length > 0) {
+        setTimeout(() => {
+          // Find the marker corresponding to the selected property
+          const markerPosition = selectedProperty.geocode || 
+            (selectedProperty.latitude && selectedProperty.longitude ? 
+              { lat: selectedProperty.latitude, lng: selectedProperty.longitude } : null);
+              
+          if (markerPosition) {
+            const marker = markersRef.current.find(marker => {
+              const position = marker.getPosition();
+              return position && 
+                Math.abs(position.lat() - markerPosition.lat) < 0.0001 && 
+                Math.abs(position.lng() - markerPosition.lng) < 0.0001;
+            });
+            
+            if (marker) {
+              // Animate the marker
+              marker.setAnimation(google.maps.Animation.BOUNCE);
+              setTimeout(() => {
+                marker.setAnimation(null);
+              }, 750);
+              
+              // Change the marker icon to highlight it
+              marker.setIcon({
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 12,
+                fillColor: '#ff4500',
+                fillOpacity: 0.9,
+                strokeWeight: 2,
+                strokeColor: '#ffffff'
+              });
+              
+              // Reset other markers
+              markersRef.current.forEach(m => {
+                if (m !== marker) {
+                  m.setIcon({
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: '#0070f3',
+                    fillOpacity: 0.9,
+                    strokeWeight: 2,
+                    strokeColor: '#ffffff'
+                  });
+                }
+              });
+            }
+          }
+        }, 500); // Short delay to ensure markers are fully initialized
+      }
+    }
+  }, [selectedProperty, mapInstance.current, markersRef.current]);
+
+  // Add useEffect to scroll to the selected property when it changes
+  useEffect(() => {
+    // If we have a selected property and a ref for it, scroll to it
+    if (selectedProperty && propertyRefs.current[selectedProperty.id]) {
+      // Scroll the property into view with a smooth effect
+      propertyRefs.current[selectedProperty.id]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }, [selectedProperty]);
+
   return (
     <div className={styles.container}>
       <header className={styles.navbar}>
@@ -313,6 +416,7 @@ const MapPage: React.FC = () => {
                 <div 
                   key={property.id}
                   style={{ cursor: 'pointer' }}
+                  ref={el => propertyRefs.current[property.id] = el} // Assign ref to each property card
                 >
                   <PropertyCard
                     image_url={property.image_url}
@@ -334,7 +438,7 @@ const MapPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Property detail floating window - Zillow style */}
+      {/* Property detail floating window - Ubika style */}
       {selectedProperty && (
         <div className={styles.propertyDetailOverlay} onClick={handleClosePropertyDetail}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>

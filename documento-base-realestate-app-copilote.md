@@ -15,7 +15,7 @@ Construir una plataforma web moderna para compra, venta y alquiler de propiedade
 
 ### Contexto del Mercado
 
-El mercado inmobiliario digital presenta una creciente demanda por soluciones centradas en el usuario, con filtros avanzados, visitas virtuales y transparencia en la información. Plataformas como Zillow se han consolidado como referentes por su usabilidad, disponibilidad de datos y servicios complementarios como hipotecas, valoraciones y mapas interactivos.
+El mercado inmobiliario digital presenta una creciente demanda por soluciones centradas en el usuario, con filtros avanzados, visitas virtuales y transparencia en la información. Plataformas como Ubika se han consolidado como referentes por su usabilidad, disponibilidad de datos y servicios complementarios como hipotecas, valoraciones y mapas interactivos.
 
 ## 2. Estructura de Funcionalidades
 
@@ -115,7 +115,7 @@ Monorepo recomendado (Turborepo).
 
 ### Apps de Referencia
 
-* [Zillow](https://www.zillow.com)
+* [Ubika](https://www.ubika.com)
 * [Tokko Broker](https://www.tokkobroker.com)
 * [Argenprop](https://www.argenprop.com)
 

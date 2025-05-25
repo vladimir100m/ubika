@@ -230,7 +230,7 @@
   overflow: hidden;
 }
 
-/* New StyledGallery class for Zillow-like gallery */
+/* New StyledGallery class for Ubika-like gallery */
 .styledGallery {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -776,7 +776,7 @@
   font-size: 0.9rem;
 }
 
-/* Make the first item larger for visual emphasis - Zillow style */
+/* Make the first item larger for visual emphasis - Ubika style */
 .photoGridItem:first-child {
   grid-column: span 2;
   grid-row: span 2;

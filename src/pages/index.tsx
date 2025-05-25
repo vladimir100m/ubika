@@ -33,6 +33,14 @@ const Home: React.FC = () => {
     fetchProperties();
   }, []);
 
+  // Function to handle property card click
+  const handlePropertyClick = (propertyId: number) => {
+    router.push({
+      pathname: '/map',
+      query: { selectedPropertyId: propertyId }
+    });
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.navbar}>
@@ -63,6 +71,7 @@ const Home: React.FC = () => {
               yearBuilt={property.yearBuilt} // Keep as is, PropertyCard will handle undefined
               latitude={property.latitude ?? property.geocode?.lat}
               longitude={property.longitude ?? property.geocode?.lng}
+              onClick={() => handlePropertyClick(property.id)} // Added onClick handler
             />
           ))}
         </div>
