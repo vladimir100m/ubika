@@ -7,21 +7,22 @@
   .onlyDesktop { display: none !important; }
 }
 
-/* Mobile Drawer */
+/* Drawer z-index adjustment to ensure it's above map content */
 .mobileDrawer {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 50%;
+  height: 70%;
   background: #ffffff;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
   transform: translateY(100%);
-  transition: transform 0.3s ease-in-out;
-  z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 1010; /* Increased z-index to ensure it shows above map */
   display: flex;
   flex-direction: column;
   border-radius: 20px 20px 0 0;
+  will-change: transform;
 }
 
 .mobileDrawer.open {
@@ -33,14 +34,88 @@
   height: 4px;
   background: #ccc;
   border-radius: 2px;
-  margin: 8px auto;
+  margin: 16px auto 8px auto;
   cursor: pointer;
 }
 
 .drawerContent {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 0 16px 32px 16px;
+}
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px 16px 8px;
+  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 16px;
+}
+
+.drawerTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2a2a2a;
+}
+
+.closeDrawerButton {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.closeDrawerButton:hover {
+  background-color: #f0f0f0;
+}
+
+.mobileFilters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mobileFilters::-webkit-scrollbar {
+  display: none;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background-color: #f9f9f9;
+  font-size: 0.9rem;
+  color: #333;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' viewBox='0 0 8 4'%3E%3Cpath fill='%23666' d='M0 0h8L4 4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 28px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+  color: #666;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 16px;
 }
 
 .drawerToggleButton {
@@ -49,10 +124,10 @@
   right: 16px;
   background-color: #0070f3;
   color: #fff;
-  padding: 8px 12px;
+  border: none;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 1001;
+  z-index: 1020; /* Increased z-index to ensure it's above the drawer */
   font-size: 14px;
   width: 56px;
   height: 56px;
@@ -60,6 +135,53 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.drawerToggleButton:hover {
+  transform: scale(1.05);
+  background-color: #0058cc;
+}
+
+.buttonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeCount {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Drawer backdrop overlay */
+.drawerBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1009; /* Just below drawer but above map */
+  animation: fadeIn 0.3s ease;
+  will-change: opacity;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Mobile Property Card */

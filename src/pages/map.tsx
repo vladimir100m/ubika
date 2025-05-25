@@ -34,6 +34,19 @@ const MapPage: React.FC = () => {
   
   const isMobile = useMediaQuery('(max-width: 768px)');
   
+  // Toggle the mobile drawer
+  const toggleMobileDrawer = () => {
+    setDrawerOpen(prevState => !prevState);
+  };
+  
+  // Add a new state for the property list visibility
+  const [mobilePropertyListVisible, setMobilePropertyListVisible] = useState(false);
+
+  // Function to toggle the mobile property list
+  const toggleMobilePropertyList = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+  
   // Create a ref object for each property card
   const propertyRefs = useRef<{[key: number]: HTMLDivElement | null}>({});
   
@@ -325,6 +338,33 @@ const MapPage: React.FC = () => {
 
   // Add state for floating gallery
   const [showFloatingGallery, setShowFloatingGallery] = useState(false);
+  
+  // Touch handling for mobile drawer
+  const touchStartY = useRef<number | null>(null);
+  const touchEndY = useRef<number | null>(null);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndY.current = e.touches[0].clientY;
+  };
+  
+  const handleTouchEnd = () => {
+    if (!touchStartY.current || !touchEndY.current) return;
+    
+    const distance = touchEndY.current - touchStartY.current;
+    const isSwipeDown = distance > 50;
+    
+    if (isSwipeDown) {
+      setDrawerOpen(false);
+    }
+    
+    // Reset values
+    touchStartY.current = null;
+    touchEndY.current = null;
+  };
 
   // Handler to toggle the full-screen gallery view
   const toggleGalleryView = () => {
@@ -338,13 +378,6 @@ const MapPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Mobile drawer toggle button */}
-      <button
-        className={mobileStyles.drawerToggleButton + ' ' + mobileStyles.onlyMobile}
-        onClick={() => setDrawerOpen(!drawerOpen)}
-      >
-        {drawerOpen ? 'Close' : 'Browse Properties'}
-      </button>
       <header className={styles.navbar}>
         <div className={styles.logo} onClick={() => router.push('/')}>Ubika</div>
         <nav>
@@ -368,7 +401,25 @@ const MapPage: React.FC = () => {
         <div className={styles.mapAndPropertiesContainer}>
           <div className={styles.mapWrapper}>
             <div className={styles.mapContainer} ref={mapRef}></div>
+            
+            {/* Mobile floating action button to show properties */}
+            {isMobile && (
+              <button 
+                className={mobileStyles.drawerToggleButton}
+                onClick={toggleMobileDrawer}
+                aria-label="Show properties"
+              >
+                <span className={mobileStyles.buttonIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <span className={mobileStyles.badgeCount}>{propertyLocations.length}</span>
+              </button>
+            )}
           </div>
+          
           {/* Desktop property list */}
           <div className={styles.propertiesListContainer + ' ' + mobileStyles.onlyDesktop}>
             <div className={styles.propertyGrid}>
@@ -383,24 +434,84 @@ const MapPage: React.FC = () => {
               ))}
             </div>
           </div>
+          
+          {/* Mobile drawer backdrop */}
+          {drawerOpen && isMobile && (
+            <div 
+              className={mobileStyles.drawerBackdrop} 
+              onClick={() => setDrawerOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+          
           {/* Mobile drawer with property list */}
-          <div className={mobileStyles.mobileDrawer + (drawerOpen ? ' ' + mobileStyles.open : '')}>
+          <div 
+            className={mobileStyles.mobileDrawer + (drawerOpen ? ' ' + mobileStyles.open : '')}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <div className={mobileStyles.drawerHandle} onClick={() => setDrawerOpen(false)} />
-            <div className={mobileStyles.drawerContent}>
-              <div className={styles.propertyGrid}>
-                {propertyLocations.map((property) => (
-                  <div
-                    key={property.id}
-                    style={{ cursor: 'pointer' }}
-                    ref={el => { setPropertyRef(el, property.id); }}
-                    onClick={() => {
-                      handlePropertyClick(property);
-                      setDrawerOpen(false);
-                    }}
-                  >
-                    <PropertyCard {...property} />
+            <div className={mobileStyles.drawerContent + ' ' + mobileStyles.noScrollbar + ' ' + mobileStyles.touchScrolling}>
+              <div className={mobileStyles.drawerHeader}>
+                <h3 className={mobileStyles.drawerTitle}>Properties ({propertyLocations.length})</h3>
+                <button 
+                  className={mobileStyles.closeDrawerButton} 
+                  onClick={() => setDrawerOpen(false)}
+                  aria-label="Close property list"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Property filters - simplified for mobile */}
+              <div className={mobileStyles.mobileFilters}>
+                <select className={mobileStyles.filterSelect}>
+                  <option value="">Price (Any)</option>
+                  <option value="0-100000">Up to $100,000</option>
+                  <option value="100000-300000">$100,000 - $300,000</option>
+                  <option value="300000-500000">$300,000 - $500,000</option>
+                  <option value="500000+">$500,000+</option>
+                </select>
+                
+                <select className={mobileStyles.filterSelect}>
+                  <option value="">Bedrooms (Any)</option>
+                  <option value="1">1+ Bedroom</option>
+                  <option value="2">2+ Bedrooms</option>
+                  <option value="3">3+ Bedrooms</option>
+                  <option value="4">4+ Bedrooms</option>
+                </select>
+                
+                <select className={mobileStyles.filterSelect}>
+                  <option value="">Property Type</option>
+                  <option value="House">House</option>
+                  <option value="Apartment">Apartment</option>
+                  <option value="Condo">Condo</option>
+                  <option value="Townhouse">Townhouse</option>
+                </select>
+              </div>
+              
+              {/* Property grid - modified for mobile */}
+              <div className={styles.propertyGrid} style={{ gridTemplateColumns: '1fr' }}>
+                {propertyLocations.length > 0 ? (
+                  propertyLocations.map((property) => (
+                    <div
+                      key={property.id}
+                      style={{ cursor: 'pointer' }}
+                      ref={el => { setPropertyRef(el, property.id); }}
+                      onClick={() => {
+                        handlePropertyClick(property);
+                        setDrawerOpen(false);
+                      }}
+                    >
+                      <PropertyCard {...property} />
+                    </div>
+                  ))
+                ) : (
+                  <div className={mobileStyles.emptyState}>
+                    <p>No properties found matching your criteria.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

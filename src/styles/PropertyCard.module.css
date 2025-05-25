@@ -137,3 +137,38 @@
 .closeButton:hover {
   background: #c0392b;
 }
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .card {
+    margin: 0 0 16px 0;
+  }
+  
+  .image {
+    height: 180px;
+  }
+  
+  .details {
+    padding: 12px;
+  }
+  
+  .price {
+    font-size: 1.3rem;
+  }
+  
+  .address {
+    font-size: 0.9rem;
+  }
+  
+  .info {
+    flex-wrap: wrap;
+  }
+  
+  .info p {
+    margin-bottom: 6px;
+  }
+  
+  .card:hover {
+    transform: scale(1.02);
+  }
+}
