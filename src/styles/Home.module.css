@@ -5,6 +5,9 @@
   padding: 0;
   box-sizing: border-box;
   background-color: #f9f9f9;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .navbar {
@@ -76,6 +79,7 @@
   z-index: 1000;
   padding: 0;
   overflow-y: auto;
+  transition: opacity 0.3s ease;
 }
 
 .propertyDetailCard {
@@ -89,6 +93,98 @@
   animation: fadeInUp 0.4s ease-out;
   margin: 10px;
   border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+@media (max-width: 768px) {
+  .propertyDetailCard {
+    max-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .propertyDetailOverlay {
+    padding: 0;
+  }
+  
+  .propertyStats {
+    gap: 16px;
+  }
+  
+  .actionButtonPrimary,
+  .actionButtonSecondary {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .closeButton {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .propertyDetailHeader {
+    height: 40vh;
+  }
+  
+  .styledGallery {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+  
+  .galleryMainImage {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  /* Hide secondary images on mobile */
+  .gallerySecondaryImage {
+    display: none;
+  }
+  
+  .galleryThumbnails {
+    display: none;
+  }
+  
+  .galleryButton {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .viewAllPhotosButton {
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .photoCountOverlay {
+    bottom: 10px;
+    left: 10px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .propertyTitle {
+    font-size: 1.5rem;
+  }
+  
+  .propertyPrice {
+    font-size: 1.6rem;
+  }
+  
+  /* Adjust photo grid for mobile */
+  .photosGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .photoGridItem:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -129,16 +225,45 @@
 .propertyDetailHeader {
   position: relative;
   width: 100%;
-  height: 60vh;
+  height: 65vh;
   background-color: #000;
   overflow: hidden;
 }
 
+/* New StyledGallery class for Zillow-like gallery */
+.styledGallery {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  position: relative;
+}
+
 .galleryMainImage {
+  grid-column: 1;
+  grid-row: 1 / span 2;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: pointer;
+}
+
+.gallerySecondaryImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.3s ease;
+}
+
+.gallerySecondaryImage:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
 .galleryThumbnails {
@@ -147,6 +272,7 @@
   right: 20px;
   display: flex;
   gap: 8px;
+  z-index: 5;
 }
 
 .galleryThumbnail {
@@ -172,31 +298,71 @@
 
 .galleryControls {
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 0;
-  right: 0;
-  transform: translateY(-50%);
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0 20px;
+  pointer-events: none; /* This allows clicks to pass through */
+  z-index: 2;
 }
 
 .galleryButton {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #333;
   border: none;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  font-size: 24px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  pointer-events: auto; /* Make buttons clickable */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .galleryButton:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+/* Overlay to show number of photos */
+.photoCountOverlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 5;
+}
+
+/* View all photos button */
+.viewAllPhotosButton {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
   background-color: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
 }
 
 .propertyDetailContent {
@@ -269,8 +435,13 @@
 }
 
 .tabsContainer {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
   margin-bottom: 24px;
   border-bottom: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .tabsList {
@@ -278,6 +449,14 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.tabsList::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .tabItem {
@@ -287,6 +466,7 @@
   font-weight: 500;
   color: #767676;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .tabItem.active {
@@ -354,6 +534,9 @@
   background-color: #f7f7f7;
   padding: 16px 24px;
   border-top: 1px solid #e8e8e8;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .actionButtonPrimary {
@@ -549,5 +732,392 @@
   color: white;
   text-align: center;
   padding: 20px;
-  margin-top: 50px;
+  margin-top: auto;
+}
+
+/* New styles for additional tab content sections */
+.photosGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 250px;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.photoGridItem {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.photoGridItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.photoGridImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.photoCaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+/* Make the first item larger for visual emphasis - Zillow style */
+.photoGridItem:first-child {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.detailsSection {
+  margin-bottom: 24px;
+}
+
+.detailsTable {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px 24px;
+}
+
+.detailsRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detailsLabel {
+  color: #767676;
+  font-weight: 500;
+}
+
+.detailsValue {
+  color: #2a2a2a;
+  font-weight: 600;
+}
+
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.historyHeader {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background-color: #f7f7f7;
+  padding: 12px;
+  font-weight: 600;
+  color: #2a2a2a;
+  border-radius: 4px 4px 0 0;
+}
+
+.historyRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mapFullContainer {
+  width: 100%;
+  height: 500px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.neighborhoodSection,
+.poiSection {
+  margin-bottom: 24px;
+}
+
+.neighborhoodInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.neighborhoodStat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f7f7f7;
+  padding: 16px;
+  border-radius: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.statIcon {
+  font-size: 24px;
+  color: #0074e4;
+}
+
+.statDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2a2a2a;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #767676;
+}
+
+.poiList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.poiItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f7f7f7;
+  border-radius: 8px;
+}
+
+.poiIcon {
+  font-size: 24px;
+}
+
+.poiDetails {
+  flex: 1;
+}
+
+.poiName {
+  font-weight: 600;
+  color: #2a2a2a;
+  margin-bottom: 4px;
+}
+
+.poiDistance {
+  font-size: 0.9rem;
+  color: #767676;
+}
+
+.schoolsSection {
+  margin-bottom: 24px;
+}
+
+.schoolFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.schoolFilterButton {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #2a2a2a;
+  transition: all 0.2s;
+}
+
+.schoolFilterButton:hover {
+  background: #e0e0e0;
+}
+
+.schoolFilterButton.active {
+  background: #0074e4;
+  color: white;
+}
+
+.schoolsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schoolCard {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.schoolRating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 60px;
+  background: #0074e4;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border-radius: 50%;
+}
+
+.schoolInfo {
+  flex: 1;
+}
+
+.schoolName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2a2a2a;
+  margin: 0 0 4px 0;
+}
+
+.schoolType {
+  color: #767676;
+  font-size: 0.9rem;
+  margin: 0 0 12px 0;
+}
+
+.schoolStats {
+  display: flex;
+  gap: 24px;
+}
+
+.schoolStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.schoolStatLabel {
+  font-size: 0.8rem;
+  color: #767676;
+}
+
+.schoolStatValue {
+  font-weight: 600;
+  color: #2a2a2a;
+}
+
+.schoolMap {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Map and Properties Layout */
+.mapAndPropertiesContainer {
+  display: flex;
+  height: calc(100vh - 180px);
+  gap: 1rem;
+  position: relative;
+}
+
+.mapWrapper {
+  flex: 1.5;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 180px);
+  overflow: hidden;
+}
+
+.mapContainer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.propertiesListContainer {
+  flex: 1;
+  height: calc(100vh - 180px);
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 40%;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.propertiesListContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.propertiesListContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.propertiesListContainer::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.propertiesListContainer::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.propertyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .mapWrapper {
+    flex: 1;
+  }
+  
+  .propertiesListContainer {
+    width: 45%;
+  }
+}
+
+@media (max-width: 900px) {
+  .mapAndPropertiesContainer {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .mapWrapper {
+    position: relative;
+    height: 50vh;
+    flex: none;
+    margin-bottom: 1rem;
+  }
+  
+  .mapContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .propertiesListContainer {
+    width: 100%;
+    height: 50vh;
+    max-height: 50vh;
+  }
 }

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
+import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import { PropertyCard } from '../components';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
@@ -16,6 +17,7 @@ const MapPage: React.FC = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false); // Track favorite status
   
   // Sample additional images for the gallery
   const additionalImages = [
@@ -78,10 +80,31 @@ const MapPage: React.FC = () => {
           center: mapCenter,
           zoom: 15,
         });
+        
+        // Handle window resize to ensure map is properly displayed
+        const handleResize = () => {
+          if (mapInstance.current) {
+            google.maps.event.trigger(mapInstance.current, 'resize');
+            if (mapCenter) {
+              mapInstance.current.setCenter(mapCenter);
+            }
+          }
+        };
+        
+        window.addEventListener('resize', handleResize);
+        
+        // Initial trigger for proper map display
+        setTimeout(handleResize, 100);
+        
+        // Clean up event listener
+        return () => {
+          window.removeEventListener('resize', handleResize);
+        };
       }
     }).catch(e => {
       console.error("Error loading Google Maps API", e);
     });
+    
     // Cleanup function to prevent issues with HMR or multiple initializations
     return () => {
       if (markersRef.current.length > 0) {
@@ -120,6 +143,8 @@ const MapPage: React.FC = () => {
           // Add click event to marker to show property details
           gMarker.addListener('click', () => {
             setSelectedProperty(property);
+            setIsFavorite(false); // Reset favorite status for new property
+            setCurrentImageIndex(0); // Reset to first image
             
             // Animate the marker when clicked
             if (gMarker.getAnimation() !== null) {
@@ -167,6 +192,8 @@ const MapPage: React.FC = () => {
   // Handler for clicking on a property in the list
   const handlePropertyClick = (property: Property) => {
     setSelectedProperty(property);
+    setIsFavorite(false); // Reset favorite status for new property
+    setCurrentImageIndex(0); // Reset to first image
     
     // If we have map and coordinates, center the map on the property
     if (mapInstance.current && property.geocode) {
@@ -266,8 +293,8 @@ const MapPage: React.FC = () => {
           <a href="#">Saved Homes</a>
         </nav>
       </header>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', marginBottom: '1rem', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', marginBottom: '1rem', gap: '1rem', zIndex: 10 }}>
           <input type="text" placeholder="Location" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', flex: 1 }} />
           <input type="number" placeholder="Rooms" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', width: '80px' }} />
           <input type="number" placeholder="Bathrooms" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', width: '80px' }} />
@@ -276,10 +303,12 @@ const MapPage: React.FC = () => {
             Apply
           </button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-          <div style={{ flex: 1.5, height: '90vh', position: 'relative' }} className={styles.mapContainer} ref={mapRef}></div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }} className={styles.propertyGrid}>
+        <div className={styles.mapAndPropertiesContainer}>
+          <div className={styles.mapWrapper}>
+            <div className={styles.mapContainer} ref={mapRef}></div>
+          </div>
+          <div className={styles.propertiesListContainer}>
+            <div className={styles.propertyGrid}>
               {propertyLocations.map((property) => (
                 <div 
                   key={property.id}
@@ -311,33 +340,91 @@ const MapPage: React.FC = () => {
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeButton} onClick={handleClosePropertyDetail}>×</button>
             
+            {/* Favorite button */}
+            <button 
+              className={`${galleryStyles.favoriteButton} ${isFavorite ? galleryStyles.favoriteActive : ''}`} 
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFavorite(!isFavorite);
+              }}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                <path 
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                />
+              </svg>
+            </button>
+            
             {/* Property Gallery/Header */}
             <div className={styles.propertyDetailHeader}>
-              {selectedProperty && (
-                <img 
-                  src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
-                  alt={`Property image ${currentImageIndex + 1}`} 
-                  className={styles.galleryMainImage}
-                />
-              )}
+              <div className={`${styles.styledGallery} ${galleryStyles.styledGallery}`}>
+                {/* Main large image */}
+                {selectedProperty && (
+                  <img 
+                    src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
+                    alt={`Property image ${currentImageIndex + 1}`} 
+                    className={`${styles.galleryMainImage} ${galleryStyles.galleryMainImageHover}`}
+                    onClick={() => handleImageChange('next')}
+                  />
+                )}
+                
+                {/* Secondary images */}
+                {additionalImages.slice(0, 3).map((img, index) => (
+                  <img 
+                    key={index}
+                    src={img} 
+                    alt={`Property image ${index + 2}`}
+                    className={`${styles.gallerySecondaryImage} ${galleryStyles.gallerySecondaryImage}`}
+                    onClick={() => handleThumbnailClick(index + 1)}
+                  />
+                ))}
+              </div>
               
               {/* Gallery Controls */}
               <div className={styles.galleryControls}>
                 <button 
-                  className={styles.galleryButton} 
+                  className={`${styles.galleryButton} ${galleryStyles.galleryButton}`} 
                   onClick={() => handleImageChange('prev')}
-                >❮</button>
+                  aria-label="Previous photo"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
                 <button 
-                  className={styles.galleryButton} 
+                  className={`${styles.galleryButton} ${galleryStyles.galleryButton}`} 
                   onClick={() => handleImageChange('next')}
-                >❯</button>
+                  aria-label="Next photo"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
               </div>
               
-              {/* Thumbnails */}
-              <div className={styles.galleryThumbnails}>
+              {/* Photo count overlay */}
+              <div className={`${styles.photoCountOverlay} ${galleryStyles.photoCountOverlay}`}>
+                {currentImageIndex + 1} of {additionalImages.length + 1} Photos
+              </div>
+              
+              {/* View all photos button */}
+              <button className={`${styles.viewAllPhotosButton} ${galleryStyles.viewAllPhotosButton}`} onClick={() => setActiveTab('photos')}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M4 16L8 12L12 16L20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="18" cy="6" r="2" fill="currentColor"/>
+                </svg>
+                <span>View all photos</span>
+              </button>
+              
+              {/* Thumbnails - keeping them but they'll be hidden by default */}
+              <div className={`${styles.galleryThumbnails} ${galleryStyles.galleryThumbnails}`}>
                 {selectedProperty && (
                   <div 
-                    className={styles.galleryThumbnail} 
+                    className={`${styles.galleryThumbnail} ${galleryStyles.galleryThumbnail}`} 
                     style={currentImageIndex === 0 ? { borderColor: 'white', transform: 'scale(1.05)' } : {}}
                     onClick={() => handleThumbnailClick(0)}
                   >
@@ -347,7 +434,7 @@ const MapPage: React.FC = () => {
                 {additionalImages.map((img, index) => (
                   <div 
                     key={index}
-                    className={styles.galleryThumbnail}
+                    className={`${styles.galleryThumbnail} ${galleryStyles.galleryThumbnail}`}
                     style={currentImageIndex === index + 1 ? { borderColor: 'white', transform: 'scale(1.05)' } : {}}
                     onClick={() => handleThumbnailClick(index + 1)}
                   >
@@ -400,12 +487,6 @@ const MapPage: React.FC = () => {
                       onClick={() => handleTabChange('overview')}
                     >
                       Overview
-                    </li>
-                    <li 
-                      className={`${styles.tabItem} ${activeTab === 'photos' ? styles.active : ''}`}
-                      onClick={() => handleTabChange('photos')}
-                    >
-                      Photos
                     </li>
                     <li 
                       className={`${styles.tabItem} ${activeTab === 'details' ? styles.active : ''}`}
@@ -565,6 +646,413 @@ const MapPage: React.FC = () => {
                         <button className={styles.agentContactButton}>Email</button>
                       </div>
                     </div>
+                  </div>
+                </div>
+                
+                {/* Tab Content - Photos */}
+                <div className={`${styles.tabContent} ${activeTab === 'photos' ? styles.active : ''}`}>
+                  <h3 className={styles.sectionHeading}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "8px"}}>
+                      <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M3 14L7 10L12 15L21 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="18.5" cy="5.5" r="1.5" fill="currentColor"/>
+                    </svg>
+                    All Photos ({additionalImages.length + 1})
+                  </h3>
+                  
+                  <div className={styles.photosGrid}>
+                    <div 
+                      className={`${styles.photoGridItem} ${galleryStyles.photoGridItem}`} 
+                      onClick={() => {
+                        setCurrentImageIndex(0);
+                        setActiveTab('overview');
+                      }}
+                    >
+                      <img 
+                        src={selectedProperty.image_url} 
+                        alt="Property Main" 
+                        className={`${styles.photoGridImage} ${galleryStyles.photoGridImage}`}
+                      />
+                      <div className={`${styles.photoCaption} ${galleryStyles.photoCaption}`}>Main View</div>
+                    </div>
+                    
+                    {additionalImages.map((img, index) => (
+                      <div 
+                        className={`${styles.photoGridItem} ${galleryStyles.photoGridItem}`} 
+                        key={index}
+                        onClick={() => {
+                          setCurrentImageIndex(index + 1);
+                          setActiveTab('overview');
+                        }}
+                      >
+                        <img 
+                          src={img} 
+                          alt={`Property view ${index + 2}`} 
+                          className={`${styles.photoGridImage} ${galleryStyles.photoGridImage}`}
+                        />
+                        <div className={`${styles.photoCaption} ${galleryStyles.photoCaption}`}>
+                          {index === 0 ? 'Living Room' : 
+                           index === 1 ? 'Kitchen' : 
+                           index === 2 ? 'Master Bedroom' : 
+                           'Exterior View'}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className={styles.photoGridItem}>
+                      <img 
+                        src="/properties/casa-moderna.jpg" 
+                        alt="Additional view" 
+                        className={styles.photoGridImage}
+                      />
+                      <div className={styles.photoCaption}>Bathroom</div>
+                    </div>
+                    
+                    <div className={styles.photoGridItem}>
+                      <img 
+                        src="/properties/penthouse-lujo.jpg" 
+                        alt="Additional view" 
+                        className={styles.photoGridImage}
+                      />
+                      <div className={styles.photoCaption}>Balcony</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tab Content - Details */}
+                <div className={`${styles.tabContent} ${activeTab === 'details' ? styles.active : ''}`}>
+                  <div className={styles.detailsSection}>
+                    <h3 className={styles.sectionHeading}>Property Details</h3>
+                    
+                    <div className={styles.detailsTable}>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Property Type</div>
+                        <div className={styles.detailsValue}>{selectedProperty.type}</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Year Built</div>
+                        <div className={styles.detailsValue}>{selectedProperty.yearBuilt || 'Not Available'}</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Square Meters</div>
+                        <div className={styles.detailsValue}>{selectedProperty.squareMeters}</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Bedrooms</div>
+                        <div className={styles.detailsValue}>{selectedProperty.rooms}</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Bathrooms</div>
+                        <div className={styles.detailsValue}>{selectedProperty.bathrooms}</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Heating</div>
+                        <div className={styles.detailsValue}>Central</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Cooling</div>
+                        <div className={styles.detailsValue}>Central Air</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Parking</div>
+                        <div className={styles.detailsValue}>2 Car Garage</div>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <div className={styles.detailsLabel}>Lot Size</div>
+                        <div className={styles.detailsValue}>{Math.round(selectedProperty.squareMeters * 1.2)} m²</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.detailsSection}>
+                    <h3 className={styles.sectionHeading}>Interior Features</h3>
+                    <div className={styles.featuresGrid}>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Hardwood Floors</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Granite Countertops</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Stainless Steel Appliances</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Walk-in Closet</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Fireplace</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Recessed Lighting</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.detailsSection}>
+                    <h3 className={styles.sectionHeading}>Exterior Features</h3>
+                    <div className={styles.featuresGrid}>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Swimming Pool</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Patio</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Fenced Yard</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Sprinkler System</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Garden</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Balcony</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.detailsSection}>
+                    <h3 className={styles.sectionHeading}>Property History</h3>
+                    <div className={styles.historyTable}>
+                      <div className={styles.historyHeader}>
+                        <div>Date</div>
+                        <div>Event</div>
+                        <div>Price</div>
+                      </div>
+                      <div className={styles.historyRow}>
+                        <div>May 10, 2025</div>
+                        <div>Listed</div>
+                        <div>${selectedProperty.price}</div>
+                      </div>
+                      <div className={styles.historyRow}>
+                        <div>Jan 15, 2020</div>
+                        <div>Sold</div>
+                        <div>${Math.round(parseInt(selectedProperty.price) * 0.8)}</div>
+                      </div>
+                      <div className={styles.historyRow}>
+                        <div>Mar 22, 2015</div>
+                        <div>Sold</div>
+                        <div>${Math.round(parseInt(selectedProperty.price) * 0.65)}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tab Content - Map */}
+                <div className={`${styles.tabContent} ${activeTab === 'map' ? styles.active : ''}`}>
+                  <div className={styles.mapFullContainer}>
+                    {(selectedProperty.latitude || selectedProperty.geocode?.lat) && 
+                     (selectedProperty.longitude || selectedProperty.geocode?.lng) && (
+                      <iframe
+                        src={`https://www.google.com/maps?q=${selectedProperty.latitude || selectedProperty.geocode?.lat},${selectedProperty.longitude || selectedProperty.geocode?.lng}&z=14&output=embed`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen={true}
+                        loading="lazy"
+                        title="Property Location Map"
+                      ></iframe>
+                    )}
+                  </div>
+                  
+                  <div className={styles.neighborhoodSection}>
+                    <h3 className={styles.sectionHeading}>Neighborhood</h3>
+                    <div className={styles.neighborhoodInfo}>
+                      <div className={styles.neighborhoodStat}>
+                        <div className={styles.statIcon}>🏫</div>
+                        <div className={styles.statDetails}>
+                          <span className={styles.statValue}>8/10</span>
+                          <span className={styles.statLabel}>Schools</span>
+                        </div>
+                      </div>
+                      <div className={styles.neighborhoodStat}>
+                        <div className={styles.statIcon}>🛒</div>
+                        <div className={styles.statDetails}>
+                          <span className={styles.statValue}>9/10</span>
+                          <span className={styles.statLabel}>Shopping</span>
+                        </div>
+                      </div>
+                      <div className={styles.neighborhoodStat}>
+                        <div className={styles.statIcon}>🚇</div>
+                        <div className={styles.statDetails}>
+                          <span className={styles.statValue}>7/10</span>
+                          <span className={styles.statLabel}>Transportation</span>
+                        </div>
+                      </div>
+                      <div className={styles.neighborhoodStat}>
+                        <div className={styles.statIcon}>🍽️</div>
+                        <div className={styles.statDetails}>
+                          <span className={styles.statValue}>8/10</span>
+                          <span className={styles.statLabel}>Restaurants</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.poiSection}>
+                    <h3 className={styles.sectionHeading}>Points of Interest Nearby</h3>
+                    <div className={styles.poiList}>
+                      <div className={styles.poiItem}>
+                        <div className={styles.poiIcon}>🏫</div>
+                        <div className={styles.poiDetails}>
+                          <div className={styles.poiName}>Central Elementary School</div>
+                          <div className={styles.poiDistance}>0.5 miles</div>
+                        </div>
+                      </div>
+                      <div className={styles.poiItem}>
+                        <div className={styles.poiIcon}>🏥</div>
+                        <div className={styles.poiDetails}>
+                          <div className={styles.poiName}>Community Hospital</div>
+                          <div className={styles.poiDistance}>1.2 miles</div>
+                        </div>
+                      </div>
+                      <div className={styles.poiItem}>
+                        <div className={styles.poiIcon}>🛒</div>
+                        <div className={styles.poiDetails}>
+                          <div className={styles.poiName}>Westfield Shopping Center</div>
+                          <div className={styles.poiDistance}>0.8 miles</div>
+                        </div>
+                      </div>
+                      <div className={styles.poiItem}>
+                        <div className={styles.poiIcon}>🚇</div>
+                        <div className={styles.poiDetails}>
+                          <div className={styles.poiName}>Metro Station</div>
+                          <div className={styles.poiDistance}>0.3 miles</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tab Content - Schools */}
+                <div className={`${styles.tabContent} ${activeTab === 'schools' ? styles.active : ''}`}>
+                  <div className={styles.schoolsSection}>
+                    <h3 className={styles.sectionHeading}>Nearby Schools</h3>
+                    
+                    <div className={styles.schoolFilters}>
+                      <button className={`${styles.schoolFilterButton} ${styles.active}`}>All Schools</button>
+                      <button className={styles.schoolFilterButton}>Elementary</button>
+                      <button className={styles.schoolFilterButton}>Middle</button>
+                      <button className={styles.schoolFilterButton}>High</button>
+                    </div>
+                    
+                    <div className={styles.schoolsList}>
+                      <div className={styles.schoolCard}>
+                        <div className={styles.schoolRating}>9/10</div>
+                        <div className={styles.schoolInfo}>
+                          <h4 className={styles.schoolName}>Lincoln Elementary School</h4>
+                          <p className={styles.schoolType}>Public, K-5 • 0.4 miles</p>
+                          <div className={styles.schoolStats}>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Students</span>
+                              <span className={styles.schoolStatValue}>420</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Teachers</span>
+                              <span className={styles.schoolStatValue}>32</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
+                              <span className={styles.schoolStatValue}>13:1</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className={styles.schoolCard}>
+                        <div className={styles.schoolRating}>8/10</div>
+                        <div className={styles.schoolInfo}>
+                          <h4 className={styles.schoolName}>Washington Middle School</h4>
+                          <p className={styles.schoolType}>Public, 6-8 • 0.9 miles</p>
+                          <div className={styles.schoolStats}>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Students</span>
+                              <span className={styles.schoolStatValue}>650</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Teachers</span>
+                              <span className={styles.schoolStatValue}>45</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
+                              <span className={styles.schoolStatValue}>14:1</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className={styles.schoolCard}>
+                        <div className={styles.schoolRating}>7/10</div>
+                        <div className={styles.schoolInfo}>
+                          <h4 className={styles.schoolName}>Roosevelt High School</h4>
+                          <p className={styles.schoolType}>Public, 9-12 • 1.5 miles</p>
+                          <div className={styles.schoolStats}>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Students</span>
+                              <span className={styles.schoolStatValue}>1,200</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Teachers</span>
+                              <span className={styles.schoolStatValue}>80</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
+                              <span className={styles.schoolStatValue}>15:1</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className={styles.schoolCard}>
+                        <div className={styles.schoolRating}>9/10</div>
+                        <div className={styles.schoolInfo}>
+                          <h4 className={styles.schoolName}>Montessori Academy</h4>
+                          <p className={styles.schoolType}>Private, K-8 • 1.1 miles</p>
+                          <div className={styles.schoolStats}>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Students</span>
+                              <span className={styles.schoolStatValue}>280</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Teachers</span>
+                              <span className={styles.schoolStatValue}>28</span>
+                            </div>
+                            <div className={styles.schoolStat}>
+                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
+                              <span className={styles.schoolStatValue}>10:1</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.schoolMap}>
+                    {(selectedProperty.latitude || selectedProperty.geocode?.lat) && 
+                     (selectedProperty.longitude || selectedProperty.geocode?.lng) && (
+                      <iframe
+                        src={`https://www.google.com/maps?q=${selectedProperty.latitude || selectedProperty.geocode?.lat},${selectedProperty.longitude || selectedProperty.geocode?.lng}&z=13&output=embed`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen={false}
+                        loading="lazy"
+                        title="Schools Map"
+                      ></iframe>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,0 +1,143 @@
+/* StyledGallery.module.css - Zillow-like gallery styling */
+/* Button animations and hover effects */
+.viewAllPhotosButton {
+  transition: all 0.3s ease;
+}
+
+.viewAllPhotosButton:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth image hover effects for gallery thumbnails */
+.galleryThumbnail img {
+  transition: transform 0.3s ease-in-out;
+}
+
+.galleryThumbnail:hover img {
+  transform: scale(1.1);
+}
+
+/* Photo grid enhancements */
+.photoGridItem {
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.photoGridItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.photoGridItem:hover .photoGridImage {
+  transform: scale(1.05);
+  transition: transform 0.5s ease;
+}
+
+.photoGridImage {
+  transition: transform 0.3s ease-in-out;
+}
+
+.photoCaption {
+  transition: background-color 0.3s ease;
+}
+
+.photoGridItem:hover .photoCaption {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Zillow-like overlay on main gallery */
+.styledGallery::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Smooth button animations */
+.galleryButton {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.galleryButton:hover {
+  transform: scale(1.1);
+}
+
+/* Subtle image transitions */
+.galleryMainImage, .gallerySecondaryImage {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Secondary image hover effects */
+.gallerySecondaryImage:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* Additional styles for property cards */
+.propertyCard {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Favorite button styles */
+.favoriteButton {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.favoriteButton:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+.favoriteActive {
+  color: #e74c3c;
+}
+
+/* Zillow-like image counter badge */
+.photoCountOverlay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.photoCountOverlay::before {
+  content: '📷';
+  font-size: 14px;
+}
+
+/* Improve usability by showing a subtle overlay on hover */
+.galleryMainImageHover:hover::after,
+.gallerySecondaryImage:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
