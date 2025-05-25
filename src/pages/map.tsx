@@ -555,29 +555,6 @@ const MapPage: React.FC = () => {
                 </svg>
                 <span>View all photos</span>
               </button>
-              
-              {/* Thumbnails - keeping them but they'll be hidden by default */}
-              <div className={`${styles.galleryThumbnails} ${galleryStyles.galleryThumbnails}`}>
-                {selectedProperty && (
-                  <div 
-                    className={`${styles.galleryThumbnail} ${galleryStyles.galleryThumbnail}`} 
-                    style={currentImageIndex === 0 ? { borderColor: 'white', transform: 'scale(1.05)' } : {}}
-                    onClick={() => handleThumbnailClick(0)}
-                  >
-                    <img src={selectedProperty.image_url} alt="Thumbnail 1" />
-                  </div>
-                )}
-                {additionalImages.map((img, index) => (
-                  <div 
-                    key={index}
-                    className={`${styles.galleryThumbnail} ${galleryStyles.galleryThumbnail}`}
-                    style={currentImageIndex === index + 1 ? { borderColor: 'white', transform: 'scale(1.05)' } : {}}
-                    onClick={() => handleThumbnailClick(index + 1)}
-                  >
-                    <img src={img} alt={`Thumbnail ${index + 2}`} />
-                  </div>
-                ))}
-              </div>
             </div>
             
             <div className={styles.propertyDetailContent}>
@@ -925,7 +902,7 @@ const MapPage: React.FC = () => {
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>Recessed Lighting</span>
+                        <span>Smart Home System</span>
                       </div>
                     </div>
                   </div>
@@ -935,19 +912,7 @@ const MapPage: React.FC = () => {
                     <div className={styles.featuresGrid}>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>Swimming Pool</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Patio</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Fenced Yard</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Sprinkler System</span>
+                        <span>Private Pool</span>
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
@@ -955,263 +920,44 @@ const MapPage: React.FC = () => {
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>Balcony</span>
+                        <span>BBQ Area</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Outdoor Shower</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Terrace</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Security Cameras</span>
                       </div>
                     </div>
                   </div>
                   
                   <div className={styles.detailsSection}>
-                    <h3 className={styles.sectionHeading}>Property History</h3>
-                    <div className={styles.historyTable}>
-                      <div className={styles.historyHeader}>
-                        <div>Date</div>
-                        <div>Event</div>
-                        <div>Price</div>
-                      </div>
-                      <div className={styles.historyRow}>
-                        <div>May 10, 2025</div>
-                        <div>Listed</div>
-                        <div>${selectedProperty.price}</div>
-                      </div>
-                      <div className={styles.historyRow}>
-                        <div>Jan 15, 2020</div>
-                        <div>Sold</div>
-                        <div>${Math.round(parseInt(selectedProperty.price) * 0.8)}</div>
-                      </div>
-                      <div className={styles.historyRow}>
-                        <div>Mar 22, 2015</div>
-                        <div>Sold</div>
-                        <div>${Math.round(parseInt(selectedProperty.price) * 0.65)}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Tab Content - Map */}
-                <div className={`${styles.tabContent} ${activeTab === 'map' ? styles.active : ''}`}>
-                  <div className={styles.mapFullContainer}>
-                    {(selectedProperty.latitude || selectedProperty.geocode?.lat) && 
-                     (selectedProperty.longitude || selectedProperty.geocode?.lng) && (
-                      <iframe
-                        src={`https://www.google.com/maps?q=${selectedProperty.latitude || selectedProperty.geocode?.lat},${selectedProperty.longitude || selectedProperty.geocode?.lng}&z=14&output=embed`}
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        allowFullScreen={true}
-                        loading="lazy"
-                        title="Property Location Map"
-                      ></iframe>
-                    )}
-                  </div>
-                  
-                  <div className={styles.neighborhoodSection}>
                     <h3 className={styles.sectionHeading}>Neighborhood</h3>
-                    <div className={styles.neighborhoodInfo}>
-                      <div className={styles.neighborhoodStat}>
-                        <div className={styles.statIcon}>🏫</div>
-                        <div className={styles.statDetails}>
-                          <span className={styles.statValue}>8/10</span>
-                          <span className={styles.statLabel}>Schools</span>
-                        </div>
-                      </div>
-                      <div className={styles.neighborhoodStat}>
-                        <div className={styles.statIcon}>🛒</div>
-                        <div className={styles.statDetails}>
-                          <span className={styles.statValue}>9/10</span>
-                          <span className={styles.statLabel}>Shopping</span>
-                        </div>
-                      </div>
-                      <div className={styles.neighborhoodStat}>
-                        <div className={styles.statIcon}>🚇</div>
-                        <div className={styles.statDetails}>
-                          <span className={styles.statValue}>7/10</span>
-                          <span className={styles.statLabel}>Transportation</span>
-                        </div>
-                      </div>
-                      <div className={styles.neighborhoodStat}>
-                        <div className={styles.statIcon}>🍽️</div>
-                        <div className={styles.statDetails}>
-                          <span className={styles.statValue}>8/10</span>
-                          <span className={styles.statLabel}>Restaurants</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.poiSection}>
-                    <h3 className={styles.sectionHeading}>Points of Interest Nearby</h3>
-                    <div className={styles.poiList}>
-                      <div className={styles.poiItem}>
-                        <div className={styles.poiIcon}>🏫</div>
-                        <div className={styles.poiDetails}>
-                          <div className={styles.poiName}>Central Elementary School</div>
-                          <div className={styles.poiDistance}>0.5 miles</div>
-                        </div>
-                      </div>
-                      <div className={styles.poiItem}>
-                        <div className={styles.poiIcon}>🏥</div>
-                        <div className={styles.poiDetails}>
-                          <div className={styles.poiName}>Community Hospital</div>
-                          <div className={styles.poiDistance}>1.2 miles</div>
-                        </div>
-                      </div>
-                      <div className={styles.poiItem}>
-                        <div className={styles.poiIcon}>🛒</div>
-                        <div className={styles.poiDetails}>
-                          <div className={styles.poiName}>Westfield Shopping Center</div>
-                          <div className={styles.poiDistance}>0.8 miles</div>
-                        </div>
-                      </div>
-                      <div className={styles.poiItem}>
-                        <div className={styles.poiIcon}>🚇</div>
-                        <div className={styles.poiDetails}>
-                          <div className={styles.poiName}>Metro Station</div>
-                          <div className={styles.poiDistance}>0.3 miles</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Tab Content - Schools */}
-                <div className={`${styles.tabContent} ${activeTab === 'schools' ? styles.active : ''}`}>
-                  <div className={styles.schoolsSection}>
-                    <h3 className={styles.sectionHeading}>Nearby Schools</h3>
+                    <p className={styles.neighborhoodDescription}>No description available.</p>
                     
-                    <div className={styles.schoolFilters}>
-                      <button className={`${styles.schoolFilterButton} ${styles.active}`}>All Schools</button>
-                      <button className={styles.schoolFilterButton}>Elementary</button>
-                      <button className={styles.schoolFilterButton}>Middle</button>
-                      <button className={styles.schoolFilterButton}>High</button>
-                    </div>
+                    <h4 className={styles.subSectionHeading}>Nearby Schools</h4>
+                    <ul className={styles.schoolsList}>
+                      <li className={styles.schoolItem}>No schools found in the vicinity.</li>
+                    </ul>
                     
-                    <div className={styles.schoolsList}>
-                      <div className={styles.schoolCard}>
-                        <div className={styles.schoolRating}>9/10</div>
-                        <div className={styles.schoolInfo}>
-                          <h4 className={styles.schoolName}>Lincoln Elementary School</h4>
-                          <p className={styles.schoolType}>Public, K-5 • 0.4 miles</p>
-                          <div className={styles.schoolStats}>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Students</span>
-                              <span className={styles.schoolStatValue}>420</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Teachers</span>
-                              <span className={styles.schoolStatValue}>32</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
-                              <span className={styles.schoolStatValue}>13:1</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className={styles.schoolCard}>
-                        <div className={styles.schoolRating}>8/10</div>
-                        <div className={styles.schoolInfo}>
-                          <h4 className={styles.schoolName}>Washington Middle School</h4>
-                          <p className={styles.schoolType}>Public, 6-8 • 0.9 miles</p>
-                          <div className={styles.schoolStats}>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Students</span>
-                              <span className={styles.schoolStatValue}>650</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Teachers</span>
-                              <span className={styles.schoolStatValue}>45</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
-                              <span className={styles.schoolStatValue}>14:1</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className={styles.schoolCard}>
-                        <div className={styles.schoolRating}>7/10</div>
-                        <div className={styles.schoolInfo}>
-                          <h4 className={styles.schoolName}>Roosevelt High School</h4>
-                          <p className={styles.schoolType}>Public, 9-12 • 1.5 miles</p>
-                          <div className={styles.schoolStats}>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Students</span>
-                              <span className={styles.schoolStatValue}>1,200</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Teachers</span>
-                              <span className={styles.schoolStatValue}>80</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
-                              <span className={styles.schoolStatValue}>15:1</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className={styles.schoolCard}>
-                        <div className={styles.schoolRating}>9/10</div>
-                        <div className={styles.schoolInfo}>
-                          <h4 className={styles.schoolName}>Montessori Academy</h4>
-                          <p className={styles.schoolType}>Private, K-8 • 1.1 miles</p>
-                          <div className={styles.schoolStats}>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Students</span>
-                              <span className={styles.schoolStatValue}>280</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Teachers</span>
-                              <span className={styles.schoolStatValue}>28</span>
-                            </div>
-                            <div className={styles.schoolStat}>
-                              <span className={styles.schoolStatLabel}>Student/Teacher</span>
-                              <span className={styles.schoolStatValue}>10:1</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <h4 className={styles.subSectionHeading}>Walk Score</h4>
+                    <div className={styles.walkScoreContainer}>
+                      <div className={styles.walkScoreBar} style={{ width: '80%' }}></div>
+                      <div className={styles.walkScoreLabel}>Very Walkable - 80/100</div>
                     </div>
                   </div>
-                  
-                  <div className={styles.schoolMap}>
-                    {(selectedProperty.latitude || selectedProperty.geocode?.lat) && 
-                     (selectedProperty.longitude || selectedProperty.geocode?.lng) && (
-                      <iframe
-                        src={`https://www.google.com/maps?q=${selectedProperty.latitude || selectedProperty.geocode?.lat},${selectedProperty.longitude || selectedProperty.geocode?.lng}&z=13&output=embed`}
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        allowFullScreen={false}
-                        loading="lazy"
-                        title="Schools Map"
-                      ></iframe>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Action Bar */}
-              <div className={styles.propertyActionBar}>
-                <div className={styles.actionGroup}>
-                  <button className={styles.actionButtonPrimary}>Contact Agent</button>
-                  <button className={styles.actionButtonSecondary}>Schedule Tour</button>
-                </div>
-                <div className={styles.actionGroup}>
-                  <button className={styles.actionButtonSecondary}>Share</button>
-                  <button className={styles.actionButtonSecondary}>Save</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
-      
-      <footer className={styles.footer}>
-        <p>&copy; 2025 Ubika. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

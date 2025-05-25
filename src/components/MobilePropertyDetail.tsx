@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Property } from '../types';
 import styles from '../styles/Mobile.module.css';
 
@@ -17,17 +17,23 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'map' | 'contact'>('info');
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
-
-  // Sample additional images for the gallery
-  const additionalImages = [
-    '/properties/casa-moderna.jpg',
-    '/properties/casa-lago.jpg',
-    '/properties/casa-campo.jpg',
-    '/properties/villa-lujo.jpg',
-  ];
-
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const allImages = [property.image_url, ...additionalImages];
+
+  // For demo purposes, create an array of sample images for the property
+  // In a real app, you would have multiple images from your API/database
+  const allImages = React.useMemo(() => {
+    const baseImages = [
+      property.image_url,
+      `/properties/casa-moderna.jpg`, 
+      `/properties/casa-colonial.jpg`, 
+      `/properties/casa-lago.jpg`,
+      `/properties/villa-lujo.jpg`
+    ];
+    
+    // Filter out any undefined images
+    return baseImages.filter(img => img);
+  }, [property.image_url]);
 
   const handleFavoriteToggle = () => {
     if (onFavoriteToggle) {
@@ -35,19 +41,47 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
     }
   };
 
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % allImages.length);
-  };
-
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + allImages.length) % allImages.length);
-  };
-
   const toggleImageFullscreen = () => {
     setIsImageFullscreen(!isImageFullscreen);
   };
+
+  const openGallery = () => {
+    setIsGalleryOpen(true);
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+  };
+
+  const navigateGallery = (direction: 'prev' | 'next') => {
+    if (direction === 'next') {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === allImages.length - 1 ? 0 : prevIndex + 1
+      );
+    } else {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === 0 ? allImages.length - 1 : prevIndex - 1
+      );
+    }
+  };
+
+  // Handle keyboard navigation in gallery
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isGalleryOpen) return;
+      
+      if (e.key === 'ArrowRight') {
+        navigateGallery('next');
+      } else if (e.key === 'ArrowLeft') {
+        navigateGallery('prev');
+      } else if (e.key === 'Escape') {
+        closeGallery();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isGalleryOpen]);
 
   return (
     <div className={styles.mobilePropertyDetail}>
@@ -66,39 +100,6 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
         >
           {isFavorite ? '❤️' : '🤍'}
         </button>
-      </div>
-
-      <div 
-        className={`${styles.propertyImageGallery} ${isImageFullscreen ? styles.fullscreen : ''}`}
-        onClick={toggleImageFullscreen}
-      >
-        <img 
-          src={allImages[currentImageIndex]} 
-          alt={`Property ${currentImageIndex + 1}`} 
-          className={styles.detailImage}
-        />
-        
-        <div className={styles.galleryControls}>
-          <button 
-            className={styles.galleryButton} 
-            onClick={handlePrevImage}
-            disabled={allImages.length <= 1}
-            aria-label="Previous image"
-          >
-            ◀
-          </button>
-          <span className={styles.imageCounter}>
-            {currentImageIndex + 1} / {allImages.length}
-          </span>
-          <button 
-            className={styles.galleryButton} 
-            onClick={handleNextImage}
-            disabled={allImages.length <= 1}
-            aria-label="Next image"
-          >
-            ▶
-          </button>
-        </div>
       </div>
 
       <div className={styles.detailPrice}>
@@ -191,6 +192,10 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
                 )}
               </div>
             </div>
+
+            <button className={styles.viewPhotosButton} onClick={openGallery}>
+              View all photos ({allImages.length})
+            </button>
           </div>
         )}
 
@@ -282,6 +287,59 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
           Schedule Tour
         </button>
       </div>
+
+      <button className={styles.viewAllPhotosBottom} onClick={openGallery}>
+        View All Photos ({allImages.length})
+      </button>
+
+      {/* Floating Gallery Overlay */}
+      {isGalleryOpen && (
+        <div className={styles.galleryOverlay} onClick={closeGallery}>
+          <div className={styles.galleryContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.galleryImageContainer}>
+              <img 
+                src={allImages[currentImageIndex]} 
+                alt={`Property image ${currentImageIndex + 1}`} 
+                className={styles.galleryImage}
+              />
+            </div>
+            
+            <div className={styles.galleryNavigation}>
+              <button 
+                className={styles.galleryNav}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateGallery('prev');
+                }}
+                aria-label="Previous photo"
+              >
+                ←
+              </button>
+              <div className={styles.galleryCounter}>
+                {currentImageIndex + 1} / {allImages.length}
+              </div>
+              <button 
+                className={styles.galleryNav}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateGallery('next');
+                }}
+                aria-label="Next photo"
+              >
+                →
+              </button>
+            </div>
+            
+            <button 
+              className={styles.closeGalleryButton} 
+              onClick={closeGallery}
+              aria-label="Close gallery"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
