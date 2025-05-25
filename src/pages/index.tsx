@@ -5,6 +5,8 @@ import SearchBar from '../components/SearchBar';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
 import { Property } from '../types'; // Import Property type
+import Carousel from 'react-multi-carousel';
+import 'react-multi-carousel/lib/styles.css';
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -41,6 +43,25 @@ const Home: React.FC = () => {
     });
   };
 
+  const responsive = {
+    superLargeDesktop: {
+      breakpoint: { max: 4000, min: 1024 },
+      items: 5
+    },
+    desktop: {
+      breakpoint: { max: 1024, min: 768 },
+      items: 3
+    },
+    tablet: {
+      breakpoint: { max: 768, min: 464 },
+      items: 2
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.navbar}>
@@ -57,7 +78,7 @@ const Home: React.FC = () => {
 
       <section className={styles.featuredProperties}>
         <h2>Propiedades que estabas buscando</h2>
-        <div className={styles.propertyGrid}>
+        <Carousel responsive={responsive}>
           {properties.map((property) => (
             <PropertyCard
               key={property.id}
@@ -74,7 +95,7 @@ const Home: React.FC = () => {
               onClick={() => handlePropertyClick(property.id)} // Added onClick handler
             />
           ))}
-        </div>
+        </Carousel>
       </section>
 
       <footer className={styles.footer}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../styles/Mobile.module.css';
 import utilStyles from '../styles/MobileUtils.module.css';
 
@@ -14,6 +14,21 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   onSaveSearchClick
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+        if (isExpanded) {
+          setIsExpanded(false);
+          e.preventDefault(); // Prevent default behavior
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isExpanded]);
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
