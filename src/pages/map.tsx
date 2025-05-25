@@ -5,9 +5,13 @@ import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { PropertyCard } from '../components';
+import MobilePropertyCard from '../components/MobilePropertyCard';
+import MobileNavigation from '../components/MobileNavigation';
+import MobileFilterBar from '../components/MobileFilterBar';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
+import useMediaQuery from '../utils/useMediaQuery';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -20,6 +24,15 @@ const MapPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false); // Track favorite status
   const [drawerOpen, setDrawerOpen] = useState(false); // Mobile drawer state
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({
+    price: '',
+    rooms: '',
+    type: '',
+    features: ''
+  });
+  
+  const isMobile = useMediaQuery('(max-width: 768px)');
   
   // Create a ref object for each property card
   const propertyRefs = useRef<{[key: number]: HTMLDivElement | null}>({});

@@ -1,0 +1,148 @@
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import styles from '../styles/Mobile.module.css';
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: string;
+}
+
+const MobileNavigation: React.FC = () => {
+  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  
+  // The minimum distance in pixels to be considered a swipe
+  const minSwipeDistance = 50;
+
+  const navItems: NavItem[] = [
+    { label: 'Home', path: '/', icon: '🏠' },
+    { label: 'Search', path: '/map', icon: '🔍' },
+    { label: 'Favorites', path: '/favorites', icon: '❤️' },
+    { label: 'Mortgage', path: '/mortgage', icon: '💰' },
+    { label: 'Profile', path: '/profile', icon: '👤' },
+  ];
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const isActive = (path: string): boolean => {
+    return router.pathname === path;
+  };
+  
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe && !isMenuOpen) {
+      // Left swipe when menu is closed - open the menu
+      setIsMenuOpen(true);
+    } else if (isRightSwipe && isMenuOpen) {
+      // Right swipe when menu is open - close the menu
+      setIsMenuOpen(false);
+    }
+  };
+
+  // Close the menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (isMenuOpen && !target.closest(`.${styles.mobileMenu}`) && !target.closest(`.${styles.menuToggle}`)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen, styles.mobileMenu, styles.menuToggle]);
+
+  // Prevent body scrolling when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
+  return (
+    <div 
+      className={styles.mobileNavigationContainer}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <nav className={styles.mobileNavbar}>
+        <div className={styles.mobileNavItems}>
+          {navItems.map((item) => (
+            <Link 
+              href={item.path} 
+              key={item.path}
+              className={`${styles.mobileNavItem} ${isActive(item.path) ? styles.activeNavItem : ''}`}
+            >
+              <span className={styles.navIcon}>{item.icon}</span>
+              <span className={styles.navLabel}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      <button 
+        className={`${styles.menuToggle} ${isMenuOpen ? styles.open : ''}`}
+        onClick={toggleMenu}
+        aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div className={`${styles.mobileMenu} ${isMenuOpen ? styles.open : ''}`}>
+        <div className={styles.menuHeader}>
+          <h2>Ubika Real Estate</h2>
+          <button 
+            className={styles.closeMenu} 
+            onClick={toggleMenu}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className={styles.menuItems}>
+          <Link href="/" className={styles.menuItem}>Buy</Link>
+          <Link href="/" className={styles.menuItem}>Rent</Link>
+          <Link href="/" className={styles.menuItem}>Sell</Link>
+          <Link href="/" className={styles.menuItem}>Mortgage</Link>
+          <Link href="/" className={styles.menuItem}>Saved Homes</Link>
+          <Link href="/" className={styles.menuItem}>Settings</Link>
+          <Link href="/" className={styles.menuItem}>Help</Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MobileNavigation;
