@@ -76,15 +76,57 @@
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
-/* Secondary image hover effects */
-.gallerySecondaryImage:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+/* Adjusted the styledGallery for better alignment and positioning in the property detail header */
+.styledGallery {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: repeat(5, 1fr);
+  gap: 8px;
+  position: relative;
+  height: 400px; /* Fixed height for consistent layout */
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0 auto; /* Center the gallery horizontally */
 }
 
-/* Additional styles for property cards */
-.propertyCard {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.galleryMainImage {
+  grid-column: 1;
+  grid-row: 1 / span 5;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.gallerySecondaryImage {
+  grid-column: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+/* Added hover effects for better interactivity */
+.gallerySecondaryImage:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+/* Adjustments for mobile view */
+@media (max-width: 768px) {
+  .styledGallery {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, 1fr);
+    height: auto; /* Allow height to adjust dynamically */
+  }
+
+  .galleryMainImage {
+    grid-row: 1 / span 3;
+  }
+
+  .gallerySecondaryImage {
+    grid-row: auto;
+  }
 }
 
 /* Favorite button styles */
