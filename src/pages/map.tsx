@@ -63,6 +63,9 @@ const MapPage: React.FC = () => {
     '/properties/casa-lago.jpg',
     '/properties/casa-campo.jpg',
     '/properties/villa-lujo.jpg',
+    '/properties/cabana-playa.jpg',
+    '/properties/casa-playa.jpg',
+    '/properties/casa-colonial.jpg'
   ];
   
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -446,42 +449,82 @@ const MapPage: React.FC = () => {
           
           {/* Mobile drawer with property list */}
           <div 
-            className={mobileStyles.mobileDrawer + (drawerOpen ? ' ' + mobileStyles.open : '')}
+            className={
+              `${mobileStyles.mobileDrawer} ${drawerOpen ? mobileStyles.open : ''}`
+            }
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            style={{
+              transition: 'transform 0.3s ease-in-out',
+              boxShadow: drawerOpen ? '0px -4px 10px rgba(0, 0, 0, 0.1)' : 'none',
+            }}
           >
-            <div className={mobileStyles.drawerHandle} onClick={() => setDrawerOpen(false)} />
-            <div className={mobileStyles.drawerContent + ' ' + mobileStyles.noScrollbar + ' ' + mobileStyles.touchScrolling}>
+            <div 
+              className={mobileStyles.drawerHandle} 
+              onClick={() => setDrawerOpen(false)}
+              style={{
+                height: '4px',
+                width: '40px',
+                backgroundColor: '#ccc',
+                borderRadius: '2px',
+                margin: '10px auto',
+              }}
+            />
+            <div 
+              className={
+                `${mobileStyles.drawerContent} ${mobileStyles.noScrollbar} ${mobileStyles.touchScrolling}`
+              }
+              style={{
+                padding: '1rem',
+                backgroundColor: '#fff',
+                borderRadius: '10px 10px 0 0',
+              }}
+            >
               <div className={mobileStyles.drawerHeader}>
-                <h3 className={mobileStyles.drawerTitle}>Properties ({propertyLocations.length})</h3>
+                <h3 
+                  className={mobileStyles.drawerTitle}
+                  style={{
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Properties ({propertyLocations.length})
+                </h3>
                 <button 
                   className={mobileStyles.closeDrawerButton} 
                   onClick={() => setDrawerOpen(false)}
                   aria-label="Close property list"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                  }}
                 >
                   ✕
                 </button>
               </div>
-              
+
               {/* Property filters - simplified for mobile */}
-              <div className={mobileStyles.mobileFilters}>
-                <select className={mobileStyles.filterSelect}>
+              <div className={mobileStyles.mobileFilters} style={{ marginBottom: '1rem' }}>
+                <select className={mobileStyles.filterSelect} style={{ marginBottom: '0.5rem' }}>
                   <option value="">Price (Any)</option>
                   <option value="0-100000">Up to $100,000</option>
                   <option value="100000-300000">$100,000 - $300,000</option>
                   <option value="300000-500000">$300,000 - $500,000</option>
                   <option value="500000+">$500,000+</option>
                 </select>
-                
-                <select className={mobileStyles.filterSelect}>
+
+                <select className={mobileStyles.filterSelect} style={{ marginBottom: '0.5rem' }}>
                   <option value="">Bedrooms (Any)</option>
                   <option value="1">1+ Bedroom</option>
                   <option value="2">2+ Bedrooms</option>
                   <option value="3">3+ Bedrooms</option>
                   <option value="4">4+ Bedrooms</option>
                 </select>
-                
+
                 <select className={mobileStyles.filterSelect}>
                   <option value="">Property Type</option>
                   <option value="House">House</option>
@@ -490,14 +533,23 @@ const MapPage: React.FC = () => {
                   <option value="Townhouse">Townhouse</option>
                 </select>
               </div>
-              
+
               {/* Property grid - modified for mobile */}
-              <div className={styles.propertyGrid} style={{ gridTemplateColumns: '1fr' }}>
+              <div 
+                className={styles.propertyGrid} 
+                style={{ gridTemplateColumns: '1fr', gap: '1rem' }}
+              >
                 {propertyLocations.length > 0 ? (
                   propertyLocations.map((property) => (
                     <div
                       key={property.id}
-                      style={{ cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        padding: '1rem',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      }}
                       ref={el => { setPropertyRef(el, property.id); }}
                       onClick={() => {
                         handlePropertyClick(property);
@@ -508,7 +560,7 @@ const MapPage: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  <div className={mobileStyles.emptyState}>
+                  <div className={mobileStyles.emptyState} style={{ textAlign: 'center', padding: '1rem' }}>
                     <p>No properties found matching your criteria.</p>
                   </div>
                 )}
@@ -540,38 +592,75 @@ const MapPage: React.FC = () => {
               </svg>
             </button>
             <div className={styles.propertyDetailHeader}>
-              <div className={`${styles.styledGallery} ${galleryStyles.styledGallery}`}>
-                {/* Main large image */}
+              <div className={`${styles.styledGallery} ${galleryStyles.styledGallery}`} style={{ position: 'relative', height: '400px', display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: 'repeat(4, 1fr)', gap: '4px', borderRadius: '8px', overflow: 'hidden' }}>
+                {/* Main large image - taking 2/4 of the space and full height */}
                 {selectedProperty && (
                   <img 
                     src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
                     alt={`Property image ${currentImageIndex + 1}`} 
                     className={`${styles.galleryMainImage} ${galleryStyles.galleryMainImageHover}`}
+                    style={{ 
+                      gridColumn: '1', 
+                      gridRow: '1 / span 4', 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover', 
+                      cursor: 'pointer' 
+                    }}
+                    onClick={toggleGalleryView}
                   />
                 )}
-                {/* Secondary images */}
-                {additionalImages.slice(0, 3).map((img, index) => (
+                {/* Four smaller images - taking 1/4 of the space each on the right side */}
+                {additionalImages.slice(0, 4).map((img, index) => (
                   <img 
                     key={index}
                     src={img} 
                     alt={`Property image ${index + 2}`}
                     className={`${styles.gallerySecondaryImage} ${galleryStyles.gallerySecondaryImage}`}
+                    style={{ 
+                      gridColumn: '2', 
+                      gridRow: index + 1, 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover', 
+                      cursor: 'pointer' 
+                    }}
+                    onClick={toggleGalleryView}
                   />
                 ))}
-              </div>
-              {/* Photo count overlay with "See all photos" button */}
-              <div className={styles.photoCountOverlay}>
-                <button 
-                  className={`${styles.seeAllPhotosButton} ${styles.modernButton} ${styles.curvedButton}`} 
-                  onClick={toggleGalleryView}
-                  style={{ borderRadius: '50px', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s ease' }}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <span className={styles.buttonIcon} style={{ fontSize: '1.25rem' }}>📷</span>
-                  <span className={styles.buttonText} style={{ fontWeight: 'bold', fontSize: '1rem' }}>View All Photos</span>
-                  <span className={styles.photoCount} style={{ fontSize: '0.9rem', opacity: 0.8 }}>({additionalImages.length + 1})</span>
-                </button>
+                
+                {/* Zillow-style "View all photos" button */}
+                <div style={{ 
+                  position: 'absolute', 
+                  bottom: '16px', 
+                  right: '16px', 
+                  zIndex: 5
+                }}>
+                  <button 
+                    onClick={toggleGalleryView}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)', 
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 4h16v16H4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M4 16l4-4 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M14 14l2-2 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="18" cy="6" r="2" fill="currentColor" />
+                    </svg>
+                    View all {additionalImages.length + 1} photos
+                  </button>
+                </div>
               </div>
             </div>
             <div className={styles.propertyDetailContent}>
@@ -840,18 +929,36 @@ const MapPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Photo count overlay with "See all photos" button */}
-                  <div className={styles.photoCountOverlay}>
+                  {/* Zillow-style "View all photos" button for photos tab */}
+                  <div style={{ 
+                    position: 'absolute', 
+                    bottom: '16px', 
+                    right: '16px', 
+                    zIndex: 5
+                  }}>
                     <button 
-                      className={`${styles.seeAllPhotosButton} ${styles.modernButton} ${styles.curvedButton}`} 
                       onClick={toggleGalleryView}
-                      style={{ borderRadius: '50px', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s ease' }}
-                      onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                      onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)', 
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
                     >
-                      <span className={styles.buttonIcon} style={{ fontSize: '1.25rem' }}>📷</span>
-                      <span className={styles.buttonText} style={{ fontWeight: 'bold', fontSize: '1rem' }}>View All Photos</span>
-                      <span className={styles.photoCount} style={{ fontSize: '0.9rem', opacity: 0.8 }}>({additionalImages.length + 1})</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4h16v16H4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M4 16l4-4 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M14 14l2-2 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="18" cy="6" r="2" fill="currentColor" />
+                      </svg>
+                      View all {additionalImages.length + 1} photos
                     </button>
                   </div>
                 </div>
@@ -967,71 +1074,185 @@ const MapPage: React.FC = () => {
         </div>
       )}
       
-      {/* Floating gallery view */}
+      {/* Zillow-style Floating gallery view */}
       {showFloatingGallery && selectedProperty && (
-        <div className={styles.floatingGalleryOverlay} onClick={closeFloatingGallery}>
-          <div className={styles.floatingGalleryContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeButton} onClick={closeFloatingGallery}>×</button>
-            <div className={styles.floatingGalleryHeader}>
-              <h3 className={styles.sectionHeading}>Property Photos</h3>
-              <div className={styles.photoCountInfo}>
-                <span className={styles.currentImageIndex}>{currentImageIndex + 1}</span> / <span className={styles.totalImages}>{additionalImages.length + 1}</span>
-              </div>
+        <div className={styles.floatingGalleryOverlay} onClick={closeFloatingGallery} style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <div className={styles.floatingGalleryContent} onClick={(e) => e.stopPropagation()} style={{
+            width: '90%',
+            height: '90%',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative'
+          }}>
+            <button className={styles.closeButton} onClick={closeFloatingGallery} style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              background: 'none',
+              border: 'none',
+              color: 'white',
+              fontSize: '24px',
+              cursor: 'pointer',
+              zIndex: 5
+            }}>×</button>
+            
+            <div className={styles.floatingGalleryHeader} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '15px',
+              color: 'white'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '18px' }}>
+                {selectedProperty.address} - Photo {currentImageIndex + 1} of {additionalImages.length + 1}
+              </h3>
             </div>
-            <div className={styles.floatingGalleryBody}>
+            
+            <div className={styles.floatingGalleryBody} style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              position: 'relative'
+            }}>
               {/* Main image display */}
-              <div className={styles.floatingGalleryMainImageWrapper}>
+              <div style={{
+                width: '100%',
+                height: '75%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'relative'
+              }}>
                 <img 
                   src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
                   alt={`Property image ${currentImageIndex + 1}`} 
-                  className={styles.floatingGalleryMainImage}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain'
+                  }}
                 />
+                
+                {/* Navigation buttons - positioned on the sides of the main image */}
+                <button 
+                  style={{
+                    position: 'absolute',
+                    left: '10px',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    fontSize: '18px'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageChange('prev');
+                  }}
+                  aria-label="Previous image"
+                >
+                  ◀
+                </button>
+                <button 
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    fontSize: '18px'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageChange('next');
+                  }}
+                  aria-label="Next image"
+                >
+                  ▶
+                </button>
               </div>
               
-              {/* Thumbnails for additional images */}
-              <div className={styles.floatingGalleryThumbnails}>
+              {/* Thumbnails at the bottom */}
+              <div style={{
+                display: 'flex',
+                overflowX: 'auto',
+                gap: '8px',
+                padding: '15px',
+                width: '100%',
+                justifyContent: 'center'
+              }}>
                 <div 
-                  className={`${styles.thumbnailItem} ${currentImageIndex === 0 ? styles.active : ''}`}
+                  style={{
+                    border: currentImageIndex === 0 ? '2px solid #0070f3' : '2px solid transparent',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    width: '60px',
+                    height: '60px',
+                    cursor: 'pointer'
+                  }}
                   onClick={() => setCurrentImageIndex(0)}
                 >
                   <img 
                     src={selectedProperty.image_url} 
                     alt="Property Main" 
-                    className={styles.thumbnailImage}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
                   />
                 </div>
                 {additionalImages.map((img, index) => (
                   <div 
                     key={index}
-                    className={`${styles.thumbnailItem} ${currentImageIndex === index + 1 ? styles.active : ''}`}
+                    style={{
+                      border: currentImageIndex === index + 1 ? '2px solid #0070f3' : '2px solid transparent',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      width: '60px',
+                      height: '60px',
+                      cursor: 'pointer'
+                    }}
                     onClick={() => setCurrentImageIndex(index + 1)}
                   >
                     <img 
                       src={img} 
                       alt={`Property image ${index + 2}`} 
-                      className={styles.thumbnailImage}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
                     />
                   </div>
                 ))}
               </div>
-            </div>
-            
-            {/* Navigation buttons */}
-            <div className={styles.floatingGalleryNav}>
-              <button 
-                className={styles.navButton} 
-                onClick={() => handleImageChange('prev')}
-                aria-label="Previous image"
-              >
-                ◀
-              </button>
-              <button 
-                className={styles.navButton} 
-                onClick={() => handleImageChange('next')}
-                aria-label="Next image"
-              >
-                ▶
-              </button>
             </div>
           </div>
         </div>
