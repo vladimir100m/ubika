@@ -2,173 +2,555 @@
 .card {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #ffffff, #f0f0f0);
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 20px;
+  cursor: pointer;
 }
 
 .card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
 }
 
 .image {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.imageContainer:hover .image {
+  transform: scale(1.05);
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.statusTag {
+  background-color: #3498db;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 .details {
   padding: 16px;
   color: #333;
   font-family: 'Arial', sans-serif;
-  text-align: center;
 }
 
 .price {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: bold;
   margin-bottom: 8px;
   color: #2c3e50;
 }
 
-.address {
-  font-size: 1rem;
-  margin-bottom: 8px;
-  color: #34495e;
-}
-
-.info {
+.propertySpecs {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  color: #5a6a7a;
 }
 
-.info p {
-  font-size: 0.9rem;
-  margin: 0;
-  color: #7f8c8d;
+.bulletSeparator {
+  margin: 0 6px;
+  color: #ccc;
 }
 
-.description {
-  font-size: 0.9rem;
-  margin-bottom: 16px;
-  color: #7f8c8d;
+.address {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: #5a6a7a;
 }
 
-.saveButton {
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.viewDetailsButton {
   background: #3498db;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 1rem;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.2s ease;
 }
 
-.saveButton:hover {
+.viewDetailsButton:hover {
   background: #2980b9;
 }
 
-/* Dialog styles */
+.saveButton {
+  background: rgba(255, 255, 255, 0.9);
+  color: #555;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.savedButton {
+  background: rgba(255, 91, 91, 0.1);
+  color: #ff5b5b;
+}
+
+.saveButton:hover {
+  transform: scale(1.1);
+}
+
+.shareButton {
+  background: transparent;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.shareButton:hover {
+  background: #f5f5f5;
+}
+
+/* Dialog styles - Zillow inspired */
 .dialogOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  overflow-y: auto;
 }
 
-.dialog {
-  background: #f9f9f9;
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 700px;
+.zillowDialog {
+  background: #fff;
+  border-radius: 8px;
   width: 90%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.dialogHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e1e7eb;
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.dialogHeaderContent {
+  flex: 1;
+}
+
+.dialogPrice {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #2a2a33;
+}
+
+.dialogAddress {
+  font-size: 1.2rem;
+  margin: 0 0 8px 0;
+  color: #2a2a33;
+}
+
+.dialogQuickInfo {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #5a6a7a;
+}
+
+.dialogActions {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.actionButton {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2a2a33;
+}
+
+.actionButton:hover {
+  background: #f5f5f5;
+}
+
+.closeDialogButton {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #666;
+  padding: 4px 8px;
+}
+
+.closeDialogButton:hover {
+  color: #000;
+}
+
+.dialogTabs {
+  display: flex;
+  border-bottom: 1px solid #e1e7eb;
+  background: white;
+  position: sticky;
+  top: 76px;
+  z-index: 9;
+}
+
+.tabButton {
+  padding: 16px 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #5a6a7a;
+  border-bottom: 3px solid transparent;
+}
+
+.activeTab {
+  color: #0074e4;
+  border-bottom: 3px solid #0074e4;
+  font-weight: bold;
+}
+
+.dialogContent {
+  padding: 24px;
+}
+
+.dialogImageGallery {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.dialogMainImage {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.expandedImage {
+  max-height: 80vh;
+}
+
+.imageCaption {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.propertyDetails {
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #2a2a33;
+  border-bottom: 1px solid #e1e7eb;
+  padding-bottom: 8px;
+}
+
+.propertyDescription {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: #2a2a33;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailLabel {
+  font-size: 0.9rem;
+  color: #5a6a7a;
+}
+
+.detailValue {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #2a2a33;
+}
+
+.featuresSection {
+  margin-bottom: 30px;
+}
+
+.featuresList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.featureCategory h4 {
+  font-size: 1.1rem;
+  color: #2a2a33;
+  margin-bottom: 12px;
+}
+
+.featureCategory ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.featureCategory li {
+  padding: 6px 0;
+  color: #5a6a7a;
+  display: flex;
   align-items: center;
 }
 
-.dialogImage {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  margin-bottom: 16px;
+.featureCategory li:before {
+  content: "✓";
+  color: #0074e4;
+  margin-right: 8px;
 }
 
-.dialogDetails {
+.contactSection {
   text-align: center;
-  font-family: 'Arial', sans-serif;
-  color: #2c3e50;
-  margin-bottom: 16px;
-}
-
-.mapContainer {
-  width: 100%;
-  height: 300px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-top: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.closeButton {
-  background: #e74c3c;
-  color: #fff;
-  border: none;
+  background: #f7f9fc;
+  padding: 24px;
   border-radius: 8px;
+}
+
+.contactButton {
+  background: #0074e4;
+  color: white;
+  border: none;
+  border-radius: 4px;
   padding: 12px 24px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
-  margin-top: 16px;
+  margin: 8px;
+  transition: background 0.2s ease;
+}
+
+.contactButton:hover {
+  background: #0061c0;
+}
+
+.photosGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.gridImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gridImage:hover {
+  transform: scale(1.03);
+}
+
+.placeholderImage {
+  background: #f0f0f0;
+  height: 200px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  color: #888;
+}
+
+.mapTabContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.mapContainer {
+  position: relative;
+  height: 500px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.mapOverlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+}
+
+.locationPin {
+  font-size: 1.4rem;
+  margin-right: 8px;
+}
+
+.locationInfo p {
+  margin: 0;
+  font-weight: bold;
+  color: #2a2a33;
+}
+
+.noMapData {
+  height: 300px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.neighborhoodInfo {
+  margin-bottom: 30px;
+}
+
+.dialogFooter {
+  padding: 16px 24px;
+  border-top: 1px solid #e1e7eb;
+  text-align: center;
+}
+
+.closeButton {
+  background: #f5f5f5;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .closeButton:hover {
-  background: #c0392b;
+  background: #e5e5e5;
 }
 
 /* Responsive adjustments for mobile */
 @media (max-width: 768px) {
-  .card {
-    margin: 0 0 16px 0;
+  .zillowDialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
   }
   
-  .image {
-    height: 180px;
+  .dialogHeader {
+    flex-direction: column;
   }
   
-  .details {
-    padding: 12px;
+  .dialogActions {
+    margin-top: 16px;
   }
   
-  .price {
-    font-size: 1.3rem;
+  .dialogTabs {
+    overflow-x: auto;
+    white-space: nowrap;
   }
   
-  .address {
-    font-size: 0.9rem;
+  .tabButton {
+    padding: 12px 16px;
   }
   
-  .info {
-    flex-wrap: wrap;
+  .dialogContent {
+    padding: 16px;
   }
   
-  .info p {
-    margin-bottom: 6px;
+  .detailsGrid {
+    grid-template-columns: 1fr;
   }
   
-  .card:hover {
-    transform: scale(1.02);
+  .featuresList {
+    grid-template-columns: 1fr;
+  }
+  
+  .photosGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dialogMainImage {
+    max-height: 300px;
   }
 }
