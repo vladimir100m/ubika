@@ -280,31 +280,89 @@
   padding: 24px;
 }
 
-.dialogImageGallery {
-  text-align: center;
-  margin-bottom: 24px;
+/* Image gallery styles */
+.imageGalleryContainer {
+  margin-bottom: 30px;
 }
 
-.dialogMainImage {
-  max-width: 100%;
-  max-height: 500px;
-  border-radius: 8px;
+.mainImageContainer {
+  position: relative;
+  width: 100%;
+  margin-bottom: 10px;
   cursor: pointer;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.mainGalleryImage {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: contain;
   transition: all 0.3s ease;
+  display: block;
 }
 
 .expandedImage {
-  max-height: 80vh;
+  max-height: 70vh;
 }
 
-.imageCaption {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  color: #888;
+.minimizeButton {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
-.propertyDetails {
-  margin-bottom: 30px;
+.thumbnailsContainer {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.thumbnailWrapper {
+  flex: 0 0 auto;
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.activeThumbnail {
+  border-color: #0074e4;
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Overview content grid */
+.overviewContentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.propertyMainDetails {
+  /* Left column for main property details */
+  padding-right: 15px;
+}
+
+.propertyAsideDetails {
+  /* Right column for map, contact, etc. */
+  padding-left: 15px;
 }
 
 .sectionTitle {
@@ -346,6 +404,7 @@
   color: #2a2a33;
 }
 
+/* Features section */
 .featuresSection {
   margin-bottom: 30px;
 }
@@ -381,22 +440,51 @@
   margin-right: 8px;
 }
 
-.contactSection {
-  text-align: center;
-  background: #f7f9fc;
-  padding: 24px;
+/* Map preview */
+.mapPreviewContainer {
+  margin-bottom: 24px;
+}
+
+.smallMapContainer {
+  height: 200px;
   border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.viewMoreButton {
+  background: transparent;
+  border: 1px solid #ddd;
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #0074e4;
+  font-size: 0.9rem;
+}
+
+.viewMoreButton:hover {
+  background: #f5f5f5;
+}
+
+/* Contact section */
+.contactSection {
+  background: #f7f9fc;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
 }
 
 .contactButton {
+  width: 100%;
   background: #0074e4;
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 12px 24px;
+  padding: 10px;
   font-size: 1rem;
   cursor: pointer;
-  margin: 8px;
+  margin-bottom: 10px;
   transition: background 0.2s ease;
 }
 
@@ -404,46 +492,125 @@
   background: #0061c0;
 }
 
-.photosGrid {
+/* Price history */
+.priceHistoryContainer {
+  margin-bottom: 24px;
+}
+
+.priceHistoryItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.priceHistoryDate {
+  color: #5a6a7a;
+}
+
+.priceHistoryPrice {
+  font-weight: bold;
+  color: #2a2a33;
+}
+
+/* Full photos gallery */
+.fullPhotoGallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
+  position: relative;
 }
 
-.gridImage {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
+.galleryImageWrapper {
+  position: relative;
   border-radius: 8px;
+  overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease;
 }
 
-.gridImage:hover {
-  transform: scale(1.03);
+.fullGalleryImage {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
-.placeholderImage {
-  background: #f0f0f0;
-  height: 200px;
-  border-radius: 8px;
+.galleryImageWrapper:hover .fullGalleryImage {
+  transform: scale(1.05);
+}
+
+.photoInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px;
+  font-size: 0.8rem;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 16px;
-  color: #888;
+  align-items: center;
+  z-index: 1100;
 }
 
-.mapTabContent {
+.lightboxContent {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 80vh;
+  display: block;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.lightboxNav {
+  position: absolute;
+  bottom: -40px;
+  left: 0;
+  right: 0;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 
-.mapContainer {
+.lightboxNavButton {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin: 0 15px;
+}
+
+/* Map tab */
+.fullMapContainer {
   position: relative;
   height: 500px;
-  width: 100%;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 24px;
@@ -482,8 +649,32 @@
   margin-bottom: 24px;
 }
 
+/* Neighborhood info */
 .neighborhoodInfo {
   margin-bottom: 30px;
+}
+
+.neighborhoodGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.neighborhoodItem h4 {
+  font-size: 1.1rem;
+  color: #2a2a33;
+  margin-bottom: 12px;
+}
+
+.neighborhoodItem ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.neighborhoodItem li {
+  padding: 6px 0;
+  color: #5a6a7a;
 }
 
 .dialogFooter {
@@ -507,7 +698,7 @@
   background: #e5e5e5;
 }
 
-/* Responsive adjustments for mobile */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .zillowDialog {
     width: 100%;
@@ -538,19 +729,29 @@
     padding: 16px;
   }
   
-  .detailsGrid {
+  .overviewContentGrid {
     grid-template-columns: 1fr;
   }
   
-  .featuresList {
+  .propertyAsideDetails {
+    order: -1;
+    margin-bottom: 24px;
+  }
+  
+  .thumbnailsContainer {
+    padding-bottom: 5px;
+  }
+  
+  .thumbnailWrapper {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .fullPhotoGallery {
     grid-template-columns: 1fr;
   }
   
-  .photosGrid {
+  .neighborhoodGrid {
     grid-template-columns: 1fr;
-  }
-  
-  .dialogMainImage {
-    max-height: 300px;
   }
 }
