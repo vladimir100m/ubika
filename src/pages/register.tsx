@@ -245,11 +245,3 @@ const Register: React.FC = () => {
 };
 
 export default Register;
-      </div>
-      
-      {isMobile && <MobileNavigation />}
-    </div>
-  );
-};
-
-export default Register;
