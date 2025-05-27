@@ -1,0 +1,1 @@
+docker exec postgres_db psql -U admin -d postgres -c "CREATE DATABASE ubika;"
