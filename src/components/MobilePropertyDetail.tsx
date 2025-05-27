@@ -220,15 +220,21 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
 
         {activeTab === 'map' && (
           <div className={styles.mapTab}>
-            {(property.latitude && property.longitude) ? (
+            {(property.geocode || (property.latitude && property.longitude)) ? (
               <iframe
-                src={`https://www.google.com/maps?q=${property.latitude},${property.longitude}&z=15&output=embed`}
+                src={`https://www.google.com/maps?q=${property.geocode?.lat || property.latitude},${property.geocode?.lng || property.longitude}&z=15&output=embed`}
                 width="100%"
                 height="300"
-                style={{ border: 0 }}
+                style={{ border: 0, borderRadius: '8px' }}
                 allowFullScreen={false}
                 loading="lazy"
                 title="Property Location"
+              ></iframe>
+            ) : (
+              <div className={styles.noMapData}>
+                <p>Map data not available for this property.</p>
+              </div>
+            )}
               ></iframe>
             ) : (
               <div className={styles.noMapData}>

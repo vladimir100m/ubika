@@ -17,6 +17,7 @@ export type PropertyCardProps = Pick<
   yearBuilt?: number;
   latitude?: number;
   longitude?: number;
+  geocode?: { lat: number; lng: number };
   onClick?: () => void; // Add onClick prop
   onFavoriteToggle?: () => void; // Add favorite toggle handler
   isFavorite?: boolean; // Add favorite status
@@ -183,15 +184,15 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
                 
                 {/* Right column: Map preview and contact */}
                 <div className={styles.propertyAsideDetails}>
-                  {(property.latitude && property.longitude) && (
+                  {((property.latitude && property.longitude) || property.geocode) && (
                     <div className={styles.mapPreviewContainer}>
                       <h3 className={styles.sectionTitle}>Location</h3>
                       <div className={styles.smallMapContainer}>
                         <iframe
-                          src={`https://www.google.com/maps?q=${property.latitude},${property.longitude}&z=15&output=embed`}
+                          src={`https://www.google.com/maps?q=${property.geocode?.lat || property.latitude},${property.geocode?.lng || property.longitude}&z=15&output=embed`}
                           width="100%"
                           height="200"
-                          style={{ border: 0 }}
+                          style={{ border: 0, borderRadius: '8px' }}
                           allowFullScreen={false}
                           loading="lazy"
                           title="Property Location"
@@ -236,13 +237,13 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
           
           {activeTab === 'map' && (
             <div className={styles.mapTabContent}>
-              {(property.latitude && property.longitude) ? (
+              {(property.geocode || (property.latitude && property.longitude)) ? (
                 <div className={styles.fullMapContainer}>
                   <iframe
-                    src={`https://www.google.com/maps?q=${property.latitude},${property.longitude}&z=15&output=embed`}
+                    src={`https://www.google.com/maps?q=${property.geocode?.lat || property.latitude},${property.geocode?.lng || property.longitude}&z=15&output=embed`}
                     width="100%"
                     height="500"
-                    style={{ border: 0 }}
+                    style={{ border: 0, borderRadius: '8px' }}
                     allowFullScreen={false}
                     loading="lazy"
                     title="Property Location"

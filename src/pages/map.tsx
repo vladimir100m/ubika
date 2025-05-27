@@ -902,13 +902,25 @@ const MapPage: React.FC = () => {
                 
                 {/* Map Tab Content */}
                 <div className={`${styles.tabContent} ${activeTab === 'map' ? styles.active : ''}`}>
-                  <div style={{ height: '300px', marginBottom: '1rem' }}>
+                  <div style={{ height: '400px', marginBottom: '1rem' }}>
                     <h3 className={styles.sectionHeading}>Location</h3>
                     <div className={styles.propertyMapContainer}>
-                      {/* Here would be a small map instance */}
-                      <div className={styles.locationPlaceholder}>
-                        <p>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state}</p>
-                      </div>
+                      {(selectedProperty.geocode || (selectedProperty.latitude && selectedProperty.longitude)) ? (
+                        <iframe
+                          src={`https://www.google.com/maps?q=${selectedProperty.geocode?.lat || selectedProperty.latitude},${selectedProperty.geocode?.lng || selectedProperty.longitude}&z=15&output=embed`}
+                          width="100%"
+                          height="350"
+                          style={{ border: 0, borderRadius: '8px' }}
+                          allowFullScreen={false}
+                          loading="lazy"
+                          title="Property Location"
+                        ></iframe>
+                      ) : (
+                        <div className={styles.locationPlaceholder}>
+                          <p>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state}</p>
+                          <p className={styles.noMapMessage}>Map location data not available for this property</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
