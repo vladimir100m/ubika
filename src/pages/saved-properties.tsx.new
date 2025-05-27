@@ -1,0 +1,212 @@
+// filepath: /Users/vladimiravila/projects/ubika/src/pages/saved-properties.tsx
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import styles from '../styles/Home.module.css';
+import mobileStyles from '../styles/Mobile.module.css';
+import PropertyCard from '../components/PropertyCard';
+import MobilePropertyCard from '../components/MobilePropertyCard';
+import MobileNavigation from '../components/MobileNavigation';
+import { Property } from '../types';
+import useMediaQuery from '../utils/useMediaQuery';
+import { useAuth } from '../context/AuthContext';
+
+const SavedProperties: React.FC = () => {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login?redirect=/saved-properties');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    // Only proceed if user is logged in
+    if (!user) return;
+    
+    // Load favorites from localStorage
+    const loadFavorites = () => {
+      try {
+        const savedFavorites = localStorage.getItem('favorites');
+        if (savedFavorites) {
+          return JSON.parse(savedFavorites);
+        }
+        return [];
+      } catch (error) {
+        console.error('Error loading favorites:', error);
+        setError('Failed to load your saved properties');
+        return [];
+      }
+    };
+
+    const fetchProperties = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const favIds = loadFavorites();
+        setFavorites(favIds);
+        
+        if (favIds.length === 0) {
+          setProperties([]);
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch('/api/properties');
+        if (!response.ok) {
+          throw new Error(`Error fetching properties: ${response.statusText}`);
+        }
+        
+        const allProperties = await response.json();
+        if (Array.isArray(allProperties)) {
+          // Filter only favorite properties
+          const savedProperties = allProperties.filter(prop => 
+            favIds.includes(prop.id)
+          );
+          setProperties(savedProperties);
+        } else {
+          console.error('Error fetching properties: Data is not an array', allProperties);
+          setError('The data received from the server was invalid');
+          setProperties([]);
+        }
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+        setError('Failed to load your saved properties. Please try again later.');
+        setProperties([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, [user]);
+
+  // Function to handle property card click
+  const handlePropertyClick = (propertyId: number) => {
+    router.push({
+      pathname: '/map',
+      query: { selectedPropertyId: propertyId }
+    });
+  };
+
+  // Function to toggle favorite status
+  const handleFavoriteToggle = (propertyId: number) => {
+    setFavorites(prevFavorites => {
+      const newFavorites = prevFavorites.includes(propertyId)
+        ? prevFavorites.filter(id => id !== propertyId)
+        : [...prevFavorites, propertyId];
+      
+      // Save to localStorage
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      
+      // If we're removing a property from favorites, also remove it from the displayed list
+      if (!newFavorites.includes(propertyId)) {
+        setProperties(prev => prev.filter(prop => prop.id !== propertyId));
+      }
+      
+      return newFavorites;
+    });
+  };
+
+  // If authentication is loading, show a loading state
+  if (authLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated and not loading, the useEffect will handle redirect
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className={styles.container}>
+      <header className={`${styles.navbar} ${isMobile ? mobileStyles.onlyMobile : ''}`}>
+        <div className={styles.logo} onClick={() => router.push('/')}>Ubika</div>
+        <div className={mobileStyles.onlyDesktop}>
+          <nav>
+            <a href="#">Buy</a>
+            <a href="#">Rent</a>
+            <a href="/seller">Sell</a>
+            <a href="#">Mortgage</a>
+            <a href="/saved-properties">Saved Homes</a>
+            <a href="/user/profile">My Account</a>
+          </nav>
+        </div>
+      </header>
+
+      <section className={styles.featuredProperties}>
+        <h1 className={styles.sectionTitle}>Your Saved Properties</h1>
+        
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingSpinner}></div>
+            <p>Loading your saved properties...</p>
+          </div>
+        ) : error ? (
+          <div className={styles.errorContainer}>
+            <p className={styles.errorMessage}>{error}</p>
+            <button 
+              className={styles.retryButton}
+              onClick={() => router.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        ) : properties.length === 0 ? (
+          <div className={styles.emptyStateContainer}>
+            <div className={styles.emptyStateIcon}>❤️</div>
+            <h2 className={styles.emptyStateTitle}>No saved properties yet</h2>
+            <p className={styles.emptyStateMessage}>
+              Start browsing and save properties you're interested in to view them here.
+            </p>
+            <button 
+              className={styles.browseButton}
+              onClick={() => router.push('/map')}
+            >
+              Browse Properties
+            </button>
+          </div>
+        ) : (
+          <div className={styles.propertiesGrid}>
+            {properties.map(property => (
+              isMobile ? (
+                <MobilePropertyCard
+                  key={property.id}
+                  {...property}
+                  onClick={() => handlePropertyClick(property.id)}
+                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                  isFavorite={favorites.includes(property.id)}
+                />
+              ) : (
+                <PropertyCard
+                  key={property.id}
+                  {...property}
+                  onClick={() => handlePropertyClick(property.id)}
+                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                  isFavorite={favorites.includes(property.id)}
+                />
+              )
+            ))}
+          </div>
+        )}
+      </section>
+      
+      {isMobile && <MobileNavigation />}
+    </div>
+  );
+};
+
+export default SavedProperties;

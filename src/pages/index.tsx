@@ -11,15 +11,21 @@ import { Property } from '../types'; // Import Property type
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import useMediaQuery from '../utils/useMediaQuery';
+import { useAuth } from '../context/AuthContext';
 
 const Home: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     const fetchProperties = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await fetch('/api/properties');
         if (!response.ok) {
@@ -30,11 +36,15 @@ const Home: React.FC = () => {
           setProperties(data);
         } else {
           console.error('Error fetching properties: Data is not an array', data);
+          setError('Unable to load properties. Please try again later.');
           setProperties([]); // Set to empty array on error or unexpected format
         }
       } catch (error) {
         console.error('Error fetching properties:', error);
+        setError('Unable to load properties. Please try again later.');
         setProperties([]); // Set to empty array on catch
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -104,7 +114,18 @@ const Home: React.FC = () => {
             <a href="#">Rent</a>
             <a href="/seller">Sell</a>
             <a href="#">Mortgage</a>
-            <a href="#">Saved Homes</a>
+            {user ? (
+              <>
+                <a href="/saved-properties">Saved Homes</a>
+                <a href="/recent-searches">Recent Searches</a>
+                <a href="/user/profile">My Account</a>
+              </>
+            ) : (
+              <>
+                <a href="/login">Log In</a>
+                <a href="/register">Sign Up</a>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -112,7 +133,23 @@ const Home: React.FC = () => {
 
       <section className={styles.featuredProperties}>
         <h2>Propiedades que estabas buscando</h2>
-        {isMobile ? (
+        
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingSpinner}></div>
+            <p>Loading properties...</p>
+          </div>
+        ) : error ? (
+          <div className={styles.errorContainer}>
+            <p className={styles.errorMessage}>{error}</p>
+            <button 
+              className={styles.retryButton}
+              onClick={() => router.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        ) : isMobile ? (
           <div className={mobileStyles.mobileGrid}>
             {properties.map((property) => (
               <MobilePropertyCard
@@ -150,6 +187,8 @@ const Home: React.FC = () => {
                 latitude={property.latitude ?? property.geocode?.lat}
                 longitude={property.longitude ?? property.geocode?.lng}
                 onClick={() => handlePropertyClick(property.id)}
+                onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                isFavorite={favorites.includes(property.id)}
               />
             ))}
           </Carousel>

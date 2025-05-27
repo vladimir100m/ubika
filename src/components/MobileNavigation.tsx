@@ -1,147 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import styles from '../styles/Mobile.module.css';
+import { useAuth } from '../context/AuthContext';
 
-interface NavItem {
-  label: string;
-  path: string;
-  icon: string;
+interface MobileNavigationProps {
+  // Add any props if needed
 }
 
-const MobileNavigation: React.FC = () => {
+const MobileNavigation: React.FC<MobileNavigationProps> = () => {
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const { user } = useAuth();
   
-  // The minimum distance in pixels to be considered a swipe
-  const minSwipeDistance = 50;
-
-  const navItems: NavItem[] = [
-    { label: 'Home', path: '/', icon: '🏠' },
-    { label: 'Search', path: '/map', icon: '🔍' },
-    { label: 'Favorites', path: '/favorites', icon: '❤️' },
-    { label: 'Sell', path: '/seller', icon: '🏢' },
-    { label: 'Profile', path: '/profile', icon: '👤' },
-  ];
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const isActive = (path: string): boolean => {
+  // Determine which navigation item is active based on the current route
+  const isActive = (path: string) => {
     return router.pathname === path;
   };
   
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-  
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-  
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    
-    if (isLeftSwipe && !isMenuOpen) {
-      // Left swipe when menu is closed - open the menu
-      setIsMenuOpen(true);
-    } else if (isRightSwipe && isMenuOpen) {
-      // Right swipe when menu is open - close the menu
-      setIsMenuOpen(false);
-    }
-  };
-
-  // Close the menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (isMenuOpen && !target.closest(`.${styles.mobileMenu}`) && !target.closest(`.${styles.menuToggle}`)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMenuOpen, styles.mobileMenu, styles.menuToggle]);
-
-  // Prevent body scrolling when menu is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMenuOpen]);
-
   return (
-    <div 
-      className={styles.mobileNavigationContainer}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      <nav className={styles.mobileNavbar}>
-        <div className={styles.mobileNavItems}>
-          {navItems.map((item) => (
-            <Link 
-              href={item.path} 
-              key={item.path}
-              className={`${styles.mobileNavItem} ${isActive(item.path) ? styles.activeNavItem : ''}`}
-            >
-              <span className={styles.navIcon}>{item.icon}</span>
-              <span className={styles.navLabel}>{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
-
-      <button 
-        className={`${styles.menuToggle} ${isMenuOpen ? styles.open : ''}`}
-        onClick={toggleMenu}
-        aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      <div className={`${styles.mobileMenu} ${isMenuOpen ? styles.open : ''}`}>
-        <div className={styles.menuHeader}>
-          <h2>Ubika Real Estate</h2>
-          <button 
-            className={styles.closeMenu} 
-            onClick={toggleMenu}
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-        </div>
-        
-        <div className={styles.menuItems}>
-          <Link href="/" className={styles.menuItem}>Buy</Link>
-          <Link href="/" className={styles.menuItem}>Rent</Link>
-          <Link href="/seller" className={styles.menuItem}>Sell</Link>
-          <Link href="/" className={styles.menuItem}>Mortgage</Link>
-          <Link href="/" className={styles.menuItem}>Saved Homes</Link>
-          <Link href="/" className={styles.menuItem}>Settings</Link>
-          <Link href="/" className={styles.menuItem}>Help</Link>
-        </div>
-      </div>
-    </div>
+    <nav className={styles.mobileNavigation}>
+      <Link href="/">
+        <a className={`${styles.navItem} ${isActive('/') ? styles.active : ''}`}>
+          <div className={styles.navIcon}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>Home</span>
+        </a>
+      </Link>
+      
+      <Link href="/map">
+        <a className={`${styles.navItem} ${isActive('/map') ? styles.active : ''}`}>
+          <div className={styles.navIcon}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>Map</span>
+        </a>
+      </Link>
+      
+      <Link href={user ? "/saved-properties" : "/login?redirect=/saved-properties"}>
+        <a className={`${styles.navItem} ${isActive('/saved-properties') ? styles.active : ''}`}>
+          <div className={styles.navIcon}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>Saved</span>
+        </a>
+      </Link>
+      
+      <Link href="/search">
+        <a className={`${styles.navItem} ${isActive('/search') ? styles.active : ''}`}>
+          <div className={styles.navIcon}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>Search</span>
+        </a>
+      </Link>
+      
+      <Link href={user ? "/profile" : "/login"}>
+        <a className={`${styles.navItem} ${isActive('/profile') || isActive('/login') ? styles.active : ''}`}>
+          <div className={styles.navIcon}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>{user ? 'Profile' : 'Login'}</span>
+        </a>
+      </Link>
+    </nav>
   );
 };
 

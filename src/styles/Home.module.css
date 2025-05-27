@@ -1323,3 +1323,330 @@
     opacity: 1;
   }
 }
+
+/* Profile Page Styles */
+.profileContainer {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.profileTitle {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.profileSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.profileCard {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  transition: transform 0.3s ease;
+}
+
+.profileCard:hover {
+  transform: translateY(-5px);
+}
+
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.profileHeader h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.profileForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: #555;
+}
+
+.formInput {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.formInput:focus {
+  border-color: #0074e4;
+  outline: none;
+}
+
+.activityStats {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.activityStat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: #f7f9fc;
+  border-radius: 8px;
+}
+
+.statNumber {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #0074e4;
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: #666;
+}
+
+.viewButton {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: #0074e4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.viewButton:hover {
+  background: #005bb5;
+}
+
+.notificationPreferences {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.notificationOption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f7f9fc;
+  border-radius: 4px;
+}
+
+.actionButtonPrimary {
+  background-color: #0074e4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.actionButtonPrimary:hover {
+  background-color: #0061c3;
+}
+
+.actionButtonSecondary {
+  background-color: white;
+  color: #0074e4;
+  border: 1px solid #0074e4;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButtonSecondary:hover {
+  background-color: #f0f7ff;
+}
+
+/* Loading and Error States */
+.loadingContainer, .errorContainer, .emptyStateContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  min-height: 300px;
+}
+
+.loadingSpinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #0070f3;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  color: #e53e3e;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+.retryButton, .browseButton {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.retryButton:hover, .browseButton:hover {
+  background-color: #0051a8;
+}
+
+.emptyStateIcon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.emptyStateTitle {
+  margin-bottom: 10px;
+  color: #4a5568;
+}
+
+.emptyStateMessage {
+  color: #718096;
+  margin-bottom: 20px;
+  max-width: 400px;
+}
+
+/* Search History Styles */
+.searchHistoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.clearHistoryButton {
+  background-color: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.clearHistoryButton:hover {
+  background-color: #e2e8f0;
+}
+
+.searchHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.searchHistoryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  border-left: 4px solid #0070f3;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.searchHistoryItem:hover {
+  background-color: #ebf8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.searchDetails {
+  flex: 1;
+  cursor: pointer;
+}
+
+.searchAddress {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  margin-right: 10px;
+}
+
+.searchFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.filterTag {
+  background-color: #e6f7ff;
+  color: #0070f3;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.searchTimestamp {
+  color: #718096;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.deleteSearchButton {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.deleteSearchButton:hover {
+  color: #e53e3e;
+  background-color: #fff5f5;
+}

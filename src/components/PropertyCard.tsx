@@ -18,11 +18,20 @@ export type PropertyCardProps = Pick<
   latitude?: number;
   longitude?: number;
   onClick?: () => void; // Add onClick prop
+  onFavoriteToggle?: () => void; // Add favorite toggle handler
+  isFavorite?: boolean; // Add favorite status
 };
 
 const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => void }> = ({ property, onClose }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  
+  const handleFavoriteToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (property.onFavoriteToggle) {
+      property.onFavoriteToggle();
+    }
+  };
   
   // Simulate multiple property images using the same image
   // In a real app, you would have an array of image URLs
@@ -79,8 +88,12 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
             </div>
           </div>
           <div className={styles.dialogActions}>
-            <button className={styles.actionButton} aria-label="Save Property">
-              <span>&hearts;</span> Save
+            <button 
+              className={`${styles.actionButton} ${property.isFavorite ? styles.savedActionButton : ''}`} 
+              aria-label={property.isFavorite ? "Remove from saved" : "Save property"}
+              onClick={handleFavoriteToggle}
+            >
+              <span>{property.isFavorite ? '❤️' : '♡'}</span> {property.isFavorite ? 'Saved' : 'Save'}
             </button>
             <button className={styles.actionButton} aria-label="Share Property">
               <span>&#128279;</span> Share
@@ -292,7 +305,6 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
 // Updated PropertyCard component to enhance design and functionality
 const PropertyCard: React.FC<PropertyCardProps> = (props) => {
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleCardClick = () => {
@@ -309,7 +321,9 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering card click
-    setIsSaved(!isSaved);
+    if (props.onFavoriteToggle) {
+      props.onFavoriteToggle();
+    }
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
@@ -330,11 +344,11 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
           <div className={styles.imageOverlay}>
             <span className={styles.statusTag}>For Sale</span>
             <button 
-              className={`${styles.saveButton} ${isSaved ? styles.savedButton : ''}`}
+              className={`${styles.saveButton} ${props.isFavorite ? styles.savedButton : ''}`}
               onClick={handleSaveClick}
-              aria-label={isSaved ? "Remove from saved" : "Save property"}
+              aria-label={props.isFavorite ? "Remove from saved" : "Save property"}
             >
-              {isSaved ? '❤️' : '🤍'} {isSaved ? 'Saved' : 'Save'}
+              {props.isFavorite ? '❤️' : '🤍'} {props.isFavorite ? 'Saved' : 'Save'}
             </button>
           </div>
         </div>

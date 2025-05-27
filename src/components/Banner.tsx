@@ -1,16 +1,43 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from '../styles/Banner.module.css';
-import SearchBar from './SearchBar';
+import SearchBar, { SearchFilters } from './SearchBar';
 import { useRouter } from 'next/router';
 
 const Banner: React.FC = () => {
     const router = useRouter();
 
-    const handleSearch = (address: string) => {
+    const handleSearch = (address: string, filters?: SearchFilters) => {
+        // Save the search to localStorage for search history
+        try {
+            const searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            const newSearch = {
+                id: Date.now(),
+                address,
+                filters,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add to the beginning of the array and limit to 10 searches
+            const updatedHistory = [newSearch, ...searchHistory].slice(0, 10);
+            localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+        } catch (error) {
+            console.error('Error saving search history:', error);
+        }
+
+        // Navigate to the map page with search parameters
+        const query: any = { address };
+        
+        if (filters) {
+            if (filters.minPrice) query.minPrice = filters.minPrice;
+            if (filters.maxPrice) query.maxPrice = filters.maxPrice;
+            if (filters.bedrooms) query.bedrooms = filters.bedrooms;
+            if (filters.propertyType) query.propertyType = filters.propertyType;
+        }
+        
         router.push({
             pathname: '/map',
-            query: { address },
+            query
         });
     };
 

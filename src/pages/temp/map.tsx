@@ -1,18 +1,18 @@
 import React, { useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import styles from '../styles/Home.module.css';
-import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
-import mobileStyles from '../styles/Mobile.module.css';
-import { PropertyCard } from '../components';
-import MobilePropertyCard from '../components/MobilePropertyCard';
-import MobileNavigation from '../components/MobileNavigation';
-import MobileFilterBar from '../components/MobileFilterBar';
+import styles from '../../styles/Home.module.css';
+import galleryStyles from '../../styles/StyledGallery.module.css'; // Import as CSS module
+import mobileStyles from '../../styles/Mobile.module.css';
+import { PropertyCard } from '../../components';
+import MobilePropertyCard from '../../components/MobilePropertyCard';
+import MobileNavigation from '../../components/MobileNavigation';
+import MobileFilterBar from '../../components/MobileFilterBar';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
-import { Property, Geocode } from '../types'; // Import Property and Geocode types
-import useMediaQuery from '../utils/useMediaQuery';
-import { useAuth } from '../context/AuthContext'; // Import AuthContext to check login state
+import { Property, Geocode } from '../../types'; // Import Property and Geocode types
+import useMediaQuery from '../../utils/useMediaQuery';
+import { useAuth } from '../../context/AuthContext'; // Import AuthContext to check login state
 
 const MapPage: React.FC = () => {
   const router = useRouter();
