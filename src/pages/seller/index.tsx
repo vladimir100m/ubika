@@ -40,14 +40,15 @@ const SellerDashboard: React.FC = () => {
     try {
       const response = await fetch(`/api/properties/seller?seller_id=${MOCK_SELLER_ID}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch properties');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`Failed to fetch properties: ${errorData.error || response.statusText}`);
       }
       const data = await response.json();
       setProperties(data);
     } catch (error) {
       console.error('Error fetching seller properties:', error);
       setMessage({
-        text: 'Failed to load your properties. Please try again later.',
+        text: `Failed to load your properties. ${error instanceof Error ? error.message : 'Please try again later.'}`,
         type: 'error'
       });
     } finally {

@@ -32,6 +32,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
     `;
 
     const result = await client.query<Property>(query, [seller_id]);
+    console.log(`Found ${result.rows.length} properties for seller ${seller_id}`);
     res.status(200).json(result.rows);
   } catch (error) {
     console.error('Error fetching seller properties:', error);
