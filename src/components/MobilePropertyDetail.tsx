@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Property } from '../types';
+import { Loader } from '@googlemaps/js-api-loader';
 import styles from '../styles/Mobile.module.css';
 
 type MobilePropertyDetailProps = {
@@ -18,6 +19,7 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
   const [activeTab, setActiveTab] = useState<'info' | 'map' | 'contact'>('info');
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const mapRef = useRef<HTMLDivElement | null>(null);
 
   // For demo purposes, create an array of sample images for the property
   // In a real app, you would have multiple images from your API/database
@@ -80,6 +82,35 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGalleryOpen]);
+
+  // Initialize Google Maps
+  useEffect(() => {
+    const loader = new Loader({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      version: 'weekly',
+    });
+
+    loader.load().then(() => {
+      if (mapRef.current) {
+        const map = new google.maps.Map(mapRef.current, {
+          center: {
+            lat: property.geocode?.lat || property.latitude || 0,
+            lng: property.geocode?.lng || property.longitude || 0,
+          },
+          zoom: 15,
+        });
+
+        new google.maps.Marker({
+          position: {
+            lat: property.geocode?.lat || property.latitude || 0,
+            lng: property.geocode?.lng || property.longitude || 0,
+          },
+          map,
+          title: property.address,
+        });
+      }
+    });
+  }, [property]);
 
   return (
     <div className={styles.mobilePropertyDetail}>
@@ -220,28 +251,8 @@ const MobilePropertyDetail: React.FC<MobilePropertyDetailProps> = ({
 
         {activeTab === 'map' && (
           <div className={styles.mapTab}>
-            {(property.geocode || (property.latitude && property.longitude)) ? (
-              <iframe
-                src={`https://www.google.com/maps?q=${property.geocode?.lat || property.latitude},${property.geocode?.lng || property.longitude}&z=15&output=embed`}
-                width="100%"
-                height="300"
-                style={{ border: 0, borderRadius: '8px' }}
-                allowFullScreen={false}
-                loading="lazy"
-                title="Property Location"
-              ></iframe>
-            ) : (
-              <div className={styles.noMapData}>
-                <p>Map data not available for this property.</p>
-              </div>
-            )}
-              ></iframe>
-            ) : (
-              <div className={styles.noMapData}>
-                <p>Map data not available for this property.</p>
-              </div>
-            )}
-            
+            <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px', marginBottom: '20px' }}></div>
+
             <div className={styles.locationDetails}>
               <h2>Location</h2>
               <p className={styles.detailAddress}>{property.address}</p>

@@ -143,56 +143,26 @@ const MapPage: React.FC = () => {
     });
 
     loader.load().then(() => {
-      if (mapRef.current && !mapInstance.current) { // Ensure map is initialized only once
+      if (mapRef.current) {
         mapInstance.current = new google.maps.Map(mapRef.current, {
           center: mapCenter,
-          zoom: 15,
-          mapTypeControl: true,
-          streetViewControl: true,
-          fullscreenControl: true,
-          zoomControl: true,
-          styles: [
-            {
-              featureType: 'poi',
-              elementType: 'labels',
-              stylers: [{ visibility: 'on' }]
-            }
-          ]
+          zoom: 12,
         });
-        
-        // Handle window resize to ensure map is properly displayed
-        const handleResize = () => {
-          if (mapInstance.current) {
-            google.maps.event.trigger(mapInstance.current, 'resize');
-            if (mapCenter) {
-              mapInstance.current.setCenter(mapCenter);
-            }
+
+        // Add markers to the map for all properties
+        propertyLocations.forEach((property) => {
+          if (property.latitude && property.longitude) {
+            const marker = new google.maps.Marker({
+              position: { lat: property.latitude, lng: property.longitude },
+              map: mapInstance.current,
+              title: property.address,
+            });
+            markersRef.current.push(marker);
           }
-        };
-        
-        window.addEventListener('resize', handleResize);
-        
-        // Initial trigger for proper map display
-        setTimeout(handleResize, 100);
-        
-        // Clean up event listener
-        return () => {
-          window.removeEventListener('resize', handleResize);
-        };
+        });
       }
-    }).catch(e => {
-      console.error("Error loading Google Maps API", e);
-      setError('Failed to load Google Maps. Please check your internet connection and try again.');
     });
-    
-    // Cleanup function to prevent issues with HMR or multiple initializations
-    return () => {
-      if (markersRef.current.length > 0) {
-        markersRef.current.forEach(marker => marker.setMap(null));
-        markersRef.current = [];
-      }
-    };
-  }, []); // Removed mapCenter from dependencies to avoid re-creating map on center change
+  }, [propertyLocations, mapCenter]);
 
   useEffect(() => {
     if (mapInstance.current && markers.length > 0) {
@@ -492,7 +462,10 @@ const MapPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className={styles.mapContainer} ref={mapRef} style={{ height: '100%', minHeight: '500px', borderRadius: '8px', overflow: 'hidden' }}></div>
+              <>
+                {/* Add a map container to render the map */}
+                <div ref={mapRef} style={{ width: '100%', height: '500px', marginBottom: '20px' }}></div>
+              </>
             )}
             
             {/* Mobile floating action button to show properties */}
@@ -878,200 +851,183 @@ const MapPage: React.FC = () => {
                       </div>
                       <div className={styles.featureItem}>
                         <span className={styles.featureIcon}>✓</span>
-                        <span>Security System</span>
+                        <span>Balcony</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Fireplace</span>
+                      </div>
+                      <div className={styles.featureItem}>
+                        <span className={styles.featureIcon}>✓</span>
+                        <span>Hardwood Floor</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                {/* Details Tab Content */}
                 <div className={`${styles.tabContent} ${activeTab === 'details' ? styles.active : ''}`}>
-                  <div>
-                    <h3 className={styles.sectionHeading}>Property Details</h3>
-                    <div className={styles.detailsGrid}>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Property Type:</span>
-                        <span className={styles.detailValue}>{selectedProperty.type}</span>
+                  {/* Property Details - Zillow style */}
+                  <div className={styles.propertyDetailsContainer}>
+                    <div className={styles.detailsSection}>
+                      <h3 className={styles.detailsTitle}>Basic Details</h3>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>Property ID:</span>
+                        <span className={styles.detailsValue}>{selectedProperty.id}</span>
                       </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Year Built:</span>
-                        <span className={styles.detailValue}>{selectedProperty.yearBuilt || 'N/A'}</span>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>Status:</span>
+                        <span className={styles.detailsValue}>For Sale</span>
                       </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Heating:</span>
-                        <span className={styles.detailValue}>Central</span>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>Price:</span>
+                        <span className={styles.detailsValue}>${selectedProperty.price}</span>
                       </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Cooling:</span>
-                        <span className={styles.detailValue}>Central A/C</span>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>Address:</span>
+                        <span className={styles.detailsValue}>{selectedProperty.address}</span>
                       </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Parking:</span>
-                        <span className={styles.detailValue}>2-Car Garage</span>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>City:</span>
+                        <span className={styles.detailsValue}>{selectedProperty.city}</span>
                       </div>
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailLabel}>Lot Size:</span>
-                        <span className={styles.detailValue}>0.25 Acres</span>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>State:</span>
+                        <span className={styles.detailsValue}>{selectedProperty.state}</span>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>ZIP Code:</span>
+                        <span className={styles.detailsValue}>{selectedProperty.zip_code}</span>
+                      </div>
+                    </div>
+                    <div className={styles.detailsSection}>
+                      <h3 className={styles.detailsTitle}>Property Features</h3>
+                      <div className={styles.featuresGrid}>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Air Conditioning</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Heating</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Garage</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Swimming Pool</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Garden</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Balcony</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Fireplace</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                          <span className={styles.featureIcon}>✓</span>
+                          <span>Hardwood Floor</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.detailsSection}>
+                      <h3 className={styles.detailsTitle}>Room Details</h3>
+                      <div className={styles.roomDetailsGrid}>
+                        <div className={styles.roomDetailItem}>
+                          <span className={styles.roomDetailLabel}>Master Bedroom:</span>
+                          <span className={styles.roomDetailValue}>N/A</span>
+                        </div>
+                        <div className={styles.roomDetailItem}>
+                          <span className={styles.roomDetailLabel}>Bedroom 2:</span>
+                          <span className={styles.roomDetailValue}>N/A</span>
+                        </div>
+                        <div className={styles.roomDetailItem}>
+                          <span className={styles.roomDetailLabel}>Bedroom 3:</span>
+                          <span className={styles.roomDetailValue}>N/A</span>
+                        </div>
+                        <div className={styles.roomDetailItem}>
+                          <span className={styles.roomDetailLabel}>Living Room:</span>
+                          <span className={styles.roomDetailValue}>N/A</span>
+                        </div>
+                        <div className={styles.roomDetailItem}>
+                          <span className={styles.roomDetailLabel}>Dining Room:</span>
+                          <span className={styles.roomDetailValue}>N/A</span>
+                        </div>
+                        <div className={styles.roomDetailItem}>
+                          <span className={styles.roomDetailLabel}>Kitchen:</span>
+                          <span className={styles.roomDetailValue}>N/A</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.detailsSection}>
+                      <h3 className={styles.detailsTitle}>Utilities & Expenses</h3>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>Property Tax:</span>
+                        <span className={styles.detailsValue}>N/A</span>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>HOA Fee:</span>
+                        <span className={styles.detailsValue}>N/A</span>
+                      </div>
+                      <div className={styles.detailsRow}>
+                        <span className={styles.detailsLabel}>Insurance:</span>
+                        <span className={styles.detailsValue}>N/A</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                {/* Map Tab Content */}
                 <div className={`${styles.tabContent} ${activeTab === 'map' ? styles.active : ''}`}>
-                  <div style={{ height: '400px', marginBottom: '1rem' }}>
-                    <h3 className={styles.sectionHeading}>Location</h3>
-                    <div className={styles.propertyMapContainer}>
-                      {(selectedProperty.geocode || (selectedProperty.latitude && selectedProperty.longitude)) ? (
-                        <iframe
-                          src={`https://www.google.com/maps?q=${selectedProperty.geocode?.lat || selectedProperty.latitude},${selectedProperty.geocode?.lng || selectedProperty.longitude}&z=15&output=embed`}
-                          width="100%"
-                          height="350"
-                          style={{ border: 0, borderRadius: '8px' }}
-                          allowFullScreen={false}
-                          loading="lazy"
-                          title="Property Location"
-                        ></iframe>
-                      ) : (
-                        <div className={styles.locationPlaceholder}>
-                          <p>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state}</p>
-                          <p className={styles.noMapMessage}>Map location data not available for this property</p>
-                        </div>
-                      )}
-                    </div>
+                  {/* Google Maps integration - show property location */}
+                  <div style={{ width: '100%', height: '400px', position: 'relative' }}>
+                    <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
                   </div>
                 </div>
-                
-                {/* Schools Tab Content */}
                 <div className={`${styles.tabContent} ${activeTab === 'schools' ? styles.active : ''}`}>
-                  <div>
-                    <h3 className={styles.sectionHeading}>Nearby Schools</h3>
-                    <div className={styles.schoolsList}>
-                      <div className={styles.schoolItem}>
-                        <div className={styles.schoolHeader}>
-                          <h4>Washington Elementary School</h4>
-                          <span className={styles.schoolRating}>8/10</span>
-                        </div>
-                        <p className={styles.schoolDetails}>Public, K-5 • 0.5 miles</p>
+                  {/* Schools information - Zillow style */}
+                  <div className={styles.schoolsContainer}>
+                    <h3 className={styles.schoolsTitle}>Nearby Schools</h3>
+                    <div className={styles.schoolItem}>
+                      <div className={styles.schoolInfo}>
+                        <h4 className={styles.schoolName}>Springfield Elementary School</h4>
+                        <p className={styles.schoolDistance}>0.5 miles away</p>
                       </div>
-                      <div className={styles.schoolItem}>
-                        <div className={styles.schoolHeader}>
-                          <h4>Lincoln Middle School</h4>
-                          <span className={styles.schoolRating}>7/10</span>
-                        </div>
-                        <p className={styles.schoolDetails}>Public, 6-8 • 1.2 miles</p>
+                      <div className={styles.schoolRating}>
+                        <span className={styles.ratingValue}>4.5</span>
+                        <span className={styles.ratingLabel}>/ 5</span>
                       </div>
-                      <div className={styles.schoolItem}>
-                        <div className={styles.schoolHeader}>
-                          <h4>Roosevelt High School</h4>
-                          <span className={styles.schoolRating}>9/10</span>
-                        </div>
-                        <p className={styles.schoolDetails}>Public, 9-12 • 2.1 miles</p>
+                    </div>
+                    <div className={styles.schoolItem}>
+                      <div className={styles.schoolInfo}>
+                        <h4 className={styles.schoolName}>Springfield High School</h4>
+                        <p className={styles.schoolDistance}>1.2 miles away</p>
+                      </div>
+                      <div className={styles.schoolRating}>
+                        <span className={styles.ratingValue}>4.7</span>
+                        <span className={styles.ratingLabel}>/ 5</span>
+                      </div>
+                    </div>
+                    <div className={styles.schoolItem}>
+                      <div className={styles.schoolInfo}>
+                        <h4 className={styles.schoolName}>Springfield College</h4>
+                        <p className={styles.schoolDistance}>2.1 miles away</p>
+                      </div>
+                      <div className={styles.schoolRating}>
+                        <span className={styles.ratingValue}>4.8</span>
+                        <span className={styles.ratingLabel}>/ 5</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              {/* Action Buttons */}
-              <div className={styles.propertyActions}>
-                <button 
-                  className={styles.contactButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Implement contact logic
-                    alert('Contact functionality will be implemented soon!');
-                  }}
-                >
-                  Contact Agent
-                </button>
-                <button 
-                  className={styles.scheduleButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Implement scheduling logic
-                    alert('Scheduling functionality will be implemented soon!');
-                  }}
-                >
-                  Schedule Tour
-                </button>
-              </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Full-screen floating gallery */}
-      {showFloatingGallery && selectedProperty && (
-        <div className={galleryStyles.floatingGallery}>
-          <button 
-            className={galleryStyles.closeGalleryButton} 
-            onClick={closeFloatingGallery}
-            aria-label="Close gallery"
-          >
-            ×
-          </button>
-          
-          <div className={galleryStyles.galleryMainContainer}>
-            <button 
-              className={galleryStyles.galleryNavButton} 
-              onClick={() => handleImageChange('prev')}
-              aria-label="Previous image"
-            >
-              ‹
-            </button>
-            
-            <div className={galleryStyles.mainImageContainer}>
-              <img 
-                src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
-                alt={`Property image ${currentImageIndex + 1}`} 
-                className={galleryStyles.mainGalleryImage}
-              />
-            </div>
-            
-            <button 
-              className={galleryStyles.galleryNavButton} 
-              onClick={() => handleImageChange('next')}
-              aria-label="Next image"
-            >
-              ›
-            </button>
-          </div>
-          
-          <div className={galleryStyles.thumbnailsContainer}>
-            <div className={galleryStyles.thumbnailsScroller}>
-              <div 
-                className={`${galleryStyles.thumbnail} ${currentImageIndex === 0 ? galleryStyles.activeThumbnail : ''}`}
-                onClick={() => handleThumbnailClick(0)}
-              >
-                <img 
-                  src={selectedProperty.image_url} 
-                  alt="Property thumbnail 1" 
-                />
-              </div>
-              {additionalImages.map((img, index) => (
-                <div 
-                  key={index}
-                  className={`${galleryStyles.thumbnail} ${currentImageIndex === index + 1 ? galleryStyles.activeThumbnail : ''}`}
-                  onClick={() => handleThumbnailClick(index + 1)}
-                >
-                  <img 
-                    src={img} 
-                    alt={`Property thumbnail ${index + 2}`} 
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className={galleryStyles.galleryCounter}>
-            {currentImageIndex + 1} / {additionalImages.length + 1}
-          </div>
-        </div>
-      )}
-      
-      {/* Mobile Navigation */}
-      {isMobile && <MobileNavigation />}
     </div>
   );
 };
