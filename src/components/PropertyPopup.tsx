@@ -24,7 +24,7 @@ export default function PropertyPopup({
 }: { 
   selectedProperty: Property & { isFavorite?: boolean }; 
   onClose: () => void; 
-  mapRef: RefObject<HTMLDivElement>;
+  mapRef: RefObject<HTMLDivElement | null>;
 }) {
   const router = useRouter();
   const isFavorite = selectedProperty.isFavorite || false;
