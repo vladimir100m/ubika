@@ -5,9 +5,6 @@ import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { PropertyCard } from '../components';
-import MobilePropertyCard from '../components/MobilePropertyCard';
-import MobileNavigation from '../components/MobileNavigation';
-import MobileFilterBar from '../components/MobileFilterBar';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
@@ -17,7 +14,6 @@ import { useAuth } from '../context/AuthContext'; // Import AuthContext to check
 const MapPage: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth(); // Get user from AuthContext
-  const [address, setAddress] = useState<string | null>(null);
   const [propertyLocations, setPropertyLocations] = useState<Property[]>([]); // Typed state
   const [mapCenter, setMapCenter] = useState<Geocode>({ lat: -34.5897318, lng: -58.4232065 });
   const [markers, setMarkers] = useState<{ id: number; lat: number; lng: number }[]>([]);
@@ -26,13 +22,6 @@ const MapPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false); // Track favorite status
   const [drawerOpen, setDrawerOpen] = useState(false); // Mobile drawer state
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({
-    price: '',
-    rooms: '',
-    type: '',
-    features: ''
-  });
   const [loading, setLoading] = useState(true); // Add loading state
   const [error, setError] = useState<string | null>(null); // Add error state
   
@@ -41,14 +30,6 @@ const MapPage: React.FC = () => {
   // Toggle the mobile drawer
   const toggleMobileDrawer = () => {
     setDrawerOpen(prevState => !prevState);
-  };
-  
-  // Add a new state for the property list visibility
-  const [mobilePropertyListVisible, setMobilePropertyListVisible] = useState(false);
-
-  // Function to toggle the mobile property list
-  const toggleMobilePropertyList = () => {
-    setDrawerOpen(!drawerOpen);
   };
   
   // Create a ref object for each property card
@@ -77,10 +58,6 @@ const MapPage: React.FC = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
 
   useEffect(() => {
-    if (router.query.address) {
-      setAddress(router.query.address as string);
-    }
-
     // Fetch properties from the database
     const fetchProperties = async () => {
       setLoading(true);
@@ -389,35 +366,6 @@ const MapPage: React.FC = () => {
     setIsFavorite(!isFavorite);
     // Here you would typically call an API to save/unsave the property
     // For now we're just toggling the state
-  };
-
-  // Apply filters based on URL query parameters
-  const applyFiltersFromQuery = (properties: Property[]) => {
-    if (!router.query) return properties;
-    
-    return properties.filter(property => {
-      // Filter by price range
-      if (router.query.minPrice && parseInt(property.price) < parseInt(router.query.minPrice as string)) {
-        return false;
-      }
-      
-      if (router.query.maxPrice && parseInt(property.price) > parseInt(router.query.maxPrice as string)) {
-        return false;
-      }
-      
-      // Filter by bedrooms
-      if (router.query.bedrooms && property.rooms < parseInt(router.query.bedrooms as string)) {
-        return false;
-      }
-      
-      // Filter by property type
-      if (router.query.propertyType && property.type && 
-          property.type.toLowerCase() !== (router.query.propertyType as string).toLowerCase()) {
-        return false;
-      }
-      
-      return true;
-    });
   };
 
   return (
