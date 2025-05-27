@@ -322,6 +322,7 @@ const SellerDashboard: React.FC = () => {
           ) : properties.length === 0 ? (
             <div className={styles.emptyState}>
               <p>You haven't listed any properties yet.</p>
+              <p>As a seller, you can add properties, update their status, and manage your listings all in one place.</p>
               <button 
                 onClick={() => setActiveTab('add')}
                 className={styles.addPropertyButton}
