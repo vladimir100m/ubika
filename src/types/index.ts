@@ -13,6 +13,25 @@ export interface Geocode {
   lng: number;
 }
 
+export interface PropertyFormData {
+  title: string;
+  description: string;
+  price: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zip_code?: string;
+  type: string;
+  rooms: number;
+  bathrooms: number;
+  squareMeters: number;
+  status: string;
+  yearBuilt?: number;
+  image_url?: string;
+  seller_id: string;
+}
+
 export interface Property {
   id: number;
   title: string;
@@ -35,4 +54,5 @@ export interface Property {
   geocode?: Geocode;
   latitude?: number;  // Often derived from geocode or a separate field
   longitude?: number; // Often derived from geocode or a separate field
+  seller_id?: string; // ID of the seller who listed the property
 }

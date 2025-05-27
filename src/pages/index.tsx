@@ -102,7 +102,7 @@ const Home: React.FC = () => {
           <nav>
             <a href="#">Buy</a>
             <a href="#">Rent</a>
-            <a href="#">Sell</a>
+            <a href="/seller">Sell</a>
             <a href="#">Mortgage</a>
             <a href="#">Saved Homes</a>
           </nav>

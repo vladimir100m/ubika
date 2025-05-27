@@ -22,7 +22,7 @@ const MobileNavigation: React.FC = () => {
     { label: 'Home', path: '/', icon: '🏠' },
     { label: 'Search', path: '/map', icon: '🔍' },
     { label: 'Favorites', path: '/favorites', icon: '❤️' },
-    { label: 'Mortgage', path: '/mortgage', icon: '💰' },
+    { label: 'Sell', path: '/seller', icon: '🏢' },
     { label: 'Profile', path: '/profile', icon: '👤' },
   ];
 
@@ -134,7 +134,7 @@ const MobileNavigation: React.FC = () => {
         <div className={styles.menuItems}>
           <Link href="/" className={styles.menuItem}>Buy</Link>
           <Link href="/" className={styles.menuItem}>Rent</Link>
-          <Link href="/" className={styles.menuItem}>Sell</Link>
+          <Link href="/seller" className={styles.menuItem}>Sell</Link>
           <Link href="/" className={styles.menuItem}>Mortgage</Link>
           <Link href="/" className={styles.menuItem}>Saved Homes</Link>
           <Link href="/" className={styles.menuItem}>Settings</Link>
