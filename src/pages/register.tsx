@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import styles from '../styles/Home.module.css';
+import authStyles from '../styles/Auth.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import { useAuth } from '../context/AuthContext';
@@ -65,8 +66,8 @@ const Register: React.FC = () => {
     if (!formData.password) {
       newErrors.password = 'Password is required';
       valid = false;
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
       valid = false;
     }
     
@@ -84,8 +85,19 @@ const Register: React.FC = () => {
     e.preventDefault();
     
     if (validateForm()) {
-      await register(formData.name, formData.email, formData.password);
+      try {
+        await register(formData.name, formData.email, formData.password);
+      } catch (error) {
+        // Error is handled by the AuthContext
+      }
     }
+  };
+  
+  const handleSocialSignup = (provider: string) => {
+    // In a real app, we would implement OAuth registration
+    console.log(`Signing up with ${provider}`);
+    // For demo purposes, let's just show an alert
+    alert(`${provider} signup would be implemented in a real application`);
   };
   
   return (
@@ -103,18 +115,47 @@ const Register: React.FC = () => {
         </div>
       </header>
       
-      <div className={styles.authContainer}>
-        <div className={styles.authCard}>
-          <h1 className={styles.authTitle}>Create an Account</h1>
+      <div className={authStyles.authContainer}>
+        <div className={authStyles.authCard}>
+          <h1 className={authStyles.authTitle}>Create Your Account</h1>
+          <p className={authStyles.authSubtitle}>
+            Join Ubika to find your dream property and save your favorites
+          </p>
+          
+          <div className={authStyles.socialLogin}>
+            <button 
+              className={`${authStyles.socialButton} ${authStyles.googleButton}`}
+              onClick={() => handleSocialSignup('Google')}
+              type="button"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866.549 3.921 1.453l2.814-2.814C17.503 2.988 15.139 2 12.545 2 7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-.013z" fill="currentColor" />
+              </svg>
+              Sign up with Google
+            </button>
+            
+            <button 
+              className={`${authStyles.socialButton} ${authStyles.facebookButton}`}
+              onClick={() => handleSocialSignup('Facebook')}
+              type="button"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path d="M20.007 3H3.993A.993.993 0 003 3.993v16.013c0 .55.444.994.993.994h8.621v-6.971h-2.346v-2.717h2.346V9.31c0-2.325 1.42-3.591 3.494-3.591.993 0 1.847.073 2.096.106v2.43h-1.438c-1.128 0-1.346.537-1.346 1.324v1.734h2.69l-.35 2.717h-2.34V21h4.587a.993.993 0 00.993-.993V3.993A.993.993 0 0020.007 3z" fill="currentColor" />
+              </svg>
+              Sign up with Facebook
+            </button>
+          </div>
+          
+          <div className={authStyles.separator}>or sign up with email</div>
           
           {error && (
-            <div className={styles.errorMessage}>
+            <div className={authStyles.errorMessage}>
               {error}
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className={styles.authForm}>
-            <div className={styles.formGroup}>
+          <form onSubmit={handleSubmit} className={authStyles.authForm}>
+            <div className={authStyles.formGroup}>
               <label htmlFor="name">Full Name</label>
               <input 
                 type="text" 
@@ -122,12 +163,13 @@ const Register: React.FC = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={styles.formInput}
+                className={authStyles.formInput}
+                placeholder="John Doe"
               />
-              {formErrors.name && <span className={styles.fieldError}>{formErrors.name}</span>}
+              {formErrors.name && <span className={authStyles.fieldError}>{formErrors.name}</span>}
             </div>
             
-            <div className={styles.formGroup}>
+            <div className={authStyles.formGroup}>
               <label htmlFor="email">Email</label>
               <input 
                 type="email" 
@@ -135,12 +177,13 @@ const Register: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={styles.formInput}
+                className={authStyles.formInput}
+                placeholder="your.email@example.com"
               />
-              {formErrors.email && <span className={styles.fieldError}>{formErrors.email}</span>}
+              {formErrors.email && <span className={authStyles.fieldError}>{formErrors.email}</span>}
             </div>
             
-            <div className={styles.formGroup}>
+            <div className={authStyles.formGroup}>
               <label htmlFor="password">Password</label>
               <input 
                 type="password" 
@@ -148,12 +191,13 @@ const Register: React.FC = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={styles.formInput}
+                className={authStyles.formInput}
+                placeholder="Create a password (min. 8 characters)"
               />
-              {formErrors.password && <span className={styles.fieldError}>{formErrors.password}</span>}
+              {formErrors.password && <span className={authStyles.fieldError}>{formErrors.password}</span>}
             </div>
             
-            <div className={styles.formGroup}>
+            <div className={authStyles.formGroup}>
               <label htmlFor="confirmPassword">Confirm Password</label>
               <input 
                 type="password" 
@@ -161,37 +205,46 @@ const Register: React.FC = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={styles.formInput}
+                className={authStyles.formInput}
+                placeholder="Confirm your password"
               />
-              {formErrors.confirmPassword && <span className={styles.fieldError}>{formErrors.confirmPassword}</span>}
+              {formErrors.confirmPassword && <span className={authStyles.fieldError}>{formErrors.confirmPassword}</span>}
             </div>
             
-            <div className={styles.termsCheckbox}>
+            <div className={authStyles.termsCheckbox}>
               <input 
                 type="checkbox" 
                 id="terms" 
                 required
               />
               <label htmlFor="terms">
-                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                I agree to Ubika's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
               </label>
             </div>
             
             <button 
               type="submit" 
-              className={styles.authButton}
+              className={authStyles.authButton}
               disabled={loading}
             >
-              {loading ? 'Signing Up...' : 'Sign Up'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
           
-          <div className={styles.authLinks}>
+          <div className={authStyles.authLinks}>
             <p>
-              Already have an account? <Link href="/login">Log In</Link>
+              Already have an account? <Link href="/login">Sign in</Link>
             </p>
           </div>
         </div>
+      </div>
+      
+      {isMobile && <MobileNavigation />}
+    </div>
+  );
+};
+
+export default Register;
       </div>
       
       {isMobile && <MobileNavigation />}

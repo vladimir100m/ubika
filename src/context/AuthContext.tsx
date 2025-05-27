@@ -18,7 +18,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe = false) => {
     setLoading(true);
     setError(null);
     
@@ -106,7 +106,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Store user in state and localStorage
       setUser(userWithoutPassword);
-      localStorage.setItem('ubikaUser', JSON.stringify(userWithoutPassword));
+      
+      if (rememberMe) {
+        // If "remember me" is checked, store in localStorage
+        localStorage.setItem('ubikaUser', JSON.stringify(userWithoutPassword));
+      } else {
+        // Otherwise, use sessionStorage (cleared when browser is closed)
+        sessionStorage.setItem('ubikaUser', JSON.stringify(userWithoutPassword));
+        localStorage.removeItem('ubikaUser');
+      }
       
       // Redirect to home page
       router.push('/');
@@ -123,6 +131,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     
     try {
+      // Validate password strength
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
+      }
+      
+      // Check for at least one number and one letter (simple validation)
+      if (!/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
+        throw new Error('Password must contain at least one letter and one number');
+      }
+      
       // Simulate API call with timeout
       await new Promise(resolve => setTimeout(resolve, 1000));
       
