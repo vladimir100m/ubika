@@ -1,8 +1,10 @@
 import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
-import {useState} from 'react';
+import {useState, useEffect, RefObject} from 'react';
 import {useAuth} from 'context/AuthContext';
 import {useRouter} from 'next/router';
+import { Loader } from '@googlemaps/js-api-loader';
+import { Property } from '../types';
 
 const additionalImages = [
   '/properties/casa-moderna.jpg',
@@ -15,16 +17,65 @@ const additionalImages = [
 ];
   
 
-export default function PropertyPopup({ selectedProperty, onClose, mapRef }) {
+export default function PropertyPopup({ 
+  selectedProperty, 
+  onClose, 
+  mapRef 
+}: { 
+  selectedProperty: Property & { isFavorite?: boolean }; 
+  onClose: () => void; 
+  mapRef: RefObject<HTMLDivElement>;
+}) {
   const router = useRouter();
   const isFavorite = selectedProperty.isFavorite || false;
   const [activeTab, setActiveTab] = useState('overview');
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
   };
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { user } = useAuth(); // Get user from AuthContext
+  
+  // Initialize Google Maps when the map tab is active
+  useEffect(() => {
+    if (activeTab === 'map' && !mapInitialized && mapRef) {
+      const loader = new Loader({
+        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        version: 'weekly',
+      });
+      
+      loader.load().then(() => {
+        if (mapRef.current) {
+          const map = new google.maps.Map(mapRef.current, {
+            center: {
+              lat: selectedProperty.geocode?.lat || selectedProperty.latitude || 0,
+              lng: selectedProperty.geocode?.lng || selectedProperty.longitude || 0,
+            },
+            zoom: 15,
+            mapTypeControl: true,
+            streetViewControl: true,
+            fullscreenControl: true,
+          });
+          
+          // Add a marker for the property
+          new google.maps.Marker({
+            position: {
+              lat: selectedProperty.geocode?.lat || selectedProperty.latitude || 0,
+              lng: selectedProperty.geocode?.lng || selectedProperty.longitude || 0,
+            },
+            map,
+            title: selectedProperty.address,
+            animation: google.maps.Animation.DROP
+          });
+          
+          setMapInitialized(true);
+        }
+      }).catch(error => {
+        console.error("Error loading Google Maps:", error);
+      });
+    }
+  }, [activeTab, mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
   const handleSaveProperty = () => {
@@ -658,7 +709,7 @@ export default function PropertyPopup({ selectedProperty, onClose, mapRef }) {
                           fontSize: '14px'
                         }}>
                           <span>Jan 15, 2025</span>
-                          <span>${(selectedProperty.price * 1.05).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                          <span>${(parseFloat(selectedProperty.price) * 1.05).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                           <span style={{ color: '#e4002b' }}>-5.0%</span>
                         </div>
                       </div>
