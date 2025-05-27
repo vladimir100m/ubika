@@ -22,6 +22,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -172,8 +174,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('ubikaUser', JSON.stringify(updatedUser));
   };
 
+  const requestPasswordReset = async (email: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // In a real app, we would call our API endpoint
+      // const response = await fetch('/api/auth/forgot-password', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email })
+      // });
+      // const data = await response.json();
+      // if (!data.success) throw new Error(data.message);
+      
+      // For this mock version, we'll simulate the API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Check if the email exists in our mock users
+      const userExists = MOCK_USERS.some(user => user.email === email);
+      
+      if (!userExists) {
+        // Don't reveal whether the email exists or not for security reasons
+        // Just show a generic success message (handled by the component)
+        console.log('User not found, but not revealing this for security');
+      } else {
+        console.log('Password reset requested for:', email);
+        // In a real app, we would generate a token and send an email with a reset link
+      }
+      
+      // Always return success for security (don't reveal if email exists)
+      return;
+    } catch (err) {
+      console.error('Password reset request error:', err);
+      setError('Failed to process your request. Please try again.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // In a real app, we would call our API endpoint
+      // const response = await fetch('/api/auth/reset-password', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ token, newPassword })
+      // });
+      // const data = await response.json();
+      // if (!data.success) throw new Error(data.message);
+      
+      // For this mock version, we'll simulate the API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Password reset with token:', token);
+      console.log('New password set (would be hashed in a real app)');
+      
+      // Simulating success
+      return;
+    } catch (err) {
+      console.error('Password reset error:', err);
+      setError('Failed to reset password. The link may be invalid or expired.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      error, 
+      login, 
+      register, 
+      logout, 
+      updateUser,
+      requestPasswordReset,
+      resetPassword
+    }}>
       {children}
     </AuthContext.Provider>
   );
