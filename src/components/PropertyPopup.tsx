@@ -34,6 +34,21 @@ export default function PropertyPopup({ selectedProperty, onClose, mapRef }) {
       return;
     }
   }
+
+  // Handler for gallery navigation
+  const handleImageChange = (direction: 'next' | 'prev') => {
+    if (selectedProperty) {
+      const allImages = [selectedProperty.image_url, ...additionalImages];
+      const totalImages = allImages.length;
+      
+      if (direction === 'next') {
+        setCurrentImageIndex((prev) => (prev + 1) % totalImages);
+      } else {
+        setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
+      }
+    }
+  };
+  
   
   return (
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
