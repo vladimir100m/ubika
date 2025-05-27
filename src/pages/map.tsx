@@ -665,12 +665,13 @@ const MapPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Property detail floating window - Ubika style */}
+      {/* Property detail floating window - Zillow style */}
       {selectedProperty && (
         <div className={styles.propertyDetailOverlay} onClick={handleClosePropertyDetail}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeButton} onClick={handleClosePropertyDetail}>×</button>
-            {/* Favorite button */}
+            
+            {/* Favorite button - Zillow style */}
             <button 
               className={`${galleryStyles.favoriteButton} ${isFavorite ? galleryStyles.favoriteActive : ''}`} 
               onClick={(e) => {
@@ -678,51 +679,116 @@ const MapPage: React.FC = () => {
                 handleSaveProperty();
               }}
               aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              style={{
+                top: '15px',
+                right: '60px',
+                zIndex: 50,
+                width: '46px',
+                height: '46px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+              }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
                 <path 
                   d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                  fill="currentColor" 
+                  stroke={isFavorite ? "transparent" : "currentColor"}
+                  strokeWidth="2"
+                  fill={isFavorite ? "#e4002b" : "transparent"}
                 />
               </svg>
             </button>
-            <div className={styles.propertyDetailHeader}>
-              <div className={`${styles.styledGallery} ${galleryStyles.styledGallery}`} style={{ position: 'relative', height: '400px', display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: 'repeat(4, 1fr)', gap: '4px', borderRadius: '8px', overflow: 'hidden' }}>
-                {/* Main large image - taking 2/4 of the space and full height */}
+            
+            <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
+              {/* Main image carousel - Zillow style */}
+              <div 
+                className={`${styles.styledGallery} ${galleryStyles.styledGallery}`} 
+                style={{ 
+                  position: 'relative', 
+                  height: '100%', 
+                  width: '100%',
+                  display: 'block',
+                  overflow: 'hidden',
+                  backgroundColor: '#f7f7f7'
+                }}
+              >
+                {/* Main large image */}
                 {selectedProperty && (
-                  <img 
-                    src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
-                    alt={`Property image ${currentImageIndex + 1}`} 
-                    className={`${styles.galleryMainImage} ${galleryStyles.galleryMainImageHover}`}
-                    style={{ 
-                      gridColumn: '1', 
-                      gridRow: '1 / span 4', 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover', 
-                      cursor: 'pointer' 
-                    }}
-                    onClick={toggleGalleryView}
-                  />
+                  <div style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    overflow: 'hidden'
+                  }}>
+                    <img 
+                      src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
+                      alt={`Property image ${currentImageIndex + 1}`} 
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease'
+                      }}
+                      onClick={toggleGalleryView}
+                    />
+                    
+                    {/* Navigation arrows - Zillow style */}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleImageChange('prev');
+                      }}
+                      style={{ 
+                        position: 'absolute', 
+                        left: '20px', 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        color: '#2a2a33',
+                        border: 'none',
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        fontSize: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 20,
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                      }}
+                    >
+                      ‹
+                    </button>
+                    
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleImageChange('next');
+                      }}
+                      style={{ 
+                        position: 'absolute', 
+                        right: '20px', 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        color: '#2a2a33',
+                        border: 'none',
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        fontSize: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 20,
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                      }}
+                    >
+                      ›
+                    </button>
+                  </div>
                 )}
-                {/* Four smaller images - taking 1/4 of the space each on the right side */}
-                {additionalImages.slice(0, 4).map((img, index) => (
-                  <img 
-                    key={index}
-                    src={img} 
-                    alt={`Property image ${index + 2}`}
-                    className={`${styles.gallerySecondaryImage} ${galleryStyles.gallerySecondaryImage}`}
-                    style={{ 
-                      gridColumn: '2', 
-                      gridRow: index + 1, 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover', 
-                      cursor: 'pointer' 
-                    }}
-                    onClick={toggleGalleryView}
-                  />
-                ))}
                 
                 {/* Zillow-style "View all photos" button */}
                 <div style={{ 
@@ -737,14 +803,15 @@ const MapPage: React.FC = () => {
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '8px', 
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)', 
-                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                      color: '#2a2a33',
                       border: 'none',
                       borderRadius: '4px',
-                      padding: '8px 12px',
+                      padding: '8px 16px',
                       cursor: 'pointer',
                       fontSize: '14px',
-                      fontWeight: '500'
+                      fontWeight: '600',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -753,275 +820,1005 @@ const MapPage: React.FC = () => {
                       <path d="M14 14l2-2 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       <circle cx="18" cy="6" r="2" fill="currentColor" />
                     </svg>
-                    View all {additionalImages.length + 1} photos
+                    {additionalImages.length + 1} Photos
                   </button>
+                </div>
+                
+                {/* Photo counter - Zillow style */}
+                <div style={{ 
+                  position: 'absolute', 
+                  bottom: '16px', 
+                  left: '16px', 
+                  zIndex: 5,
+                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  color: 'white',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  fontSize: '14px'
+                }}>
+                  {currentImageIndex + 1} of {additionalImages.length + 1}
                 </div>
               </div>
             </div>
-            <div className={styles.propertyDetailContent}>
-              <div className={styles.propertyDetailBody}>
-                {/* Property Basic Info */}
-                <div className={styles.propertyDetailInfo}>
-                  <span className={styles.propertyStatusBadge}>For Sale</span>
-                  <h1 className={styles.propertyTitle}>{selectedProperty.title || 'Beautiful Property'}</h1>
-                  <h2 className={styles.propertyPrice}>${selectedProperty.price}</h2>
-                  <p className={styles.propertyAddress}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</p>
-                  <div className={styles.propertyStats}>
-                    <div className={styles.propertyStat}>
-                      <span className={styles.statValue}>{selectedProperty.rooms}</span>
-                      <span className={styles.statLabel}>Bedrooms</span>
+            <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
+              <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                {/* Property Basic Info - Zillow style */}
+                <div className={styles.propertyDetailInfo} style={{ 
+                  padding: '24px', 
+                  borderBottom: '1px solid #e9e9e9',
+                  backgroundColor: 'white'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <span style={{ 
+                        backgroundColor: '#e4002b', 
+                        color: 'white', 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '12px', 
+                        fontWeight: '600',
+                        display: 'inline-block',
+                        marginBottom: '8px'
+                      }}>For Sale</span>
+                      <h1 style={{ 
+                        fontSize: '28px', 
+                        fontWeight: '600', 
+                        color: '#2a2a33', 
+                        margin: '0 0 8px 0',
+                        lineHeight: '1.2'
+                      }}>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h1>
                     </div>
-                    <div className={styles.propertyStat}>
-                      <span className={styles.statValue}>{selectedProperty.bathrooms}</span>
-                      <span className={styles.statLabel}>Bathrooms</span>
-                    </div>
-                    <div className={styles.propertyStat}>
-                      <span className={styles.statValue}>{selectedProperty.squareMeters}</span>
-                      <span className={styles.statLabel}>Square Meters</span>
-                    </div>
-                    {selectedProperty.yearBuilt && (
-                      <div className={styles.propertyStat}>
-                        <span className={styles.statValue}>{selectedProperty.yearBuilt}</span>
-                        <span className={styles.statLabel}>Year Built</span>
-                      </div>
-                    )}
-                    <div className={styles.propertyStat}>
-                      <span className={styles.statValue}>{selectedProperty.type}</span>
-                      <span className={styles.statLabel}>Type</span>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button style={{ 
+                        backgroundColor: '#1277e1', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px', 
+                        padding: '10px 16px', 
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}>
+                        Contact Agent
+                      </button>
+                      <button style={{ 
+                        backgroundColor: 'white', 
+                        color: '#2a2a33', 
+                        border: '1px solid #a7a6ab', 
+                        borderRadius: '4px', 
+                        padding: '10px 16px', 
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}>
+                        Share
+                      </button>
                     </div>
                   </div>
+                  <h2 style={{ 
+                    fontSize: '16px',
+                    fontWeight: '400', 
+                    color: '#2a2a33', 
+                    margin: '0 0 4px 0' 
+                  }}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
+                  
+                  {/* Property Stats - Zillow style */}
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '24px', 
+                    margin: '16px 0',
+                    fontSize: '16px',
+                    color: '#2a2a33'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.rooms}</span>
+                      <span>beds</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.bathrooms}</span>
+                      <span>baths</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.squareMeters}</span>
+                      <span>sqft</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.type || 'House'}</span>
+                    </div>
+                    {selectedProperty.yearBuilt && (
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '600', marginRight: '4px' }}>Built {selectedProperty.yearBuilt}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {/* Tabs Navigation */}
-                <div className={styles.tabsContainer}>
-                  <ul className={styles.tabsList}>
+                
+                {/* Tabs Navigation - Zillow style */}
+                <div style={{ 
+                  backgroundColor: 'white', 
+                  borderBottom: '1px solid #e9e9e9',
+                  position: 'sticky',
+                  top: '0',
+                  zIndex: 10
+                }}>
+                  <ul style={{ 
+                    display: 'flex', 
+                    listStyle: 'none', 
+                    margin: '0',
+                    padding: '0 24px',
+                    borderBottom: '1px solid #e9e9e9'
+                  }}>
                     <li 
-                      className={`${styles.tabItem} ${activeTab === 'overview' ? styles.active : ''}`}
+                      style={{ 
+                        padding: '16px 0', 
+                        marginRight: '32px',
+                        borderBottom: activeTab === 'overview' ? '3px solid #1277e1' : '3px solid transparent',
+                        color: activeTab === 'overview' ? '#1277e1' : '#2a2a33',
+                        fontWeight: activeTab === 'overview' ? '700' : '400',
+                        cursor: 'pointer'
+                      }}
                       onClick={() => handleTabChange('overview')}
                     >
                       Overview
                     </li>
                     <li 
-                      className={`${styles.tabItem} ${activeTab === 'details' ? styles.active : ''}`}
+                      style={{ 
+                        padding: '16px 0', 
+                        marginRight: '32px',
+                        borderBottom: activeTab === 'details' ? '3px solid #1277e1' : '3px solid transparent',
+                        color: activeTab === 'details' ? '#1277e1' : '#2a2a33',
+                        fontWeight: activeTab === 'details' ? '700' : '400',
+                        cursor: 'pointer'
+                      }}
                       onClick={() => handleTabChange('details')}
                     >
-                      Details
+                      Facts and features
                     </li>
                     <li 
-                      className={`${styles.tabItem} ${activeTab === 'map' ? styles.active : ''}`}
+                      style={{ 
+                        padding: '16px 0', 
+                        marginRight: '32px',
+                        borderBottom: activeTab === 'map' ? '3px solid #1277e1' : '3px solid transparent',
+                        color: activeTab === 'map' ? '#1277e1' : '#2a2a33',
+                        fontWeight: activeTab === 'map' ? '700' : '400',
+                        cursor: 'pointer'
+                      }}
                       onClick={() => handleTabChange('map')}
                     >
-                      Map
+                      Location
                     </li>
                     <li 
-                      className={`${styles.tabItem} ${activeTab === 'schools' ? styles.active : ''}`}
+                      style={{ 
+                        padding: '16px 0', 
+                        marginRight: '32px',
+                        borderBottom: activeTab === 'schools' ? '3px solid #1277e1' : '3px solid transparent',
+                        color: activeTab === 'schools' ? '#1277e1' : '#2a2a33',
+                        fontWeight: activeTab === 'schools' ? '700' : '400',
+                        cursor: 'pointer'
+                      }}
                       onClick={() => handleTabChange('schools')}
                     >
                       Schools
                     </li>
                   </ul>
                 </div>
-                {/* Tab Content */}
-                <div className={`${styles.tabContent} ${activeTab === 'overview' ? styles.active : ''}`}>
-                  {/* Description Section */}
-                  <div>
-                    <h3 className={styles.sectionHeading}>Description</h3>
-                    <p className={styles.descriptionText}>{selectedProperty.description}</p>
-                  </div>
-                  {/* Features Section */}
-                  <div>
-                    <h3 className={styles.sectionHeading}>Features & Amenities</h3>
-                    <div className={styles.featuresGrid}>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Air Conditioning</span>
+                {/* Tab Content - Zillow style */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: 'white',
+                  display: activeTab === 'overview' ? 'block' : 'none'
+                }}>
+                  {/* Overview tab - Zillow style */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+                    {/* Left column */}
+                    <div>
+                      {/* Description Section */}
+                      <div style={{ marginBottom: '32px' }}>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Overview</h3>
+                        <p style={{ 
+                          fontSize: '16px', 
+                          lineHeight: '1.5', 
+                          color: '#2a2a33',
+                          whiteSpace: 'pre-line'
+                        }}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square feet of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
                       </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Heating</span>
+                      
+                      {/* Features Section */}
+                      <div style={{ marginBottom: '32px' }}>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Home Features</h3>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                          gap: '16px'
+                        }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Air Conditioning</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Heating</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Garage</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Swimming Pool</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Garden</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Balcony</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Fireplace</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '20px',
+                              lineHeight: 1
+                            }}>•</span>
+                            <span>Hardwood Floor</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Garage</span>
+                    </div>
+                    
+                    {/* Right column - Zillow style */}
+                    <div>
+                      {/* Contact form - Zillow style */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px',
+                        marginBottom: '24px'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          textAlign: 'center'
+                        }}>Contact an agent about this home</h3>
+                        
+                        <div style={{ marginBottom: '12px' }}>
+                          <input 
+                            type="text" 
+                            placeholder="Your Name" 
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px'
+                            }} 
+                          />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <input 
+                            type="text" 
+                            placeholder="Phone" 
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px'
+                            }} 
+                          />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <input 
+                            type="email" 
+                            placeholder="Email" 
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px'
+                            }} 
+                          />
+                        </div>
+                        <div style={{ marginBottom: '16px' }}>
+                          <textarea 
+                            placeholder="I'm interested in this property" 
+                            rows={4}
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px', 
+                              resize: 'none'
+                            }} 
+                          />
+                        </div>
+                        <button 
+                          style={{ 
+                            width: '100%',
+                            backgroundColor: '#1277e1', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            padding: '12px', 
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Contact Agent
+                        </button>
                       </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Swimming Pool</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Garden</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Balcony</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Fireplace</span>
-                      </div>
-                      <div className={styles.featureItem}>
-                        <span className={styles.featureIcon}>✓</span>
-                        <span>Hardwood Floor</span>
+                      
+                      {/* Price History - Zillow style */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px',
+                        marginBottom: '24px'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Price History</h3>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                          color: '#767676'
+                        }}>
+                          <span>DATE</span>
+                          <span>PRICE</span>
+                          <span>CHANGE</span>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          paddingBottom: '8px',
+                          marginBottom: '8px',
+                          fontSize: '14px'
+                        }}>
+                          <span>May 1, 2025</span>
+                          <span>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                          <span>--</span>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          paddingBottom: '8px',
+                          marginBottom: '8px',
+                          fontSize: '14px'
+                        }}>
+                          <span>Jan 15, 2025</span>
+                          <span>${(selectedProperty.price * 1.05).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                          <span style={{ color: '#e4002b' }}>-5.0%</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className={`${styles.tabContent} ${activeTab === 'details' ? styles.active : ''}`}>
-                  {/* Property Details - Zillow style */}
-                  <div className={styles.propertyDetailsContainer}>
-                    <div className={styles.detailsSection}>
-                      <h3 className={styles.detailsTitle}>Basic Details</h3>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>Property ID:</span>
-                        <span className={styles.detailsValue}>{selectedProperty.id}</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>Status:</span>
-                        <span className={styles.detailsValue}>For Sale</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>Price:</span>
-                        <span className={styles.detailsValue}>${selectedProperty.price}</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>Address:</span>
-                        <span className={styles.detailsValue}>{selectedProperty.address}</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>City:</span>
-                        <span className={styles.detailsValue}>{selectedProperty.city}</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>State:</span>
-                        <span className={styles.detailsValue}>{selectedProperty.state}</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>ZIP Code:</span>
-                        <span className={styles.detailsValue}>{selectedProperty.zip_code}</span>
-                      </div>
-                    </div>
-                    <div className={styles.detailsSection}>
-                      <h3 className={styles.detailsTitle}>Property Features</h3>
-                      <div className={styles.featuresGrid}>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Air Conditioning</span>
+                
+                {/* Facts and features tab - Zillow style */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: 'white',
+                  display: activeTab === 'details' ? 'block' : 'none'
+                }}>
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ 
+                      fontSize: '20px', 
+                      fontWeight: '600', 
+                      marginBottom: '16px',
+                      color: '#2a2a33'
+                    }}>Facts and features</h3>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                      gap: '24px'
+                    }}>
+                      {/* Interior details */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px'
+                        }}>Interior details</h4>
+                        
+                        <div style={{ marginBottom: '16px' }}>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Bedrooms and bathrooms</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Bedrooms</span>
+                            <span>{selectedProperty.rooms}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Bathrooms</span>
+                            <span>{selectedProperty.bathrooms}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Full bathrooms</span>
+                            <span>{Math.floor(selectedProperty.bathrooms)}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px'
+                          }}>
+                            <span>Half bathrooms</span>
+                            <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
+                          </div>
                         </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Heating</span>
+                        
+                        <div>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Heating and cooling</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            marginBottom: '4px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Air conditioning</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Heating system</span>
+                          </div>
                         </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Garage</span>
+                      </div>
+                      
+                      {/* Property details */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px'
+                        }}>Property details</h4>
+                        
+                        <div style={{ marginBottom: '16px' }}>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Property information</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Property type</span>
+                            <span>{selectedProperty.type || 'Single Family'}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Year built</span>
+                            <span>{selectedProperty.yearBuilt || '2010'}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px'
+                          }}>
+                            <span>Square feet</span>
+                            <span>{selectedProperty.squareMeters}</span>
+                          </div>
                         </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Swimming Pool</span>
+                        
+                        <div>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Construction details</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            marginBottom: '4px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Hardwood floors</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Fireplace</span>
+                          </div>
                         </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
+                      </div>
+                      
+                      {/* Outdoor features */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px'
+                        }}>Outdoor features</h4>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          marginBottom: '4px',
+                          fontSize: '14px'
+                        }}>
+                          <span style={{ 
+                            color: '#1277e1', 
+                            fontSize: '16px'
+                          }}>•</span>
+                          <span>Swimming pool</span>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          marginBottom: '4px',
+                          fontSize: '14px'
+                        }}>
+                          <span style={{ 
+                            color: '#1277e1', 
+                            fontSize: '16px'
+                          }}>•</span>
                           <span>Garden</span>
                         </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Balcony</span>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          fontSize: '14px'
+                        }}>
+                          <span style={{ 
+                            color: '#1277e1', 
+                            fontSize: '16px'
+                          }}>•</span>
+                          <span>Garage</span>
                         </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Fireplace</span>
-                        </div>
-                        <div className={styles.featureItem}>
-                          <span className={styles.featureIcon}>✓</span>
-                          <span>Hardwood Floor</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={styles.detailsSection}>
-                      <h3 className={styles.detailsTitle}>Room Details</h3>
-                      <div className={styles.roomDetailsGrid}>
-                        <div className={styles.roomDetailItem}>
-                          <span className={styles.roomDetailLabel}>Master Bedroom:</span>
-                          <span className={styles.roomDetailValue}>N/A</span>
-                        </div>
-                        <div className={styles.roomDetailItem}>
-                          <span className={styles.roomDetailLabel}>Bedroom 2:</span>
-                          <span className={styles.roomDetailValue}>N/A</span>
-                        </div>
-                        <div className={styles.roomDetailItem}>
-                          <span className={styles.roomDetailLabel}>Bedroom 3:</span>
-                          <span className={styles.roomDetailValue}>N/A</span>
-                        </div>
-                        <div className={styles.roomDetailItem}>
-                          <span className={styles.roomDetailLabel}>Living Room:</span>
-                          <span className={styles.roomDetailValue}>N/A</span>
-                        </div>
-                        <div className={styles.roomDetailItem}>
-                          <span className={styles.roomDetailLabel}>Dining Room:</span>
-                          <span className={styles.roomDetailValue}>N/A</span>
-                        </div>
-                        <div className={styles.roomDetailItem}>
-                          <span className={styles.roomDetailLabel}>Kitchen:</span>
-                          <span className={styles.roomDetailValue}>N/A</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={styles.detailsSection}>
-                      <h3 className={styles.detailsTitle}>Utilities & Expenses</h3>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>Property Tax:</span>
-                        <span className={styles.detailsValue}>N/A</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>HOA Fee:</span>
-                        <span className={styles.detailsValue}>N/A</span>
-                      </div>
-                      <div className={styles.detailsRow}>
-                        <span className={styles.detailsLabel}>Insurance:</span>
-                        <span className={styles.detailsValue}>N/A</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className={`${styles.tabContent} ${activeTab === 'map' ? styles.active : ''}`}>
+                
+                {/* Location tab - Zillow style */}
+                <div style={{ 
+                  backgroundColor: 'white',
+                  display: activeTab === 'map' ? 'block' : 'none'
+                }}>
                   {/* Google Maps integration - show property location */}
-                  <div style={{ width: '100%', height: '400px', position: 'relative' }}>
+                  <div style={{ width: '100%', height: '500px', position: 'relative' }}>
                     <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
                   </div>
+                  
+                  <div style={{ padding: '24px' }}>
+                    <h3 style={{ 
+                      fontSize: '20px', 
+                      fontWeight: '600', 
+                      marginBottom: '16px',
+                      color: '#2a2a33'
+                    }}>Neighborhood</h3>
+                    <p style={{ 
+                      fontSize: '16px', 
+                      lineHeight: '1.5', 
+                      color: '#2a2a33',
+                      marginBottom: '24px'
+                    }}>
+                      This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
+                    </p>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                      gap: '24px'
+                    }}>
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Transportation</h4>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px',
+                          marginBottom: '12px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M8 5H16C17.1046 5 18 5.89543 18 7V19C18 20.1046 17.1046 21 16 21H8C6.89543 21 6 20.1046 6 19V7C6 5.89543 6.89543 5 8 5Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M6 9H18" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M9 17H15" stroke="#1277e1" strokeWidth="2" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Public Transportation</div>
+                            <div style={{ fontSize: '14px' }}>10 minute walk to nearest subway station</div>
+                          </div>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M3 9H21" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M7 15H8" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M12 15H13" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Highway Access</div>
+                            <div style={{ fontSize: '14px' }}>5 minute drive to nearest highway</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Restaurants & Shopping</h4>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px',
+                          marginBottom: '12px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M14 3H10C9.44772 3 9 3.44772 9 4V11H15V4C15 3.44772 14.5523 3 14 3Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M9 7H6C5.44772 7 5 7.44772 5 8V11H9V7Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M15 7H18C18.5523 7 19 7.44772 19 8V11H15V7Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M5 11H19V16C19 18.2091 17.2091 20 15 20H9C6.79086 20 5 18.2091 5 16V11Z" stroke="#1277e1" strokeWidth="2" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Restaurants</div>
+                            <div style={{ fontSize: '14px' }}>Variety of dining options within walking distance</div>
+                          </div>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M16 6V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 2.89543 8 4V6M3 6H21V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6Z" stroke="#1277e1" strokeWidth="2" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Shopping</div>
+                            <div style={{ fontSize: '14px' }}>Shopping centers and grocery stores nearby</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className={`${styles.tabContent} ${activeTab === 'schools' ? styles.active : ''}`}>
-                  {/* Schools information - Zillow style */}
-                  <div className={styles.schoolsContainer}>
-                    <h3 className={styles.schoolsTitle}>Nearby Schools</h3>
-                    <div className={styles.schoolItem}>
-                      <div className={styles.schoolInfo}>
-                        <h4 className={styles.schoolName}>Springfield Elementary School</h4>
-                        <p className={styles.schoolDistance}>0.5 miles away</p>
-                      </div>
-                      <div className={styles.schoolRating}>
-                        <span className={styles.ratingValue}>4.5</span>
-                        <span className={styles.ratingLabel}>/ 5</span>
-                      </div>
+                
+                {/* Schools tab - Zillow style */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: 'white',
+                  display: activeTab === 'schools' ? 'block' : 'none'
+                }}>
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '16px',
+                    color: '#2a2a33'
+                  }}>Nearby Schools in {selectedProperty.city}</h3>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#767676',
+                    marginBottom: '24px'
+                  }}>School service boundaries are intended to be used as a reference only; they may change and are not guaranteed. Contact the school directly to verify enrollment eligibility.</p>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      borderBottom: '1px solid #e9e9e9',
+                      paddingBottom: '8px',
+                      marginBottom: '16px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      <span>ELEMENTARY</span>
+                      <span>GRADES</span>
+                      <span>DISTANCE</span>
+                      <span>RATING</span>
                     </div>
-                    <div className={styles.schoolItem}>
-                      <div className={styles.schoolInfo}>
-                        <h4 className={styles.schoolName}>Springfield High School</h4>
-                        <p className={styles.schoolDistance}>1.2 miles away</p>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px',
+                      fontSize: '14px'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Elementary School</div>
+                        <div style={{ color: '#767676' }}>Public</div>
                       </div>
-                      <div className={styles.schoolRating}>
-                        <span className={styles.ratingValue}>4.7</span>
-                        <span className={styles.ratingLabel}>/ 5</span>
-                      </div>
+                      <div>K-5</div>
+                      <div>0.5 miles</div>
+                      <div style={{ 
+                        backgroundColor: '#1277e1', 
+                        color: 'white',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600'
+                      }}>9</div>
                     </div>
-                    <div className={styles.schoolItem}>
-                      <div className={styles.schoolInfo}>
-                        <h4 className={styles.schoolName}>Springfield College</h4>
-                        <p className={styles.schoolDistance}>2.1 miles away</p>
+                  </div>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      borderBottom: '1px solid #e9e9e9',
+                      paddingBottom: '8px',
+                      marginBottom: '16px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      <span>MIDDLE</span>
+                      <span>GRADES</span>
+                      <span>DISTANCE</span>
+                      <span>RATING</span>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px',
+                      fontSize: '14px'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Middle School</div>
+                        <div style={{ color: '#767676' }}>Public</div>
                       </div>
-                      <div className={styles.schoolRating}>
-                        <span className={styles.ratingValue}>4.8</span>
-                        <span className={styles.ratingLabel}>/ 5</span>
+                      <div>6-8</div>
+                      <div>1.2 miles</div>
+                      <div style={{ 
+                        backgroundColor: '#1277e1', 
+                        color: 'white',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600'
+                      }}>8</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      borderBottom: '1px solid #e9e9e9',
+                      paddingBottom: '8px',
+                      marginBottom: '16px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      <span>HIGH</span>
+                      <span>GRADES</span>
+                      <span>DISTANCE</span>
+                      <span>RATING</span>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px',
+                      fontSize: '14px'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield High School</div>
+                        <div style={{ color: '#767676' }}>Public</div>
                       </div>
+                      <div>9-12</div>
+                      <div>2.1 miles</div>
+                      <div style={{ 
+                        backgroundColor: '#1277e1', 
+                        color: 'white',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600'
+                      }}>7</div>
                     </div>
                   </div>
                 </div>
@@ -1031,7 +1828,7 @@ const MapPage: React.FC = () => {
         </div>
       )}
       
-      {/* Full-screen floating gallery */}
+      {/* Full-screen floating gallery (Zillow style) */}
       {showFloatingGallery && selectedProperty && (
         <div className={galleryStyles.floatingGallery}>
           <button 
@@ -1068,15 +1865,27 @@ const MapPage: React.FC = () => {
             </button>
           </div>
           
+          {/* Thumbnails - Zillow style */}
           <div className={galleryStyles.thumbnailsContainer}>
             <div className={galleryStyles.thumbnailsScroller}>
               <div 
                 className={`${galleryStyles.thumbnail} ${currentImageIndex === 0 ? galleryStyles.activeThumbnail : ''}`}
                 onClick={() => handleThumbnailClick(0)}
+                style={{
+                  border: currentImageIndex === 0 ? '3px solid #1277e1' : '3px solid transparent',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  cursor: 'pointer'
+                }}
               >
                 <img 
                   src={selectedProperty.image_url} 
                   alt="Property thumbnail 1" 
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
                 />
               </div>
               {additionalImages.map((img, index) => (
@@ -1084,18 +1893,30 @@ const MapPage: React.FC = () => {
                   key={index}
                   className={`${galleryStyles.thumbnail} ${currentImageIndex === index + 1 ? galleryStyles.activeThumbnail : ''}`}
                   onClick={() => handleThumbnailClick(index + 1)}
+                  style={{
+                    border: currentImageIndex === index + 1 ? '3px solid #1277e1' : '3px solid transparent',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    cursor: 'pointer'
+                  }}
                 >
                   <img 
                     src={img} 
                     alt={`Property thumbnail ${index + 2}`} 
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
                   />
                 </div>
               ))}
             </div>
           </div>
           
+          {/* Counter - Zillow style */}
           <div className={galleryStyles.galleryCounter}>
-            {currentImageIndex + 1} / {additionalImages.length + 1}
+            {currentImageIndex + 1} of {additionalImages.length + 1}
           </div>
         </div>
       )}
