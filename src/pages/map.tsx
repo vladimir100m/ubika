@@ -147,6 +147,17 @@ const MapPage: React.FC = () => {
         mapInstance.current = new google.maps.Map(mapRef.current, {
           center: mapCenter,
           zoom: 15,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+          zoomControl: true,
+          styles: [
+            {
+              featureType: 'poi',
+              elementType: 'labels',
+              stylers: [{ visibility: 'on' }]
+            }
+          ]
         });
         
         // Handle window resize to ensure map is properly displayed
@@ -197,15 +208,21 @@ const MapPage: React.FC = () => {
           const gMarker = new google.maps.Marker({
             position: { lat: marker.lat, lng: marker.lng },
             map: mapInstance.current,
-            title: property.title || property.address,
+            title: `${property.price ? '$' + property.price : ''} - ${property.title || property.address}`,
             animation: google.maps.Animation.DROP,
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
-              scale: 8,
+              scale: 10,
               fillColor: '#0070f3',
               fillOpacity: 0.9,
               strokeWeight: 2,
               strokeColor: '#ffffff'
+            },
+            label: {
+              text: property.price ? '$' + property.price : '',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 'bold'
             }
           });
           
@@ -475,7 +492,7 @@ const MapPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className={styles.mapContainer} ref={mapRef}></div>
+              <div className={styles.mapContainer} ref={mapRef} style={{ height: '100%', minHeight: '500px', borderRadius: '8px', overflow: 'hidden' }}></div>
             )}
             
             {/* Mobile floating action button to show properties */}
