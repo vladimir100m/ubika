@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/PropertyCard.module.css';
 import { Property } from '../types';
+import PropertyGallery from './PropertyGallery';
 
 export type PropertyCardProps = Pick<
   Property,
@@ -22,7 +23,6 @@ export type PropertyCardProps = Pick<
 const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => void }> = ({ property, onClose }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isImageExpanded, setIsImageExpanded] = useState(false);
   
   // Simulate multiple property images using the same image
   // In a real app, you would have an array of image URLs
@@ -51,106 +51,76 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
     };
   }, [onClose]);
 
-  const handleImageExpand = () => {
-    setIsImageExpanded(!isImageExpanded);
-  };
-
-  const handleThumbnailClick = (index: number) => {
-    setSelectedImageIndex(index);
-  };
-
   return (
-    <div className={styles.dialogOverlay} onClick={onClose}>
+    <div className={styles.dialogOverlay} onClick={onClose} role="dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
       <div className={styles.zillowDialog} onClick={(e) => e.stopPropagation()}>
-        {/* Header with price and address */}
         <div className={styles.dialogHeader}>
           <div className={styles.dialogHeaderContent}>
-            <h2 className={styles.dialogPrice}>{property.price}</h2>
+            <h2 id="dialog-title" className={styles.dialogPrice}>{property.price}</h2>
             <h3 className={styles.dialogAddress}>{property.address}</h3>
             <div className={styles.dialogQuickInfo}>
               <span>{property.rooms} bd</span>
-              <span className={styles.bulletSeparator}>•</span>
+              <span className={styles.bulletSeparator}>
+                &bull;
+              </span>
               <span>{property.bathrooms} ba</span>
-              <span className={styles.bulletSeparator}>•</span>
-              <span>{property.squareMeters} m²</span>
+              <span className={styles.bulletSeparator}>
+                &bull;
+              </span>
+              <span>{property.squareMeters} m&sup2;</span>
               {property.yearBuilt && (
                 <>
-                  <span className={styles.bulletSeparator}>•</span>
+                  <span className={styles.bulletSeparator}>
+                    &bull;
+                  </span>
                   <span>Built in {property.yearBuilt}</span>
                 </>
               )}
             </div>
           </div>
           <div className={styles.dialogActions}>
-            <button className={styles.actionButton}><span>❤️</span> Save</button>
-            <button className={styles.actionButton}><span>🔗</span> Share</button>
-            <button onClick={onClose} className={styles.closeDialogButton}>✕</button>
+            <button className={styles.actionButton} aria-label="Save Property">
+              <span>&hearts;</span> Save
+            </button>
+            <button className={styles.actionButton} aria-label="Share Property">
+              <span>&#128279;</span> Share
+            </button>
+            <button onClick={onClose} className={styles.closeDialogButton} aria-label="Close Dialog">
+              &times;
+            </button>
           </div>
         </div>
-        
-        {/* Navigation tabs */}
         <div className={styles.dialogTabs}>
           <button 
             className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('overview')}
+            aria-label="Overview Tab"
           >
             Overview
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === 'photos' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('photos')}
+            aria-label="Photos Tab"
           >
             Photos
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === 'map' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('map')}
+            aria-label="Map Tab"
           >
             Map
           </button>
         </div>
-        
-        {/* Main content area */}
         <div className={styles.dialogContent}>
           {activeTab === 'overview' && (
             <>
-              {/* Image Gallery at the top */}
-              <div className={styles.imageGalleryContainer}>
-                <div className={styles.mainImageContainer} onClick={handleImageExpand}>
-                  <img 
-                    src={propertyImages[selectedImageIndex]} 
-                    alt={`Property view ${selectedImageIndex + 1}`} 
-                    className={`${styles.mainGalleryImage} ${isImageExpanded ? styles.expandedImage : ''}`}
-                  />
-                  {isImageExpanded && (
-                    <button className={styles.minimizeButton} onClick={handleImageExpand}>
-                      Minimize
-                    </button>
-                  )}
-                </div>
-                <div className={styles.thumbnailsContainer}>
-                  {propertyImages.map((img, index) => (
-                    <div 
-                      key={index}
-                      className={`${styles.thumbnailWrapper} ${selectedImageIndex === index ? styles.activeThumbnail : ''}`}
-                      onClick={() => handleThumbnailClick(index)}
-                    >
-                      <img 
-                        src={img} 
-                        alt={`Property thumbnail ${index + 1}`} 
-                        className={styles.thumbnailImage}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
+              <PropertyGallery images={propertyImages} initialIndex={selectedImageIndex} />
               <div className={styles.overviewContentGrid}>
-                {/* Left column: Property details */}
                 <div className={styles.propertyMainDetails}>
                   <h3 className={styles.sectionTitle}>About This Home</h3>
-                  <p className={styles.propertyDescription}>{property.description}</p>
-                  
+                  <p id="dialog-description" className={styles.propertyDescription}>{property.description}</p>
                   <div className={styles.detailsGrid}>
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Property Type</span>
@@ -246,58 +216,8 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
           )}
           
           {activeTab === 'photos' && (
-            <div className={styles.fullPhotoGallery}>
-              {propertyImages.map((img, index) => (
-                <div key={index} className={styles.galleryImageWrapper}>
-                  <img 
-                    src={img} 
-                    alt={`Property view ${index + 1}`} 
-                    className={styles.fullGalleryImage}
-                    onClick={() => {
-                      setSelectedImageIndex(index);
-                      setIsImageExpanded(true);
-                    }}
-                  />
-                  <div className={styles.photoInfo}>Photo {index + 1}</div>
-                </div>
-              ))}
-              
-              {isImageExpanded && (
-                <div className={styles.lightbox} onClick={() => setIsImageExpanded(false)}>
-                  <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
-                    <img 
-                      src={propertyImages[selectedImageIndex]} 
-                      alt={`Property view ${selectedImageIndex + 1}`} 
-                      className={styles.lightboxImage}
-                    />
-                    <button 
-                      className={styles.lightboxClose} 
-                      onClick={() => setIsImageExpanded(false)}
-                    >
-                      ✕
-                    </button>
-                    <div className={styles.lightboxNav}>
-                      <button 
-                        className={styles.lightboxNavButton}
-                        onClick={() => setSelectedImageIndex(
-                          (selectedImageIndex - 1 + propertyImages.length) % propertyImages.length
-                        )}
-                      >
-                        ◀
-                      </button>
-                      <span>{selectedImageIndex + 1} / {propertyImages.length}</span>
-                      <button 
-                        className={styles.lightboxNavButton}
-                        onClick={() => setSelectedImageIndex(
-                          (selectedImageIndex + 1) % propertyImages.length
-                        )}
-                      >
-                        ▶
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className={styles.photosTabContent}>
+              <PropertyGallery images={propertyImages} initialIndex={selectedImageIndex} />
             </div>
           )}
           
@@ -373,6 +293,7 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
 const PropertyCard: React.FC<PropertyCardProps> = (props) => {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleCardClick = () => {
     if (props.onClick) {
@@ -399,7 +320,11 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
 
   return (
     <>
-      <div className={styles.card}>
+      <div 
+        className={styles.card}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className={styles.imageContainer} onClick={handleCardClick}>
           <img src={props.image_url} alt="Property" className={styles.image} />
           <div className={styles.imageOverlay}>
@@ -407,6 +332,7 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
             <button 
               className={`${styles.saveButton} ${isSaved ? styles.savedButton : ''}`}
               onClick={handleSaveClick}
+              aria-label={isSaved ? "Remove from saved" : "Save property"}
             >
               {isSaved ? '❤️' : '🤍'} {isSaved ? 'Saved' : 'Save'}
             </button>
@@ -423,8 +349,10 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
           </div>
           <p className={styles.address}>{props.address}</p>
           <div className={styles.cardFooter}>
-            <button className={styles.viewDetailsButton}>View Details</button>
-            <button className={styles.shareButton} onClick={handleShareClick}>
+            <button className={styles.viewDetailsButton}>
+              {isHovered ? 'View Details' : 'See More'}
+            </button>
+            <button className={styles.shareButton} onClick={handleShareClick} aria-label="Share property">
               <span>🔗</span>
             </button>
           </div>
