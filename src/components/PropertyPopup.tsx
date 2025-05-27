@@ -697,7 +697,7 @@ export default function PropertyPopup({
                           fontSize: '14px'
                         }}>
                           <span>May 1, 2025</span>
-                          <span>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                          <span>${selectedProperty.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                           <span>--</span>
                         </div>
                         
