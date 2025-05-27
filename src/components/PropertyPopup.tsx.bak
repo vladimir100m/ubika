@@ -1,6 +1,6 @@
 import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
-import React, {useState, useEffect, useRef, RefObject} from 'react';
+import React, {useState, useEffect, RefObject, useRef} from 'react';
 import {useAuth} from 'context/AuthContext';
 import {useRouter} from 'next/router';
 import { Loader } from '@googlemaps/js-api-loader';
@@ -32,44 +32,10 @@ export default function PropertyPopup({
   const [mapInitialized, setMapInitialized] = useState(false);
   
   // References for each section for smooth scrolling
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const detailsRef = useRef<HTMLDivElement>(null);
-  const mapLocationRef = useRef<HTMLDivElement>(null);
-  const schoolsRef = useRef<HTMLDivElement>(null);
-
-  // Setup intersection observer to update active tab based on scroll position
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '-80px 0px 0px 0px', // Consider the sticky header
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          if (id === 'overview-section') setActiveTab('overview');
-          else if (id === 'details-section') setActiveTab('details');
-          else if (id === 'map-section') setActiveTab('map');
-          else if (id === 'schools-section') setActiveTab('schools');
-        }
-      });
-    }, options);
-
-    // Observe all section refs
-    if (overviewRef.current) observer.observe(overviewRef.current);
-    if (detailsRef.current) observer.observe(detailsRef.current);
-    if (mapLocationRef.current) observer.observe(mapLocationRef.current);
-    if (schoolsRef.current) observer.observe(schoolsRef.current);
-
-    return () => {
-      if (overviewRef.current) observer.unobserve(overviewRef.current);
-      if (detailsRef.current) observer.unobserve(detailsRef.current);
-      if (mapLocationRef.current) observer.unobserve(mapLocationRef.current);
-      if (schoolsRef.current) observer.unobserve(schoolsRef.current);
-    };
-  }, []);
+  const overviewRef = React.useRef<HTMLDivElement>(null);
+  const detailsRef = React.useRef<HTMLDivElement>(null);
+  const mapLocationRef = React.useRef<HTMLDivElement>(null);
+  const schoolsRef = React.useRef<HTMLDivElement>(null);
 
   const handleTabChange = (tabName: string) => {
     setActiveTab(tabName);
@@ -92,7 +58,6 @@ export default function PropertyPopup({
         break;
     }
   };
-  
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { user } = useAuth(); // Get user from AuthContext
   
@@ -158,6 +123,7 @@ export default function PropertyPopup({
       }
     }
   };
+  
   
   return (
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
@@ -495,9 +461,9 @@ export default function PropertyPopup({
                 </div>
                 
                 {/* All content sections displayed one after another */}
-                <div style={{ backgroundColor: 'white' }}>
+                <div style={{ padding: '24px', backgroundColor: 'white' }}>
                   {/* Overview section */}
-                  <div ref={overviewRef} id="overview-section" style={{ padding: '24px', marginBottom: '40px' }}>
+                  <div ref={overviewRef} id="overview-section" style={{ marginBottom: '40px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
                       {/* Left column */}
                       <div>
@@ -772,532 +738,671 @@ export default function PropertyPopup({
                       </div>
                     </div>
                   </div>
-
-                  {/* Facts and features section */}
-                  <div ref={detailsRef} id="details-section" style={{ padding: '24px', marginBottom: '40px' }}>
-                    <div style={{ marginBottom: '32px' }}>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '16px',
-                        color: '#2a2a33'
-                      }}>Facts and features</h3>
-                      
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
-                      }}>
-                        {/* Interior details */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Interior details</h4>
-                          
-                          <div style={{ marginBottom: '16px' }}>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Bedrooms and bathrooms</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Bedrooms</span>
-                              <span>{selectedProperty.rooms}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Bathrooms</span>
-                              <span>{selectedProperty.bathrooms}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Full bathrooms</span>
-                              <span>{Math.floor(selectedProperty.bathrooms)}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px'
-                            }}>
-                              <span>Half bathrooms</span>
-                              <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Heating and cooling</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              marginBottom: '4px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Air conditioning</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Heating system</span>
-                            </div>
-                          </div>
-                        </div>
+                          color: '#2a2a33',
+                          textAlign: 'center'
+                        }}>Contact an agent about this home</h3>
                         
-                        {/* Property details */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Property details</h4>
-                          
-                          <div style={{ marginBottom: '16px' }}>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Property information</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Property type</span>
-                              <span>{selectedProperty.type || 'Single Family'}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Year built</span>
-                              <span>{selectedProperty.yearBuilt || '2010'}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
+                        <div style={{ marginBottom: '12px' }}>
+                          <input 
+                            type="text" 
+                            placeholder="Your Name" 
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
                               fontSize: '14px'
-                            }}>
-                              <span>Square feet</span>
-                              <span>{selectedProperty.squareMeters}</span>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Construction details</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              marginBottom: '4px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Hardwood floors</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Fireplace</span>
-                            </div>
-                          </div>
+                            }} 
+                          />
                         </div>
-                        
-                        {/* Outdoor features */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Outdoor features</h4>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            marginBottom: '4px',
-                            fontSize: '14px'
-                          }}>
-                            <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Swimming pool</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            marginBottom: '4px',
-                            fontSize: '14px'
-                          }}>
-                            <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Garden</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            fontSize: '14px'
-                          }}>
-                            <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Garage</span>
-                          </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <input 
+                            type="text" 
+                            placeholder="Phone" 
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px'
+                            }} 
+                          />
                         </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <input 
+                            type="email" 
+                            placeholder="Email" 
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px'
+                            }} 
+                          />
+                        </div>
+                        <div style={{ marginBottom: '16px' }}>
+                          <textarea 
+                            placeholder="I'm interested in this property" 
+                            rows={4}
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              border: '1px solid #ddd', 
+                              borderRadius: '4px',
+                              fontSize: '14px', 
+                              resize: 'none'
+                            }} 
+                          />
+                        </div>
+                        <button 
+                          style={{ 
+                            width: '100%',
+                            backgroundColor: '#1277e1', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            padding: '12px', 
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Contact Agent
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Location section */}
-                  <div ref={mapLocationRef} id="map-section" style={{ marginBottom: '40px' }}>
-                    {/* Google Maps integration - show property location */}
-                    <div style={{ width: '100%', height: '500px', position: 'relative' }}>
-                      <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
-                    </div>
-                    
-                    <div style={{ padding: '24px' }}>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '16px',
-                        color: '#2a2a33'
-                      }}>Neighborhood</h3>
-                      <p style={{ 
-                        fontSize: '16px', 
-                        lineHeight: '1.5', 
-                        color: '#2a2a33',
+                      
+                      {/* Price History - Zillow style */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px',
                         marginBottom: '24px'
                       }}>
-                        This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
-                      </p>
-                      
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
-                      }}>
+                        <h3 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Price History</h3>
+                        
                         <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px',
+                          marginBottom: '8px',
+                          fontSize: '14px',
+                          color: '#767676'
                         }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Transportation</h4>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px',
-                            marginBottom: '12px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
-                              <path d="M8 5H16C17.1046 5 18 5.89543 18 7V19C18 20.1046 17.1046 21 16 21H8C6.89543 21 6 20.1046 6 19V7C6 5.89543 6.89543 5 8 5Z" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M6 9H18" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M9 17H15" stroke="#1277e1" strokeWidth="2" />
-                            </svg>
-                            <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Public Transportation</div>
-                              <div style={{ fontSize: '14px' }}>10 minute walk to nearest subway station</div>
-                            </div>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
-                              <path d="M5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5Z" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M3 9H21" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M7 15H8" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
-                              <path d="M12 15H13" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
-                            <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Highway Access</div>
-                              <div style={{ fontSize: '14px' }}>5 minute drive to nearest highway</div>
-                            </div>
-                          </div>
+                          <span>DATE</span>
+                          <span>PRICE</span>
+                          <span>CHANGE</span>
                         </div>
                         
                         <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          paddingBottom: '8px',
+                          marginBottom: '8px',
+                          fontSize: '14px'
                         }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Restaurants & Shopping</h4>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px',
-                            marginBottom: '12px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
-                              <path d="M14 3H10C9.44772 3 9 3.44772 9 4V11H15V4C15 3.44772 14.5523 3 14 3Z" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M9 7H6C5.44772 7 5 7.44772 5 8V11H9V7Z" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M15 7H18C18.5523 7 19 7.44772 19 8V11H15V7Z" stroke="#1277e1" strokeWidth="2" />
-                              <path d="M5 11H19V16C19 18.2091 17.2091 20 15 20H9C6.79086 20 5 18.2091 5 16V11Z" stroke="#1277e1" strokeWidth="2" />
-                            </svg>
-                            <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Restaurants</div>
-                              <div style={{ fontSize: '14px' }}>Variety of dining options within walking distance</div>
-                            </div>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
-                              <path d="M16 6V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 2.89543 8 4V6M3 6H21V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6Z" stroke="#1277e1" strokeWidth="2" />
-                            </svg>
-                            <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Shopping</div>
-                              <div style={{ fontSize: '14px' }}>Shopping centers and grocery stores nearby</div>
-                            </div>
-                          </div>
+                          <span>May 1, 2025</span>
+                          <span>${selectedProperty.price.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                          <span>--</span>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          paddingBottom: '8px',
+                          marginBottom: '8px',
+                          fontSize: '14px'
+                        }}>
+                          <span>Jan 15, 2025</span>
+                          <span>${(parseFloat(selectedProperty.price) * 1.05).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                          <span style={{ color: '#e4002b' }}>-5.0%</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Schools section */}
-                  <div ref={schoolsRef} id="schools-section" style={{ padding: '24px', marginBottom: '40px' }}>
+                </div>
+                
+                {/* Facts and features tab - Zillow style */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: 'white',
+                  display: activeTab === 'details' ? 'block' : 'none'
+                }}>
+                  <div style={{ marginBottom: '32px' }}>
                     <h3 style={{ 
                       fontSize: '20px', 
                       fontWeight: '600', 
                       marginBottom: '16px',
                       color: '#2a2a33'
-                    }}>Nearby Schools in {selectedProperty.city}</h3>
+                    }}>Facts and features</h3>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                      gap: '24px'
+                    }}>
+                      {/* Interior details */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px'
+                        }}>Interior details</h4>
+                        
+                        <div style={{ marginBottom: '16px' }}>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Bedrooms and bathrooms</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Bedrooms</span>
+                            <span>{selectedProperty.rooms}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Bathrooms</span>
+                            <span>{selectedProperty.bathrooms}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Full bathrooms</span>
+                            <span>{Math.floor(selectedProperty.bathrooms)}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px'
+                          }}>
+                            <span>Half bathrooms</span>
+                            <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Heating and cooling</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            marginBottom: '4px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Air conditioning</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Heating system</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Property details */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px'
+                        }}>Property details</h4>
+                        
+                        <div style={{ marginBottom: '16px' }}>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Property information</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Property type</span>
+                            <span>{selectedProperty.type || 'Single Family'}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px',
+                            marginBottom: '4px'
+                          }}>
+                            <span>Year built</span>
+                            <span>{selectedProperty.yearBuilt || '2010'}</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '14px'
+                          }}>
+                            <span>Square feet</span>
+                            <span>{selectedProperty.squareMeters}</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            marginBottom: '8px'
+                          }}>Construction details</div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            marginBottom: '4px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Hardwood floors</span>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            fontSize: '14px'
+                          }}>
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '16px'
+                            }}>•</span>
+                            <span>Fireplace</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Outdoor features */}
+                      <div style={{ 
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33',
+                          borderBottom: '1px solid #e9e9e9',
+                          paddingBottom: '8px'
+                        }}>Outdoor features</h4>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          marginBottom: '4px',
+                          fontSize: '14px'
+                        }}>
+                          <span style={{ 
+                            color: '#1277e1', 
+                            fontSize: '16px'
+                          }}>•</span>
+                          <span>Swimming pool</span>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          marginBottom: '4px',
+                          fontSize: '14px'
+                        }}>
+                          <span style={{ 
+                            color: '#1277e1', 
+                            fontSize: '16px'
+                          }}>•</span>
+                          <span>Garden</span>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          fontSize: '14px'
+                        }}>
+                          <span style={{ 
+                            color: '#1277e1', 
+                            fontSize: '16px'
+                          }}>•</span>
+                          <span>Garage</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Location tab - Zillow style */}
+                <div style={{ 
+                  backgroundColor: 'white',
+                  display: activeTab === 'map' ? 'block' : 'none'
+                }}>
+                  {/* Google Maps integration - show property location */}
+                  <div style={{ width: '100%', height: '500px', position: 'relative' }}>
+                    <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+                  </div>
+                  
+                  <div style={{ padding: '24px' }}>
+                    <h3 style={{ 
+                      fontSize: '20px', 
+                      fontWeight: '600', 
+                      marginBottom: '16px',
+                      color: '#2a2a33'
+                    }}>Neighborhood</h3>
                     <p style={{ 
-                      fontSize: '14px', 
-                      color: '#767676',
+                      fontSize: '16px', 
+                      lineHeight: '1.5', 
+                      color: '#2a2a33',
                       marginBottom: '24px'
-                    }}>School service boundaries are intended to be used as a reference only; they may change and are not guaranteed. Contact the school directly to verify enrollment eligibility.</p>
+                    }}>
+                      This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
+                    </p>
                     
-                    <div style={{ marginBottom: '24px' }}>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                      gap: '24px'
+                    }}>
                       <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
                       }}>
-                        <span>ELEMENTARY</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Transportation</h4>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px',
+                          marginBottom: '12px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M8 5H16C17.1046 5 18 5.89543 18 7V19C18 20.1046 17.1046 21 16 21H8C6.89543 21 6 20.1046 6 19V7C6 5.89543 6.89543 5 8 5Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M6 9H18" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M9 17H15" stroke="#1277e1" strokeWidth="2" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Public Transportation</div>
+                            <div style={{ fontSize: '14px' }}>10 minute walk to nearest subway station</div>
+                          </div>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M3 9H21" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M7 15H8" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M12 15H13" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Highway Access</div>
+                            <div style={{ fontSize: '14px' }}>5 minute drive to nearest highway</div>
+                          </div>
+                        </div>
                       </div>
                       
                       <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
+                        border: '1px solid #e9e9e9', 
+                        borderRadius: '4px',
+                        padding: '16px'
                       }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Elementary School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>K-5</div>
-                        <div>0.5 miles</div>
+                        <h4 style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Restaurants & Shopping</h4>
+                        
                         <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>9</div>
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px',
+                          marginBottom: '12px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M14 3H10C9.44772 3 9 3.44772 9 4V11H15V4C15 3.44772 14.5523 3 14 3Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M9 7H6C5.44772 7 5 7.44772 5 8V11H9V7Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M15 7H18C18.5523 7 19 7.44772 19 8V11H15V7Z" stroke="#1277e1" strokeWidth="2" />
+                            <path d="M5 11H19V16C19 18.2091 17.2091 20 15 20H9C6.79086 20 5 18.2091 5 16V11Z" stroke="#1277e1" strokeWidth="2" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Restaurants</div>
+                            <div style={{ fontSize: '14px' }}>Variety of dining options within walking distance</div>
+                          </div>
+                        </div>
+                        
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '8px'
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                            <path d="M16 6V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 2.89543 8 4V6M3 6H21V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6Z" stroke="#1277e1" strokeWidth="2" />
+                          </svg>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '600' }}>Shopping</div>
+                            <div style={{ fontSize: '14px' }}>Shopping centers and grocery stores nearby</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div style={{ marginBottom: '24px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>MIDDLE</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Middle School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>6-8</div>
-                        <div>1.2 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>8</div>
-                      </div>
+                  </div>
+                </div>
+                
+                {/* Schools tab - Zillow style */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: 'white',
+                  display: activeTab === 'schools' ? 'block' : 'none'
+                }}>
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '16px',
+                    color: '#2a2a33'
+                  }}>Nearby Schools in {selectedProperty.city}</h3>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#767676',
+                    marginBottom: '24px'
+                  }}>School service boundaries are intended to be used as a reference only; they may change and are not guaranteed. Contact the school directly to verify enrollment eligibility.</p>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      borderBottom: '1px solid #e9e9e9',
+                      paddingBottom: '8px',
+                      marginBottom: '16px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      <span>ELEMENTARY</span>
+                      <span>GRADES</span>
+                      <span>DISTANCE</span>
+                      <span>RATING</span>
                     </div>
                     
-                    <div>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>HIGH</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px',
+                      fontSize: '14px'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Elementary School</div>
+                        <div style={{ color: '#767676' }}>Public</div>
                       </div>
-                      
+                      <div>K-5</div>
+                      <div>0.5 miles</div>
                       <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                        backgroundColor: '#1277e1', 
+                        color: 'white',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        display: 'flex',
                         alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield High School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>9-12</div>
-                        <div>2.1 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>7</div>
+                        justifyContent: 'center',
+                        fontWeight: '600'
+                      }}>9</div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      borderBottom: '1px solid #e9e9e9',
+                      paddingBottom: '8px',
+                      marginBottom: '16px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      <span>MIDDLE</span>
+                      <span>GRADES</span>
+                      <span>DISTANCE</span>
+                      <span>RATING</span>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px',
+                      fontSize: '14px'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Middle School</div>
+                        <div style={{ color: '#767676' }}>Public</div>
                       </div>
+                      <div>6-8</div>
+                      <div>1.2 miles</div>
+                      <div style={{ 
+                        backgroundColor: '#1277e1', 
+                        color: 'white',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600'
+                      }}>8</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      borderBottom: '1px solid #e9e9e9',
+                      paddingBottom: '8px',
+                      marginBottom: '16px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      <span>HIGH</span>
+                      <span>GRADES</span>
+                      <span>DISTANCE</span>
+                      <span>RATING</span>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px',
+                      fontSize: '14px'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield High School</div>
+                        <div style={{ color: '#767676' }}>Public</div>
+                      </div>
+                      <div>9-12</div>
+                      <div>2.1 miles</div>
+                      <div style={{ 
+                        backgroundColor: '#1277e1', 
+                        color: 'white',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600'
+                      }}>7</div>
                     </div>
                   </div>
                 </div>
