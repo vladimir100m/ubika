@@ -4,7 +4,11 @@ import Link from 'next/link';
 import styles from '../styles/Auth.module.css';
 import { useAuth } from '../context/AuthContext';
 
-const ProfileMenu: React.FC = () => {
+interface ProfileMenuProps {
+  variant?: 'desktop' | 'mobile';
+}
+
+const ProfileMenu: React.FC<ProfileMenuProps> = ({ variant = 'desktop' }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -33,15 +37,25 @@ const ProfileMenu: React.FC = () => {
     e.preventDefault();
     logout();
     setIsOpen(false);
+    router.push('/');
   };
 
   if (!user) {
-    return null;
+    return (
+      <div className={styles.authButtons}>
+        <Link href="/login">
+          <a className={styles.loginButton}>Sign In</a>
+        </Link>
+        <Link href="/register">
+          <a className={styles.registerButton}>Register</a>
+        </Link>
+      </div>
+    );
   }
 
   return (
     <div 
-      className={`${styles.profileMenu} ${isOpen ? styles.open : ''}`}
+      className={`${styles.profileMenu} ${isOpen ? styles.open : ''} ${variant === 'mobile' ? styles.mobileVariant : ''}`}
       ref={menuRef}
     >
       <button 
@@ -147,5 +161,7 @@ const ProfileMenu: React.FC = () => {
     </div>
   );
 };
+
+export default ProfileMenu;
 
 export default ProfileMenu;

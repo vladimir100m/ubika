@@ -250,10 +250,54 @@
   animation: slideUpFade 0.5s ease-out forwards;
 }
 
+/* Auth Button Styles for Navbar */
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loginButton {
+  color: #0070f3;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.loginButton:hover {
+  background-color: rgba(0, 112, 243, 0.1);
+  text-decoration: none;
+}
+
+.registerButton {
+  background-color: #0070f3;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.registerButton:hover {
+  background-color: #005fcc;
+  text-decoration: none;
+}
+
+.registerButton:active {
+  transform: scale(0.98);
+}
+
 /* Profile Menu Styles */
 .profileMenu {
   position: relative;
   display: inline-block;
+}
+
+.mobileVariant {
+  width: 100%;
 }
 
 .profileButton {
@@ -277,6 +321,206 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.profileInitials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #0070f3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.profileMenu .dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 220px;
+  z-index: 100;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  transition: all 0.2s;
+}
+
+.mobileVariant .dropdownMenu {
+  width: 100%;
+}
+
+.profileMenu.open .dropdownMenu {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.menuHeader {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.userName {
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.userEmail {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.25rem 0 0 0;
+}
+
+.menuItems {
+  padding: 0.5rem 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.menuItem:hover {
+  background-color: #f5f7fa;
+}
+
+.menuItemIcon {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.logoutItem {
+  border-top: 1px solid #f0f0f0;
+  color: #e53e3e;
+}
+
+.logoutItem .menuItemIcon {
+  color: #e53e3e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .authContainer {
+    padding: 1rem;
+  }
+  
+  .authCard {
+    padding: 1.5rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .authContainer {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+  }
+  
+  .authCard {
+    background-color: #2d3748;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .authTitle {
+    color: #f7fafc;
+  }
+  
+  .authSubtitle {
+    color: #cbd5e0;
+  }
+  
+  .formGroup label {
+    color: #e2e8f0;
+  }
+  
+  .formInput {
+    background-color: #1a202c;
+    border-color: #4a5568;
+    color: #f7fafc;
+  }
+  
+  .formInput:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+  }
+  
+  .socialButton {
+    background-color: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  .socialButton:hover {
+    background-color: #4a5568;
+  }
+  
+  .termsCheckbox label {
+    color: #cbd5e0;
+  }
+  
+  .errorMessage {
+    background-color: rgba(229, 62, 62, 0.1);
+  }
+  
+  .successMessage {
+    background-color: rgba(56, 161, 105, 0.1);
+  }
+  
+  .profileMenu .dropdownMenu {
+    background-color: #2d3748;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .menuHeader {
+    border-bottom-color: #4a5568;
+  }
+  
+  .userName {
+    color: #f7fafc;
+  }
+  
+  .userEmail {
+    color: #cbd5e0;
+  }
+  
+  .menuItem {
+    color: #e2e8f0;
+  }
+  
+  .menuItem:hover {
+    background-color: #1a202c;
+  }
+  
+  .menuItemIcon {
+    color: #a0aec0;
+  }
+  
+  .logoutItem {
+    border-top-color: #4a5568;
+  }
+  
+  .loginButton:hover {
+    background-color: rgba(66, 153, 225, 0.2);
+  }
+  
+  .registerButton {
+    background-color: #4299e1;
+  }
+  
+  .registerButton:hover {
+    background-color: #3182ce;
+  }
 }
 
 .profileMenu .dropdownMenu {
