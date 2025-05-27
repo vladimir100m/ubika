@@ -463,8 +463,10 @@ const MapPage: React.FC = () => {
               </div>
             ) : (
               <>
-                {/* Add a map container to render the map */}
-                <div ref={mapRef} style={{ width: '100%', height: '500px', marginBottom: '20px' }}></div>
+                {/* Map container to render the Google Map */}
+                <div className={styles.mapContainer}>
+                  <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+                </div>
               </>
             )}
             
@@ -1025,6 +1027,75 @@ const MapPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Full-screen floating gallery */}
+      {showFloatingGallery && selectedProperty && (
+        <div className={galleryStyles.floatingGallery}>
+          <button 
+            className={galleryStyles.closeGalleryButton} 
+            onClick={closeFloatingGallery}
+            aria-label="Close gallery"
+          >
+            ×
+          </button>
+          
+          <div className={galleryStyles.galleryMainContainer}>
+            <button 
+              className={galleryStyles.galleryNavButton} 
+              onClick={() => handleImageChange('prev')}
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+            
+            <div className={galleryStyles.mainImageContainer}>
+              <img 
+                src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
+                alt={`Property image ${currentImageIndex + 1}`} 
+                className={galleryStyles.mainGalleryImage}
+              />
+            </div>
+            
+            <button 
+              className={galleryStyles.galleryNavButton} 
+              onClick={() => handleImageChange('next')}
+              aria-label="Next image"
+            >
+              ›
+            </button>
+          </div>
+          
+          <div className={galleryStyles.thumbnailsContainer}>
+            <div className={galleryStyles.thumbnailsScroller}>
+              <div 
+                className={`${galleryStyles.thumbnail} ${currentImageIndex === 0 ? galleryStyles.activeThumbnail : ''}`}
+                onClick={() => handleThumbnailClick(0)}
+              >
+                <img 
+                  src={selectedProperty.image_url} 
+                  alt="Property thumbnail 1" 
+                />
+              </div>
+              {additionalImages.map((img, index) => (
+                <div 
+                  key={index}
+                  className={`${galleryStyles.thumbnail} ${currentImageIndex === index + 1 ? galleryStyles.activeThumbnail : ''}`}
+                  onClick={() => handleThumbnailClick(index + 1)}
+                >
+                  <img 
+                    src={img} 
+                    alt={`Property thumbnail ${index + 2}`} 
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className={galleryStyles.galleryCounter}>
+            {currentImageIndex + 1} / {additionalImages.length + 1}
           </div>
         </div>
       )}
