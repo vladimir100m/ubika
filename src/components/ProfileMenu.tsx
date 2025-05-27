@@ -163,5 +163,3 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ variant = 'desktop' }) => {
 };
 
 export default ProfileMenu;
-
-export default ProfileMenu;

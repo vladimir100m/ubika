@@ -20,6 +20,21 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+}
+
+.authSection {
+  margin-left: 20px;
+}
+
 .navbar a {
   color: white;
   text-decoration: none;

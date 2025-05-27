@@ -180,11 +180,3 @@ const Login: React.FC = () => {
 };
 
 export default Login;
-      </div>
-      
-      {isMobile && <MobileNavigation />}
-    </div>
-  );
-};
-
-export default Login;
