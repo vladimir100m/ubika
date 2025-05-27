@@ -26,6 +26,7 @@ export type PropertyCardProps = Pick<
 const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => void }> = ({ property, onClose }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   
   const handleFavoriteToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -33,6 +34,22 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
       property.onFavoriteToggle();
     }
   };
+  
+  // Check if device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
   
   // Simulate multiple property images using the same image
   // In a real app, you would have an array of image URLs
@@ -94,7 +111,7 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
               aria-label={property.isFavorite ? "Remove from saved" : "Save property"}
               onClick={handleFavoriteToggle}
             >
-              <span>{property.isFavorite ? '❤️' : '♡'}</span> {property.isFavorite ? 'Saved' : 'Save'}
+              <span className={styles.heartIcon}>{property.isFavorite ? '❤️' : '♡'}</span> {property.isFavorite ? 'Saved' : 'Save'}
             </button>
             <button className={styles.actionButton} aria-label="Share Property">
               <span>&#128279;</span> Share
@@ -110,7 +127,7 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
             onClick={() => setActiveTab('overview')}
             aria-label="Overview Tab"
           >
-            Overview
+            {isMobile ? 'Info' : 'Overview'}
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === 'photos' ? styles.activeTab : ''}`}
@@ -307,6 +324,23 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
 const PropertyCard: React.FC<PropertyCardProps> = (props) => {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   const handleCardClick = () => {
     if (props.onClick) {
@@ -337,10 +371,11 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
     <>
       <div 
         className={styles.card}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        onClick={handleCardClick}
       >
-        <div className={styles.imageContainer} onClick={handleCardClick}>
+        <div className={styles.imageContainer}>
           <img src={props.image_url} alt="Property" className={styles.image} />
           <div className={styles.imageOverlay}>
             <span className={styles.statusTag}>For Sale</span>
@@ -349,11 +384,11 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
               onClick={handleSaveClick}
               aria-label={props.isFavorite ? "Remove from saved" : "Save property"}
             >
-              {props.isFavorite ? '❤️' : '🤍'} {props.isFavorite ? 'Saved' : 'Save'}
+              {props.isFavorite ? '❤️' : '🤍'} {!isMobile && (props.isFavorite ? 'Saved' : 'Save')}
             </button>
           </div>
         </div>
-        <div className={styles.details} onClick={handleCardClick}>
+        <div className={styles.details}>
           <h3 className={styles.price}>{props.price}</h3>
           <div className={styles.propertySpecs}>
             <span>{props.rooms} bd</span>
@@ -365,11 +400,13 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
           <p className={styles.address}>{props.address}</p>
           <div className={styles.cardFooter}>
             <button className={styles.viewDetailsButton}>
-              {isHovered ? 'View Details' : 'See More'}
+              {isHovered || isMobile ? 'View Details' : 'See More'}
             </button>
-            <button className={styles.shareButton} onClick={handleShareClick} aria-label="Share property">
-              <span>🔗</span>
-            </button>
+            {!isMobile && (
+              <button className={styles.shareButton} onClick={handleShareClick} aria-label="Share property">
+                <span>🔗</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
