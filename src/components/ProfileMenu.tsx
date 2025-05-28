@@ -43,11 +43,9 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ variant = 'desktop' }) => {
   if (!user) {
     return (
       <div className={styles.authButtons}>
-        <Link href="/login">
-          <a className={styles.loginButton}>Sign In</a>
+        <Link href="/login" className={styles.loginButton}>Sign In
         </Link>
-        <Link href="/register">
-          <a className={styles.registerButton}>Register</a>
+        <Link href="/register" className={styles.registerButton}>Register
         </Link>
       </div>
     );

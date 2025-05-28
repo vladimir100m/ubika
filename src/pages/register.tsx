@@ -6,11 +6,10 @@ import authStyles from '../styles/Auth.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import { useAuth } from '../context/AuthContext';
-import MobileNavigation from '../components/MobileNavigation';
+import Header from 'components/Header';
 
 const Register: React.FC = () => {
   const router = useRouter();
-  const isMobile = useMediaQuery('(max-width: 768px)');
   const { register, loading, error } = useAuth();
   
   const [formData, setFormData] = useState({
@@ -102,18 +101,7 @@ const Register: React.FC = () => {
   
   return (
     <div className={styles.container}>
-      <header className={`${styles.navbar} ${isMobile ? mobileStyles.onlyMobile : ''}`}>
-        <div className={styles.logo} onClick={() => router.push('/')}>Ubika</div>
-        <div className={mobileStyles.onlyDesktop}>
-          <nav>
-            <a href="#">Buy</a>
-            <a href="#">Rent</a>
-            <a href="/seller">Sell</a>
-            <a href="#">Mortgage</a>
-            <a href="/login">Log In</a>
-          </nav>
-        </div>
-      </header>
+      <Header />
       
       <div className={authStyles.authContainer}>
         <div className={authStyles.authCard}>
@@ -238,8 +226,6 @@ const Register: React.FC = () => {
           </div>
         </div>
       </div>
-      
-      {isMobile && <MobileNavigation />}
     </div>
   );
 };

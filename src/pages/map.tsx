@@ -11,6 +11,7 @@ import { Property, Geocode } from '../types'; // Import Property and Geocode typ
 import useMediaQuery from '../utils/useMediaQuery';
 import { useAuth } from '../context/AuthContext'; // Import AuthContext to check login state
 import PropertyPopup from 'components/PropertyPopup';
+import Header from 'components/Header';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -344,20 +345,7 @@ const MapPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <header className={styles.navbar}>
-        <div className={styles.logo} onClick={() => router.push('/')}>Ubika</div>
-        <nav>
-          <a href="#">Buy</a>
-          <a href="#">Rent</a>
-          <a href="#">Sell</a>
-          <a href="#">Mortgage</a>
-          {user ? (
-            <a href="/saved-properties">Saved Homes</a>
-          ) : (
-            <a href="/login">Sign In</a>
-          )}
-        </nav>
-      </header>
+      <Header />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', marginBottom: '1rem', gap: '1rem', zIndex: 10 }}>
           <input type="text" placeholder="Location" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', flex: 1 }} />
