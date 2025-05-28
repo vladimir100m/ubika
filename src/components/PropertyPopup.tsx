@@ -35,7 +35,6 @@ export default function PropertyPopup({
   const overviewRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
   const mapLocationRef = useRef<HTMLDivElement>(null);
-  const schoolsRef = useRef<HTMLDivElement>(null);
 
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
@@ -52,7 +51,6 @@ export default function PropertyPopup({
           if (id === 'overview-section') setActiveTab('overview');
           else if (id === 'details-section') setActiveTab('details');
           else if (id === 'map-section') setActiveTab('map');
-          else if (id === 'schools-section') setActiveTab('schools');
         }
       });
     }, options);
@@ -61,13 +59,11 @@ export default function PropertyPopup({
     if (overviewRef.current) observer.observe(overviewRef.current);
     if (detailsRef.current) observer.observe(detailsRef.current);
     if (mapLocationRef.current) observer.observe(mapLocationRef.current);
-    if (schoolsRef.current) observer.observe(schoolsRef.current);
 
     return () => {
       if (overviewRef.current) observer.unobserve(overviewRef.current);
       if (detailsRef.current) observer.unobserve(detailsRef.current);
       if (mapLocationRef.current) observer.unobserve(mapLocationRef.current);
-      if (schoolsRef.current) observer.unobserve(schoolsRef.current);
     };
   }, []);
 
@@ -84,9 +80,6 @@ export default function PropertyPopup({
         break;
       case 'map':
         mapLocationRef.current?.scrollIntoView({ behavior: 'smooth' });
-        break;
-      case 'schools':
-        schoolsRef.current?.scrollIntoView({ behavior: 'smooth' });
         break;
       default:
         break;
@@ -477,19 +470,6 @@ export default function PropertyPopup({
                       onClick={() => handleTabChange('map')}
                     >
                       Location
-                    </li>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'schools' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'schools' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'schools' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('schools')}
-                    >
-                      Schools
                     </li>
                   </ul>
                 </div>
@@ -1100,150 +1080,6 @@ export default function PropertyPopup({
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Schools section */}
-                  <div ref={schoolsRef} id="schools-section" style={{ padding: '24px', marginBottom: '40px' }}>
-                    <h3 style={{ 
-                      fontSize: '20px', 
-                      fontWeight: '600', 
-                      marginBottom: '16px',
-                      color: '#2a2a33'
-                    }}>Nearby Schools in {selectedProperty.city}</h3>
-                    <p style={{ 
-                      fontSize: '14px', 
-                      color: '#767676',
-                      marginBottom: '24px'
-                    }}>School service boundaries are intended to be used as a reference only; they may change and are not guaranteed. Contact the school directly to verify enrollment eligibility.</p>
-                    
-                    <div style={{ marginBottom: '24px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>ELEMENTARY</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Elementary School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>K-5</div>
-                        <div>0.5 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>9</div>
-                      </div>
-                    </div>
-                    
-                    <div style={{ marginBottom: '24px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>MIDDLE</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Middle School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>6-8</div>
-                        <div>1.2 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>8</div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>HIGH</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield High School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>9-12</div>
-                        <div>2.1 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>7</div>
                       </div>
                     </div>
                   </div>
