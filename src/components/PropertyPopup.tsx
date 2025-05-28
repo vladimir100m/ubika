@@ -716,59 +716,6 @@ export default function PropertyPopup({
                             Contact Agent
                           </button>
                         </div>
-                        
-                        {/* Price History - Zillow style */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px',
-                          marginBottom: '24px'
-                        }}>
-                          <h3 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Price History</h3>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px',
-                            marginBottom: '8px',
-                            fontSize: '14px',
-                            color: '#767676'
-                          }}>
-                            <span>DATE</span>
-                            <span>PRICE</span>
-                            <span>CHANGE</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            paddingBottom: '8px',
-                            marginBottom: '8px',
-                            fontSize: '14px'
-                          }}>
-                            <span>May 1, 2025</span>
-                            <span>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                            <span>--</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            paddingBottom: '8px',
-                            marginBottom: '8px',
-                            fontSize: '14px'
-                          }}>
-                            <span>Jan 15, 2025</span>
-                            <span>${(parseFloat(selectedProperty.price) * 1.05).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                            <span style={{ color: '#e4002b' }}>-5.0%</span>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>

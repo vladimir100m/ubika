@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 import styles from '../styles/Banner.module.css';
 import SearchBar, { SearchFilters } from './SearchBar';
 import { useRouter } from 'next/router';

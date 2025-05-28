@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Banner from '../components/Banner';
-import SearchBar from '../components/SearchBar';
 import PropertyCard from '../components/PropertyCard';
 import MobilePropertyCard from '../components/MobilePropertyCard';
-import MobileNavigation from '../components/MobileNavigation';
 import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import { Property } from '../types'; // Import Property type
@@ -12,6 +10,7 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import { useAuth } from '../context/AuthContext';
+import Header from 'components/Header';
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -106,29 +105,7 @@ const Home: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <header className={`${styles.navbar} ${isMobile ? mobileStyles.onlyMobile : ''}`}>
-        <div className={styles.logo}>Ubika</div>
-        <div className={mobileStyles.onlyDesktop}>
-          <nav>
-            <a href="#">Buy</a>
-            <a href="#">Rent</a>
-            <a href="/seller">Sell</a>
-            <a href="#">Mortgage</a>
-            {user ? (
-              <>
-                <a href="/saved-properties">Saved Homes</a>
-                <a href="/recent-searches">Recent Searches</a>
-                <a href="/user/profile">My Account</a>
-              </>
-            ) : (
-              <>
-                <a href="/login">Log In</a>
-                <a href="/register">Sign Up</a>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <Header />
       <Banner />
 
       <section className={styles.featuredProperties}>
@@ -219,9 +196,6 @@ const Home: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} Ubika. All rights reserved.</p>
         </div>
       </footer>
-
-      {/* Mobile Navigation */}
-      {isMobile && <MobileNavigation />}
     </div>
   );
 };

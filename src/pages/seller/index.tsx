@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
+import Header from 'components/Header';
 
 // Mock seller ID - in a real app, this would come from authentication
 const MOCK_SELLER_ID = "seller123";
@@ -274,385 +275,382 @@ const SellerDashboard: React.FC = () => {
   }, [activeTab]);
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1>Seller Dashboard</h1>
-        <button onClick={() => router.push('/')} className={styles.homeButton}>
-          Back to Home
-        </button>
-      </header>
+    <div>
+      <Header />
+      <div className={styles.container}>
 
-      <div className={styles.tabs}>
-        <button 
-          className={`${styles.tabButton} ${activeTab === 'list' ? styles.active : ''}`}
-          onClick={() => setActiveTab('list')}
-        >
-          My Properties
-        </button>
-        <button 
-          className={`${styles.tabButton} ${activeTab === 'add' ? styles.active : ''}`}
-          onClick={() => {
-            resetForm();
-            setActiveTab('add');
-          }}
-        >
-          Add New Property
-        </button>
-        {activeTab === 'edit' && (
+        <div className={styles.tabs}>
           <button 
-            className={`${styles.tabButton} ${activeTab === 'edit' ? styles.active : ''}`}
+            className={`${styles.tabButton} ${activeTab === 'list' ? styles.active : ''}`}
+            onClick={() => setActiveTab('list')}
           >
-            Edit Property
+            My Properties
           </button>
-        )}
-      </div>
-
-      {message && (
-        <div className={`${styles.message} ${styles[message.type]}`}>
-          {message.text}
-          <button onClick={() => setMessage(null)} className={styles.closeMessage}>×</button>
-        </div>
-      )}
-
-      {activeTab === 'list' ? (
-        <div className={styles.propertiesList}>
-          <h2>My Listed Properties</h2>
-          {loading ? (
-            <div className={styles.loading}>Loading your properties...</div>
-          ) : properties.length === 0 ? (
-            <div className={styles.emptyState}>
-              <p>You haven't listed any properties yet.</p>
-              <p>As a seller, you can add properties, update their status, and manage your listings all in one place.</p>
-              <button 
-                onClick={() => setActiveTab('add')}
-                className={styles.addPropertyButton}
-              >
-                Add Your First Property
-              </button>
-            </div>
-          ) : (
-            <div className={styles.propertyGrid}>
-              {properties.map(property => (
-                <div key={property.id} className={styles.propertyCard}>
-                  <div className={styles.propertyImageContainer}>
-                    <img 
-                      src={property.image_url} 
-                      alt={property.title}
-                      className={styles.propertyImage}
-                    />
-                    <div className={styles.propertyPrice}>${property.price}</div>
-                  </div>
-                  <div className={styles.propertyDetails}>
-                    <h3>{property.title}</h3>
-                    <p className={styles.propertyAddress}>{property.address}</p>
-                    <div className={styles.propertySpecs}>
-                      <span>{property.rooms} rooms</span> • 
-                      <span>{property.bathrooms} baths</span> • 
-                      <span>{property.squareMeters} m²</span>
-                    </div>
-                    <div className={styles.propertyStatus}>
-                      Status: <span className={styles[property.status]}>{property.status}</span>
-                    </div>
-                    <div className={styles.propertyDate}>
-                      Listed on: {new Date(property.created_at).toLocaleDateString()}
-                    </div>
-                    <div className={styles.propertyActions}>
-                      <button 
-                        className={styles.editButton}
-                        onClick={() => handleEditProperty(property)}
-                      >
-                        Edit
-                      </button>
-                      {property.status === 'available' && (
-                        <button 
-                          className={styles.markPendingButton}
-                          onClick={() => handleUpdatePropertyStatus(property.id, 'pending')}
-                        >
-                          Mark Pending
-                        </button>
-                      )}
-                      {property.status === 'pending' && (
-                        <button 
-                          className={styles.markAvailableButton}
-                          onClick={() => handleUpdatePropertyStatus(property.id, 'available')}
-                        >
-                          Mark Available
-                        </button>
-                      )}
-                      {property.status === 'pending' && (
-                        <button 
-                          className={styles.markSoldButton}
-                          onClick={() => handleUpdatePropertyStatus(property.id, 'sold')}
-                        >
-                          Mark Sold
-                        </button>
-                      )}
-                      {property.status === 'sold' && (
-                        <button 
-                          className={styles.markAvailableButton}
-                          onClick={() => handleUpdatePropertyStatus(property.id, 'available')}
-                        >
-                          Re-List
-                        </button>
-                      )}
-                      <button 
-                        className={styles.deleteButton}
-                        onClick={() => handleDeleteProperty(property.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <button 
+            className={`${styles.tabButton} ${activeTab === 'add' ? styles.active : ''}`}
+            onClick={() => {
+              resetForm();
+              setActiveTab('add');
+            }}
+          >
+            Add New Property
+          </button>
+          {activeTab === 'edit' && (
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'edit' ? styles.active : ''}`}
+            >
+              Edit Property
+            </button>
           )}
         </div>
-      ) : (
-        <div className={styles.addPropertyForm}>
-          <h2>{activeTab === 'edit' ? 'Edit Property' : 'List a New Property'}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formGroup}>
-              <label htmlFor="title" className={styles.formLabel}>Property Title*</label>
-              <input 
-                type="text" 
-                id="title" 
-                name="title" 
-                value={formData.title} 
-                onChange={handleInputChange} 
-                required 
-                placeholder="e.g., Modern Apartment with Ocean View"
-                className={styles.formInput}
-              />
-            </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="description" className={styles.formLabel}>Description*</label>
-              <textarea 
-                id="description" 
-                name="description" 
-                value={formData.description} 
-                onChange={handleInputChange} 
-                required 
-                rows={4}
-                placeholder="Describe your property in detail"
-                className={styles.formTextarea}
-              />
-            </div>
+        {message && (
+          <div className={`${styles.message} ${styles[message.type]}`}>
+            {message.text}
+            <button onClick={() => setMessage(null)} className={styles.closeMessage}>×</button>
+          </div>
+        )}
 
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label htmlFor="price" className={styles.formLabel}>Price (USD)*</label>
-                <input 
-                  type="text" 
-                  id="price" 
-                  name="price" 
-                  value={formData.price} 
-                  onChange={handleInputChange} 
-                  required 
-                  placeholder="e.g., 250000"
-                  className={styles.formInput}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="type" className={styles.formLabel}>Property Type*</label>
-                <select 
-                  id="type" 
-                  name="type" 
-                  value={formData.type} 
-                  onChange={handleInputChange} 
-                  required
-                  className={styles.formSelect}
+        {activeTab === 'list' ? (
+          <div className={styles.propertiesList}>
+            <h2>My Listed Properties</h2>
+            {loading ? (
+              <div className={styles.loading}>Loading your properties...</div>
+            ) : properties.length === 0 ? (
+              <div className={styles.emptyState}>
+                <p>You haven't listed any properties yet.</p>
+                <p>As a seller, you can add properties, update their status, and manage your listings all in one place.</p>
+                <button 
+                  onClick={() => setActiveTab('add')}
+                  className={styles.addPropertyButton}
                 >
-                  <option value="">Select type</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="house">House</option>
-                  <option value="condo">Condo</option>
-                  <option value="townhouse">Townhouse</option>
-                  <option value="villa">Villa</option>
-                  <option value="cabin">Cabin</option>
-                  <option value="land">Land</option>
-                </select>
+                  Add Your First Property
+                </button>
               </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="address" className={styles.formLabel}>Street Address*</label>                <input 
-                  type="text" 
-                  id="address" 
-                  name="address" 
-                  value={formData.address} 
-                  onChange={handleInputChange} 
-                  required 
-                  className={styles.formInput}
-                />
-            </div>
-
-            <div className={styles.formRow}>
+            ) : (
+              <div className={styles.propertyGrid}>
+                {properties.map(property => (
+                  <div key={property.id} className={styles.propertyCard}>
+                    <div className={styles.propertyImageContainer}>
+                      <img 
+                        src={property.image_url} 
+                        alt={property.title}
+                        className={styles.propertyImage}
+                      />
+                      <div className={styles.propertyPrice}>${property.price}</div>
+                    </div>
+                    <div className={styles.propertyDetails}>
+                      <h3>{property.title}</h3>
+                      <p className={styles.propertyAddress}>{property.address}</p>
+                      <div className={styles.propertySpecs}>
+                        <span>{property.rooms} rooms</span> • 
+                        <span>{property.bathrooms} baths</span> • 
+                        <span>{property.squareMeters} m²</span>
+                      </div>
+                      <div className={styles.propertyStatus}>
+                        Status: <span className={styles[property.status]}>{property.status}</span>
+                      </div>
+                      <div className={styles.propertyDate}>
+                        Listed on: {new Date(property.created_at).toLocaleDateString()}
+                      </div>
+                      <div className={styles.propertyActions}>
+                        <button 
+                          className={styles.editButton}
+                          onClick={() => handleEditProperty(property)}
+                        >
+                          Edit
+                        </button>
+                        {property.status === 'available' && (
+                          <button 
+                            className={styles.markPendingButton}
+                            onClick={() => handleUpdatePropertyStatus(property.id, 'pending')}
+                          >
+                            Mark Pending
+                          </button>
+                        )}
+                        {property.status === 'pending' && (
+                          <button 
+                            className={styles.markAvailableButton}
+                            onClick={() => handleUpdatePropertyStatus(property.id, 'available')}
+                          >
+                            Mark Available
+                          </button>
+                        )}
+                        {property.status === 'pending' && (
+                          <button 
+                            className={styles.markSoldButton}
+                            onClick={() => handleUpdatePropertyStatus(property.id, 'sold')}
+                          >
+                            Mark Sold
+                          </button>
+                        )}
+                        {property.status === 'sold' && (
+                          <button 
+                            className={styles.markAvailableButton}
+                            onClick={() => handleUpdatePropertyStatus(property.id, 'available')}
+                          >
+                            Re-List
+                          </button>
+                        )}
+                        <button 
+                          className={styles.deleteButton}
+                          onClick={() => handleDeleteProperty(property.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className={styles.addPropertyForm}>
+            <h2>{activeTab === 'edit' ? 'Edit Property' : 'List a New Property'}</h2>
+            <form onSubmit={handleSubmit}>
               <div className={styles.formGroup}>
-                <label htmlFor="city" className={styles.formLabel}>City*</label>
+                <label htmlFor="title" className={styles.formLabel}>Property Title*</label>
                 <input 
                   type="text" 
-                  id="city" 
-                  name="city" 
-                  value={formData.city} 
+                  id="title" 
+                  name="title" 
+                  value={formData.title} 
                   onChange={handleInputChange} 
                   required 
+                  placeholder="e.g., Modern Apartment with Ocean View"
                   className={styles.formInput}
                 />
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="state" className={styles.formLabel}>State/Province*</label>
-                <input 
-                  type="text" 
-                  id="state" 
-                  name="state" 
-                  value={formData.state} 
+                <label htmlFor="description" className={styles.formLabel}>Description*</label>
+                <textarea 
+                  id="description" 
+                  name="description" 
+                  value={formData.description} 
                   onChange={handleInputChange} 
                   required 
-                  className={styles.formInput}
-                />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label htmlFor="country" className={styles.formLabel}>Country*</label>
-                <input 
-                  type="text" 
-                  id="country" 
-                  name="country" 
-                  value={formData.country} 
-                  onChange={handleInputChange} 
-                  required 
-                  className={styles.formInput}
+                  rows={4}
+                  placeholder="Describe your property in detail"
+                  className={styles.formTextarea}
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="zip_code" className={styles.formLabel}>ZIP/Postal Code</label>
-                <input 
-                  type="text" 
-                  id="zip_code" 
-                  name="zip_code" 
-                  value={formData.zip_code || ''} 
-                  onChange={handleInputChange}
-                  className={styles.formInput}
-                />
-              </div>
-            </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="price" className={styles.formLabel}>Price (USD)*</label>
+                  <input 
+                    type="text" 
+                    id="price" 
+                    name="price" 
+                    value={formData.price} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder="e.g., 250000"
+                    className={styles.formInput}
+                  />
+                </div>
 
-            <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="type" className={styles.formLabel}>Property Type*</label>
+                  <select 
+                    id="type" 
+                    name="type" 
+                    value={formData.type} 
+                    onChange={handleInputChange} 
+                    required
+                    className={styles.formSelect}
+                  >
+                    <option value="">Select type</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="house">House</option>
+                    <option value="condo">Condo</option>
+                    <option value="townhouse">Townhouse</option>
+                    <option value="villa">Villa</option>
+                    <option value="cabin">Cabin</option>
+                    <option value="land">Land</option>
+                  </select>
+                </div>
+              </div>
+
               <div className={styles.formGroup}>
-                <label htmlFor="rooms" className={styles.formLabel}>Number of Rooms*</label>
+                <label htmlFor="address" className={styles.formLabel}>Street Address*</label>                <input 
+                    type="text" 
+                    id="address" 
+                    name="address" 
+                    value={formData.address} 
+                    onChange={handleInputChange} 
+                    required 
+                    className={styles.formInput}
+                  />
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="city" className={styles.formLabel}>City*</label>
+                  <input 
+                    type="text" 
+                    id="city" 
+                    name="city" 
+                    value={formData.city} 
+                    onChange={handleInputChange} 
+                    required 
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="state" className={styles.formLabel}>State/Province*</label>
+                  <input 
+                    type="text" 
+                    id="state" 
+                    name="state" 
+                    value={formData.state} 
+                    onChange={handleInputChange} 
+                    required 
+                    className={styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="country" className={styles.formLabel}>Country*</label>
+                  <input 
+                    type="text" 
+                    id="country" 
+                    name="country" 
+                    value={formData.country} 
+                    onChange={handleInputChange} 
+                    required 
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="zip_code" className={styles.formLabel}>ZIP/Postal Code</label>
+                  <input 
+                    type="text" 
+                    id="zip_code" 
+                    name="zip_code" 
+                    value={formData.zip_code || ''} 
+                    onChange={handleInputChange}
+                    className={styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="rooms" className={styles.formLabel}>Number of Rooms*</label>
+                  <input 
+                    type="number" 
+                    id="rooms" 
+                    name="rooms" 
+                    value={formData.rooms} 
+                    onChange={handleInputChange} 
+                    required 
+                    min="0"
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="bathrooms" className={styles.formLabel}>Number of Bathrooms*</label>
+                  <input 
+                    type="number" 
+                    id="bathrooms" 
+                    name="bathrooms" 
+                    value={formData.bathrooms} 
+                    onChange={handleInputChange} 
+                    required 
+                    min="0"
+                    step="0.5"
+                    className={styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="squareMeters" className={styles.formLabel}>Area (square meters)*</label>
+                  <input 
+                    type="number" 
+                    id="squareMeters" 
+                    name="squareMeters" 
+                    value={formData.squareMeters} 
+                    onChange={handleInputChange} 
+                    required 
+                    min="0"
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="status" className={styles.formLabel}>Status*</label>
+                  <select 
+                    id="status" 
+                    name="status" 
+                    value={formData.status} 
+                    onChange={handleInputChange} 
+                    required
+                    className={styles.formSelect}
+                  >
+                    <option value="available">Available</option>
+                    <option value="pending">Pending</option>
+                    <option value="sold">Sold</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
                 <input 
                   type="number" 
-                  id="rooms" 
-                  name="rooms" 
-                  value={formData.rooms} 
+                  id="yearBuilt" 
+                  name="yearBuilt" 
+                  value={formData.yearBuilt || ''} 
                   onChange={handleInputChange} 
-                  required 
-                  min="0"
+                  placeholder="e.g., 2010"
+                  min="1800"
+                  max={new Date().getFullYear()}
                   className={styles.formInput}
                 />
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="bathrooms" className={styles.formLabel}>Number of Bathrooms*</label>
-                <input 
-                  type="number" 
-                  id="bathrooms" 
-                  name="bathrooms" 
-                  value={formData.bathrooms} 
-                  onChange={handleInputChange} 
-                  required 
-                  min="0"
-                  step="0.5"
-                  className={styles.formInput}
-                />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label htmlFor="squareMeters" className={styles.formLabel}>Area (square meters)*</label>
-                <input 
-                  type="number" 
-                  id="squareMeters" 
-                  name="squareMeters" 
-                  value={formData.squareMeters} 
-                  onChange={handleInputChange} 
-                  required 
-                  min="0"
-                  className={styles.formInput}
+                <label className={styles.formLabel}>Property Image</label>
+                <ImageUpload 
+                  onImageChange={(imageUrl) => setFormData(prev => ({...prev, image_url: imageUrl}))}
+                  defaultValue={formData.image_url}
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="status" className={styles.formLabel}>Status*</label>
-                <select 
-                  id="status" 
-                  name="status" 
-                  value={formData.status} 
-                  onChange={handleInputChange} 
-                  required
-                  className={styles.formSelect}
+              <div className={styles.formActions}>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    resetForm();
+                    setActiveTab('list');
+                  }} 
+                  className={styles.cancelButton}
+                  disabled={submitting}
                 >
-                  <option value="available">Available</option>
-                  <option value="pending">Pending</option>
-                  <option value="sold">Sold</option>
-                </select>
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className={styles.submitButton}
+                  disabled={submitting}
+                >
+                  {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'List Property'}
+                </button>
               </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
-              <input 
-                type="number" 
-                id="yearBuilt" 
-                name="yearBuilt" 
-                value={formData.yearBuilt || ''} 
-                onChange={handleInputChange} 
-                placeholder="e.g., 2010"
-                min="1800"
-                max={new Date().getFullYear()}
-                className={styles.formInput}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Property Image</label>
-              <ImageUpload 
-                onImageChange={(imageUrl) => setFormData(prev => ({...prev, image_url: imageUrl}))}
-                defaultValue={formData.image_url}
-              />
-            </div>
-
-            <div className={styles.formActions}>
-              <button 
-                type="button" 
-                onClick={() => {
-                  resetForm();
-                  setActiveTab('list');
-                }} 
-                className={styles.cancelButton}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className={styles.submitButton}
-                disabled={submitting}
-              >
-                {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'List Property'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

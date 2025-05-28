@@ -22,25 +22,25 @@ const Header: React.FC<HeaderProps> = () => {
       <div className={mobileStyles.onlyDesktop}>
         <nav className={styles.navigation}>
           <div className={styles.navLinks}>
-            <Link href="#">
-              <a>Buy</a>
+            <Link href="/map">
+              Buy
             </Link>
-            <Link href="#">
-              <a>Rent</a>
+            <Link href="/map">
+              Rent
             </Link>
             <Link href="/seller">
-              <a>Sell</a>
+              Sell
             </Link>
             <Link href="#">
-              <a>Mortgage</a>
+              Mortgage
             </Link>
             {user && (
               <>
                 <Link href="/saved-properties">
-                  <a>Saved Homes</a>
+                  Saved Homes
                 </Link>
                 <Link href="/recent-searches">
-                  <a>Recent Searches</a>
+                  Recent Searches
                 </Link>
               </>
             )}
