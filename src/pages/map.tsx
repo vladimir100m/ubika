@@ -9,13 +9,11 @@ import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
 import useMediaQuery from '../utils/useMediaQuery';
-import { useAuth } from '../context/AuthContext'; // Import AuthContext to check login state
 import PropertyPopup from 'components/PropertyPopup';
 import Header from 'components/Header';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth(); // Get user from AuthContext
   const [propertyLocations, setPropertyLocations] = useState<Property[]>([]); // Typed state
   const [mapCenter, setMapCenter] = useState<Geocode>({ lat: -34.5897318, lng: -58.4232065 });
   const [markers, setMarkers] = useState<{ id: number; lat: number; lng: number }[]>([]);

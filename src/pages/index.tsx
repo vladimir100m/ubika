@@ -9,12 +9,10 @@ import { Property } from '../types'; // Import Property type
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import useMediaQuery from '../utils/useMediaQuery';
-import { useAuth } from '../context/AuthContext';
 import Header from 'components/Header';
 
 const Home: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
   const [favorites, setFavorites] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);

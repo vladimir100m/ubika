@@ -4,8 +4,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
-import ProfileMenu from './ProfileMenu';
-import { useAuth } from '../context/AuthContext';
 import useMediaQuery from '../utils/useMediaQuery';
 
 interface HeaderProps {
@@ -14,7 +12,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = () => {
   const router = useRouter();
-  const { user } = useAuth();
   const isMobile = useMediaQuery('(max-width: 768px)');
   
   return (
@@ -29,25 +26,12 @@ const Header: React.FC<HeaderProps> = () => {
             <Link href="/map">
               Buy
             </Link>
-            {user && (
-              <Link href="/recent-searches">
-                Recent Searches
-              </Link>
-            )}
             <Link href="/map">
               Rent
             </Link>
-            {user && (
-              <Link href="/saved-properties">
-                Saved Homes
-              </Link>
-            )}
             <Link href="/seller">
               Sell
             </Link>
-          </div>
-          <div className={styles.authSection}>
-            <ProfileMenu variant="desktop" />
           </div>
         </nav>
       </div>

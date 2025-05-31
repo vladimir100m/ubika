@@ -1,7 +1,6 @@
 import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
 import React, {useState, useEffect, useRef, RefObject} from 'react';
-import {useAuth} from 'context/AuthContext';
 import {useRouter} from 'next/router';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
@@ -87,7 +86,6 @@ export default function PropertyPopup({
   };
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { user } = useAuth(); // Get user from AuthContext
   
   // Initialize Google Maps when the component loads
   useEffect(() => {
@@ -131,10 +129,14 @@ export default function PropertyPopup({
   
   // Handler for saving/unsaving a property
   const handleSaveProperty = () => {
-    if (!user) {
-      // Redirect to login if not authenticated
-      router.push('/login?redirect=/map');
-      return;
+    // Add to localStorage favorites instead of requiring login
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    if (!favorites.includes(selectedProperty.id)) {
+      favorites.push(selectedProperty.id);
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    } else {
+      const updatedFavorites = favorites.filter((id: number) => id !== selectedProperty.id);
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
     }
   }
 
