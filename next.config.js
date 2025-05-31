@@ -1,8 +1,9 @@
 export default {
-  experimental: {
-    allowedDevOrigins: [
-      'http://localhost:3000',
-    ],
+  devIndicators: {
+    appIsrStatus: false,
+  },
+  images: {
+    domains: ['lh3.googleusercontent.com'],
   },
   env: {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,

@@ -2,6 +2,7 @@ import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
 import React, {useState, useEffect, useRef, RefObject} from 'react';
 import {useRouter} from 'next/router';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
 
@@ -26,6 +27,7 @@ export default function PropertyPopup({
   mapRef: RefObject<HTMLDivElement | null>;
 }) {
   const router = useRouter();
+  const { user, isLoading } = useUser();
   const isFavorite = selectedProperty.isFavorite || false;
   const [activeTab, setActiveTab] = useState('overview');
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -129,14 +131,21 @@ export default function PropertyPopup({
   
   // Handler for saving/unsaving a property
   const handleSaveProperty = () => {
-    // Add to localStorage favorites instead of requiring login
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    if (!user) {
+      // If user is not authenticated, redirect to login
+      window.location.href = '/api/auth/login';
+      return;
+    }
+    
+    // For authenticated users, save to localStorage
+    // In a real app, you'd save this to a database associated with the user
+    const favorites = JSON.parse(localStorage.getItem(`favorites_${user.sub}`) || '[]');
     if (!favorites.includes(selectedProperty.id)) {
       favorites.push(selectedProperty.id);
-      localStorage.setItem('favorites', JSON.stringify(favorites));
+      localStorage.setItem(`favorites_${user.sub}`, JSON.stringify(favorites));
     } else {
       const updatedFavorites = favorites.filter((id: number) => id !== selectedProperty.id);
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      localStorage.setItem(`favorites_${user.sub}`, JSON.stringify(updatedFavorites));
     }
   }
 
