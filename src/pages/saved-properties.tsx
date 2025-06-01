@@ -4,23 +4,7 @@ import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
-
-interface Property {
-  id: number;
-  title: string;
-  location: string;
-  price: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  imageUrl: string;
-  description: string;
-  lat: number;
-  lng: number;
-  amenities: string[];
-  propertyType: string;
-  listingType: string;
-}
+import { Property } from '../types';
 
 const SavedProperties: React.FC = () => {
   const { user, error, isLoading } = useUser();
@@ -121,13 +105,16 @@ const SavedProperties: React.FC = () => {
                 {savedProperties.map((property) => (
                   <PropertyCard 
                     key={property.id}
-                    image_url={property.imageUrl}
+                    image_url={property.image_url}
                     description={property.description}
                     price={property.price}
-                    rooms={property.bedrooms}
+                    rooms={property.rooms}
                     bathrooms={property.bathrooms}
-                    address={property.location}
-                    squareMeters={parseInt(property.area)}
+                    address={property.address}
+                    squareMeters={property.squareMeters}
+                    yearBuilt={property.yearBuilt}
+                    latitude={property.latitude}
+                    longitude={property.longitude}
                   />
                 ))}
               </div>

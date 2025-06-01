@@ -10,6 +10,20 @@ interface PropertyFeature {
   icon: string;
 }
 
+interface Neighborhood {
+  id: number;
+  name: string;
+  city: string;
+  description: string;
+  subway_access: string;
+  dining_options: string;
+  schools_info: string;
+  shopping_info: string;
+  parks_recreation: string;
+  safety_rating: number;
+  walkability_score: number;
+}
+
 export type PropertyCardProps = Pick<
   Property,
   | 'image_url' // Corrected from imageUrl
@@ -36,6 +50,8 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
   const [isMobile, setIsMobile] = useState(false);
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [loadingFeatures, setLoadingFeatures] = useState(true);
+  const [neighborhood, setNeighborhood] = useState<Neighborhood | null>(null);
+  const [loadingNeighborhood, setLoadingNeighborhood] = useState(true);
   
   const handleFavoriteToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,24 +76,41 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  // Fetch property features
+  // Fetch property features and neighborhood data
   useEffect(() => {
-    const fetchFeatures = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/property-features');
-        if (response.ok) {
-          const features = await response.json();
+        // Fetch property features
+        const featuresResponse = await fetch('/api/property-features');
+        if (featuresResponse.ok) {
+          const features = await featuresResponse.json();
           setPropertyFeatures(features);
         }
+
+        // Fetch neighborhood data by searching for the property's address
+        if (property.address) {
+          // Extract city from address (assuming format includes city)
+          const addressParts = property.address.split(',');
+          const searchTerm = addressParts.length > 1 ? addressParts[1].trim() : addressParts[0].trim();
+          
+          const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(searchTerm)}`);
+          if (neighborhoodResponse.ok) {
+            const neighborhoods = await neighborhoodResponse.json();
+            if (neighborhoods.length > 0) {
+              setNeighborhood(neighborhoods[0]); // Use the first matching neighborhood
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error fetching property features:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoadingFeatures(false);
+        setLoadingNeighborhood(false);
       }
     };
 
-    fetchFeatures();
-  }, []);
+    fetchData();
+  }, [property.address]);
   
   // Simulate multiple property images using the same image
   // In a real app, you would have an array of image URLs
@@ -320,34 +353,104 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
               )}
               <div className={styles.neighborhoodInfo}>
                 <h3 className={styles.sectionTitle}>Neighborhood</h3>
-                <p>Information about the surrounding area would be displayed here</p>
-                
-                <div className={styles.neighborhoodGrid}>
-                  <div className={styles.neighborhoodItem}>
-                    <h4>Schools</h4>
-                    <ul>
-                      <li>Elementary School (0.5 miles)</li>
-                      <li>Middle School (1.2 miles)</li>
-                      <li>High School (2.0 miles)</li>
-                    </ul>
+                {loadingNeighborhood ? (
+                  <div style={{ color: '#666', fontSize: '14px' }}>Loading neighborhood information...</div>
+                ) : neighborhood ? (
+                  <>
+                    <div style={{ marginBottom: '20px' }}>
+                      <h4 style={{ fontSize: '18px', color: '#2a2a33', marginBottom: '8px' }}>
+                        {neighborhood.name}, {neighborhood.city}
+                      </h4>
+                      <p style={{ color: '#5a6a7a', lineHeight: '1.5' }}>
+                        {neighborhood.description}
+                      </p>
+                    </div>
+                    
+                    <div className={styles.neighborhoodGrid}>
+                      {neighborhood.schools_info && (
+                        <div className={styles.neighborhoodItem}>
+                          <h4>Schools</h4>
+                          <p style={{ color: '#5a6a7a', fontSize: '14px' }}>
+                            {neighborhood.schools_info}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {neighborhood.subway_access && (
+                        <div className={styles.neighborhoodItem}>
+                          <h4>Transportation</h4>
+                          <p style={{ color: '#5a6a7a', fontSize: '14px' }}>
+                            {neighborhood.subway_access}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {neighborhood.dining_options && (
+                        <div className={styles.neighborhoodItem}>
+                          <h4>Shopping & Dining</h4>
+                          <p style={{ color: '#5a6a7a', fontSize: '14px' }}>
+                            {neighborhood.dining_options}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {neighborhood.shopping_info && (
+                        <div className={styles.neighborhoodItem}>
+                          <h4>Shopping</h4>
+                          <p style={{ color: '#5a6a7a', fontSize: '14px' }}>
+                            {neighborhood.shopping_info}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {neighborhood.parks_recreation && (
+                        <div className={styles.neighborhoodItem}>
+                          <h4>Parks & Recreation</h4>
+                          <p style={{ color: '#5a6a7a', fontSize: '14px' }}>
+                            {neighborhood.parks_recreation}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {(neighborhood.safety_rating || neighborhood.walkability_score) && (
+                      <div style={{ 
+                        marginTop: '20px', 
+                        padding: '16px', 
+                        backgroundColor: '#f8f9fa', 
+                        borderRadius: '8px',
+                        display: 'flex',
+                        gap: '20px'
+                      }}>
+                        {neighborhood.safety_rating && (
+                          <div>
+                            <div style={{ fontSize: '14px', color: '#5a6a7a', marginBottom: '4px' }}>
+                              Safety Rating
+                            </div>
+                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2a2a33' }}>
+                              {neighborhood.safety_rating}/5 ⭐
+                            </div>
+                          </div>
+                        )}
+                        
+                        {neighborhood.walkability_score && (
+                          <div>
+                            <div style={{ fontSize: '14px', color: '#5a6a7a', marginBottom: '4px' }}>
+                              Walkability Score
+                            </div>
+                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2a2a33' }}>
+                              {neighborhood.walkability_score}/100 🚶
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ color: '#666', fontSize: '14px', fontStyle: 'italic' }}>
+                    Neighborhood information not available for this location
                   </div>
-                  <div className={styles.neighborhoodItem}>
-                    <h4>Transportation</h4>
-                    <ul>
-                      <li>Bus Stop (0.2 miles)</li>
-                      <li>Subway Station (0.7 miles)</li>
-                      <li>Airport (10.5 miles)</li>
-                    </ul>
-                  </div>
-                  <div className={styles.neighborhoodItem}>
-                    <h4>Shopping & Dining</h4>
-                    <ul>
-                      <li>Grocery Store (0.3 miles)</li>
-                      <li>Shopping Mall (1.5 miles)</li>
-                      <li>Restaurants (0.4 miles)</li>
-                    </ul>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}
