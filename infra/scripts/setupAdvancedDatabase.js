@@ -85,6 +85,18 @@ const setupAdvancedDatabase = async () => {
     `;
     await client.query(createNeighborhoodsTableQuery);
 
+    // Create user_saved_properties table
+    const createUserSavedPropertiesTableQuery = `
+      CREATE TABLE IF NOT EXISTS user_saved_properties (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        property_id INTEGER REFERENCES properties(id) ON DELETE CASCADE,
+        saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, property_id)
+      );
+    `;
+    await client.query(createUserSavedPropertiesTableQuery);
+
     // Insert default property features
     const features = [
       { name: 'Air Conditioning', category: 'climate', icon: 'snowflake' },
@@ -227,7 +239,7 @@ const setupAdvancedDatabase = async () => {
     }
 
     console.log('Advanced database setup completed successfully.');
-    console.log('Created tables: property_features, property_feature_assignments, property_types, property_statuses, neighborhoods');
+    console.log('Created tables: property_features, property_feature_assignments, property_types, property_statuses, neighborhoods, user_saved_properties');
     console.log('Inserted default data for features, types, statuses, and neighborhoods.');
 
   } catch (error) {

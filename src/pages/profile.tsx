@@ -1,9 +1,8 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import PropertyCard from '../components/PropertyCard';
-import ImageUpload from '../components/ImageUpload';
 import styles from '../styles/Home.module.css';
 import { Property, PropertyFormData } from '../types';
 
@@ -22,11 +21,7 @@ interface PropertyStatus {
 
 function Profile() {
   const { user, error, isLoading } = useUser();
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [activeTab, setActiveTab] = useState<'account' | 'saved' | 'sell'>('saved');
-  const [properties, setProperties] = useState<Property[]>([]);
   const [sellerProperties, setSellerProperties] = useState<Property[]>([]);
-  const [savedProperties, setSavedProperties] = useState<Property[]>([]);
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
     description: '',
@@ -46,52 +41,22 @@ function Profile() {
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    // Handle tab query parameter
-    const { tab } = router.query;
-    if (tab && ['account', 'saved', 'sell'].includes(tab as string)) {
-      setActiveTab(tab as 'account' | 'saved' | 'sell');
-    }
-    
     if (!isLoading && !user) {
       // Don't redirect immediately, let them see the login prompts
       return;
     }
     
     if (user) {
-      // Load user's favorites from localStorage
-      const userFavorites = JSON.parse(localStorage.getItem(`favorites_${user.sub}`) || '[]');
-      setFavorites(userFavorites);
-      
       // Set seller_id in form data
       setFormData(prev => ({ ...prev, seller_id: user.sub || '' }));
       
-      // Set default tab for authenticated users (only if no tab query param)
-      if (!tab && activeTab === 'saved' && userFavorites.length === 0) {
-        setActiveTab('account');
-      }
-      
-      // Load all properties and seller properties
-      loadProperties();
+      // Load seller properties
       loadSellerProperties();
     }
-  }, [user, isLoading, router]);
-
-  // Handle click outside dropdown to close it
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [user, isLoading]);
 
   // Fetch property types and statuses
   useEffect(() => {
@@ -118,26 +83,6 @@ function Profile() {
 
     fetchFormData();
   }, []);
-
-  // Load saved properties when favorites change
-  useEffect(() => {
-    if (properties.length > 0 && favorites.length > 0) {
-      const saved = properties.filter((property: Property) => favorites.includes(property.id));
-      setSavedProperties(saved);
-    } else {
-      setSavedProperties([]);
-    }
-  }, [properties, favorites]);
-
-  const loadProperties = async () => {
-    try {
-      const response = await fetch('/api/properties');
-      const data = await response.json();
-      setProperties(data);
-    } catch (error) {
-      console.error('Error loading properties:', error);
-    }
-  };
 
   const loadSellerProperties = async () => {
     if (!user?.sub) return;
@@ -225,18 +170,6 @@ function Profile() {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error.message}</div>;
 
-  const profileMenuItems = [
-    { label: 'Saved homes', icon: '🏠', action: () => setActiveTab('saved') },
-    { label: 'Saved searches', icon: '🔍', action: () => console.log('Saved searches') },
-    { label: 'Inbox', icon: '💬', badge: 'NEW', action: () => console.log('Inbox') },
-    { label: 'Manage tours', icon: '📅', action: () => console.log('Manage tours') },
-    { label: 'Recently Viewed', icon: '👁️', action: () => console.log('Recently viewed') },
-    { label: 'Your team', icon: '👥', action: () => console.log('Your team') },
-    { label: 'Your home', icon: '🏡', action: () => console.log('Your home') },
-    { label: 'Renter Hub', icon: '🔑', action: () => console.log('Renter Hub') },
-    { label: 'Account settings', icon: '⚙️', action: () => setActiveTab('account') },
-  ];
-
   return (
     <div className={styles.container}>
       <style jsx>{`
@@ -272,7 +205,7 @@ function Profile() {
       `}</style>
       <Header />
       
-      {/* Zillow-like Profile Header */}
+      {/* Profile Header - Focused on Selling */}
       <div style={{ 
         backgroundColor: '#f8f9fa',
         borderBottom: '1px solid #e9ecef',
@@ -284,8 +217,24 @@ function Profile() {
           padding: '0 20px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          gap: '16px'
         }}>
+          <button
+            onClick={() => router.back()}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '8px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            ←
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
               width: '60px',
@@ -308,147 +257,16 @@ function Profile() {
                 margin: '0',
                 color: '#2d3748'
               }}>
-                {user?.name || user?.email || 'Welcome'}
+                Sell Your Property
               </h1>
               <p style={{ 
                 margin: '4px 0 0 0', 
                 color: '#718096',
                 fontSize: '16px'
               }}>
-                {user?.email}
+                List your properties and manage your listings
               </p>
             </div>
-          </div>
-
-          {/* Profile Menu Dropdown */}
-          <div style={{ position: 'relative' }} ref={dropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                backgroundColor: 'white',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '500',
-                color: '#374151',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <span>Manage</span>
-              <svg 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                style={{ 
-                  transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease'
-                }}
-              >
-                <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                right: '0',
-                marginTop: '8px',
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
-                zIndex: 1000,
-                minWidth: '280px',
-                overflow: 'hidden'
-              }}>
-                {profileMenuItems.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      item.action();
-                      setIsDropdownOpen(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '16px 20px',
-                      border: 'none',
-                      backgroundColor: 'transparent',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      color: '#374151',
-                      borderBottom: index < profileMenuItems.length - 1 ? '1px solid #f3f4f6' : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f8f9fa';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span style={{
-                        backgroundColor: '#ff6b35',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        padding: '4px 8px',
-                        borderRadius: '4px'
-                      }}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                ))}
-                
-                {/* Sign Out */}
-                <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px' }}>
-                  <a
-                    href="/api/auth/logout"
-                    style={{
-                      width: '100%',
-                      padding: '16px 20px',
-                      border: 'none',
-                      backgroundColor: 'transparent',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      color: '#dc2626',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      textDecoration: 'none',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#fef2f2';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <span style={{ fontSize: '18px' }}>🚪</span>
-                    <span>Sign out</span>
-                  </a>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

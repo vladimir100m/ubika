@@ -5,6 +5,7 @@ import {useRouter} from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
+import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 interface PropertyFeature {
   id: number;
@@ -59,11 +60,13 @@ const generatePropertyImages = (property: Property) => {
 export default function PropertyPopup({ 
   selectedProperty, 
   onClose, 
-  mapRef 
+  mapRef,
+  onFavoriteToggle
 }: { 
   selectedProperty: Property & { isFavorite?: boolean }; 
   onClose: () => void; 
   mapRef: RefObject<HTMLDivElement | null>;
+  onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void;
 }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
@@ -74,6 +77,7 @@ export default function PropertyPopup({
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
   const [loadingFeatures, setLoadingFeatures] = useState(true);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -208,22 +212,29 @@ export default function PropertyPopup({
   }, [mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
-  const handleSaveProperty = () => {
+  const handleSaveProperty = async () => {
     if (!user) {
       // If user is not authenticated, redirect to login
       window.location.href = '/api/auth/login';
       return;
     }
+
+    if (isSaving) return; // Prevent multiple clicks
     
-    // For authenticated users, save to localStorage
-    // In a real app, you'd save this to a database associated with the user
-    const favorites = JSON.parse(localStorage.getItem(`favorites_${user.sub}`) || '[]');
-    if (!favorites.includes(selectedProperty.id)) {
-      favorites.push(selectedProperty.id);
-      localStorage.setItem(`favorites_${user.sub}`, JSON.stringify(favorites));
-    } else {
-      const updatedFavorites = favorites.filter((id: number) => id !== selectedProperty.id);
-      localStorage.setItem(`favorites_${user.sub}`, JSON.stringify(updatedFavorites));
+    setIsSaving(true);
+    try {
+      const newStatus = !isFavorite;
+      await toggleSaveProperty(selectedProperty.id, isFavorite);
+      
+      // Call parent callback to update UI
+      if (onFavoriteToggle) {
+        onFavoriteToggle(selectedProperty.id, newStatus);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite status. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -253,6 +264,7 @@ export default function PropertyPopup({
                 e.stopPropagation();
                 handleSaveProperty();
               }}
+              disabled={isSaving}
               aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               style={{
                 top: '15px',
@@ -263,14 +275,18 @@ export default function PropertyPopup({
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
-                <path 
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                  stroke={isFavorite ? "transparent" : "currentColor"}
-                  strokeWidth="2"
-                  fill={isFavorite ? "#e4002b" : "transparent"}
-                />
-              </svg>
+              {isSaving ? (
+                <div style={{ fontSize: '18px' }}>⏳</div>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                  <path 
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
+                    stroke={isFavorite ? "transparent" : "currentColor"}
+                    strokeWidth="2"
+                    fill={isFavorite ? "#e4002b" : "transparent"}
+                  />
+                </svg>
+              )}
             </button>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>

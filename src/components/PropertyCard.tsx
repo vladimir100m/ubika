@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styles from '../styles/PropertyCard.module.css';
 import { Property } from '../types';
 import PropertyGallery from './PropertyGallery';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 interface PropertyFeature {
   id: number;
@@ -26,6 +28,7 @@ interface Neighborhood {
 
 export type PropertyCardProps = Pick<
   Property,
+  | 'id' // Add property ID
   | 'image_url' // Corrected from imageUrl
   | 'description'
   | 'price'
@@ -40,11 +43,12 @@ export type PropertyCardProps = Pick<
   longitude?: number;
   geocode?: { lat: number; lng: number };
   onClick?: () => void; // Add onClick prop
-  onFavoriteToggle?: () => void; // Add favorite toggle handler
+  onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void; // Update favorite toggle handler
   isFavorite?: boolean; // Add favorite status
 };
 
 const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => void }> = ({ property, onClose }) => {
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -52,11 +56,33 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
   const [loadingFeatures, setLoadingFeatures] = useState(true);
   const [neighborhood, setNeighborhood] = useState<Neighborhood | null>(null);
   const [loadingNeighborhood, setLoadingNeighborhood] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   
-  const handleFavoriteToggle = (e: React.MouseEvent) => {
+  const handleFavoriteToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (property.onFavoriteToggle) {
-      property.onFavoriteToggle();
+    
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = '/api/auth/login';
+      return;
+    }
+
+    if (isSaving) return; // Prevent multiple clicks
+    
+    setIsSaving(true);
+    try {
+      const newStatus = !property.isFavorite;
+      await toggleSaveProperty(property.id, property.isFavorite || false);
+      
+      // Call parent callback to update UI
+      if (property.onFavoriteToggle) {
+        property.onFavoriteToggle(property.id, newStatus);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite status. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -171,8 +197,9 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
               className={`${styles.actionButton} ${property.isFavorite ? styles.savedActionButton : ''}`} 
               aria-label={property.isFavorite ? "Remove from saved" : "Save property"}
               onClick={handleFavoriteToggle}
+              disabled={isSaving}
             >
-              <span className={styles.heartIcon}>{property.isFavorite ? '❤️' : '♡'}</span> {property.isFavorite ? 'Saved' : 'Save'}
+              <span className={styles.heartIcon}>{isSaving ? '⏳' : (property.isFavorite ? '❤️' : '♡')}</span> {isSaving ? 'Saving...' : (property.isFavorite ? 'Saved' : 'Save')}
             </button>
             <button className={styles.actionButton} aria-label="Share Property">
               <span>&#128279;</span> Share
@@ -466,9 +493,11 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
 
 // Updated PropertyCard component to enhance design and functionality
 const PropertyCard: React.FC<PropertyCardProps> = (props) => {
+  const { user } = useUser();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Check if device is mobile
   useEffect(() => {
@@ -498,10 +527,31 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
     setDialogOpen(false);
   };
 
-  const handleSaveClick = (e: React.MouseEvent) => {
+  const handleSaveClick = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering card click
-    if (props.onFavoriteToggle) {
-      props.onFavoriteToggle();
+    
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = '/api/auth/login';
+      return;
+    }
+
+    if (isSaving) return; // Prevent multiple clicks
+    
+    setIsSaving(true);
+    try {
+      const newStatus = !props.isFavorite;
+      await toggleSaveProperty(props.id, props.isFavorite || false);
+      
+      // Call parent callback to update UI
+      if (props.onFavoriteToggle) {
+        props.onFavoriteToggle(props.id, newStatus);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite status. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -526,9 +576,10 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
             <button 
               className={`${styles.saveButton} ${props.isFavorite ? styles.savedButton : ''}`}
               onClick={handleSaveClick}
+              disabled={isSaving}
               aria-label={props.isFavorite ? "Remove from saved" : "Save property"}
             >
-              {props.isFavorite ? '❤️' : '🤍'} {!isMobile && (props.isFavorite ? 'Saved' : 'Save')}
+              {isSaving ? '⏳' : (props.isFavorite ? '❤️' : '🤍')} {!isMobile && (isSaving ? 'Saving...' : (props.isFavorite ? 'Saved' : 'Save'))}
             </button>
           </div>
         </div>

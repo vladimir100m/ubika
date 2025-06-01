@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
 import MobilePropertyCard from '../components/MobilePropertyCard';
@@ -10,11 +11,13 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import Header from 'components/Header';
+import { getSavedPropertiesStatus } from '../utils/savedPropertiesApi';
 
 const Home: React.FC = () => {
   const router = useRouter();
+  const { user, isLoading: userLoading } = useUser();
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -45,21 +48,29 @@ const Home: React.FC = () => {
       }
     };
 
-    // Load favorites from localStorage
-    const loadFavorites = () => {
+    // Load saved properties status if user is authenticated
+    const loadSavedStatus = async () => {
+      if (!user) {
+        setSavedPropertyIds(new Set());
+        return;
+      }
+
       try {
-        const savedFavorites = localStorage.getItem('favorites');
-        if (savedFavorites) {
-          setFavorites(JSON.parse(savedFavorites));
-        }
+        const savedStatus = await getSavedPropertiesStatus();
+        setSavedPropertyIds(new Set(Object.keys(savedStatus).map(Number).filter(id => savedStatus[id])));
       } catch (error) {
-        console.error('Error loading favorites:', error);
+        console.error('Error loading saved properties status:', error);
+        setSavedPropertyIds(new Set());
       }
     };
 
     fetchProperties();
-    loadFavorites();
-  }, []);
+    
+    // Only load saved status after user loading is complete
+    if (!userLoading) {
+      loadSavedStatus();
+    }
+  }, [user, userLoading]);
 
   // Function to handle property card click
   const handlePropertyClick = (propertyId: number) => {
