@@ -67,12 +67,17 @@ export const saveProperty = async (propertyId: number): Promise<void> => {
 /**
  * Unsave a property for the current user
  */
-export const unsaveProperty = async (propertyId: number): Promise<void> => {
-  const response = await fetch(`/api/properties/saved?propertyId=${propertyId}`, {
+export const unsaveProperty = async (propertyId: string) => {
+  if (!propertyId) {
+    throw new Error('Property ID is required');
+  }
+
+  const response = await fetch('/api/properties/saved', { // Changed from 'unsave' to 'saved'
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ propertyId }),
   });
 
   if (!response.ok) {
@@ -105,7 +110,7 @@ export const checkSavedStatus = async (propertyIds: number[]): Promise<SavedProp
  */
 export const toggleSaveProperty = async (propertyId: number, isSaved: boolean): Promise<void> => {
   if (isSaved) {
-    await unsaveProperty(propertyId);
+    await unsaveProperty(propertyId.toString());
   } else {
     await saveProperty(propertyId);
   }

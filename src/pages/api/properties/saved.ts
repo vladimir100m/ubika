@@ -3,6 +3,11 @@ import { getSession } from '@auth0/nextjs-auth0';
 import { query } from '../../../utils/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET' && req.method !== 'POST' && req.method !== 'DELETE') {
+    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
     const session = await getSession(req, res);
     
@@ -11,6 +16,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const userId = session.user.sub;
+
+    if (req.method === 'DELETE') {
+      const { propertyId } = req.body;
+
+      if (!propertyId) {
+        return res.status(400).json({ error: 'Property ID is required' });
+      }
+
+      try {
+        await query(
+          'DELETE FROM user_saved_properties WHERE user_id = $1 AND property_id = $2',
+          [userId, propertyId]
+        );
+
+        res.status(200).json({ success: true });
+      } catch (error) {
+        console.error('Error unsaving property:', error);
+        res.status(500).json({ error: 'Failed to unsave property' });
+      }
+      return;
+    }
 
     if (req.method === 'POST') {
       // Save a property
@@ -32,26 +58,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: 'Failed to save property' });
       }
 
-    } else if (req.method === 'DELETE') {
-      // Remove a saved property
-      const { propertyId } = req.body;
-
-      if (!propertyId) {
-        return res.status(400).json({ error: 'Property ID is required' });
-      }
-
-      try {
-        await query(
-          'DELETE FROM user_saved_properties WHERE user_id = $1 AND property_id = $2',
-          [userId, propertyId]
-        );
-
-        res.status(200).json({ message: 'Property removed successfully' });
-      } catch (error) {
-        console.error('Error removing property:', error);
-        res.status(500).json({ error: 'Failed to remove property' });
-      }
-
     } else if (req.method === 'GET') {
       // Get all saved properties for user
       try {
@@ -70,11 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: 'Failed to fetch saved properties' });
       }
 
-    } else {
-      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
-      res.status(405).json({ error: 'Method not allowed' });
-    }
-
+    } 
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ error: 'Internal server error' });

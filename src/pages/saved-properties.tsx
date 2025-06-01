@@ -40,7 +40,13 @@ const SavedProperties: React.FC = () => {
   // Handle removing a property from favorites
   const handleRemoveFavorite = async (propertyId: number) => {
     try {
-      await unsaveProperty(propertyId);
+      // Make sure property.id exists and is not undefined/null
+      if (!propertyId) {
+        console.error('Property ID is missing');
+        return;
+      }
+      
+      await unsaveProperty(propertyId.toString());
       // Remove from local state
       setSavedProperties(prev => prev.filter(prop => prop.id !== propertyId));
     } catch (error) {
@@ -278,7 +284,7 @@ const SavedProperties: React.FC = () => {
                       try {
                         // Unsave all properties
                         await Promise.all(
-                          savedProperties.map(property => unsaveProperty(property.id))
+                          savedProperties.map(property => unsaveProperty(property.id.toString()))
                         );
                         setSavedProperties([]);
                       } catch (error) {
