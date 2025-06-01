@@ -3,6 +3,13 @@ import styles from '../styles/PropertyCard.module.css';
 import { Property } from '../types';
 import PropertyGallery from './PropertyGallery';
 
+interface PropertyFeature {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+}
+
 export type PropertyCardProps = Pick<
   Property,
   | 'image_url' // Corrected from imageUrl
@@ -27,6 +34,8 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
+  const [loadingFeatures, setLoadingFeatures] = useState(true);
   
   const handleFavoriteToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -49,6 +58,25 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
     
     // Cleanup
     return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+
+  // Fetch property features
+  useEffect(() => {
+    const fetchFeatures = async () => {
+      try {
+        const response = await fetch('/api/property-features');
+        if (response.ok) {
+          const features = await response.json();
+          setPropertyFeatures(features);
+        }
+      } catch (error) {
+        console.error('Error fetching property features:', error);
+      } finally {
+        setLoadingFeatures(false);
+      }
+    };
+
+    fetchFeatures();
   }, []);
   
   // Simulate multiple property images using the same image
@@ -178,23 +206,36 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
                   <div className={styles.featuresSection}>
                     <h3 className={styles.sectionTitle}>Home Features</h3>
                     <div className={styles.featuresList}>
-                      <div className={styles.featureCategory}>
-                        <h4>Interior Features</h4>
-                        <ul>
-                          <li>Central Air</li>
-                          <li>Heating System</li>
-                          <li>Hardwood Floors</li>
-                          <li>Modern Kitchen</li>
-                        </ul>
-                      </div>
-                      <div className={styles.featureCategory}>
-                        <h4>Exterior Features</h4>
-                        <ul>
-                          <li>Balcony</li>
-                          <li>Security System</li>
-                          <li>Parking</li>
-                        </ul>
-                      </div>
+                      {loadingFeatures ? (
+                        <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
+                      ) : (
+                        <>
+                          <div className={styles.featureCategory}>
+                            <h4>Interior Features</h4>
+                            <ul>
+                              {propertyFeatures
+                                .filter(feature => ['climate', 'indoor'].includes(feature.category))
+                                .slice(0, 4)
+                                .map(feature => (
+                                  <li key={feature.id}>{feature.name}</li>
+                                ))
+                              }
+                            </ul>
+                          </div>
+                          <div className={styles.featureCategory}>
+                            <h4>Exterior Features</h4>
+                            <ul>
+                              {propertyFeatures
+                                .filter(feature => ['outdoor', 'recreation'].includes(feature.category))
+                                .slice(0, 3)
+                                .map(feature => (
+                                  <li key={feature.id}>{feature.name}</li>
+                                ))
+                              }
+                            </ul>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

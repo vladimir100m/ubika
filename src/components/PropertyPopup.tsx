@@ -6,15 +6,54 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
 
-const additionalImages = [
-  '/properties/casa-moderna.jpg',
-  '/properties/casa-lago.jpg',
-  '/properties/casa-campo.jpg',
-  '/properties/villa-lujo.jpg',
-  '/properties/cabana-playa.jpg',
-  '/properties/casa-playa.jpg',
-  '/properties/casa-colonial.jpg'
-];
+interface PropertyFeature {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+}
+
+interface Neighborhood {
+  id: number;
+  name: string;
+  description: string;
+  subway_access: string;
+  dining_options: string;
+  shopping_access: string;
+  highway_access: string;
+}
+
+// Function to generate additional property images based on property type
+const generatePropertyImages = (property: Property) => {
+  const baseImages = [
+    '/properties/casa-moderna.jpg',
+    '/properties/casa-lago.jpg',
+    '/properties/casa-campo.jpg',
+    '/properties/villa-lujo.jpg',
+    '/properties/cabana-playa.jpg',
+    '/properties/casa-playa.jpg',
+    '/properties/casa-colonial.jpg'
+  ];
+
+  // Type-specific images
+  const typeImages: { [key: string]: string[] } = {
+    'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'casa': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
+    'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
+    'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg']
+  };
+
+  const propertyType = property.type?.toLowerCase() || 'house';
+  const relevantImages = typeImages[propertyType] || baseImages;
+  
+  // Return 3-4 additional images plus the main image
+  return relevantImages.slice(0, 3);
+};
   
 
 export default function PropertyPopup({ 
@@ -31,11 +70,50 @@ export default function PropertyPopup({
   const isFavorite = selectedProperty.isFavorite || false;
   const [activeTab, setActiveTab] = useState('overview');
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
+  const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
+  const [loadingFeatures, setLoadingFeatures] = useState(true);
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
   const mapLocationRef = useRef<HTMLDivElement>(null);
+
+  // Fetch property features and neighborhood data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Generate additional images based on property type
+        const generatedImages = generatePropertyImages(selectedProperty);
+        setAdditionalImages(generatedImages);
+
+        // Fetch features specifically assigned to this property
+        const featuresResponse = await fetch(`/api/properties/features?propertyId=${selectedProperty.id}`);
+        if (featuresResponse.ok) {
+          const features = await featuresResponse.json();
+          setPropertyFeatures(features);
+        }
+
+        // Fetch neighborhood data - try to match by city first
+        if (selectedProperty.city) {
+          const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(selectedProperty.city)}`);
+          if (neighborhoodResponse.ok) {
+            const neighborhoods = await neighborhoodResponse.json();
+            if (neighborhoods.length > 0) {
+              setNeighborhoodData(neighborhoods[0]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching property data:', error);
+      } finally {
+        setLoadingFeatures(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
 
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
@@ -521,102 +599,26 @@ export default function PropertyPopup({
                             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                             gap: '16px'
                           }}>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Air Conditioning</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Heating</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Garage</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Swimming Pool</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Garden</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Balcony</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Fireplace</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Hardwood Floor</span>
-                            </div>
+                            {loadingFeatures ? (
+                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
+                            ) : propertyFeatures.length > 0 ? (
+                              propertyFeatures.map((feature) => (
+                                <div key={feature.id} style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '8px'
+                                }}>
+                                  <span style={{ 
+                                    color: '#1277e1', 
+                                    fontSize: '20px',
+                                    lineHeight: 1
+                                  }}>{feature.icon || '•'}</span>
+                                  <span>{feature.name}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div style={{ color: '#666', fontSize: '14px' }}>No features assigned to this property</div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -795,32 +797,28 @@ export default function PropertyPopup({
                               marginBottom: '8px'
                             }}>Heating and cooling</div>
                             
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              marginBottom: '4px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Air conditioning</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Heating system</span>
-                            </div>
+                            {loadingFeatures ? (
+                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
+                            ) : (
+                              propertyFeatures
+                                .filter(feature => feature.category === 'climate')
+                                .slice(0, 3)
+                                .map((feature) => (
+                                  <div key={feature.id} style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px',
+                                    marginBottom: '4px',
+                                    fontSize: '14px'
+                                  }}>
+                                    <span style={{ 
+                                      color: '#1277e1', 
+                                      fontSize: '16px'
+                                    }}>{feature.icon || '•'}</span>
+                                    <span>{feature.name}</span>
+                                  </div>
+                                ))
+                            )}
                           </div>
                         </div>
                         
@@ -1025,7 +1023,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Public Transportation</div>
-                              <div style={{ fontSize: '14px' }}>10 minute walk to nearest subway station</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.subway_access || '10 minute walk to nearest subway station'}
+                              </div>
                             </div>
                           </div>
                           
@@ -1042,7 +1042,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Highway Access</div>
-                              <div style={{ fontSize: '14px' }}>5 minute drive to nearest highway</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.highway_access || '5 minute drive to nearest highway'}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1073,7 +1075,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Restaurants</div>
-                              <div style={{ fontSize: '14px' }}>Variety of dining options within walking distance</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.dining_options || 'Variety of dining options within walking distance'}
+                              </div>
                             </div>
                           </div>
                           
@@ -1087,7 +1091,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Shopping</div>
-                              <div style={{ fontSize: '14px' }}>Shopping centers and grocery stores nearby</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.shopping_access || 'Shopping centers and grocery stores nearby'}
+                              </div>
                             </div>
                           </div>
                         </div>
