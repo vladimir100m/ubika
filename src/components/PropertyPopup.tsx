@@ -251,6 +251,12 @@ export default function PropertyPopup({
       }
     }
   };
+
+  // Handler for clicking on specific images in the grid
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    // Optional: You could open a full-screen gallery modal here
+  };
   
   return (
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
@@ -290,29 +296,36 @@ export default function PropertyPopup({
             </button>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
-              {/* Main image carousel - Zillow style */}
+              {/* 5-Photo Grid Layout */}
               <div 
-                className={`${styles.styledGallery} ${galleryStyles.styledGallery}`} 
+                className={galleryStyles.styledGallery}
                 style={{ 
-                  position: 'relative', 
-                  height: '100%', 
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1fr',
+                  gridTemplateRows: '1fr 1fr',
+                  gap: '8px',
+                  height: '100%',
                   width: '100%',
-                  display: 'block',
+                  borderRadius: '12px',
                   overflow: 'hidden',
                   backgroundColor: '#f7f7f7'
                 }}
               >
-                {/* Main large image */}
+                {/* Main large image (takes 2/4 of space) */}
                 {selectedProperty && (
-                  <div style={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
-                    overflow: 'hidden'
-                  }}>
+                  <div 
+                    style={{
+                      gridColumn: '1',
+                      gridRow: '1 / span 2',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      overflow: 'hidden'
+                    }}
+                    onClick={() => handleImageClick(0)}
+                  >
                     <img 
-                      src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
-                      alt={`Property image ${currentImageIndex + 1}`} 
+                      src={selectedProperty.image_url} 
+                      alt="Main property image" 
                       style={{ 
                         width: '100%', 
                         height: '100%', 
@@ -320,67 +333,69 @@ export default function PropertyPopup({
                         transition: 'transform 0.3s ease'
                       }}
                     />
-                    
-                    {/* Navigation arrows - Zillow style */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChange('prev');
-                      }}
-                      style={{ 
-                        position: 'absolute', 
-                        left: '20px', 
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        color: '#2a2a33',
-                        border: 'none',
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        fontSize: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        zIndex: 20,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      }}
-                    >
-                      ‹
-                    </button>
-                    
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChange('next');
-                      }}
-                      style={{ 
-                        position: 'absolute', 
-                        right: '20px', 
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        color: '#2a2a33',
-                        border: 'none',
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        fontSize: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        zIndex: 20,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      }}
-                    >
-                      ›
-                    </button>
+                    {/* Image counter overlay */}
+                    <div style={{ 
+                      position: 'absolute', 
+                      bottom: '16px', 
+                      left: '16px', 
+                      zIndex: 5,
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      color: 'white',
+                      borderRadius: '4px',
+                      padding: '4px 10px',
+                      fontSize: '14px'
+                    }}>
+                      1 of {additionalImages.length + 1}
+                    </div>
                   </div>
                 )}
                 
-                {/* Zillow-style "View all photos" button */}
+                {/* Four smaller images (each takes 1/4 of space) */}
+                {additionalImages.slice(0, 4).map((image, index) => (
+                  <div 
+                    key={index}
+                    style={{
+                      gridColumn: '2',
+                      gridRow: index < 2 ? '1' : '2',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      overflow: 'hidden'
+                    }}
+                    onClick={() => handleImageClick(index + 1)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Property image ${index + 2}`} 
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease'
+                      }}
+                    />
+                    {/* Show "+X more" overlay on the last image if there are more photos */}
+                    {index === 3 && additionalImages.length > 4 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
+                      }}>
+                        +{additionalImages.length - 3} more
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {/* "View all photos" button */}
                 <div style={{ 
                   position: 'absolute', 
                   bottom: '16px', 
@@ -401,31 +416,21 @@ export default function PropertyPopup({
                       fontSize: '14px',
                       fontWeight: '600',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Here you could open a full-screen gallery
+                      console.log('View all photos clicked');
                     }}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4 4h16v16H4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M4 16l4-4 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M14 14l2-2 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="18" cy="6" r="2" fill="currentColor" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                      <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     {additionalImages.length + 1} Photos
                   </button>
-                </div>
-                
-                {/* Photo counter - Zillow style */}
-                <div style={{ 
-                  position: 'absolute', 
-                  bottom: '16px', 
-                  left: '16px', 
-                  zIndex: 5,
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                  color: 'white',
-                  borderRadius: '4px',
-                  padding: '4px 10px',
-                  fontSize: '14px'
-                }}>
-                  {currentImageIndex + 1} of {additionalImages.length + 1}
                 </div>
               </div>
             </div>

@@ -330,6 +330,12 @@ const SellerDashboard: React.FC = () => {
     try {
       const response = await fetch(`/api/properties/delete?id=${propertyId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          seller_id: user?.sub 
+        }),
       });
 
       if (!response.ok) {
