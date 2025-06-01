@@ -195,25 +195,6 @@ const AccountSettings: React.FC = () => {
                 </button>
                 
                 <button 
-                  onClick={() => router.push('/seller')}
-                  style={{ 
-                    backgroundColor: '#10b981', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '6px', 
-                    padding: '12px 24px', 
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
-                >
-                  Manage Listings
-                </button>
-                
-                <button 
                   onClick={() => window.location.href = '/api/auth/logout'}
                   style={{ 
                     backgroundColor: '#dc2626', 
