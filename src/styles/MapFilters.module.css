@@ -1,0 +1,412 @@
+/* MapFilters.module.css */
+
+.filtersContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  position: relative;
+}
+
+.filterGroup {
+  position: relative;
+  min-width: max-content;
+}
+
+.dropdownButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a2a33;
+  background-color: white;
+  border: 1px solid #d1d1d5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 100px;
+  height: 40px;
+}
+
+.dropdownButton:hover {
+  border-color: #006aff;
+  background-color: #f5f8ff;
+}
+
+.dropdownButton.active {
+  border-color: #006aff;
+  box-shadow: 0 0 0 1px #006aff;
+  background-color: #f5f8ff;
+}
+
+.hasFilter {
+  position: relative;
+  font-weight: 600;
+}
+
+.filterBadge {
+  position: absolute;
+  top: 4px;
+  right: 22px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #006aff;
+}
+
+.chevron {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 240px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.moreFiltersDropdown {
+  right: 0;
+  left: auto;
+  min-width: 300px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.radioLabel, .checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.radioLabel input, .checkboxLabel input {
+  cursor: pointer;
+}
+
+.rangeFilter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rangeInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d1d5;
+  border-radius: 4px;
+  font-size: 14px;
+  position: relative;
+  background-color: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+.rangeInput:focus {
+  border-color: #006aff;
+  outline: none;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.2);
+}
+
+.rangeSeparator {
+  color: #666;
+  font-size: 14px;
+}
+
+.bedsAndBaths, .homeTypes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bedsFilter, .bathsFilter {
+  margin-bottom: 12px;
+}
+
+.bedsFilter h4, .bathsFilter h4, .moreFiltersSection h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2a2a33;
+}
+
+.btnGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btnGroup button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: 1px solid #d1d1d5;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnGroup button:hover {
+  border-color: #006aff;
+}
+
+.btnGroup button.selected {
+  background-color: #006aff;
+  color: white;
+  border-color: #006aff;
+}
+
+.presetRanges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.presetRanges button {
+  padding: 8px;
+  font-size: 14px;
+  text-align: left;
+  border: none;
+  background: none;
+  color: #006aff;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.presetRanges button:hover {
+  color: #0056cc;
+  text-decoration: underline;
+}
+
+.moreFiltersSection {
+  margin-bottom: 16px;
+}
+
+.applyButton {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #006aff;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 8px;
+}
+
+.applyButton:hover {
+  background-color: #0056cc;
+}
+
+.mapFiltersWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  position: relative;
+}
+
+.searchSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchInputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  border: 2px solid #d1d1d5;
+  border-radius: 8px;
+  background-color: white;
+  transition: border-color 0.2s ease;
+}
+
+.searchInputWrapper:focus-within {
+  border-color: #006aff;
+  box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.2);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #666;
+  pointer-events: none;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 12px 16px 12px 40px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  outline: none;
+  background: transparent;
+}
+
+.searchButton {
+  padding: 12px 20px;
+  background-color: #006aff;
+  color: white;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.searchButton:hover {
+  background-color: #0056cc;
+}
+
+.searchActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.propertyCount {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2a2a33;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.removeBoundaryButton {
+  padding: 8px 16px;
+  background-color: #f5f5f5;
+  color: #2a2a33;
+  border: 1px solid #d1d1d5;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.removeBoundaryButton:hover {
+  background-color: #e8e8e8;
+  border-color: #b8b8b8;
+}
+
+.saveSearchButton {
+  padding: 8px 16px;
+  background-color: #006aff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveSearchButton:hover {
+  background-color: #0056cc;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.searchForm {
+  flex: 1;
+  display: flex;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d1d5;
+  border-radius: 6px 0 0 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: #006aff;
+}
+
+.searchButton {
+  padding: 10px 16px;
+  background-color: #006aff;
+  color: white;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.searchButton:hover {
+  background-color: #0056cc;
+}
+
+.removeBoundaryButton {
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.removeBoundaryButton:hover {
+  background-color: #e8e8e8;
+}

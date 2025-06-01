@@ -1,0 +1,139 @@
+/* Simple Search Bar - Zillow-style design */
+.simpleSearchBarContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.simpleSearchBar {
+  display: flex;
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.simpleSearchBar:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border-color: #d1d5db;
+}
+
+.simpleSearchBar:focus-within {
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+  border-color: #3b82f6;
+}
+
+.simpleSearchInput {
+  flex: 1;
+  padding: 16px 20px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  font-weight: 400;
+  color: #374151;
+  background: transparent;
+  min-width: 0; /* Prevents input from growing too large */
+}
+
+.simpleSearchInput::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.simpleSearchButton {
+  padding: 16px 20px;
+  border: none;
+  background: #0066cc;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+}
+
+.simpleSearchButton:hover {
+  background: #0052a3;
+}
+
+.simpleSearchButton:active {
+  background: #004080;
+}
+
+.simpleSearchButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .simpleSearchBarContainer {
+    max-width: none;
+    margin: 0 16px;
+  }
+  
+  .simpleSearchInput {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 14px 16px;
+  }
+  
+  .simpleSearchButton {
+    padding: 14px 16px;
+    min-width: 48px;
+  }
+  
+  .simpleSearchButton svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .simpleSearchInput {
+    padding: 12px 14px;
+  }
+  
+  .simpleSearchButton {
+    padding: 12px 14px;
+    min-width: 44px;
+  }
+}
+
+/* Focus and accessibility improvements */
+.simpleSearchInput:focus {
+  outline: none;
+}
+
+.simpleSearchButton:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Animation for smooth interactions */
+.simpleSearchBar {
+  position: relative;
+}
+
+.simpleSearchBar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.simpleSearchBar:hover::before {
+  opacity: 1;
+}

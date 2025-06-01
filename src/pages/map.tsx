@@ -6,6 +6,7 @@ import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS
 import mobileStyles from '../styles/Mobile.module.css';
 import { PropertyCard } from '../components';
 import SearchBar, { SearchFilters } from '../components/SearchBar';
+import MapFilters, { FilterOptions } from '../components/MapFilters';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
@@ -166,6 +167,19 @@ const MapPage: React.FC = () => {
         const property = propertyLocations.find(p => p.id === propertyId);
         
         if (property) {
+          // Format price for display on marker
+          const formatPrice = (price: number | undefined) => {
+            if (!price) return '';
+            if (price >= 1000000) {
+              return '$' + (price / 1000000).toFixed(1) + 'M';
+            } else if (price >= 1000) {
+              return '$' + (price / 1000).toFixed(0) + 'K';
+            }
+            return '$' + price;
+          };
+          
+          const priceLabel = formatPrice(property.price);
+          
           const gMarker = new google.maps.Marker({
             position: { lat: marker.lat, lng: marker.lng },
             map: mapInstance.current,
@@ -173,14 +187,14 @@ const MapPage: React.FC = () => {
             animation: google.maps.Animation.DROP,
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
-              scale: 10,
-              fillColor: '#0070f3',
+              scale: 12,
+              fillColor: property.operation === 'rent' ? '#006aff' : '#ff5722', 
               fillOpacity: 0.9,
               strokeWeight: 2,
               strokeColor: '#ffffff'
             },
             label: {
-              text: property.price ? '$' + property.price : '',
+              text: priceLabel,
               color: '#ffffff',
               fontSize: '12px',
               fontWeight: 'bold'
@@ -386,8 +400,132 @@ const MapPage: React.FC = () => {
       <Header />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
         {/* Search Bar */}
-        <div style={{ padding: '1rem', backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', marginBottom: '1rem', zIndex: 10 }}>
-          <SearchBar onSearch={handleSearch} />
+        <div style={{ padding: '1rem', backgroundColor: '#ffffff', borderRadius: '8px', marginBottom: '0.5rem', zIndex: 10 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            backgroundColor: '#ffffff',
+            border: '1px solid #d1d1d5',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+            overflow: 'hidden',
+            transition: 'box-shadow 0.3s ease'
+          }}>
+            <div style={{ padding: '0 12px', color: '#666' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              placeholder="Enter an address, city, or ZIP code"
+              style={{
+                flex: 1,
+                padding: '12px 8px 12px 0',
+                fontSize: '16px',
+                border: 'none',
+                outline: 'none'
+              }}
+            />
+            <button style={{
+              padding: '10px 16px',
+              backgroundColor: '#006aff',
+              color: 'white',
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              cursor: 'pointer',
+              height: '100%'
+            }}>
+              Search
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.5rem', marginBottom: '0.5rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
+            {propertyLocations.length > 0 ? `${propertyLocations.length} of ${propertyLocations.length} homes` : 'Rental Listings'}
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ fontSize: '14px' }}>
+              Sort: <span style={{ fontWeight: 'bold', cursor: 'pointer' }}>Homes for You ▼</span>
+            </div>
+            <button 
+              style={{
+                backgroundColor: '#006aff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '8px 16px',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <span>Save search</span>
+            </button>
+          </div>
+        </div>
+        
+        {/* Enhanced Filter Bar - Zillow Style */}
+        <div style={{ marginBottom: '1rem', zIndex: 5 }}>
+          <MapFilters 
+            onFilterChange={(filters) => {
+              // Build query object from filters
+              const query: any = {};
+              
+              if (filters.forSale) query.operation = 'sale';
+              if (filters.forRent) query.operation = 'rent';
+              if (filters.priceMin) query.minPrice = filters.priceMin;
+              if (filters.priceMax) query.maxPrice = filters.priceMax;
+              if (filters.beds) query.bedrooms = filters.beds;
+              if (filters.baths) query.bathrooms = filters.baths;
+              if (filters.homeType) query.propertyType = filters.homeType;
+              if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+              if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+              
+              // Update URL which will trigger a re-fetch of properties
+              router.push({
+                pathname: '/map',
+                query
+              });
+            }}
+            onSearchLocationChange={(location) => {
+              // Handle location search
+              console.log('Searching for location:', location);
+              // You can implement geocoding here to center the map on the searched location
+              // For now, we'll just log it
+            }}
+            onRemoveBoundary={() => {
+              // Remove any custom boundary and reset to default view
+              setMapCenter({ lat: -34.5897318, lng: -58.4232065 });
+              // You can add logic here to clear any drawn boundaries on the map
+            }}
+            initialFilters={{
+              forRent: router.query.operation === 'rent',
+              forSale: router.query.operation === 'sale',
+              priceMin: router.query.minPrice as string || '',
+              priceMax: router.query.maxPrice as string || '',
+              beds: router.query.bedrooms as string || '',
+              baths: router.query.bathrooms as string || '',
+              homeType: router.query.propertyType as string || '',
+              moreFilters: {
+                minArea: router.query.minArea as string || '',
+                maxArea: router.query.maxArea as string || '',
+                yearBuiltMin: '',
+                yearBuiltMax: '',
+                keywords: []
+              }
+            }}
+            propertyCount={propertyLocations.length}
+            showBoundaryButton={!!router.query.location}
+            searchLocation={router.query.location as string || ''}
+          />
         </div>
         <div className={styles.mapAndPropertiesContainer}>
           <div className={styles.mapWrapper}>
@@ -533,31 +671,147 @@ const MapPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Property filters - simplified for mobile */}
-              <div className={mobileStyles.mobileFilters} style={{ marginBottom: '1rem' }}>
-                <select className={mobileStyles.filterSelect} style={{ marginBottom: '0.5rem' }}>
-                  <option value="">Price (Any)</option>
-                  <option value="0-100000">Up to $100,000</option>
-                  <option value="100000-300000">$100,000 - $300,000</option>
-                  <option value="300000-500000">$300,000 - $500,000</option>
-                  <option value="500000+">$500,000+</option>
-                </select>
-
-                <select className={mobileStyles.filterSelect} style={{ marginBottom: '0.5rem' }}>
-                  <option value="">Bedrooms (Any)</option>
-                  <option value="1">1+ Bedroom</option>
-                  <option value="2">2+ Bedrooms</option>
-                  <option value="3">3+ Bedrooms</option>
-                  <option value="4">4+ Bedrooms</option>
-                </select>
-
-                <select className={mobileStyles.filterSelect}>
-                  <option value="">Property Type</option>
-                  <option value="House">House</option>
-                  <option value="Apartment">Apartment</option>
-                  <option value="Condo">Condo</option>
-                  <option value="Townhouse">Townhouse</option>
-                </select>
+              {/* Mobile filter pills - Zillow style with state management */}
+              <div className={mobileStyles.mobileFilterPills} style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                overflowX: 'auto', 
+                marginBottom: '1rem',
+                padding: '4px'
+              }}>
+                <button 
+                  className={mobileStyles.filterPill} 
+                  style={{
+                    background: router.query.operation === 'rent' || !router.query.operation ? '#006aff' : 'white',
+                    color: router.query.operation === 'rent' || !router.query.operation ? 'white' : '#2a2a33',
+                    border: router.query.operation === 'rent' || !router.query.operation ? 'none' : '1px solid #d1d1d5',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    const query = { ...router.query };
+                    if (query.operation === 'rent') {
+                      query.operation = 'sale';
+                    } else {
+                      query.operation = 'rent';
+                    }
+                    router.push({ pathname: '/map', query });
+                  }}
+                >
+                  {router.query.operation === 'sale' ? 'For Sale' : 'For Rent'}
+                </button>
+                <button 
+                  className={mobileStyles.filterPill} 
+                  style={{
+                    background: router.query.minPrice || router.query.maxPrice ? '#006aff' : 'white',
+                    color: router.query.minPrice || router.query.maxPrice ? 'white' : '#2a2a33',
+                    border: router.query.minPrice || router.query.maxPrice ? 'none' : '1px solid #d1d1d5',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                >
+                  Price
+                  {(router.query.minPrice || router.query.maxPrice) && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white'
+                    }}></span>
+                  )}
+                </button>
+                <button 
+                  className={mobileStyles.filterPill} 
+                  style={{
+                    background: router.query.bedrooms || router.query.bathrooms ? '#006aff' : 'white',
+                    color: router.query.bedrooms || router.query.bathrooms ? 'white' : '#2a2a33',
+                    border: router.query.bedrooms || router.query.bathrooms ? 'none' : '1px solid #d1d1d5',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                >
+                  Beds & Baths
+                  {(router.query.bedrooms || router.query.bathrooms) && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white'
+                    }}></span>
+                  )}
+                </button>
+                <button 
+                  className={mobileStyles.filterPill} 
+                  style={{
+                    background: router.query.propertyType ? '#006aff' : 'white',
+                    color: router.query.propertyType ? 'white' : '#2a2a33',
+                    border: router.query.propertyType ? 'none' : '1px solid #d1d1d5',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                >
+                  Home Type
+                  {router.query.propertyType && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white'
+                    }}></span>
+                  )}
+                </button>
+                <button 
+                  className={mobileStyles.filterPill} 
+                  style={{
+                    background: router.query.minArea || router.query.maxArea ? '#006aff' : 'white',
+                    color: router.query.minArea || router.query.maxArea ? 'white' : '#2a2a33',
+                    border: router.query.minArea || router.query.maxArea ? 'none' : '1px solid #d1d1d5',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                >
+                  More
+                  {(router.query.minArea || router.query.maxArea) && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '4px',
+                      right: '4px',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white'
+                    }}></span>
+                  )}
+                </button>
               </div>
 
               {/* Property grid - modified for mobile */}

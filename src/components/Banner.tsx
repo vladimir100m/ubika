@@ -1,19 +1,18 @@
 import React from 'react';
 import styles from '../styles/Banner.module.css';
-import SearchBar, { SearchFilters } from './SearchBar';
+import SimpleSearchBar from './SimpleSearchBar';
 import { useRouter } from 'next/router';
 
 const Banner: React.FC = () => {
     const router = useRouter();
 
-    const handleSearch = (address: string, filters?: SearchFilters) => {
+    const handleSearch = (address: string) => {
         // Save the search to localStorage for search history
         try {
             const searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
             const newSearch = {
                 id: Date.now(),
                 address,
-                filters,
                 timestamp: new Date().toISOString()
             };
             
@@ -24,24 +23,10 @@ const Banner: React.FC = () => {
             console.error('Error saving search history:', error);
         }
 
-        // Navigate to the map page with search parameters
-        const query: any = { address };
-        
-        if (filters) {
-            if (filters.minPrice) query.minPrice = filters.minPrice;
-            if (filters.maxPrice) query.maxPrice = filters.maxPrice;
-            if (filters.bedrooms) query.bedrooms = filters.bedrooms;
-            if (filters.bathrooms) query.bathrooms = filters.bathrooms;
-            if (filters.propertyType) query.propertyType = filters.propertyType;
-            if (filters.operation) query.operation = filters.operation;
-            if (filters.zone) query.zone = filters.zone;
-            if (filters.minArea) query.minArea = filters.minArea;
-            if (filters.maxArea) query.maxArea = filters.maxArea;
-        }
-        
+        // Navigate to the map page with just the address
         router.push({
             pathname: '/map',
-            query
+            query: { address }
         });
     };
 
@@ -49,7 +34,7 @@ const Banner: React.FC = () => {
         <div className={styles.banner}>
             <div className={styles.content}>
                 <h1>Encuentra tu nuevo hogar</h1>
-                <SearchBar onSearch={handleSearch} />
+                <SimpleSearchBar onSearch={handleSearch} />
             </div>
         </div>
     );
