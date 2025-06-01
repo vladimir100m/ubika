@@ -29,6 +29,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const propertyData = req.body;
     
+    // Require seller_id for authorization
+    if (!propertyData.seller_id) {
+      return res.status(400).json({ error: 'Seller ID is required' });
+    }
+    
     // Check if property exists and belongs to the seller
     const checkQuery = `
       SELECT id, seller_id FROM properties WHERE id = $1
@@ -39,8 +44,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(404).json({ error: 'Property not found' });
     }
     
-    // In a real app, verify that the logged-in user is the owner of this property
-    // For now, we'll skip that check since we're using a mock seller ID
+    // Verify that the logged-in user is the owner of this property
+    const property = checkResult.rows[0];
+    if (property.seller_id !== propertyData.seller_id) {
+      return res.status(403).json({ error: 'You can only update your own properties' });
+    }
 
     // Build the update query dynamically based on the fields that are provided
     const updateFields = [];
@@ -78,11 +86,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     queryParams.push(new Date().toISOString());
     paramCounter++;
 
-    // Add the property ID as the last parameter
+    // Add the property ID and seller_id as the last parameters
     queryParams.push(id);
+    queryParams.push(propertyData.seller_id);
 
     // If no fields to update, return an error
-    if (updateFields.length === 0) {
+    if (updateFields.length === 1) { // Only updated_at field
       return res.status(400).json({ error: 'No fields to update' });
     }
 
@@ -90,7 +99,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const updateQuery = `
       UPDATE properties 
       SET ${updateFields.join(', ')} 
-      WHERE id = $${paramCounter}
+      WHERE id = $${paramCounter} AND seller_id = $${paramCounter + 1}
       RETURNING id, title, description, price, address, city, state, country, 
                 zip_code, type, room as rooms, bathrooms, area as squareMeters, 
                 image_url, status, created_at, updated_at, year_built as yearBuilt, 

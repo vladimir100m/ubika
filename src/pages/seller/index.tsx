@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
 import Header from 'components/Header';
 
-// Mock seller ID - in a real app, this would come from authentication
-const MOCK_SELLER_ID = "seller123";
-
 const SellerDashboard: React.FC = () => {
   const router = useRouter();
+  const { user, error, isLoading } = useUser();
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,19 +26,33 @@ const SellerDashboard: React.FC = () => {
     bathrooms: 0,
     squareMeters: 0,
     status: 'available',
-    seller_id: MOCK_SELLER_ID
+    seller_id: ''
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
+    if (isLoading) return;
+    
+    if (!user) {
+      // Redirect to login if user is not authenticated
+      router.push('/api/auth/login');
+      return;
+    }
+    
+    // Set seller_id in form data
+    setFormData(prev => ({ ...prev, seller_id: user.sub || '' }));
+    
+    // Fetch seller properties once user is authenticated
     fetchSellerProperties();
-  }, []);
+  }, [user, isLoading, router]);
 
   const fetchSellerProperties = async () => {
+    if (!user?.sub) return;
+    
     setLoading(true);
     try {
-      const response = await fetch(`/api/properties/seller?seller_id=${MOCK_SELLER_ID}`);
+      const response = await fetch(`/api/properties/seller?seller_id=${user.sub}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(`Failed to fetch properties: ${errorData.error || response.statusText}`);
@@ -136,7 +149,7 @@ const SellerDashboard: React.FC = () => {
       bathrooms: 0,
       squareMeters: 0,
       status: 'available',
-      seller_id: MOCK_SELLER_ID
+      seller_id: user?.sub || ''
     });
     setEditingPropertyId(null);
   };
@@ -159,7 +172,7 @@ const SellerDashboard: React.FC = () => {
       status: property.status,
       image_url: property.image_url,
       yearBuilt: property.yearBuilt,
-      seller_id: MOCK_SELLER_ID
+      seller_id: user?.sub || ''
     });
     
     // Set the editing property ID
@@ -267,12 +280,22 @@ const SellerDashboard: React.FC = () => {
 
   // Call this function when the component mounts and when the activeTab changes
   useEffect(() => {
-    fetchSellerProperties();
+    if (user?.sub) {
+      fetchSellerProperties();
+    }
     // Only run in the browser, not during SSR
     if (typeof window !== 'undefined') {
       updateFormClasses();
     }
-  }, [activeTab]);
+  }, [activeTab, user]);
+
+  // Authentication checks
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!user) {
+    // This should not happen as useEffect redirects, but just in case
+    return <div>Redirecting to login...</div>;
+  }
 
   return (
     <div>

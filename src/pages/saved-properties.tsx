@@ -119,7 +119,16 @@ const SavedProperties: React.FC = () => {
                 gap: '24px' 
               }}>
                 {savedProperties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
+                  <PropertyCard 
+                    key={property.id}
+                    image_url={property.imageUrl}
+                    description={property.description}
+                    price={property.price}
+                    rooms={property.bedrooms}
+                    bathrooms={property.bathrooms}
+                    address={property.location}
+                    squareMeters={parseInt(property.area)}
+                  />
                 ))}
               </div>
             </>

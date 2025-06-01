@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = () => {
             <Link href="/map">
               Rent
             </Link>
-            <Link href="/seller">
+            <Link href="/profile?tab=sell">
               Sell
             </Link>
             {/* Auth0 Login/Logout */}
