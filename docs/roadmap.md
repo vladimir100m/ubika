@@ -18,13 +18,13 @@
     - Tiempos de viaje (Calcular con google map)
     - Agregar grilla de imagenes
 - Traducir a español
-- Revisar que todo venga desde la DB
-- Adaptar para que Sell vaya al mapa ()
-- Buy y rent deben ir al mapa
+- ~~Revisar que todo venga desde la DB~~
+- ~~Adaptar para que Sell vaya al mapa~~ Se adapta para crear la seccion My listing dentro del menu
+- ~~Buy y rent deben ir al mapa~~
 - Que funcione formulario de contacto, revisar formas(mail, telefono, whatsapp)
 - Agregar propiedades similares abajo (mismo barrio, precio, caracteristicas)
 - Agregar disponibilidad para 3d tour
-- Registro/Login con opciones de autenticación (email, Google/Facebook).
+- ~~Registro/Login con opciones de autenticación (email, Google/Facebook).~~
 - Comparar propiedades
 
 ### Features para propietarios y agentes
