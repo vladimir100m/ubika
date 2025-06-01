@@ -31,7 +31,12 @@ const Banner: React.FC = () => {
             if (filters.minPrice) query.minPrice = filters.minPrice;
             if (filters.maxPrice) query.maxPrice = filters.maxPrice;
             if (filters.bedrooms) query.bedrooms = filters.bedrooms;
+            if (filters.bathrooms) query.bathrooms = filters.bathrooms;
             if (filters.propertyType) query.propertyType = filters.propertyType;
+            if (filters.operation) query.operation = filters.operation;
+            if (filters.zone) query.zone = filters.zone;
+            if (filters.minArea) query.minArea = filters.minArea;
+            if (filters.maxArea) query.maxArea = filters.maxArea;
         }
         
         router.push({

@@ -45,7 +45,12 @@ const RecentSearches: React.FC = () => {
       if (search.filters.minPrice) query.minPrice = search.filters.minPrice;
       if (search.filters.maxPrice) query.maxPrice = search.filters.maxPrice;
       if (search.filters.bedrooms) query.bedrooms = search.filters.bedrooms;
+      if (search.filters.bathrooms) query.bathrooms = search.filters.bathrooms;
       if (search.filters.propertyType) query.propertyType = search.filters.propertyType;
+      if (search.filters.operation) query.operation = search.filters.operation;
+      if (search.filters.zone) query.zone = search.filters.zone;
+      if (search.filters.minArea) query.minArea = search.filters.minArea;
+      if (search.filters.maxArea) query.maxArea = search.filters.maxArea;
     }
     
     router.push({
@@ -119,6 +124,17 @@ const RecentSearches: React.FC = () => {
                   </div>
                   {search.filters && Object.values(search.filters).some(val => val) && (
                     <div className={styles.searchFilters}>
+                      {search.filters.operation && (
+                        <span className={styles.filterTag}>
+                          {search.filters.operation === 'sale' ? 'Venta' : 'Alquiler'}
+                        </span>
+                      )}
+                      {search.filters.propertyType && (
+                        <span className={styles.filterTag}>{search.filters.propertyType}</span>
+                      )}
+                      {search.filters.zone && (
+                        <span className={styles.filterTag}>{search.filters.zone}</span>
+                      )}
                       {search.filters.minPrice && (
                         <span className={styles.filterTag}>Min: ${search.filters.minPrice}</span>
                       )}
@@ -126,10 +142,16 @@ const RecentSearches: React.FC = () => {
                         <span className={styles.filterTag}>Max: ${search.filters.maxPrice}</span>
                       )}
                       {search.filters.bedrooms && (
-                        <span className={styles.filterTag}>{search.filters.bedrooms}+ bed</span>
+                        <span className={styles.filterTag}>{search.filters.bedrooms}+ hab</span>
                       )}
-                      {search.filters.propertyType && (
-                        <span className={styles.filterTag}>{search.filters.propertyType}</span>
+                      {search.filters.bathrooms && (
+                        <span className={styles.filterTag}>{search.filters.bathrooms}+ baños</span>
+                      )}
+                      {search.filters.minArea && (
+                        <span className={styles.filterTag}>Min: {search.filters.minArea}m²</span>
+                      )}
+                      {search.filters.maxArea && (
+                        <span className={styles.filterTag}>Max: {search.filters.maxArea}m²</span>
                       )}
                     </div>
                   )}

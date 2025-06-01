@@ -5,6 +5,7 @@ import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { PropertyCard } from '../components';
+import SearchBar, { SearchFilters } from '../components/SearchBar';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
@@ -61,7 +62,22 @@ const MapPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<Property[]>('/api/properties'); // Expect Property[]
+        // Build query parameters from router query for filters
+        const queryParams = new URLSearchParams();
+        
+        // Add filter parameters if they exist in the URL
+        const filters = ['minPrice', 'maxPrice', 'bedrooms', 'bathrooms', 'propertyType', 'operation', 'zone', 'minArea', 'maxArea'];
+        filters.forEach(filter => {
+          const value = router.query[filter];
+          if (value && typeof value === 'string' && value.trim() !== '') {
+            queryParams.append(filter, value);
+          }
+        });
+
+        const apiUrl = `/api/properties${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        console.log('Fetching properties with URL:', apiUrl);
+        
+        const response = await axios.get<Property[]>(apiUrl);
         if (Array.isArray(response.data)) {
           setPropertyLocations(response.data);
           
@@ -341,18 +357,37 @@ const MapPage: React.FC = () => {
     setShowFloatingGallery(false);
   };
 
+  // Handler for search from the map page
+  const handleSearch = (address: string, filters?: SearchFilters) => {
+    // Build query object
+    const query: any = { address };
+    
+    if (filters) {
+      if (filters.minPrice) query.minPrice = filters.minPrice;
+      if (filters.maxPrice) query.maxPrice = filters.maxPrice;
+      if (filters.bedrooms) query.bedrooms = filters.bedrooms;
+      if (filters.bathrooms) query.bathrooms = filters.bathrooms;
+      if (filters.propertyType) query.propertyType = filters.propertyType;
+      if (filters.operation) query.operation = filters.operation;
+      if (filters.zone) query.zone = filters.zone;
+      if (filters.minArea) query.minArea = filters.minArea;
+      if (filters.maxArea) query.maxArea = filters.maxArea;
+    }
+    
+    // Update the URL which will trigger a re-fetch of properties
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
   return (
     <div className={styles.container}>
       <Header />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', marginBottom: '1rem', gap: '1rem', zIndex: 10 }}>
-          <input type="text" placeholder="Location" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', flex: 1 }} />
-          <input type="number" placeholder="Rooms" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', width: '80px' }} />
-          <input type="number" placeholder="Bathrooms" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', width: '80px' }} />
-          <input type="text" placeholder="Price range" style={{ padding: '0.5rem', borderRadius: '5px', border: '1px solid #ccc', flex: 1 }} />
-          <button style={{ padding: '0.5rem 1rem', borderRadius: '5px', backgroundColor: '#0070f3', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '500', transition: 'background 0.3s ease' }}>
-            Apply
-          </button>
+        {/* Search Bar */}
+        <div style={{ padding: '1rem', backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', marginBottom: '1rem', zIndex: 10 }}>
+          <SearchBar onSearch={handleSearch} />
         </div>
         <div className={styles.mapAndPropertiesContainer}>
           <div className={styles.mapWrapper}>
