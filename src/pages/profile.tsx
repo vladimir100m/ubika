@@ -1,11 +1,24 @@
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import PropertyCard from '../components/PropertyCard';
 import ImageUpload from '../components/ImageUpload';
 import styles from '../styles/Home.module.css';
 import { Property, PropertyFormData } from '../types';
+
+interface PropertyType {
+  id: number;
+  name: string;
+  display_name: string;
+}
+
+interface PropertyStatus {
+  id: number;
+  name: string;
+  display_name: string;
+  color: string;
+}
 
 function Profile() {
   const { user, error, isLoading } = useUser();
@@ -31,6 +44,10 @@ function Profile() {
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
+  const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -63,6 +80,44 @@ function Profile() {
       loadSellerProperties();
     }
   }, [user, isLoading, router]);
+
+  // Handle click outside dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch property types and statuses
+  useEffect(() => {
+    const fetchFormData = async () => {
+      try {
+        const [typesResponse, statusesResponse] = await Promise.all([
+          fetch('/api/property-types'),
+          fetch('/api/property-statuses')
+        ]);
+
+        if (typesResponse.ok) {
+          const types = await typesResponse.json();
+          setPropertyTypes(types);
+        }
+
+        if (statusesResponse.ok) {
+          const statuses = await statusesResponse.json();
+          setPropertyStatuses(statuses);
+        }
+      } catch (error) {
+        console.error('Error fetching form data:', error);
+      }
+    };
+
+    fetchFormData();
+  }, []);
 
   // Load saved properties when favorites change
   useEffect(() => {
@@ -168,83 +223,334 @@ function Profile() {
   };
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;  return (
+  if (error) return <div>{error.message}</div>;
+
+  const profileMenuItems = [
+    { label: 'Saved homes', icon: '🏠', action: () => setActiveTab('saved') },
+    { label: 'Saved searches', icon: '🔍', action: () => console.log('Saved searches') },
+    { label: 'Inbox', icon: '💬', badge: 'NEW', action: () => console.log('Inbox') },
+    { label: 'Manage tours', icon: '📅', action: () => console.log('Manage tours') },
+    { label: 'Recently Viewed', icon: '👁️', action: () => console.log('Recently viewed') },
+    { label: 'Your team', icon: '👥', action: () => console.log('Your team') },
+    { label: 'Your home', icon: '🏡', action: () => console.log('Your home') },
+    { label: 'Renter Hub', icon: '🔑', action: () => console.log('Renter Hub') },
+    { label: 'Account settings', icon: '⚙️', action: () => setActiveTab('account') },
+  ];
+
+  return (
     <div className={styles.container}>
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .modern-card {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+          transition: all 0.2s ease;
+        }
+        
+        .modern-card:hover {
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
+          transform: translateY(-2px);
+        }
+        
+        .property-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 24px;
+        }
+        
+        @media (max-width: 768px) {
+          .property-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+        }
+      `}</style>
       <Header />
+      
+      {/* Zillow-like Profile Header */}
+      <div style={{ 
+        backgroundColor: '#f8f9fa',
+        borderBottom: '1px solid #e9ecef',
+        padding: '20px 0'
+      }}>
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto', 
+          padding: '0 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              backgroundColor: '#0073e6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: 'white'
+            }}>
+              {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div>
+              <h1 style={{ 
+                fontSize: '28px', 
+                fontWeight: '600', 
+                margin: '0',
+                color: '#2d3748'
+              }}>
+                {user?.name || user?.email || 'Welcome'}
+              </h1>
+              <p style={{ 
+                margin: '4px 0 0 0', 
+                color: '#718096',
+                fontSize: '16px'
+              }}>
+                {user?.email}
+              </p>
+            </div>
+          </div>
+
+          {/* Profile Menu Dropdown */}
+          <div style={{ position: 'relative' }} ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                backgroundColor: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500',
+                color: '#374151',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <span>Manage</span>
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                style={{ 
+                  transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease'
+                }}
+              >
+                <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: '0',
+                marginTop: '8px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+                zIndex: 1000,
+                minWidth: '280px',
+                overflow: 'hidden'
+              }}>
+                {profileMenuItems.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      item.action();
+                      setIsDropdownOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '16px 20px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      color: '#374151',
+                      borderBottom: index < profileMenuItems.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f8f9fa';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span style={{
+                        backgroundColor: '#ff6b35',
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        padding: '4px 8px',
+                        borderRadius: '4px'
+                      }}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+                
+                {/* Sign Out */}
+                <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px' }}>
+                  <a
+                    href="/api/auth/logout"
+                    style={{
+                      width: '100%',
+                      padding: '16px 20px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      color: '#dc2626',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      textDecoration: 'none',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#fef2f2';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <span style={{ fontSize: '18px' }}>🚪</span>
+                    <span>Sign out</span>
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <main className={styles.main}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '600', marginBottom: '32px' }}>
-            {user ? 'My Profile' : 'Profile'}
-          </h1>
-          
-          <div>
-            {/* Tab Navigation */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '8px', 
-              marginBottom: '32px',
-              borderBottom: '1px solid #e9e9e9'
+          {!user ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
             }}>
-              {user && (
+              <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '16px' }}>
+                Sign in to access your profile
+              </h2>
+              <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+                Save properties, manage your listings, and more.
+              </p>
+              <a
+                href="/api/auth/login"
+                style={{
+                  display: 'inline-block',
+                  padding: '12px 24px',
+                  backgroundColor: '#0073e6',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '16px'
+                }}
+              >
+                Sign In
+              </a>
+            </div>
+          ) : (
+            <div>
+              {/* Modern Tab Navigation */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '2px', 
+                marginBottom: '32px',
+                backgroundColor: '#f1f5f9',
+                borderRadius: '12px',
+                padding: '4px'
+              }}>
                 <button
                   onClick={() => setActiveTab('account')}
                   style={{
+                    flex: 1,
                     padding: '12px 24px',
                     border: 'none',
-                    backgroundColor: 'transparent',
-                    borderBottom: activeTab === 'account' ? '2px solid #1277e1' : '2px solid transparent',
-                    color: activeTab === 'account' ? '#1277e1' : '#666',
+                    backgroundColor: activeTab === 'account' ? 'white' : 'transparent',
+                    borderRadius: '8px',
+                    color: activeTab === 'account' ? '#0073e6' : '#64748b',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    fontSize: '16px'
+                    fontSize: '16px',
+                    boxShadow: activeTab === 'account' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  Account
+                  Account Settings
                 </button>
-              )}
-              <button
-                onClick={() => {
-                  if (!user) {
-                    router.push('/api/auth/login');
-                  } else {
-                    setActiveTab('saved');
-                  }
-                }}
-                style={{
-                  padding: '12px 24px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  borderBottom: activeTab === 'saved' ? '2px solid #1277e1' : '2px solid transparent',
-                  color: activeTab === 'saved' ? '#1277e1' : '#666',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  fontSize: '16px'
-                }}
-              >
-                Saved Properties {user ? `(${favorites.length})` : ''}
-              </button>
-              <button
-                onClick={() => {
-                  if (!user) {
-                    router.push('/api/auth/login');
-                  } else {
-                    setActiveTab('sell');
-                  }
-                }}
-                style={{
-                  padding: '12px 24px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  borderBottom: activeTab === 'sell' ? '2px solid #1277e1' : '2px solid transparent',
-                  color: activeTab === 'sell' ? '#1277e1' : '#666',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  fontSize: '16px'
-                }}
-              >
-                Sell Properties {user ? `(${sellerProperties.length})` : ''}
-              </button>
-            </div>
+                <button
+                  onClick={() => setActiveTab('saved')}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'saved' ? 'white' : 'transparent',
+                    borderRadius: '8px',
+                    color: activeTab === 'saved' ? '#0073e6' : '#64748b',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    boxShadow: activeTab === 'saved' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Saved Properties ({favorites.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('sell')}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'sell' ? 'white' : 'transparent',
+                    borderRadius: '8px',
+                    color: activeTab === 'sell' ? '#0073e6' : '#64748b',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    boxShadow: activeTab === 'sell' ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  My Listings ({sellerProperties.length})
+                </button>
+              </div>
 
             {/* Tab Content */}
             {user && activeTab === 'account' && (
@@ -410,25 +716,22 @@ function Profile() {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-                      gap: '24px' 
-                    }}>
+                    <div className="property-grid">
                       {savedProperties.map((property) => (
-                        <PropertyCard 
-                          key={property.id}
-                          image_url={property.image_url}
-                          description={property.description}
-                          price={property.price}
-                          rooms={property.rooms}
-                          bathrooms={property.bathrooms}
-                          address={property.address}
-                          squareMeters={property.squareMeters}
-                          yearBuilt={property.yearBuilt}
-                          latitude={property.latitude}
-                          longitude={property.longitude}
-                        />
+                        <div key={property.id} className="modern-card">
+                          <PropertyCard 
+                            image_url={property.image_url}
+                            description={property.description}
+                            price={property.price}
+                            rooms={property.rooms}
+                            bathrooms={property.bathrooms}
+                            address={property.address}
+                            squareMeters={property.squareMeters}
+                            yearBuilt={property.yearBuilt}
+                            latitude={property.latitude}
+                            longitude={property.longitude}
+                          />
+                        </div>
                       ))}
                     </div>
                   )}
@@ -522,67 +825,135 @@ function Profile() {
                               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
-                            <input
-                              type="text"
-                              placeholder="Property Type (e.g., House, Apartment)"
+                            <select
                               value={formData.type}
                               onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
                               }}
-                            />
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
+                              }}
+                            >
+                              <option value="">Select Property Type</option>
+                              {propertyTypes.map((type) => (
+                                <option key={type.id} value={type.name}>
+                                  {type.display_name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           <textarea
-                            placeholder="Description"
+                            placeholder="Property Description"
                             value={formData.description}
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                             required
                             rows={4}
                             style={{
-                              padding: '12px',
-                              border: '1px solid #ddd',
-                              borderRadius: '4px',
+                              padding: '12px 16px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '8px',
                               fontSize: '16px',
-                              resize: 'vertical'
+                              backgroundColor: '#f9fafb',
+                              resize: 'vertical',
+                              transition: 'all 0.2s ease',
+                              fontFamily: 'inherit'
+                            }}
+                            onFocus={(e) => {
+                              e.target.style.backgroundColor = 'white';
+                              e.target.style.borderColor = '#0073e6';
+                              e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                            }}
+                            onBlur={(e) => {
+                              e.target.style.backgroundColor = '#f9fafb';
+                              e.target.style.borderColor = '#d1d5db';
+                              e.target.style.boxShadow = 'none';
                             }}
                           />
 
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                             <input
                               type="text"
-                              placeholder="Price"
+                              placeholder="Price (e.g., $450,000)"
                               value={formData.price}
                               onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                             <input
                               type="number"
-                              placeholder="Rooms"
+                              placeholder="Bedrooms"
                               value={formData.rooms}
                               onChange={(e) => setFormData(prev => ({ ...prev, rooms: parseInt(e.target.value) || 0 }))}
                               required
+                              min="0"
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                             <input
@@ -591,27 +962,53 @@ function Profile() {
                               value={formData.bathrooms}
                               onChange={(e) => setFormData(prev => ({ ...prev, bathrooms: parseInt(e.target.value) || 0 }))}
                               required
+                              min="0"
+                              step="0.5"
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px' }}>
                             <input
                               type="text"
-                              placeholder="Address"
+                              placeholder="Street Address"
                               value={formData.address}
                               onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                             <input
@@ -621,10 +1018,22 @@ function Profile() {
                               onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                             <input
@@ -634,15 +1043,27 @@ function Profile() {
                               onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                             <input
                               type="text"
                               placeholder="Country"
@@ -650,42 +1071,131 @@ function Profile() {
                               onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
                               required
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
                             <input
                               type="number"
-                              placeholder="Square Meters"
+                              placeholder="Square Feet"
                               value={formData.squareMeters}
                               onChange={(e) => setFormData(prev => ({ ...prev, squareMeters: parseInt(e.target.value) || 0 }))}
                               required
+                              min="0"
                               style={{
-                                padding: '12px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '16px'
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
                               }}
                             />
+                            <select
+                              value={formData.status}
+                              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                              required
+                              style={{
+                                padding: '12px 16px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                backgroundColor: '#f9fafb',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.borderColor = '#0073e6';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.backgroundColor = '#f9fafb';
+                                e.target.style.borderColor = '#d1d5db';
+                                e.target.style.boxShadow = 'none';
+                              }}
+                            >
+                              <option value="">Select Status</option>
+                              {propertyStatuses.map((status) => (
+                                <option key={status.id} value={status.name}>
+                                  {status.display_name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           <button
                             type="submit"
                             disabled={submitting}
                             style={{
-                              backgroundColor: submitting ? '#ccc' : '#1277e1',
+                              backgroundColor: submitting ? '#9ca3af' : '#0073e6',
                               color: 'white',
                               border: 'none',
-                              borderRadius: '4px',
-                              padding: '16px 24px',
+                              borderRadius: '8px',
+                              padding: '16px 32px',
                               fontWeight: '600',
                               fontSize: '16px',
-                              cursor: submitting ? 'not-allowed' : 'pointer'
+                              cursor: submitting ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: submitting ? 'none' : '0 2px 4px rgba(0, 115, 230, 0.2)',
+                              transform: submitting ? 'none' : 'translateY(0)',
+                              width: '100%',
+                              marginTop: '8px'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!submitting) {
+                                e.currentTarget.style.backgroundColor = '#005bb5';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 115, 230, 0.3)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!submitting) {
+                                e.currentTarget.style.backgroundColor = '#0073e6';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 115, 230, 0.2)';
+                              }
                             }}
                           >
-                            {submitting ? 'Creating Property...' : 'Create Property'}
+                            {submitting ? (
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <div style={{
+                                  width: '16px',
+                                  height: '16px',
+                                  border: '2px solid #ffffff',
+                                  borderTop: '2px solid transparent',
+                                  borderRadius: '50%',
+                                  animation: 'spin 1s linear infinite'
+                                }}></div>
+                                Creating Property...
+                              </div>
+                            ) : (
+                              'List Property'
+                            )}
                           </button>
                         </form>
                       </div>
@@ -708,13 +1218,9 @@ function Profile() {
                             </p>
                           </div>
                         ) : (
-                          <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-                            gap: '24px' 
-                          }}>
+                          <div className="property-grid">
                             {sellerProperties.map((property) => (
-                              <div key={property.id} style={{ position: 'relative' }}>
+                              <div key={property.id} style={{ position: 'relative' }} className="modern-card">
                                 <PropertyCard 
                                   image_url={property.image_url}
                                   description={property.description}
@@ -731,16 +1237,26 @@ function Profile() {
                                   onClick={() => handleDeleteProperty(property.id)}
                                   style={{
                                     position: 'absolute',
-                                    top: '8px',
-                                    right: '8px',
-                                    backgroundColor: '#dc3545',
+                                    top: '12px',
+                                    right: '12px',
+                                    backgroundColor: '#dc2626',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '4px',
-                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
                                     fontSize: '12px',
                                     cursor: 'pointer',
-                                    fontWeight: '600'
+                                    fontWeight: '600',
+                                    boxShadow: '0 2px 4px rgba(220, 38, 38, 0.3)',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#b91c1c';
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#dc2626';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }}
                                 >
                                   Delete
@@ -755,6 +1271,7 @@ function Profile() {
                 </div>
               )}
             </div>
+            )}
         </div>
       </main>
     </div>
