@@ -3,6 +3,8 @@ import styles from '../styles/PropertyCard.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import { Property } from '../types';
 import LazyImage from './LazyImage';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 export type MobilePropertyCardProps = Pick<
   Property,
@@ -19,12 +21,14 @@ export type MobilePropertyCardProps = Pick<
   latitude?: number;
   longitude?: number;
   onClick?: () => void;
-  onFavoriteToggle?: (id: number) => void;
+  onFavoriteToggle?: (id: number, newStatus: boolean) => void;
   isFavorite?: boolean;
 };
 
 const MobilePropertyCard: React.FC<MobilePropertyCardProps> = (props) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { user } = useUser();
+  const [isSaving, setIsSaving] = useState(false);
   
   const handleCardClick = () => {
     if (props.onClick) {
@@ -34,10 +38,39 @@ const MobilePropertyCard: React.FC<MobilePropertyCardProps> = (props) => {
     }
   };
 
-  const handleFavoriteToggle = (e: React.MouseEvent) => {
+  const handleFavoriteToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
-    if (props.onFavoriteToggle && props.id) {
-      props.onFavoriteToggle(props.id);
+    
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = '/api/auth/login';
+      return;
+    }
+
+    if (isSaving || !props.id) return; // Prevent multiple clicks or proceed if no id
+    
+    setIsSaving(true);
+    try {
+      const newStatus = !props.isFavorite;
+      await toggleSaveProperty(props.id, props.isFavorite || false);
+      
+      // Call parent callback to update UI
+      if (props.onFavoriteToggle) {
+        props.onFavoriteToggle(props.id, newStatus);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      
+      // Check if it's an auth error
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+        // Redirect to login
+        window.location.href = '/api/auth/login';
+        return;
+      }
+      
+      alert('Failed to update favorite status. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -66,9 +99,10 @@ const MobilePropertyCard: React.FC<MobilePropertyCardProps> = (props) => {
         <button 
           className={`${mobileStyles.favoriteButton} ${props.isFavorite ? mobileStyles.isFavorite : ''}`}
           onClick={handleFavoriteToggle}
+          disabled={isSaving}
           aria-label={props.isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
-          {props.isFavorite ? '❤️' : '🤍'}
+          {isSaving ? '⏳' : (props.isFavorite ? '❤️' : '🤍')}
         </button>
       </div>
       <div className={mobileStyles.mobileCardDetails}>

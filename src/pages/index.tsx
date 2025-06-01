@@ -11,7 +11,7 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import Header from 'components/Header';
-import { getSavedPropertiesStatus } from '../utils/savedPropertiesApi';
+import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -56,18 +56,25 @@ const Home: React.FC = () => {
       }
 
       try {
-        const savedStatus = await getSavedPropertiesStatus();
+        const savedStatus = await checkSavedStatus(properties.map(p => p.id));
         setSavedPropertyIds(new Set(Object.keys(savedStatus).map(Number).filter(id => savedStatus[id])));
       } catch (error) {
         console.error('Error loading saved properties status:', error);
+        
+        // Check if it's an auth error
+        if (error instanceof Error && error.message.includes('Unauthorized')) {
+          // Just set empty set - no need to redirect as this is a background load
+          console.log('User not authenticated for saved properties check');
+        }
+        
         setSavedPropertyIds(new Set());
       }
     };
 
     fetchProperties();
     
-    // Only load saved status after user loading is complete
-    if (!userLoading) {
+    // Only load saved status after user loading is complete and we have properties
+    if (!userLoading && properties.length > 0) {
       loadSavedStatus();
     }
   }, [user, userLoading]);
@@ -80,17 +87,37 @@ const Home: React.FC = () => {
     });
   };
 
-  // Function to toggle favorite status
-  const handleFavoriteToggle = (propertyId: number) => {
-    setFavorites(prevFavorites => {
-      const newFavorites = prevFavorites.includes(propertyId)
-        ? prevFavorites.filter(id => id !== propertyId)
-        : [...prevFavorites, propertyId];
+  // Function to toggle favorite status using database API
+  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
+    if (userLoading) return; // Don't proceed if user status is still loading
+    
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = '/api/auth/login';
+      return;
+    }
+    
+    try {
+      // If newStatus is provided, use it; otherwise toggle based on current state
+      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
       
-      // Save to localStorage
-      localStorage.setItem('favorites', JSON.stringify(newFavorites));
-      return newFavorites;
-    });
+      // Call the API to toggle the saved status
+      await toggleSaveProperty(propertyId, isCurrentlySaved);
+      
+      // Update the local state
+      setSavedPropertyIds(prevSavedIds => {
+        const newSavedIds = new Set(prevSavedIds);
+        if (isCurrentlySaved) {
+          newSavedIds.delete(propertyId);
+        } else {
+          newSavedIds.add(propertyId);
+        }
+        return newSavedIds;
+      });
+    } catch (error) {
+      console.error('Error toggling property saved status:', error);
+      alert('Failed to update saved status. Please try again.');
+    }
   };
 
   const responsive = {
@@ -153,7 +180,7 @@ const Home: React.FC = () => {
                 longitude={property.longitude ?? property.geocode?.lng}
                 onClick={() => handlePropertyClick(property.id)}
                 onFavoriteToggle={handleFavoriteToggle}
-                isFavorite={favorites.includes(property.id)}
+                isFavorite={savedPropertyIds.has(property.id)}
               />
             ))}
           </div>
@@ -162,6 +189,7 @@ const Home: React.FC = () => {
             {properties.map((property) => (
               <PropertyCard
                 key={property.id}
+                id={property.id}
                 image_url={property.image_url}
                 description={property.description}
                 price={`$${property.price}`}
@@ -173,8 +201,8 @@ const Home: React.FC = () => {
                 latitude={property.latitude ?? property.geocode?.lat}
                 longitude={property.longitude ?? property.geocode?.lng}
                 onClick={() => handlePropertyClick(property.id)}
-                onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                isFavorite={favorites.includes(property.id)}
+                onFavoriteToggle={handleFavoriteToggle}
+                isFavorite={savedPropertyIds.has(property.id)}
               />
             ))}
           </Carousel>

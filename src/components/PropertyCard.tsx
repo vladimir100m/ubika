@@ -549,6 +549,14 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      
+      // Check if it's an auth error
+      if (error instanceof Error && error.message.includes('Unauthorized')) {
+        // Redirect to login
+        window.location.href = '/api/auth/login';
+        return;
+      }
+      
       alert('Failed to update favorite status. Please try again.');
     } finally {
       setIsSaving(false);
