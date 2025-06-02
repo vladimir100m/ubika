@@ -7,7 +7,6 @@
   align-items: center;
   padding: 8px;
   max-width: 100%;
-  overflow-x: auto;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -361,7 +360,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
 }
 
 .searchForm {
