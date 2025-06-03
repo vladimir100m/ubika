@@ -3,7 +3,8 @@
 ## version 0
 
 ### Features basicas
-- Búsqueda por filtros avanzados (precio, zona, tipo de propiedad, operacion).
+- ~~Búsqueda por filtros avanzados (precio, zona, tipo de propiedad, operacion).~~
+- ~~Adaptar la app a db de vercel NeonDB~~
 - Mapas interactivos para visualización geográfica.
 - Detalle de propiedad con información completa.
     - Refactorizar caracteristicas del inmueble: a:
