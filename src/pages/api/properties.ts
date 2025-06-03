@@ -104,7 +104,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
 
     if (filters.minArea) {
       query += ` AND p.area >= $${paramIndex}`;
-      queryParams.push(parseInt(filters.minArea), 10);
+      queryParams.push(parseInt(filters.minArea, 10));
       paramIndex++;
     }
 
