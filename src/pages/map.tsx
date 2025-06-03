@@ -5,8 +5,8 @@ import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { PropertyCard } from '../components';
-import SearchBar, { SearchFilters } from '../components/SearchBar';
-import MapFilters, { FilterOptions } from '../components/MapFilters';
+import { SearchFilters } from '../components/SearchBar';
+import MapFilters  from '../components/MapFilters';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types

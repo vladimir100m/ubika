@@ -33,7 +33,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   onFilterChange, 
   onSearchLocationChange,
   initialFilters = {},
-  propertyCount = 0,
   showBoundaryButton = false,
   onRemoveBoundary,
   searchLocation = ''
@@ -74,11 +73,13 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     setActiveDropdown(null);
   };
 
-  const handlePriceChange = (min: string, max: string) => {
+  const handlePriceChange = (min: string, max: string, closePopup = false) => {
     const newFilters = { ...filters, priceMin: min, priceMax: max };
     setFilters(newFilters);
     onFilterChange(newFilters);
-    setActiveDropdown(null);
+    if (closePopup) {
+      setActiveDropdown(null);
+    }
   };
 
   const handleBedsChange = (beds: string) => {
@@ -106,7 +107,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     const newFilters = { ...filters, moreFilters: newMoreFilters };
     setFilters(newFilters);
     onFilterChange(newFilters);
-    setActiveDropdown(null);
   };
 
   const handleClickOutside = (e: React.MouseEvent) => {
@@ -241,11 +241,11 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               />
             </div>
             <div className={styles.presetRanges}>
-              <button onClick={() => handlePriceChange('', '')}>Any</button>
-              <button onClick={() => handlePriceChange('', '100000')}>Under $100,000</button>
-              <button onClick={() => handlePriceChange('100000', '300000')}>$100k-$300k</button>
-              <button onClick={() => handlePriceChange('300000', '500000')}>$300k-$500k</button>
-              <button onClick={() => handlePriceChange('500000', '')}>$500k+</button>
+              <button onClick={() => handlePriceChange('', '', true)}>Any</button>
+              <button onClick={() => handlePriceChange('', '100000', true)}>Under $100,000</button>
+              <button onClick={() => handlePriceChange('100000', '300000', true)}>$100k-$300k</button>
+              <button onClick={() => handlePriceChange('300000', '500000', true)}>$300k-$500k</button>
+              <button onClick={() => handlePriceChange('500000', '', true)}>$500k+</button>
             </div>
           </div>
         )}
@@ -388,9 +388,10 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               <h4>Square Feet</h4>
               <div className={styles.rangeFilter}>
                 <input 
-                  type="text" 
+                  type="number" 
                   placeholder="Min"
                   value={filters.moreFilters.minArea}
+                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     minArea: e.target.value
@@ -399,9 +400,10 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                 />
                 <span className={styles.rangeSeparator}>to</span>
                 <input 
-                  type="text" 
+                  type="number" 
                   placeholder="Max"
                   value={filters.moreFilters.maxArea}
+                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     maxArea: e.target.value
@@ -414,9 +416,10 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               <h4>Year Built</h4>
               <div className={styles.rangeFilter}>
                 <input 
-                  type="text" 
+                  type="number" 
                   placeholder="Min"
                   value={filters.moreFilters.yearBuiltMin}
+                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     yearBuiltMin: e.target.value
@@ -425,9 +428,10 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                 />
                 <span className={styles.rangeSeparator}>to</span>
                 <input 
-                  type="text" 
+                  type="number" 
                   placeholder="Max"
                   value={filters.moreFilters.yearBuiltMax}
+                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     yearBuiltMax: e.target.value
