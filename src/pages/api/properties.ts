@@ -57,22 +57,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       queryText += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) <= $${paramIndex}`;
       queryParams.push(parseFloat(filters.maxPrice));
       paramIndex++;
+      console.log(query, queryParams, filters);
     }
 
     if (filters.bedrooms) {
       queryText += ` AND p.room >= $${paramIndex}`;
-      queryParams.push(parseInt(filters.bedrooms));
+      queryParams.push(parseInt(filters.bedrooms, 10));
       paramIndex++;
     }
 
     if (filters.bathrooms) {
       queryText += ` AND p.bathrooms >= $${paramIndex}`;
-      queryParams.push(parseInt(filters.bathrooms));
+      queryParams.push(parseInt(filters.bathrooms, 10));
       paramIndex++;
     }
 
     if (filters.propertyType) {
-      queryText += ` AND p.type = $${paramIndex}`;
+      // Property type filter should match against property_types table
+      queryText += ` AND LOWER(p.type) LIKE LOWER($${paramIndex})`;
       queryParams.push(filters.propertyType);
       paramIndex++;
     }
@@ -94,13 +96,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
 
     if (filters.minArea) {
       queryText += ` AND p.area >= $${paramIndex}`;
-      queryParams.push(parseInt(filters.minArea));
+      queryParams.push(parseInt(filters.minArea, 10));
       paramIndex++;
     }
 
     if (filters.maxArea) {
       queryText += ` AND p.area <= $${paramIndex}`;
-      queryParams.push(parseInt(filters.maxArea));
+      queryParams.push(parseInt(filters.maxArea, 10));
       paramIndex++;
     }
 

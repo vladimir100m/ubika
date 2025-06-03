@@ -3,11 +3,6 @@ import { getSession } from '@auth0/nextjs-auth0';
 import { query } from '../../../utils/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
     const session = await getSession(req, res);
     
