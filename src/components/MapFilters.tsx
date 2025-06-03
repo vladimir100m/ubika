@@ -198,15 +198,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               />
               For Rent
             </label>
-            <label className={styles.radioLabel}>
-              <input 
-                type="radio" 
-                name="propertyStatus" 
-                checked={filters.sold} 
-                onChange={() => handlePropertyStatusChange('sold')} 
-              />
-              Sold
-            </label>
           </div>
         )}
       </div>

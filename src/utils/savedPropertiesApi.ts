@@ -90,12 +90,12 @@ export const unsaveProperty = async (propertyId: string) => {
  * Check if specific properties are saved by the current user
  */
 export const checkSavedStatus = async (propertyIds: number[]): Promise<SavedPropertiesResponse> => {
-  const idsParam = propertyIds.map(id => `propertyIds=${id}`).join('&');
-  const response = await fetch(`/api/properties/saved-status?${idsParam}`, {
-    method: 'GET',
+  const response = await fetch(`/api/properties/saved-status`, {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ propertyIds }),
   });
 
   if (!response.ok) {

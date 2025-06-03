@@ -3,13 +3,10 @@ import { useRouter } from 'next/router';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
-import MobilePropertyCard from '../components/MobilePropertyCard';
 import styles from '../styles/Home.module.css';
-import mobileStyles from '../styles/Mobile.module.css';
 import { Property } from '../types'; // Import Property type
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
-import useMediaQuery from '../utils/useMediaQuery';
 import Header from 'components/Header';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 
@@ -20,7 +17,6 @@ const Home: React.FC = () => {
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -57,7 +53,7 @@ const Home: React.FC = () => {
 
       try {
         const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-        setSavedPropertyIds(new Set(Object.keys(savedStatus).map(Number).filter(id => savedStatus[id])));
+        setSavedPropertyIds(new Set(savedStatus.savedPropertyIds.map(Number)));
       } catch (error) {
         console.error('Error loading saved properties status:', error);
         
@@ -161,28 +157,6 @@ const Home: React.FC = () => {
             >
               Try Again
             </button>
-          </div>
-        ) : isMobile ? (
-          <div className={mobileStyles.mobileGrid}>
-            {properties.map((property) => (
-              <MobilePropertyCard
-                key={property.id}
-                id={property.id}
-                image_url={property.image_url}
-                description={property.description}
-                price={`$${property.price}`}
-                address={property.address}
-                rooms={property.rooms}
-                bathrooms={property.bathrooms}
-                squareMeters={property.squareMeters}
-                yearBuilt={property.yearBuilt}
-                latitude={property.latitude ?? property.geocode?.lat}
-                longitude={property.longitude ?? property.geocode?.lng}
-                onClick={() => handlePropertyClick(property.id)}
-                onFavoriteToggle={handleFavoriteToggle}
-                isFavorite={savedPropertyIds.has(property.id)}
-              />
-            ))}
           </div>
         ) : (
           <Carousel responsive={responsive}>

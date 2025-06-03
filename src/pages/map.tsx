@@ -13,6 +13,8 @@ import { Property, Geocode } from '../types'; // Import Property and Geocode typ
 import useMediaQuery from '../utils/useMediaQuery';
 import PropertyPopup from 'components/PropertyPopup';
 import Header from 'components/Header';
+import {useUser} from '@auth0/nextjs-auth0/client';
+import { checkSavedStatus } from '../utils/savedPropertiesApi';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -24,6 +26,7 @@ const MapPage: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false); // Mobile drawer state
   const [loading, setLoading] = useState(true); // Add loading state
   const [error, setError] = useState<string | null>(null); // Add error state
+  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   
   const isMobile = useMediaQuery('(max-width: 768px)');
   
@@ -56,6 +59,7 @@ const MapPage: React.FC = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const { user, isLoading: userLoading } = useUser();
 
   useEffect(() => {
     // Fetch properties from the database
@@ -111,9 +115,38 @@ const MapPage: React.FC = () => {
         setLoading(false);
       }
     };
-
+    //
     fetchProperties();
   }, [router.query]);
+
+  useEffect(() => {
+    const loadSavedStatus = async () => {
+      if (!user) {
+        setSavedPropertyIds(new Set());
+        return;
+      }
+
+      try {
+        const savedStatus = await checkSavedStatus(propertyLocations.map(p => p.id));
+        setSavedPropertyIds(new Set(savedStatus.savedPropertyIds.map(Number)));
+      } catch (error) {
+        console.error('Error loading saved properties status:', error);
+        
+        // Check if it's an auth error
+        if (error instanceof Error && error.message.includes('Unauthorized')) {
+          // Just set empty set - no need to redirect as this is a background load
+          console.log('User not authenticated for saved properties check');
+        }
+        
+        setSavedPropertyIds(new Set());
+      }
+    };
+
+    // Only load saved status after user loading is complete and we have properties
+    if (!userLoading && propertyLocations.length > 0) {
+      loadSavedStatus();
+    }
+  }, [propertyLocations, userLoading])
 
   useEffect(() => {
     if (propertyLocations.length > 0) {
@@ -591,7 +624,7 @@ const MapPage: React.FC = () => {
                     style={{ cursor: 'pointer' }}
                     ref={el => { setPropertyRef(el, property.id); }}
                   >
-                    <PropertyCard {...property} onClick={() => handlePropertyClick(property)} />
+                    <PropertyCard {...property} isFavorite={savedPropertyIds.has(property.id)} onClick={() => handlePropertyClick(property)} />
                   </div>
                 ))
               ) : (
@@ -848,7 +881,7 @@ const MapPage: React.FC = () => {
                         setDrawerOpen(false);
                       }}
                     >
-                      <PropertyCard {...property} />
+                      <PropertyCard {...property} isFavorite={savedPropertyIds.has(property.id)} />
                     </div>
                   ))
                 ) : (
