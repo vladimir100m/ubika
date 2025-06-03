@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
+import { query } from '../../utils/db';
 import { Property } from '../../types';
 
 interface PropertyFilters {
@@ -15,17 +15,7 @@ interface PropertyFilters {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { error: string }>) => {
-  const client = new Client({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB,
-    password: String(process.env.POSTGRES_PASSWORD),
-    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-  });
-
   try {
-    await client.connect();
-
     // Extract filters from query parameters
     const filters: PropertyFilters = {
       minPrice: req.query.minPrice as string,
@@ -40,13 +30,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
     };
 
     // Build dynamic query
-    let query = `
+    let queryText = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
         p.zip_code, p.type, p.room as rooms, p.bathrooms, p.area as squareMeters, 
         p.image_url, p.status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
-        p.geocode, p.seller_id
+        p.geocode, p.seller_id, p.operation_status_id,
+        pos.name as operation_status, pos.display_name as operation_status_display
       FROM properties p
+      LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
       WHERE 1=1
     `;
 
@@ -56,79 +48,73 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
     // Apply filters
     if (filters.minPrice) {
       // Remove currency symbols and convert to number for comparison
-      query += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) >= $${paramIndex}`;
+      queryText += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) >= $${paramIndex}`;
       queryParams.push(parseFloat(filters.minPrice));
       paramIndex++;
     }
 
     if (filters.maxPrice) {
-      query += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) <= $${paramIndex}`;
+      queryText += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) <= $${paramIndex}`;
       queryParams.push(parseFloat(filters.maxPrice));
       paramIndex++;
     }
 
     if (filters.bedrooms) {
-      query += ` AND p.room >= $${paramIndex}`;
+      queryText += ` AND p.room >= $${paramIndex}`;
       queryParams.push(parseInt(filters.bedrooms));
       paramIndex++;
     }
 
     if (filters.bathrooms) {
-      query += ` AND p.bathrooms >= $${paramIndex}`;
+      queryText += ` AND p.bathrooms >= $${paramIndex}`;
       queryParams.push(parseInt(filters.bathrooms));
       paramIndex++;
     }
 
     if (filters.propertyType) {
-      // Property type filter should match against property_types table
-      query += ` AND EXISTS (
-        SELECT 1 FROM property_types pt 
-        WHERE pt.id = $${paramIndex} AND LOWER(p.type) = LOWER(pt.name)
-      )`;
-      queryParams.push(parseInt(filters.propertyType));
+      queryText += ` AND p.type = $${paramIndex}`;
+      queryParams.push(filters.propertyType);
       paramIndex++;
     }
 
     if (filters.operation) {
-      // Assuming we have an operation field or derive from status/price patterns
+      // Use the new operation_status_id field
       if (filters.operation === 'rent') {
-        query += ` AND (p.status = 'available' AND LOWER(p.description) LIKE '%alquiler%')`;
+        queryText += ` AND p.operation_status_id = 2`;
       } else if (filters.operation === 'sale') {
-        query += ` AND (p.status = 'available' AND LOWER(p.description) NOT LIKE '%alquiler%')`;
+        queryText += ` AND p.operation_status_id = 1`;
       }
     }
 
     if (filters.zone) {
-      query += ` AND (LOWER(p.city) LIKE LOWER($${paramIndex}) OR LOWER(p.address) LIKE LOWER($${paramIndex}))`;
+      queryText += ` AND (LOWER(p.city) LIKE LOWER($${paramIndex}) OR LOWER(p.address) LIKE LOWER($${paramIndex}))`;
       queryParams.push(`%${filters.zone}%`);
       paramIndex++;
     }
 
     if (filters.minArea) {
-      query += ` AND p.area >= $${paramIndex}`;
+      queryText += ` AND p.area >= $${paramIndex}`;
       queryParams.push(parseInt(filters.minArea));
       paramIndex++;
     }
 
     if (filters.maxArea) {
-      query += ` AND p.area <= $${paramIndex}`;
+      queryText += ` AND p.area <= $${paramIndex}`;
       queryParams.push(parseInt(filters.maxArea));
       paramIndex++;
     }
 
     // Add ordering
-    query += ` ORDER BY p.created_at DESC`;
+    queryText += ` ORDER BY p.created_at DESC`;
 
-    console.log('Executing query:', query);
+    console.log('Executing query:', queryText);
     console.log('Query params:', queryParams);
 
-    const result = await client.query<Property>(query, queryParams);
+    const result = await query(queryText, queryParams);
     res.status(200).json(result.rows);
   } catch (error) {
     console.error('Error fetching properties:', error);
     res.status(500).json({ error: 'Internal Server Error' });
-  } finally {
-    await client.end();
   }
 };
 

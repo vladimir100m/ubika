@@ -252,6 +252,21 @@ export default function PropertyPopup({
     }
   };
 
+  // Get operation status badge info
+  const getOperationStatusBadge = () => {
+    const operationStatus = selectedProperty.operation_status_display || selectedProperty.operation_status;
+    const operationStatusId = selectedProperty.operation_status_id;
+
+    // Define colors for different operation types
+    const badgeConfig = {
+      1: { backgroundColor: '#e4002b', text: operationStatus || 'For Sale' }, // Sale
+      2: { backgroundColor: '#2563eb', text: operationStatus || 'For Rent' }, // Rent  
+      3: { backgroundColor: '#6b7280', text: operationStatus || 'Not Available' } // Not Available
+    };
+
+    return badgeConfig[operationStatusId as keyof typeof badgeConfig] || badgeConfig[1];
+  };
+
   // Handler for clicking on specific images in the grid
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
@@ -445,7 +460,7 @@ export default function PropertyPopup({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                     <div>
                       <span style={{ 
-                        backgroundColor: '#e4002b', 
+                        backgroundColor: getOperationStatusBadge().backgroundColor, 
                         color: 'white', 
                         padding: '4px 8px', 
                         borderRadius: '4px', 
@@ -453,7 +468,7 @@ export default function PropertyPopup({
                         fontWeight: '600',
                         display: 'inline-block',
                         marginBottom: '8px'
-                      }}>For Sale</span>
+                      }}>{getOperationStatusBadge().text}</span>
                       <h1 style={{ 
                         fontSize: '28px', 
                         fontWeight: '600', 

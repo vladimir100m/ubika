@@ -9,14 +9,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const queryText = `
       SELECT id, name, display_name, description
-      FROM property_types
-      ORDER BY display_name
+      FROM property_operation_statuses
+      ORDER BY id
     `;
 
     const result = await query(queryText);
     res.status(200).json(result.rows);
   } catch (error) {
-    console.error('Error fetching property types:', error);
+    console.error('Error fetching property operation statuses:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };

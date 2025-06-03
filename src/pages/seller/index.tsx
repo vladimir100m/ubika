@@ -26,6 +26,13 @@ interface PropertyFeature {
   icon: string;
 }
 
+interface PropertyOperationStatus {
+  id: number;
+  name: string;
+  display_name: string;
+  description: string;
+}
+
 const SellerDashboard: React.FC = () => {
   const router = useRouter();
   const { user, error, isLoading } = useUser();
@@ -46,12 +53,14 @@ const SellerDashboard: React.FC = () => {
     bathrooms: 0,
     squareMeters: 0,
     status: 'available',
+    operation_status_id: 1, // Default to Sale
     seller_id: ''
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([]);
+  const [propertyOperationStatuses, setPropertyOperationStatuses] = useState<PropertyOperationStatus[]>([]);
   const [loadingFormData, setLoadingFormData] = useState(true);
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
@@ -88,6 +97,13 @@ const SellerDashboard: React.FC = () => {
         if (statusesResponse.ok) {
           const statuses = await statusesResponse.json();
           setPropertyStatuses(statuses);
+        }
+
+        // Fetch property operation statuses
+        const operationStatusesResponse = await fetch('/api/property-operation-statuses');
+        if (operationStatusesResponse.ok) {
+          const operationStatuses = await operationStatusesResponse.json();
+          setPropertyOperationStatuses(operationStatuses);
         }
 
         // Fetch property features
@@ -134,7 +150,7 @@ const SellerDashboard: React.FC = () => {
     let parsedValue: any = value;
 
     // Convert numeric fields
-    if (['rooms', 'bathrooms', 'squareMeters', 'yearBuilt'].includes(name)) {
+    if (['rooms', 'bathrooms', 'squareMeters', 'yearBuilt', 'operation_status_id'].includes(name)) {
       parsedValue = value === '' ? 0 : Number(value);
     }
 
@@ -236,6 +252,7 @@ const SellerDashboard: React.FC = () => {
       bathrooms: 0,
       squareMeters: 0,
       status: 'available',
+      operation_status_id: 1, // Default to Sale
       seller_id: user?.sub || ''
     });
     setEditingPropertyId(null);
@@ -277,6 +294,7 @@ const SellerDashboard: React.FC = () => {
       status: property.status,
       image_url: property.image_url,
       yearBuilt: property.yearBuilt,
+      operation_status_id: property.operation_status_id || 1, // Default to Sale if not set
       seller_id: user?.sub || ''
     });
     
@@ -749,19 +767,43 @@ const SellerDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
-                <input 
-                  type="number" 
-                  id="yearBuilt" 
-                  name="yearBuilt" 
-                  value={formData.yearBuilt || ''} 
-                  onChange={handleInputChange} 
-                  placeholder="e.g., 2010"
-                  min="1800"
-                  max={new Date().getFullYear()}
-                  className={styles.formInput}
-                />
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="operation_status_id" className={styles.formLabel}>Operation Type*</label>
+                  <select 
+                    id="operation_status_id" 
+                    name="operation_status_id" 
+                    value={formData.operation_status_id || 1} 
+                    onChange={handleInputChange} 
+                    required
+                    className={styles.formSelect}
+                  >
+                    {loadingFormData ? (
+                      <option value="" disabled>Loading...</option>
+                    ) : (
+                      propertyOperationStatuses.map(operationStatus => (
+                        <option key={operationStatus.id} value={operationStatus.id}>
+                          {operationStatus.display_name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
+                  <input 
+                    type="number" 
+                    id="yearBuilt" 
+                    name="yearBuilt" 
+                    value={formData.yearBuilt || ''} 
+                    onChange={handleInputChange} 
+                    placeholder="e.g., 2010"
+                    min="1800"
+                    max={new Date().getFullYear()}
+                    className={styles.formInput}
+                  />
+                </div>
               </div>
 
               <div className={styles.formGroup}>

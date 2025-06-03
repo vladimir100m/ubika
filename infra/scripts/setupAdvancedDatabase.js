@@ -1,12 +1,15 @@
 import { Client } from 'pg';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const setupAdvancedDatabase = async () => {
   const client = new Client({
-    user: process.env.POSTGRES_USER || 'admin',
-    host: process.env.POSTGRES_HOST || 'localhost',
-    database: process.env.POSTGRES_DB || 'ubika',
-    password: process.env.POSTGRES_PASSWORD || 'admin',
-    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
   });
 
   try {

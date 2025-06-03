@@ -1,12 +1,15 @@
 import { Client } from 'pg';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const listProperties = async () => {
   const client = new Client({
-    user: 'admin',
-    host: 'localhost',
-    database: 'ubika',
-    password: 'admin',
-    port: 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
   });
 
   try {

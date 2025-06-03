@@ -1,15 +1,18 @@
 import { Client } from 'pg';
 import fs from 'fs';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const properties = JSON.parse(fs.readFileSync('./infra/properties.json', 'utf-8'));
 
 const setupDatabase = async () => {
   const client = new Client({
-    user: 'admin',
-    host: 'localhost',
-    database: 'ubika',
-    password: 'admin',
-    port: 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
   });
 
   try {

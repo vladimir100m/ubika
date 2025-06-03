@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
+import { query } from '../../../utils/db';
 import { Property } from '../../../types';
 
 // This endpoint handles updating existing properties
@@ -16,16 +16,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Property ID is required' });
   }
 
-  const client = new Client({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB,
-    password: String(process.env.POSTGRES_PASSWORD),
-    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-  });
-
   try {
-    await client.connect();
 
     const propertyData = req.body;
     
@@ -38,7 +29,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const checkQuery = `
       SELECT id, seller_id FROM properties WHERE id = $1
     `;
-    const checkResult = await client.query(checkQuery, [id]);
+    const checkResult = await query(checkQuery, [id]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({ error: 'Property not found' });
@@ -79,6 +70,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     addFieldIfExists('squareMeters', 'area');
     addFieldIfExists('image_url');
     addFieldIfExists('status');
+    addFieldIfExists('operation_status_id');
     addFieldIfExists('yearBuilt', 'year_built');
     
     // Always update the updated_at timestamp
@@ -106,14 +98,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 seller_id
     `;
     
-    const result = await client.query(updateQuery, queryParams);
+    const result = await query(updateQuery, queryParams);
     
     res.status(200).json(result.rows[0]);
   } catch (error) {
     console.error('Error updating property:', error);
     res.status(500).json({ error: 'Internal Server Error' });
-  } finally {
-    await client.end();
   }
 };
 

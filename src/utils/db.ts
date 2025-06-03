@@ -1,15 +1,16 @@
-import { Pool, PoolClient } from 'pg';
+import pkg from 'pg';
+const { Pool } = pkg;
+import type { PoolClient } from 'pg';
 
-// Create a connection pool
+// Create a connection pool using Neon database
 const pool = new Pool({
-  user: process.env.POSTGRES_USER || 'admin',
-  host: process.env.POSTGRES_HOST || 'localhost',
-  database: process.env.POSTGRES_DB || 'ubika',
-  password: process.env.POSTGRES_PASSWORD || 'admin',
-  port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  },
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  connectionTimeoutMillis: 10000, // Increased timeout for serverless environments
 });
 
 // Function to get a client from the pool
@@ -40,6 +41,38 @@ export const query = async (text: string, params?: any[]): Promise<any> => {
 // Function to close the pool (useful for cleanup)
 export const closePool = async (): Promise<void> => {
   await pool.end();
+};
+
+// Function to test database connection
+export const testConnection = async (): Promise<boolean> => {
+  try {
+    const client = await getDbClient();
+    await client.query('SELECT 1');
+    client.release();
+    console.log('✅ Database connection successful');
+    return true;
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    return false;
+  }
+};
+
+// Function to handle transactions
+export const withTransaction = async <T>(
+  callback: (client: PoolClient) => Promise<T>
+): Promise<T> => {
+  const client = await getDbClient();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 export default pool;
