@@ -61,6 +61,20 @@ const MapPage: React.FC = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const { user, isLoading: userLoading } = useUser();
 
+  // Function to toggle favorite status using database API
+  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
+    setSavedPropertyIds(prevSavedIds => {
+      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
+      const newSavedIds = new Set(prevSavedIds);
+      if (isCurrentlySaved) {
+        newSavedIds.delete(propertyId);
+      } else {
+        newSavedIds.add(propertyId);
+      }
+      return newSavedIds;
+    });
+  };
+
   useEffect(() => {
     // Fetch properties from the database
     const fetchProperties = async () => {
@@ -624,7 +638,8 @@ const MapPage: React.FC = () => {
                     style={{ cursor: 'pointer' }}
                     ref={el => { setPropertyRef(el, property.id); }}
                   >
-                    <PropertyCard {...property} isFavorite={savedPropertyIds.has(property.id)} onClick={() => handlePropertyClick(property)} />
+                    <PropertyCard {...property} onFavoriteToggle={handleFavoriteToggle} isFavorite={savedPropertyIds.has(property.id)} onClick={() => handlePropertyClick(property)} />
+                
                   </div>
                 ))
               ) : (
@@ -881,7 +896,7 @@ const MapPage: React.FC = () => {
                         setDrawerOpen(false);
                       }}
                     >
-                      <PropertyCard {...property} isFavorite={savedPropertyIds.has(property.id)} />
+                      <PropertyCard {...property}  onFavoriteToggle={handleFavoriteToggle} isFavorite={savedPropertyIds.has(property.id)} />
                     </div>
                   ))
                 ) : (

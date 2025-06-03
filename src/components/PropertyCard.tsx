@@ -477,7 +477,6 @@ const PropertyDialog: React.FC<{ property: PropertyCardProps; onClose: () => voi
 const PropertyCard: React.FC<PropertyCardProps> = (props) => {
   const { user } = useUser();
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleCardClick = () => {
@@ -538,8 +537,6 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
     <>
       <div 
         className={styles.card}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         onClick={handleCardClick}
       >
         <div className={styles.imageContainer}>
@@ -552,7 +549,7 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
               disabled={isSaving}
               aria-label={props.isFavorite ? "Remove from saved" : "Save property"}
             >
-              {isSaving ? '⏳' : (props.isFavorite ? '❤️' : '🤍')} {isSaving ? 'Saving...' : (props.isFavorite ? 'Saved' : 'Save')}
+              {isSaving ? '⏳' : (props.isFavorite ? '❤️' : '🤍')}
             </button>
           </div>
         </div>
@@ -568,7 +565,7 @@ const PropertyCard: React.FC<PropertyCardProps> = (props) => {
           <p className={styles.address}>{props.address}</p>
           <div className={styles.cardFooter}>
             <button className={styles.viewDetailsButton}>
-              {isHovered  ? 'View Details' : 'See More'}
+              View Details
             </button>
             <button className={styles.shareButton} onClick={handleShareClick} aria-label="Share property">
               <span>🔗</span>

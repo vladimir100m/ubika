@@ -84,35 +84,16 @@ const Home: React.FC = () => {
 
   // Function to toggle favorite status using database API
   const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    if (userLoading) return; // Don't proceed if user status is still loading
-    
-    if (!user) {
-      // Redirect to login if not authenticated
-      window.location.href = '/api/auth/login';
-      return;
-    }
-    
-    try {
-      // If newStatus is provided, use it; otherwise toggle based on current state
+    setSavedPropertyIds(prevSavedIds => {
       const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      
-      // Call the API to toggle the saved status
-      await toggleSaveProperty(propertyId, isCurrentlySaved);
-      
-      // Update the local state
-      setSavedPropertyIds(prevSavedIds => {
-        const newSavedIds = new Set(prevSavedIds);
-        if (isCurrentlySaved) {
-          newSavedIds.delete(propertyId);
-        } else {
-          newSavedIds.add(propertyId);
-        }
-        return newSavedIds;
-      });
-    } catch (error) {
-      console.error('Error toggling property saved status:', error);
-      alert('Failed to update saved status. Please try again.');
-    }
+      const newSavedIds = new Set(prevSavedIds);
+      if (isCurrentlySaved) {
+        newSavedIds.delete(propertyId);
+      } else {
+        newSavedIds.add(propertyId);
+      }
+      return newSavedIds;
+    });
   };
 
   const responsive = {

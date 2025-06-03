@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
-import { Property } from '../types';
 import { getSavedProperties, unsaveProperty, type SavedProperty } from '../utils/savedPropertiesApi';
 
 const SavedProperties: React.FC = () => {
@@ -37,32 +36,11 @@ const SavedProperties: React.FC = () => {
     }
   }, [user, isLoading]);
 
-  // Handle removing a property from favorites
-  const handleRemoveFavorite = async (propertyId: number) => {
-    try {
-      // Make sure property.id exists and is not undefined/null
-      if (!propertyId) {
-        console.error('Property ID is missing');
-        return;
-      }
-      
-      await unsaveProperty(propertyId.toString());
-      // Remove from local state
-      setSavedProperties(prev => prev.filter(prop => prop.id !== propertyId));
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-      alert('Failed to remove property from favorites. Please try again.');
-    }
-  };
-
   // Handle favorite toggle from PropertyCard
   const handleFavoriteToggle = async (propertyId: number, newStatus: boolean) => {
     if (!newStatus) {
-      // Property was unsaved
       setSavedProperties(prev => prev.filter(prop => prop.id !== propertyId));
     }
-    // If saved, it would appear in the list on next load, but since this is the saved properties page,
-    // we don't expect properties to be newly added here
   };
 
   if (isLoading || loading) return (
@@ -338,41 +316,10 @@ const SavedProperties: React.FC = () => {
                       latitude={property.latitude}
                       longitude={property.longitude}
                       onFavoriteToggle={handleFavoriteToggle}
+                      isFavorite={true}
                     />
                     
                     {/* Remove from favorites button */}
-                    <button
-                      onClick={() => handleRemoveFavorite(property.id)}
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        backgroundColor: 'rgba(220, 38, 38, 0.9)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '32px',
-                        height: '32px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#dc2626';
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                      title="Remove from saved properties"
-                    >
-                      ✕
-                    </button>
                   </div>
                 ))}
               </div>
