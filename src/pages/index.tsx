@@ -44,13 +44,13 @@ const Home: React.FC = () => {
       }
     };
 
+    fetchProperties();
+  }, [user, userLoading]);
+
+  // TODO: a veces se llama dos veces, unificar con un use effect general
+  useEffect(() => {
     // Load saved properties status if user is authenticated
     const loadSavedStatus = async () => {
-      if (!user) {
-        setSavedPropertyIds(new Set());
-        return;
-      }
-
       try {
         const savedStatus = await checkSavedStatus(properties.map(p => p.id));
         setSavedPropertyIds(new Set(savedStatus.savedPropertyIds.map(Number)));
@@ -67,13 +67,12 @@ const Home: React.FC = () => {
       }
     };
 
-    fetchProperties();
     
     // Only load saved status after user loading is complete and we have properties
     if (!userLoading && properties.length > 0) {
       loadSavedStatus();
     }
-  }, [user, userLoading]);
+  }, [ userLoading, properties ]);
 
   // Function to handle property card click
   const handlePropertyClick = (propertyId: number) => {
