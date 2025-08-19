@@ -1,12 +1,24 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@auth0/nextjs-auth0';
+import { getServerSession } from 'next-auth/next';
 import { query } from '../../../utils/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getSession(req, res);
+    const session = await getServerSession(req, res, {
+      // Basic auth options for server session
+      providers: [],
+      callbacks: {
+        session: ({ session, token }) => ({
+          ...session,
+          user: {
+            ...session.user,
+            sub: token.sub
+          }
+        })
+      }
+    });
     
-    if (!session || !session.user) {
+    if (!session || !session.user || !session.user.sub) {
       return res.status(401).json({ error: 'Unauthorized. Please log in.' });
     }
 

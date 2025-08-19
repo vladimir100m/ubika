@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
@@ -35,7 +35,10 @@ interface PropertyOperationStatus {
 
 const SellerDashboard: React.FC = () => {
   const router = useRouter();
-  const { user, error, isLoading } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const u = user as (typeof user & { sub?: string; picture?: string | null; image?: string | null });
+  const isLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -70,12 +73,12 @@ const SellerDashboard: React.FC = () => {
     
     if (!user) {
       // Redirect to login if user is not authenticated
-      router.push('/api/auth/login');
+      router.push('/api/auth/signin');
       return;
     }
     
     // Set seller_id in form data
-    setFormData(prev => ({ ...prev, seller_id: user.sub || '' }));
+  setFormData(prev => ({ ...prev, seller_id: u?.sub || '' }));
     
     // Fetch seller properties once user is authenticated
     fetchSellerProperties();
@@ -123,11 +126,11 @@ const SellerDashboard: React.FC = () => {
   }, []);
 
   const fetchSellerProperties = async () => {
-    if (!user?.sub) return;
+  if (!u?.sub) return;
     
     setLoading(true);
     try {
-      const response = await fetch(`/api/properties/seller?seller_id=${user.sub}`);
+  const response = await fetch(`/api/properties/seller?seller_id=${u.sub}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(`Failed to fetch properties: ${errorData.error || response.statusText}`);
@@ -198,7 +201,8 @@ const SellerDashboard: React.FC = () => {
           },
           body: JSON.stringify({
             propertyId,
-            featureIds: selectedFeatures
+            featureIds: selectedFeatures,
+            seller_id: u?.sub
           }),
         });
 
@@ -253,7 +257,7 @@ const SellerDashboard: React.FC = () => {
       squareMeters: 0,
       status: 'available',
       operation_status_id: 1, // Default to Sale
-      seller_id: user?.sub || ''
+  seller_id: u?.sub || ''
     });
     setEditingPropertyId(null);
     setSelectedFeatures([]);
@@ -295,7 +299,7 @@ const SellerDashboard: React.FC = () => {
       image_url: property.image_url,
       yearBuilt: property.yearBuilt,
       operation_status_id: property.operation_status_id || 1, // Default to Sale if not set
-      seller_id: user?.sub || ''
+  seller_id: u?.sub || ''
     });
     
     // Set the editing property ID
@@ -352,7 +356,7 @@ const SellerDashboard: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          seller_id: user?.sub 
+          seller_id: u?.sub 
         }),
       });
 
@@ -412,7 +416,7 @@ const SellerDashboard: React.FC = () => {
 
   // Call this function when the component mounts and when the activeTab changes
   useEffect(() => {
-    if (user?.sub) {
+  if (u?.sub) {
       fetchSellerProperties();
     }
     // Only run in the browser, not during SSR
@@ -423,7 +427,7 @@ const SellerDashboard: React.FC = () => {
 
   // Authentication checks
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  // Note: no `error` from useSession; rely on status and user.
   if (!user) {
     // This should not happen as useEffect redirects, but just in case
     return <div>Redirecting to login...</div>;

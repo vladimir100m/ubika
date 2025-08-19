@@ -18,21 +18,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Handle image_url - could be a URL, base64 string, or empty
-    let imageUrl = propertyData.image_url || '/properties/casa-moderna.jpg'; // Default image if none provided
+    // Note: image_url column doesn't exist in the database
+    // Images will be handled through the CASE statement in queries that fetch properties
     
-    // In a real application, here is where you would upload the image to a cloud storage
-    // service if it's a base64 string, then use the returned URL
-    // For now, we'll just use the string as is (URL or base64)
-
-    // Insert new property
+    // Insert new property (without image_url since it doesn't exist in the database)
     const insertQuery = `
       INSERT INTO properties (
         title, description, price, address, city, state, country, 
-        zip_code, type, room, bathrooms, area, image_url, status, 
+        zip_code, type, room, bathrooms, area, status, 
         year_built, seller_id, operation_status_id, created_at, updated_at
       ) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING id, title, description, price, address`;
     
     const now = new Date().toISOString();
@@ -50,7 +46,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       propertyData.rooms,
       propertyData.bathrooms,
       propertyData.squareMeters,
-      imageUrl, // Use our processed imageUrl
       propertyData.status,
       propertyData.yearBuilt || null,
       propertyData.seller_id,

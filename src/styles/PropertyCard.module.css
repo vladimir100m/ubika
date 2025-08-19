@@ -472,18 +472,8 @@
   scrollbar-width: thin;
   scrollbar-color: #ccc transparent;
   padding: 10px 0;
-  
-  /* For WebKit browsers */
-  &::-webkit-scrollbar {
-    height: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 10px;
-  }
+
+  /* Scrollbar styles moved to top-level selectors below to satisfy CSS Modules purity */
 
   /* Media queries for responsive behavior */
   @media (max-width: 768px) {
@@ -495,6 +485,18 @@
     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
     gap: 4px;
   }
+}
+
+/* For WebKit browsers - scoped to the local class */
+.thumbnailsContainer::-webkit-scrollbar {
+  height: 6px;
+}
+.thumbnailsContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thumbnailsContainer::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 10px;
 }
 
 .thumbnailWrapper {

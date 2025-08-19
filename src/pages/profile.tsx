@@ -1,4 +1,4 @@
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
@@ -20,7 +20,10 @@ interface PropertyStatus {
 }
 
 function Profile() {
-  const { user, error, isLoading } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const u = user as (typeof user & { picture?: string | null; image?: string | null; sub?: string; email_verified?: boolean; updated_at?: string | number | Date });
+  const isLoading = status === 'loading';
   const [sellerProperties, setSellerProperties] = useState<Property[]>([]);
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
@@ -56,7 +59,7 @@ function Profile() {
     
     if (user) {
       // Set seller_id in form data
-      setFormData(prev => ({ ...prev, seller_id: user.sub || '' }));
+  setFormData(prev => ({ ...prev, seller_id: u?.sub || '' }));
       
       // Load seller properties
       loadSellerProperties();
@@ -90,10 +93,10 @@ function Profile() {
   }, []);
 
   const loadSellerProperties = async () => {
-    if (!user?.sub) return;
+    if (!u?.sub) return;
     
     try {
-      const response = await fetch(`/api/properties/seller?seller_id=${user.sub}`);
+      const response = await fetch(`/api/properties/seller?seller_id=${u.sub}`);
       if (response.ok) {
         const data = await response.json();
         setSellerProperties(data);
@@ -105,7 +108,7 @@ function Profile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.sub) return;
+  if (!u?.sub) return;
 
     setSubmitting(true);
     setMessage(null);
@@ -116,7 +119,7 @@ function Profile() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData, seller_id: user.sub }),
+  body: JSON.stringify({ ...formData, seller_id: u.sub }),
       });
 
       if (response.ok) {
@@ -134,7 +137,7 @@ function Profile() {
           bathrooms: 0,
           squareMeters: 0,
           status: 'available',
-          seller_id: user.sub
+          seller_id: u.sub
         });
         loadSellerProperties();
       } else {
@@ -157,7 +160,7 @@ function Profile() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, seller_id: user?.sub }),
+  body: JSON.stringify({ id, seller_id: u?.sub }),
       });
 
       if (response.ok) {
@@ -173,7 +176,7 @@ function Profile() {
   };
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
+  // Note: useSession doesn't return an `error`; manage via status and user.
 
   return (
     <div className={styles.container}>
@@ -240,7 +243,7 @@ function Profile() {
           >
             ←
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
               width: '60px',
               height: '60px',
@@ -384,9 +387,9 @@ function Profile() {
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
-                    {user.picture && (
+          {((u?.picture || u?.image) as string | undefined) && (
                       <img 
-                        src={user.picture} 
+            src={(u?.picture || u?.image) as string} 
                         alt="Profile" 
                         style={{ 
                           width: '80px',
@@ -422,11 +425,11 @@ function Profile() {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: '500' }}>Email Verified:</span>
-                        <span>{user.email_verified ? 'Yes' : 'No'}</span>
+                        <span>{u?.email_verified ? 'Yes' : 'No'}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: '500' }}>Member Since:</span>
-                        <span>{new Date(user.updated_at || '').toLocaleDateString()}</span>
+                        <span>{u?.updated_at ? new Date(u.updated_at).toLocaleDateString() : '—'}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: '500' }}>Saved Properties:</span>

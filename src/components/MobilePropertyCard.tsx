@@ -3,7 +3,7 @@ import styles from '../styles/PropertyCard.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import { Property } from '../types';
 import LazyImage from './LazyImage';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession } from 'next-auth/react';
 import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 export type MobilePropertyCardProps = Pick<
@@ -27,7 +27,8 @@ export type MobilePropertyCardProps = Pick<
 
 const MobilePropertyCard: React.FC<MobilePropertyCardProps> = (props) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { user } = useUser();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [isSaving, setIsSaving] = useState(false);
   
   const handleCardClick = () => {

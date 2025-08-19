@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from '../styles/PropertyCard.module.css';
 import { Property } from '../types';
 import PropertyGallery from './PropertyGallery';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession, signIn } from 'next-auth/react';
 import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 export type PropertyCardProps = Pick<
@@ -28,7 +28,8 @@ export type PropertyCardProps = Pick<
 };
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ isFavorite, onFavoriteToggle, ...p }) => {
-  const { user } = useUser();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const defaultImage = '/images/property-placeholder.jpg';
@@ -37,7 +38,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ isFavorite, onFavoriteToggl
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) { window.location.href = '/api/auth/login'; return; }
+    if (!user) { window.location.href = '/api/auth/signin'; return; }
     if (saving) return;
     setSaving(true);
     try {

@@ -13,7 +13,7 @@ import { Property, Geocode } from '../types'; // Import Property and Geocode typ
 import useMediaQuery from '../utils/useMediaQuery';
 import PropertyPopup from 'components/PropertyPopup';
 import Header from 'components/Header';
-import {useUser} from '@auth0/nextjs-auth0/client';
+import { useSession } from 'next-auth/react';
 import { checkSavedStatus } from '../utils/savedPropertiesApi';
 
 const MapPage: React.FC = () => {
@@ -59,7 +59,9 @@ const MapPage: React.FC = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
-  const { user, isLoading: userLoading } = useUser();
+  const { data: session, status: userStatus } = useSession();
+  const user = session?.user;
+  const userLoading = userStatus === 'loading';
 
   // Function to toggle favorite status using database API
   const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {

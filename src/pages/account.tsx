@@ -1,15 +1,19 @@
 import React from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import styles from '../styles/Home.module.css';
 
 const AccountSettings: React.FC = () => {
-  const { user, error, isLoading } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  // Extend NextAuth user with optional fields from providers like Auth0/Google
+  const u = user as (typeof user & { picture?: string | null; sub?: string; email_verified?: boolean; updated_at?: string | number | Date });
+  const isLoading = status === 'loading';
   const router = useRouter();
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
+  // Note: useSession doesn't expose an error field; handle auth states via `status`.
 
   if (!user) {
     return (
@@ -30,21 +34,22 @@ const AccountSettings: React.FC = () => {
               <p style={{ color: '#6b7280', marginBottom: '24px' }}>
                 Manage your profile, preferences, and account information.
               </p>
-              <a
-                href="/api/auth/login"
+              <button
+                onClick={() => signIn('google')}
                 style={{
                   display: 'inline-block',
                   padding: '12px 24px',
                   backgroundColor: '#0073e6',
                   color: 'white',
-                  textDecoration: 'none',
+                  border: 'none',
                   borderRadius: '8px',
                   fontWeight: '600',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  cursor: 'pointer'
                 }}
               >
-                Sign In
-              </a>
+                Sign In with Google
+              </button>
             </div>
           </div>
         </main>
@@ -115,9 +120,9 @@ const AccountSettings: React.FC = () => {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
-              {user.picture && (
+              {((u?.picture || u?.image) as string | undefined) && (
                 <img 
-                  src={user.picture} 
+                  src={(u?.picture || u?.image) as string} 
                   alt="Profile" 
                   style={{ 
                     width: '80px',
@@ -153,17 +158,17 @@ const AccountSettings: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
                   <span style={{ fontWeight: '500' }}>Email Verified:</span>
-                  <span style={{ color: user.email_verified ? '#10b981' : '#ef4444' }}>
-                    {user.email_verified ? '✓ Verified' : '✗ Not Verified'}
+                  <span style={{ color: u?.email_verified ? '#10b981' : '#ef4444' }}>
+                    {u?.email_verified ? '✓ Verified' : '✗ Not Verified'}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
                   <span style={{ fontWeight: '500' }}>Member Since:</span>
-                  <span>{new Date(user.updated_at || '').toLocaleDateString()}</span>
+                  <span>{u?.updated_at ? new Date(u.updated_at).toLocaleDateString() : '—'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
                   <span style={{ fontWeight: '500' }}>Last Updated:</span>
-                  <span>{new Date(user.updated_at || '').toLocaleDateString()}</span>
+                  <span>{u?.updated_at ? new Date(u.updated_at).toLocaleDateString() : '—'}</span>
                 </div>
               </div>
             </div>
@@ -195,7 +200,7 @@ const AccountSettings: React.FC = () => {
                 </button>
                 
                 <button 
-                  onClick={() => window.location.href = '/api/auth/logout'}
+                  onClick={() => window.location.href = '/api/auth/signout'}
                   style={{ 
                     backgroundColor: '#dc2626', 
                     color: 'white', 

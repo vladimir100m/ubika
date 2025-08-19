@@ -68,7 +68,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     addFieldIfExists('rooms', 'room');
     addFieldIfExists('bathrooms');
     addFieldIfExists('squareMeters', 'area');
-    addFieldIfExists('image_url');
+    // Note: image_url column doesn't exist in database, skipping
     addFieldIfExists('status');
     addFieldIfExists('operation_status_id');
     addFieldIfExists('yearBuilt', 'year_built');
@@ -94,7 +94,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       WHERE id = $${paramCounter} AND seller_id = $${paramCounter + 1}
       RETURNING id, title, description, price, address, city, state, country, 
                 zip_code, type, room as rooms, bathrooms, area as squareMeters, 
-                image_url, status, created_at, updated_at, year_built as yearBuilt, 
+                CASE 
+                  WHEN type = 'house' THEN '/properties/casa-moderna.jpg'
+                  WHEN type = 'apartment' THEN '/properties/apartamento-moderno.jpg'
+                  WHEN type = 'cabin' THEN '/properties/cabana-bosque.jpg'
+                  WHEN type = 'villa' THEN '/properties/villa-lujo.jpg'
+                  WHEN type = 'penthouse' THEN '/properties/penthouse-lujo.jpg'
+                  WHEN type = 'loft' THEN '/properties/loft-urbano.jpg'
+                  WHEN type = 'duplex' THEN '/properties/duplex-moderno.jpg'
+                  ELSE '/properties/casa-moderna.jpg'
+                END as image_url,
+                status, created_at, updated_at, year_built as yearBuilt, 
                 seller_id
     `;
     

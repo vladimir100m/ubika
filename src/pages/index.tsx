@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
@@ -12,7 +12,9 @@ import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesAp
 
 const Home: React.FC = () => {
   const router = useRouter();
-  const { user, isLoading: userLoading } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoading = status === 'loading';
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ const Home: React.FC = () => {
     };
 
     fetchProperties();
-  }, [user, userLoading]);
+  }, [user, isLoading]);
 
   // TODO: a veces se llama dos veces, unificar con un use effect general
   useEffect(() => {
@@ -76,10 +78,10 @@ const Home: React.FC = () => {
 
     
     // Only load saved status after user loading is complete and we have properties
-    if (!userLoading && properties.length > 0) {
+    if (!isLoading && properties.length > 0) {
       loadSavedStatus();
     }
-  }, [ userLoading, properties ]);
+  }, [isLoading, properties ]);
 
   // Function to handle property card click
   const handlePropertyClick = (propertyId: number) => {

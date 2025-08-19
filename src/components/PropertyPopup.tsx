@@ -2,7 +2,7 @@ import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
 import React, {useState, useEffect, useRef, RefObject} from 'react';
 import {useRouter} from 'next/router';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
 import { toggleSaveProperty } from '../utils/savedPropertiesApi';
@@ -69,7 +69,9 @@ export default function PropertyPopup({
   onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void;
 }) {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoading = status === 'loading';
   const isFavorite = selectedProperty.isFavorite || false;
   const [activeTab, setActiveTab] = useState('overview');
   const [mapInitialized, setMapInitialized] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import PropertyCard from '../components/PropertyCard';
@@ -7,7 +7,9 @@ import styles from '../styles/Home.module.css';
 import { getSavedProperties, unsaveProperty, type SavedProperty } from '../utils/savedPropertiesApi';
 
 const SavedProperties: React.FC = () => {
-  const { user, error, isLoading } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoading = status === 'loading';
   const [savedProperties, setSavedProperties] = useState<SavedProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -54,7 +56,7 @@ const SavedProperties: React.FC = () => {
     </div>
   );
   
-  if (error) return <div>{error.message}</div>;
+  // Note: useSession doesn't expose an error; only status and session object.
 
   if (!user) {
     return (
@@ -75,21 +77,22 @@ const SavedProperties: React.FC = () => {
               <p style={{ color: '#6b7280', marginBottom: '24px' }}>
                 Create an account or sign in to save your favorite properties and access them anytime.
               </p>
-              <a
-                href="/api/auth/login"
+              <button
+                onClick={() => signIn('google')}
                 style={{
                   display: 'inline-block',
                   padding: '12px 24px',
                   backgroundColor: '#0073e6',
                   color: 'white',
-                  textDecoration: 'none',
+                  border: 'none',
                   borderRadius: '8px',
                   fontWeight: '600',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  cursor: 'pointer'
                 }}
               >
-                Sign In
-              </a>
+                Sign In with Google
+              </button>
             </div>
           </div>
         </main>
