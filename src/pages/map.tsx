@@ -142,7 +142,13 @@ const MapPage: React.FC = () => {
 
       try {
         const savedStatus = await checkSavedStatus(propertyLocations.map(p => p.id));
-        setSavedPropertyIds(new Set(savedStatus.savedPropertyIds.map(Number)));
+        const savedIds = new Set<number>();
+        if (savedStatus && typeof savedStatus === 'object') {
+          Object.entries(savedStatus).forEach(([id, val]) => {
+            if (val) savedIds.add(Number(id));
+          });
+        }
+        setSavedPropertyIds(savedIds);
       } catch (error) {
         console.error('Error loading saved properties status:', error);
         
@@ -225,7 +231,9 @@ const MapPage: React.FC = () => {
             return '$' + price;
           };
           
-          const priceLabel = formatPrice(property.price);
+          // property.price may come as string; parse to number when possible
+          const priceNumber = typeof property.price === 'string' ? parseFloat(property.price.replace(/[^0-9.-]+/g, '')) : property.price;
+          const priceLabel = formatPrice(typeof priceNumber === 'number' && !isNaN(priceNumber) ? priceNumber : undefined);
           
           const gMarker = new google.maps.Marker({
             position: { lat: marker.lat, lng: marker.lng },
@@ -235,7 +243,7 @@ const MapPage: React.FC = () => {
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
               scale: 12,
-              fillColor: property.operation === 'rent' ? '#006aff' : '#ff5722', 
+              fillColor: (property as any).operation === 'rent' ? '#006aff' : '#ff5722',
               fillOpacity: 0.9,
               strokeWeight: 2,
               strokeColor: '#ffffff'

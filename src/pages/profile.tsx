@@ -43,6 +43,11 @@ function Profile() {
   const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([]);
   const router = useRouter();
 
+  // Missing states for saved properties and UI tabs
+  const [savedProperties, setSavedProperties] = useState<Property[]>([]);
+  const [favorites, setFavorites] = useState<Property[]>([]);
+  const [activeTab, setActiveTab] = useState<'account' | 'saved' | 'sell'>('sell');
+
   useEffect(() => {
     if (!isLoading && !user) {
       // Don't redirect immediately, let them see the login prompts
@@ -538,6 +543,8 @@ function Profile() {
                       {savedProperties.map((property) => (
                         <div key={property.id} className="modern-card">
                           <PropertyCard 
+                            id={property.id}
+                            title={property.title}
                             image_url={property.image_url}
                             description={property.description}
                             price={property.price}
@@ -1040,6 +1047,7 @@ function Profile() {
                             {sellerProperties.map((property) => (
                               <div key={property.id} style={{ position: 'relative' }} className="modern-card">
                                 <PropertyCard 
+                                  id={property.id}
                                   image_url={property.image_url}
                                   description={property.description}
                                   price={property.price}

@@ -53,7 +53,14 @@ const Home: React.FC = () => {
     const loadSavedStatus = async () => {
       try {
         const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-        setSavedPropertyIds(new Set(savedStatus.savedPropertyIds.map(Number)));
+        // `checkSavedStatus` returns an object map { [propertyId]: boolean }
+        const savedIds = new Set<number>();
+        if (savedStatus && typeof savedStatus === 'object') {
+          Object.entries(savedStatus).forEach(([id, val]) => {
+            if (val) savedIds.add(Number(id));
+          });
+        }
+        setSavedPropertyIds(savedIds);
       } catch (error) {
         console.error('Error loading saved properties status:', error);
         

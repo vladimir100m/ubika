@@ -1,0 +1,9 @@
+# Exclude local backups and infra scripts from Vercel deployment
+/backups
+/infra
+/infra/**
+tsconfig.tsbuildinfo
+*.sql
+.env
+.env.*
+.DS_Store
