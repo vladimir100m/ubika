@@ -1,5 +1,35 @@
 @media (max-width: 500px), (max-height: 200px) {
   .mobileNavigation {
+    height: 36px;
+    min-height: 28px;
+    font-size: 0.6rem;
+    padding: 0;
+    flex-wrap: wrap;
+    overflow: hidden;
+  }
+  .navItem {
+    width: 25%;
+    padding: 0 2px;
+    font-size: 0.6rem;
+    min-width: 0;
+    flex: 1 1 25%;
+    overflow: hidden;
+  }
+  .navIcon {
+    margin-bottom: 0;
+    font-size: 0.8rem;
+    min-width: 0;
+  }
+  .navItem span {
+    font-size: 0.5rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 500px), (max-height: 200px) {
+  .mobileNavigation {
     height: 40px;
     min-height: 32px;
     font-size: 0.7rem;
