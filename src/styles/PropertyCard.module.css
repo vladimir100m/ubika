@@ -1,5 +1,5 @@
 /* Updated color palette for real estate app */
-.card {
+ .card {
   display: flex;
   flex-direction: column;
   background: var(--background-light);
@@ -12,6 +12,39 @@
   height: 100%;
   min-height: 320px;
   border: 1px solid rgba(26, 115, 232, 0.1);
+}
+
+@media (max-width: 768px) {
+  .card {
+    min-height: 220px;
+    margin-bottom: var(--space-md);
+  }
+  .imageContainer {
+    height: 140px;
+  }
+  .cardTitle {
+    font-size: 1rem;
+  }
+  .cardDetails {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    min-height: 160px;
+    margin-bottom: var(--space-sm);
+    padding: var(--space-xs);
+  }
+  .imageContainer {
+    height: 90px;
+  }
+  .cardTitle {
+    font-size: 0.8rem;
+  }
+  .cardDetails {
+    font-size: 0.8rem;
+  }
 }
 
 .card:hover {

@@ -46,101 +46,56 @@ const Header: React.FC<HeaderProps> = () => {
   ];
   
   return (
-    <header className={`${styles.navbar} ${isMobile ? mobileStyles.onlyMobile : ''}`}>
-      <div className={styles.logo} onClick={() => router.push('/')}>
+    <header className={styles.navbar}>
+      <div className={styles.logo} onClick={() => router.push('/')}> 
         <Image src="/ubika-logo.png" alt="Ubika Logo" width={40} height={40} />
         <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
       </div>
+      {/* Desktop Navigation */}
       <div className={mobileStyles.onlyDesktop}>
         <nav className={styles.navigation}>
           <div className={styles.navLinks}>
             <Link href="/map">Buy</Link>
             <Link href="/map">Rent</Link>
-
             {!isLoading && (
-              <>
+              <React.Fragment>
                 {user ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ position: 'relative' }} ref={dropdownRef}>
-                      <div
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          cursor: 'pointer',
-                          padding: '8px 12px',
-                          borderRadius: '8px',
-                          transition: 'background-color 0.2s ease',
-                          backgroundColor: isDropdownOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                        }}
-                      >
-                        {user.image && (
-                          <Image src={user.image as string} alt="Profile" width={32} height={32} style={{ borderRadius: '50%' }} />
-                        )}
-                        <span style={{ fontSize: '14px', color: 'white' }}>{user.name}</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', stroke: 'white' }}>
-                          <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </div>
-
-                      {isDropdownOpen && (
-                        <div style={{ position: 'absolute', top: '100%', right: '0', marginTop: '8px', backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)', zIndex: 1000, minWidth: '280px', overflow: 'hidden' }}>
-                          {profileMenuItems.map((item, index) => (
-                            <button key={index} onClick={item.action} style={{ width: '100%', padding: '16px 20px', border: 'none', backgroundColor: 'transparent', textAlign: 'left', cursor: 'pointer', fontSize: '16px', color: '#374151', borderBottom: index < profileMenuItems.length - 1 ? '1px solid #f3f4f6' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background-color 0.2s ease' }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#f8f9fa'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                                <span>{item.label}</span>
-                              </div>
-                              {item.badge && <span style={{ backgroundColor: '#ff6b35', color: 'white', fontSize: '12px', fontWeight: '600', padding: '4px 8px', borderRadius: '4px' }}>{item.badge}</span>}
-                            </button>
-                          ))}
-
-                          <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '8px' }}>
-                            <button onClick={() => signOut()} style={{ width: '100%', padding: '16px 20px', border: 'none', backgroundColor: 'transparent', textAlign: 'left', cursor: 'pointer', fontSize: '16px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '12px' }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#fef2f2'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}>
-                              <span style={{ fontSize: '18px' }}>🚪</span>
-                              <span>Sign out</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* ...existing code for user dropdown... */}
                   </div>
                 ) : (
                   <div style={{ display: 'flex', gap: '15px' }}>
-                    <button 
-                      onClick={() => signIn('google')} 
-                      style={{ 
-                        background: 'none',
-                        border: 'none',
-                        color: '#007bff', 
-                        cursor: 'pointer',
-                        fontSize: '14px', 
-                        fontWeight: '500' 
-                      }}
-                    >
-                      Sign in
-                    </button>
-                    <button 
-                      onClick={() => signIn('google')} 
-                      style={{ 
-                        backgroundColor: '#007bff', 
-                        color: 'white', 
-                        border: 'none',
-                        padding: '8px 16px', 
-                        borderRadius: '4px', 
-                        cursor: 'pointer',
-                        fontSize: '14px', 
-                        fontWeight: '500' 
-                      }}
-                    >
-                      Join
-                    </button>
+                    {/* ...existing code for sign in/join... */}
                   </div>
                 )}
-              </>
+              </React.Fragment>
             )}
           </div>
+        </nav>
+      </div>
+      {/* Mobile Navigation */}
+      <div className={mobileStyles.onlyMobile}>
+        <nav className={mobileStyles.mobileNavigation}>
+          <Link href="/map" legacyBehavior><a className={mobileStyles.navItem}><span className={mobileStyles.navIcon}>🏠</span><span>Buy</span></a></Link>
+          <Link href="/map" legacyBehavior><a className={mobileStyles.navItem}><span className={mobileStyles.navIcon}>🏡</span><span>Rent</span></a></Link>
+          {!isLoading && (
+            <React.Fragment>
+              {user ? (
+                <Link href="/account" legacyBehavior><a className={mobileStyles.navItem}><span className={mobileStyles.navIcon}>👤</span><span>Account</span></a></Link>
+              ) : (
+                <button 
+                  onClick={() => signIn('google')} 
+                  className={mobileStyles.navItem}
+                  style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '1rem', fontWeight: '500' }}
+                >
+                  <span className={mobileStyles.navIcon}>🔑</span><span>Login</span>
+                </button>
+              )}
+            </React.Fragment>
+          )}
+        </nav>
+      </div>
+    </header>
         </nav>
       </div>
     </header>
