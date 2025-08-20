@@ -148,27 +148,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   return (
     <div className={styles.filtersContainer} onClick={handleClickOutside}>
-      {/* Search Bar */}
-      <div className={styles.searchBar}>
-        <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-          <input 
-            type="text" 
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder="Search location..."
-            className={styles.searchInput}
-          />
-          <button type="submit" className={styles.searchButton}>
-            Search
-          </button>
-        </form>
-        {showBoundaryButton && searchValue && (
-          <button className={styles.removeBoundaryButton} onClick={handleRemoveBoundary}>
-            Remove Boundary
-          </button>
-        )}
-      </div>
-
       {/* For Sale/Rent/Sold Filter */}
       <div className={styles.filterGroup}>
         <button 

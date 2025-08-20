@@ -511,34 +511,6 @@ const MapPage: React.FC = () => {
           </div>
         </div>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.5rem', marginBottom: '0.5rem' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
-            {propertyLocations.length > 0 ? `${propertyLocations.length} of ${propertyLocations.length} homes` : 'Rental Listings'}
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ fontSize: '14px' }}>
-              Sort: <span style={{ fontWeight: 'bold', cursor: 'pointer' }}>Homes for You ▼</span>
-            </div>
-            <button 
-              style={{
-                backgroundColor: '#006aff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '8px 16px',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <span>Save search</span>
-            </button>
-          </div>
-        </div>
-        
         {/* Enhanced Filter Bar - Zillow Style */}
         <div style={{ marginBottom: '1rem', zIndex: 5 }}>
           <MapFilters 
