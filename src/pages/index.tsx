@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
-import MobilePropertyCard from '../components/MobilePropertyCard';
 import styles from '../styles/Home.module.css';
-import mobileStyles from '../styles/Mobile.module.css';
 import { Property } from '../types'; // Import Property type
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
-import useMediaQuery from '../utils/useMediaQuery';
-import { useAuth } from '../context/AuthContext';
 import Header from 'components/Header';
+import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 const Home: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoading = status === 'loading';
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -47,21 +46,42 @@ const Home: React.FC = () => {
       }
     };
 
-    // Load favorites from localStorage
-    const loadFavorites = () => {
+    fetchProperties();
+  }, [user, isLoading]);
+
+  // TODO: a veces se llama dos veces, unificar con un use effect general
+  useEffect(() => {
+    // Load saved properties status if user is authenticated
+    const loadSavedStatus = async () => {
       try {
-        const savedFavorites = localStorage.getItem('favorites');
-        if (savedFavorites) {
-          setFavorites(JSON.parse(savedFavorites));
+        const savedStatus = await checkSavedStatus(properties.map(p => p.id));
+        // `checkSavedStatus` returns an object map { [propertyId]: boolean }
+        const savedIds = new Set<number>();
+        if (savedStatus && typeof savedStatus === 'object') {
+          Object.entries(savedStatus).forEach(([id, val]) => {
+            if (val) savedIds.add(Number(id));
+          });
         }
+        setSavedPropertyIds(savedIds);
       } catch (error) {
-        console.error('Error loading favorites:', error);
+        console.error('Error loading saved properties status:', error);
+        
+        // Check if it's an auth error
+        if (error instanceof Error && error.message.includes('Unauthorized')) {
+          // Just set empty set - no need to redirect as this is a background load
+          console.log('User not authenticated for saved properties check');
+        }
+        
+        setSavedPropertyIds(new Set());
       }
     };
 
-    fetchProperties();
-    loadFavorites();
-  }, []);
+    
+    // Only load saved status after user loading is complete and we have properties
+    if (!isLoading && properties.length > 0) {
+      loadSavedStatus();
+    }
+  }, [isLoading, properties ]);
 
   // Function to handle property card click
   const handlePropertyClick = (propertyId: number) => {
@@ -71,16 +91,17 @@ const Home: React.FC = () => {
     });
   };
 
-  // Function to toggle favorite status
-  const handleFavoriteToggle = (propertyId: number) => {
-    setFavorites(prevFavorites => {
-      const newFavorites = prevFavorites.includes(propertyId)
-        ? prevFavorites.filter(id => id !== propertyId)
-        : [...prevFavorites, propertyId];
-      
-      // Save to localStorage
-      localStorage.setItem('favorites', JSON.stringify(newFavorites));
-      return newFavorites;
+  // Function to toggle favorite status using database API
+  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
+    setSavedPropertyIds(prevSavedIds => {
+      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
+      const newSavedIds = new Set(prevSavedIds);
+      if (isCurrentlySaved) {
+        newSavedIds.delete(propertyId);
+      } else {
+        newSavedIds.add(propertyId);
+      }
+      return newSavedIds;
     });
   };
 
@@ -126,10 +147,10 @@ const Home: React.FC = () => {
               Try Again
             </button>
           </div>
-        ) : isMobile ? (
-          <div className={mobileStyles.mobileGrid}>
+        ) : (
+          <Carousel responsive={responsive}>
             {properties.map((property) => (
-              <MobilePropertyCard
+              <PropertyCard
                 key={property.id}
                 id={property.id}
                 image_url={property.image_url}
@@ -144,28 +165,7 @@ const Home: React.FC = () => {
                 longitude={property.longitude ?? property.geocode?.lng}
                 onClick={() => handlePropertyClick(property.id)}
                 onFavoriteToggle={handleFavoriteToggle}
-                isFavorite={favorites.includes(property.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Carousel responsive={responsive}>
-            {properties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                image_url={property.image_url}
-                description={property.description}
-                price={`$${property.price}`}
-                address={property.address}
-                rooms={property.rooms}
-                bathrooms={property.bathrooms}
-                squareMeters={property.squareMeters}
-                yearBuilt={property.yearBuilt}
-                latitude={property.latitude ?? property.geocode?.lat}
-                longitude={property.longitude ?? property.geocode?.lng}
-                onClick={() => handlePropertyClick(property.id)}
-                onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                isFavorite={favorites.includes(property.id)}
+                isFavorite={savedPropertyIds.has(property.id)}
               />
             ))}
           </Carousel>

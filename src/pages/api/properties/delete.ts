@@ -8,11 +8,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Get the property ID from the query
+  // Get the property ID and seller_id from the request
   const { id } = req.query;
+  const { seller_id } = req.body;
   
   if (!id || typeof id !== 'string') {
     return res.status(400).json({ error: 'Property ID is required' });
+  }
+  
+  if (!seller_id) {
+    return res.status(400).json({ error: 'Seller ID is required' });
   }
 
   const client = new Client({
@@ -36,15 +41,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(404).json({ error: 'Property not found' });
     }
     
-    // In a real app, verify that the logged-in user is the owner of this property
-    // For now, we'll skip that check since we're using a mock seller ID
+    // Verify that the logged-in user is the owner of this property
+    const property = checkResult.rows[0];
+    if (property.seller_id !== seller_id) {
+      return res.status(403).json({ error: 'You can only delete your own properties' });
+    }
 
     // Delete the property
     const deleteQuery = `
-      DELETE FROM properties WHERE id = $1 RETURNING id
+      DELETE FROM properties WHERE id = $1 AND seller_id = $2 RETURNING id
     `;
     
-    const result = await client.query(deleteQuery, [id]);
+    const result = await client.query(deleteQuery, [id, seller_id]);
     
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Property not found or already deleted' });

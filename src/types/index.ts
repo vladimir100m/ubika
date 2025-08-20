@@ -30,6 +30,7 @@ export interface PropertyFormData {
   yearBuilt?: number;
   image_url?: string;
   seller_id: string;
+  operation_status_id?: number; // 1=Sale, 2=Rent, 3=Not Available
 }
 
 export interface Property {
@@ -55,4 +56,15 @@ export interface Property {
   latitude?: number;  // Often derived from geocode or a separate field
   longitude?: number; // Often derived from geocode or a separate field
   seller_id?: string; // ID of the seller who listed the property
+  operation_status_id?: number; // 1=Sale, 2=Rent, 3=Not Available
+  operation_status?: string; // Name of the operation status
+  operation_status_display?: string; // Display name of the operation status
+}
+
+export interface PropertyOperationStatus {
+  id: number;
+  name: string;
+  display_name: string;
+  description: string;
+  created_at?: string;
 }

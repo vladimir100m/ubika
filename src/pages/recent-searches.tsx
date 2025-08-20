@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
-import MobileNavigation from '../components/MobileNavigation';
 import useMediaQuery from '../utils/useMediaQuery';
 import { SearchFilters } from '../components/SearchBar';
-import { useAuth } from '../context/AuthContext';
+import Header from 'components/Header';
 
 interface SearchHistoryItem {
   id: number;
@@ -20,19 +19,8 @@ const RecentSearches: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, loading: authLoading } = useAuth();
-
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login?redirect=/recent-searches');
-    }
-  }, [user, authLoading, router]);
 
   useEffect(() => {
-    // Only load search history if user is logged in
-    if (!user) return;
-
     setLoading(true);
     setError(null);
     
@@ -48,7 +36,7 @@ const RecentSearches: React.FC = () => {
       setError('Failed to load your search history');
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   const handleSearchClick = (search: SearchHistoryItem) => {
     const query: any = { address: search.address };
@@ -57,7 +45,12 @@ const RecentSearches: React.FC = () => {
       if (search.filters.minPrice) query.minPrice = search.filters.minPrice;
       if (search.filters.maxPrice) query.maxPrice = search.filters.maxPrice;
       if (search.filters.bedrooms) query.bedrooms = search.filters.bedrooms;
+      if (search.filters.bathrooms) query.bathrooms = search.filters.bathrooms;
       if (search.filters.propertyType) query.propertyType = search.filters.propertyType;
+      if (search.filters.operation) query.operation = search.filters.operation;
+      if (search.filters.zone) query.zone = search.filters.zone;
+      if (search.filters.minArea) query.minArea = search.filters.minArea;
+      if (search.filters.maxArea) query.maxArea = search.filters.maxArea;
     }
     
     router.push({
@@ -82,38 +75,9 @@ const RecentSearches: React.FC = () => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
-  // If authentication is loading, show a loading state
-  if (authLoading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loadingContainer}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Loading your account...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If not authenticated and not loading, the useEffect will handle redirect
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className={styles.container}>
-      <header className={`${styles.navbar} ${isMobile ? mobileStyles.onlyMobile : ''}`}>
-        <div className={styles.logo} onClick={() => router.push('/')}>Ubika</div>
-        <div className={mobileStyles.onlyDesktop}>
-          <nav>
-            <a href="#">Buy</a>
-            <a href="#">Rent</a>
-            <a href="/seller">Sell</a>
-            <a href="#">Mortgage</a>
-            <a href="/saved-properties">Saved Homes</a>
-            <a href="/user/profile">My Account</a>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <section className={styles.featuredProperties}>
         <div className={styles.searchHistoryHeader}>
@@ -160,6 +124,17 @@ const RecentSearches: React.FC = () => {
                   </div>
                   {search.filters && Object.values(search.filters).some(val => val) && (
                     <div className={styles.searchFilters}>
+                      {search.filters.operation && (
+                        <span className={styles.filterTag}>
+                          {search.filters.operation === 'sale' ? 'Venta' : 'Alquiler'}
+                        </span>
+                      )}
+                      {search.filters.propertyType && (
+                        <span className={styles.filterTag}>{search.filters.propertyType}</span>
+                      )}
+                      {search.filters.zone && (
+                        <span className={styles.filterTag}>{search.filters.zone}</span>
+                      )}
                       {search.filters.minPrice && (
                         <span className={styles.filterTag}>Min: ${search.filters.minPrice}</span>
                       )}
@@ -167,10 +142,16 @@ const RecentSearches: React.FC = () => {
                         <span className={styles.filterTag}>Max: ${search.filters.maxPrice}</span>
                       )}
                       {search.filters.bedrooms && (
-                        <span className={styles.filterTag}>{search.filters.bedrooms}+ bed</span>
+                        <span className={styles.filterTag}>{search.filters.bedrooms}+ hab</span>
                       )}
-                      {search.filters.propertyType && (
-                        <span className={styles.filterTag}>{search.filters.propertyType}</span>
+                      {search.filters.bathrooms && (
+                        <span className={styles.filterTag}>{search.filters.bathrooms}+ baños</span>
+                      )}
+                      {search.filters.minArea && (
+                        <span className={styles.filterTag}>Min: {search.filters.minArea}m²</span>
+                      )}
+                      {search.filters.maxArea && (
+                        <span className={styles.filterTag}>Max: {search.filters.maxArea}m²</span>
                       )}
                     </div>
                   )}
@@ -208,7 +189,6 @@ const RecentSearches: React.FC = () => {
         )}
       </section>
       
-      {isMobile && <MobileNavigation />}
     </div>
   );
 };

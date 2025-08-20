@@ -31,6 +31,14 @@
   align-items: center;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
 .authSection {
   margin-left: 20px;
 }

@@ -1,15 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
 import Header from 'components/Header';
 
-// Mock seller ID - in a real app, this would come from authentication
-const MOCK_SELLER_ID = "seller123";
+interface PropertyType {
+  id: number;
+  name: string;
+  display_name: string;
+}
+
+interface PropertyStatus {
+  id: number;
+  name: string;
+  display_name: string;
+  color: string;
+}
+
+interface PropertyFeature {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+}
+
+interface PropertyOperationStatus {
+  id: number;
+  name: string;
+  display_name: string;
+  description: string;
+}
 
 const SellerDashboard: React.FC = () => {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const u = user as (typeof user & { sub?: string; picture?: string | null; image?: string | null });
+  const isLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,19 +56,81 @@ const SellerDashboard: React.FC = () => {
     bathrooms: 0,
     squareMeters: 0,
     status: 'available',
-    seller_id: MOCK_SELLER_ID
+    operation_status_id: 1, // Default to Sale
+    seller_id: ''
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
+  const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([]);
+  const [propertyOperationStatuses, setPropertyOperationStatuses] = useState<PropertyOperationStatus[]>([]);
+  const [loadingFormData, setLoadingFormData] = useState(true);
+  const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
 
   useEffect(() => {
+    if (isLoading) return;
+    
+    if (!user) {
+      // Redirect to login if user is not authenticated
+      router.push('/api/auth/signin');
+      return;
+    }
+    
+    // Set seller_id in form data
+  setFormData(prev => ({ ...prev, seller_id: u?.sub || '' }));
+    
+    // Fetch seller properties once user is authenticated
     fetchSellerProperties();
+  }, [user, isLoading, router]);
+
+  // Fetch property types and statuses
+  useEffect(() => {
+    const fetchFormData = async () => {
+      try {
+        // Fetch property types
+        const typesResponse = await fetch('/api/property-types');
+        if (typesResponse.ok) {
+          const types = await typesResponse.json();
+          setPropertyTypes(types);
+        }
+
+        // Fetch property statuses
+        const statusesResponse = await fetch('/api/property-statuses');
+        if (statusesResponse.ok) {
+          const statuses = await statusesResponse.json();
+          setPropertyStatuses(statuses);
+        }
+
+        // Fetch property operation statuses
+        const operationStatusesResponse = await fetch('/api/property-operation-statuses');
+        if (operationStatusesResponse.ok) {
+          const operationStatuses = await operationStatusesResponse.json();
+          setPropertyOperationStatuses(operationStatuses);
+        }
+
+        // Fetch property features
+        const featuresResponse = await fetch('/api/property-features');
+        if (featuresResponse.ok) {
+          const features = await featuresResponse.json();
+          setPropertyFeatures(features);
+        }
+      } catch (error) {
+        console.error('Error fetching form data:', error);
+      } finally {
+        setLoadingFormData(false);
+      }
+    };
+
+    fetchFormData();
   }, []);
 
   const fetchSellerProperties = async () => {
+  if (!u?.sub) return;
+    
     setLoading(true);
     try {
-      const response = await fetch(`/api/properties/seller?seller_id=${MOCK_SELLER_ID}`);
+  const response = await fetch(`/api/properties/seller?seller_id=${u.sub}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(`Failed to fetch properties: ${errorData.error || response.statusText}`);
@@ -62,7 +153,7 @@ const SellerDashboard: React.FC = () => {
     let parsedValue: any = value;
 
     // Convert numeric fields
-    if (['rooms', 'bathrooms', 'squareMeters', 'yearBuilt'].includes(name)) {
+    if (['rooms', 'bathrooms', 'squareMeters', 'yearBuilt', 'operation_status_id'].includes(name)) {
       parsedValue = value === '' ? 0 : Number(value);
     }
 
@@ -96,6 +187,35 @@ const SellerDashboard: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} property`);
+      }
+
+      const propertyData = await response.json();
+      const propertyId = isEditing ? editingPropertyId : propertyData.id;
+
+      // Update property features if any are selected
+      if (selectedFeatures.length > 0) {
+        const featuresResponse = await fetch('/api/properties/features/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            propertyId,
+            featureIds: selectedFeatures,
+            seller_id: u?.sub
+          }),
+        });
+
+        if (!featuresResponse.ok) {
+          const errorData = await featuresResponse.json();
+          console.error('Error updating property features:', errorData.error);
+          // Don't throw here as the property was created successfully
+          setMessage({
+            text: `Property ${isEditing ? 'updated' : 'created'} successfully, but there was an issue updating features.`,
+            type: 'error'
+          });
+          return;
+        }
       }
 
       // Success - reset form and show message
@@ -136,9 +256,28 @@ const SellerDashboard: React.FC = () => {
       bathrooms: 0,
       squareMeters: 0,
       status: 'available',
-      seller_id: MOCK_SELLER_ID
+      operation_status_id: 1, // Default to Sale
+  seller_id: u?.sub || ''
     });
     setEditingPropertyId(null);
+    setSelectedFeatures([]);
+  };
+
+  const fetchPropertyFeatures = async (propertyId: number) => {
+    try {
+      const response = await fetch(`/api/properties/features?propertyId=${propertyId}`);
+      if (response.ok) {
+        const features = await response.json();
+        const featureIds = features.map((f: any) => f.feature_id);
+        setSelectedFeatures(featureIds);
+      } else {
+        console.error('Failed to fetch property features');
+        setSelectedFeatures([]);
+      }
+    } catch (error) {
+      console.error('Error fetching property features:', error);
+      setSelectedFeatures([]);
+    }
   };
 
   const handleEditProperty = (property: Property) => {
@@ -159,11 +298,15 @@ const SellerDashboard: React.FC = () => {
       status: property.status,
       image_url: property.image_url,
       yearBuilt: property.yearBuilt,
-      seller_id: MOCK_SELLER_ID
+      operation_status_id: property.operation_status_id || 1, // Default to Sale if not set
+  seller_id: u?.sub || ''
     });
     
     // Set the editing property ID
     setEditingPropertyId(property.id);
+    
+    // Fetch and set the property's features
+    fetchPropertyFeatures(property.id);
     
     // Switch to the edit tab
     setActiveTab('edit');
@@ -209,6 +352,12 @@ const SellerDashboard: React.FC = () => {
     try {
       const response = await fetch(`/api/properties/delete?id=${propertyId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          seller_id: u?.sub 
+        }),
       });
 
       if (!response.ok) {
@@ -267,12 +416,22 @@ const SellerDashboard: React.FC = () => {
 
   // Call this function when the component mounts and when the activeTab changes
   useEffect(() => {
-    fetchSellerProperties();
+  if (u?.sub) {
+      fetchSellerProperties();
+    }
     // Only run in the browser, not during SSR
     if (typeof window !== 'undefined') {
       updateFormClasses();
     }
-  }, [activeTab]);
+  }, [activeTab, user]);
+
+  // Authentication checks
+  if (isLoading) return <div>Loading...</div>;
+  // Note: no `error` from useSession; rely on status and user.
+  if (!user) {
+    // This should not happen as useEffect redirects, but just in case
+    return <div>Redirecting to login...</div>;
+  }
 
   return (
     <div>
@@ -463,13 +622,15 @@ const SellerDashboard: React.FC = () => {
                     className={styles.formSelect}
                   >
                     <option value="">Select type</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="house">House</option>
-                    <option value="condo">Condo</option>
-                    <option value="townhouse">Townhouse</option>
-                    <option value="villa">Villa</option>
-                    <option value="cabin">Cabin</option>
-                    <option value="land">Land</option>
+                    {loadingFormData ? (
+                      <option value="" disabled>Loading...</option>
+                    ) : (
+                      propertyTypes.map(type => (
+                        <option key={type.id} value={type.name}>
+                          {type.display_name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>
@@ -597,26 +758,56 @@ const SellerDashboard: React.FC = () => {
                     required
                     className={styles.formSelect}
                   >
-                    <option value="available">Available</option>
-                    <option value="pending">Pending</option>
-                    <option value="sold">Sold</option>
+                    {loadingFormData ? (
+                      <option value="" disabled>Loading...</option>
+                    ) : (
+                      propertyStatuses.map(status => (
+                        <option key={status.id} value={status.name}>
+                          {status.display_name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
-                <input 
-                  type="number" 
-                  id="yearBuilt" 
-                  name="yearBuilt" 
-                  value={formData.yearBuilt || ''} 
-                  onChange={handleInputChange} 
-                  placeholder="e.g., 2010"
-                  min="1800"
-                  max={new Date().getFullYear()}
-                  className={styles.formInput}
-                />
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="operation_status_id" className={styles.formLabel}>Operation Type*</label>
+                  <select 
+                    id="operation_status_id" 
+                    name="operation_status_id" 
+                    value={formData.operation_status_id || 1} 
+                    onChange={handleInputChange} 
+                    required
+                    className={styles.formSelect}
+                  >
+                    {loadingFormData ? (
+                      <option value="" disabled>Loading...</option>
+                    ) : (
+                      propertyOperationStatuses.map(operationStatus => (
+                        <option key={operationStatus.id} value={operationStatus.id}>
+                          {operationStatus.display_name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
+                  <input 
+                    type="number" 
+                    id="yearBuilt" 
+                    name="yearBuilt" 
+                    value={formData.yearBuilt || ''} 
+                    onChange={handleInputChange} 
+                    placeholder="e.g., 2010"
+                    min="1800"
+                    max={new Date().getFullYear()}
+                    className={styles.formInput}
+                  />
+                </div>
               </div>
 
               <div className={styles.formGroup}>
@@ -625,6 +816,57 @@ const SellerDashboard: React.FC = () => {
                   onImageChange={(imageUrl) => setFormData(prev => ({...prev, image_url: imageUrl}))}
                   defaultValue={formData.image_url}
                 />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Property Features</label>
+                <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
+                  Select the features that apply to your property
+                </p>
+                {loadingFormData ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                    Loading features...
+                  </div>
+                ) : (
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                    gap: '12px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    border: '1px solid #e1e5e9',
+                    borderRadius: '4px',
+                    padding: '16px'
+                  }}>
+                    {propertyFeatures.map(feature => (
+                      <label key={feature.id} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px',
+                        cursor: 'pointer',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        border: selectedFeatures.includes(feature.id) ? '2px solid #1277e1' : '1px solid #e1e5e9',
+                        backgroundColor: selectedFeatures.includes(feature.id) ? '#f0f7ff' : 'white'
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedFeatures.includes(feature.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedFeatures(prev => [...prev, feature.id]);
+                            } else {
+                              setSelectedFeatures(prev => prev.filter(id => id !== feature.id));
+                            }
+                          }}
+                          style={{ marginRight: '4px' }}
+                        />
+                        <span style={{ fontSize: '16px' }}>{feature.icon || '•'}</span>
+                        <span style={{ fontSize: '14px' }}>{feature.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className={styles.formActions}>

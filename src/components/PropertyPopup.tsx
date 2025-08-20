@@ -1,41 +1,125 @@
 import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
 import React, {useState, useEffect, useRef, RefObject} from 'react';
-import {useAuth} from 'context/AuthContext';
 import {useRouter} from 'next/router';
+import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
+import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
-const additionalImages = [
-  '/properties/casa-moderna.jpg',
-  '/properties/casa-lago.jpg',
-  '/properties/casa-campo.jpg',
-  '/properties/villa-lujo.jpg',
-  '/properties/cabana-playa.jpg',
-  '/properties/casa-playa.jpg',
-  '/properties/casa-colonial.jpg'
-];
+interface PropertyFeature {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+}
+
+interface Neighborhood {
+  id: number;
+  name: string;
+  description: string;
+  subway_access: string;
+  dining_options: string;
+  shopping_access: string;
+  highway_access: string;
+}
+
+// Function to generate additional property images based on property type
+const generatePropertyImages = (property: Property) => {
+  const baseImages = [
+    '/properties/casa-moderna.jpg',
+    '/properties/casa-lago.jpg',
+    '/properties/casa-campo.jpg',
+    '/properties/villa-lujo.jpg',
+    '/properties/cabana-playa.jpg',
+    '/properties/casa-playa.jpg',
+    '/properties/casa-colonial.jpg'
+  ];
+
+  // Type-specific images
+  const typeImages: { [key: string]: string[] } = {
+    'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'casa': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
+    'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
+    'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg']
+  };
+
+  const propertyType = property.type?.toLowerCase() || 'house';
+  const relevantImages = typeImages[propertyType] || baseImages;
+  
+  // Return 3-4 additional images plus the main image
+  return relevantImages.slice(0, 3);
+};
   
 
 export default function PropertyPopup({ 
   selectedProperty, 
   onClose, 
-  mapRef 
+  mapRef,
+  onFavoriteToggle
 }: { 
   selectedProperty: Property & { isFavorite?: boolean }; 
   onClose: () => void; 
   mapRef: RefObject<HTMLDivElement | null>;
+  onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void;
 }) {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoading = status === 'loading';
   const isFavorite = selectedProperty.isFavorite || false;
   const [activeTab, setActiveTab] = useState('overview');
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
+  const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
+  const [loadingFeatures, setLoadingFeatures] = useState(true);
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
   const mapLocationRef = useRef<HTMLDivElement>(null);
-  const schoolsRef = useRef<HTMLDivElement>(null);
+
+  // Fetch property features and neighborhood data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Generate additional images based on property type
+        const generatedImages = generatePropertyImages(selectedProperty);
+        setAdditionalImages(generatedImages);
+
+        // Fetch features specifically assigned to this property
+        const featuresResponse = await fetch(`/api/properties/features?propertyId=${selectedProperty.id}`);
+        if (featuresResponse.ok) {
+          const features = await featuresResponse.json();
+          setPropertyFeatures(features);
+        }
+
+        // Fetch neighborhood data - try to match by city first
+        if (selectedProperty.city) {
+          const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(selectedProperty.city)}`);
+          if (neighborhoodResponse.ok) {
+            const neighborhoods = await neighborhoodResponse.json();
+            if (neighborhoods.length > 0) {
+              setNeighborhoodData(neighborhoods[0]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching property data:', error);
+      } finally {
+        setLoadingFeatures(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
 
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
@@ -52,7 +136,6 @@ export default function PropertyPopup({
           if (id === 'overview-section') setActiveTab('overview');
           else if (id === 'details-section') setActiveTab('details');
           else if (id === 'map-section') setActiveTab('map');
-          else if (id === 'schools-section') setActiveTab('schools');
         }
       });
     }, options);
@@ -61,13 +144,11 @@ export default function PropertyPopup({
     if (overviewRef.current) observer.observe(overviewRef.current);
     if (detailsRef.current) observer.observe(detailsRef.current);
     if (mapLocationRef.current) observer.observe(mapLocationRef.current);
-    if (schoolsRef.current) observer.observe(schoolsRef.current);
 
     return () => {
       if (overviewRef.current) observer.unobserve(overviewRef.current);
       if (detailsRef.current) observer.unobserve(detailsRef.current);
       if (mapLocationRef.current) observer.unobserve(mapLocationRef.current);
-      if (schoolsRef.current) observer.unobserve(schoolsRef.current);
     };
   }, []);
 
@@ -85,16 +166,12 @@ export default function PropertyPopup({
       case 'map':
         mapLocationRef.current?.scrollIntoView({ behavior: 'smooth' });
         break;
-      case 'schools':
-        schoolsRef.current?.scrollIntoView({ behavior: 'smooth' });
-        break;
       default:
         break;
     }
   };
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { user } = useAuth(); // Get user from AuthContext
   
   // Initialize Google Maps when the component loads
   useEffect(() => {
@@ -137,11 +214,29 @@ export default function PropertyPopup({
   }, [mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
-  const handleSaveProperty = () => {
+  const handleSaveProperty = async () => {
     if (!user) {
-      // Redirect to login if not authenticated
-      router.push('/login?redirect=/map');
+      // If user is not authenticated, redirect to login
+      window.location.href = '/api/auth/login';
       return;
+    }
+
+    if (isSaving) return; // Prevent multiple clicks
+    
+    setIsSaving(true);
+    try {
+      const newStatus = !isFavorite;
+      await toggleSaveProperty(selectedProperty.id, isFavorite);
+      
+      // Call parent callback to update UI
+      if (onFavoriteToggle) {
+        onFavoriteToggle(selectedProperty.id, newStatus);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite status. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -158,6 +253,27 @@ export default function PropertyPopup({
       }
     }
   };
+
+  // Get operation status badge info
+  const getOperationStatusBadge = () => {
+    const operationStatus = selectedProperty.operation_status_display || selectedProperty.operation_status;
+    const operationStatusId = selectedProperty.operation_status_id;
+
+    // Define colors for different operation types
+    const badgeConfig = {
+      1: { backgroundColor: '#e4002b', text: operationStatus || 'For Sale' }, // Sale
+      2: { backgroundColor: '#2563eb', text: operationStatus || 'For Rent' }, // Rent  
+      3: { backgroundColor: '#6b7280', text: operationStatus || 'Not Available' } // Not Available
+    };
+
+    return badgeConfig[operationStatusId as keyof typeof badgeConfig] || badgeConfig[1];
+  };
+
+  // Handler for clicking on specific images in the grid
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    // Optional: You could open a full-screen gallery modal here
+  };
   
   return (
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
@@ -171,6 +287,7 @@ export default function PropertyPopup({
                 e.stopPropagation();
                 handleSaveProperty();
               }}
+              disabled={isSaving}
               aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               style={{
                 top: '15px',
@@ -181,40 +298,51 @@ export default function PropertyPopup({
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
-                <path 
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                  stroke={isFavorite ? "transparent" : "currentColor"}
-                  strokeWidth="2"
-                  fill={isFavorite ? "#e4002b" : "transparent"}
-                />
-              </svg>
+              {isSaving ? (
+                <div style={{ fontSize: '18px' }}>⏳</div>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+                  <path 
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
+                    stroke={isFavorite ? "transparent" : "currentColor"}
+                    strokeWidth="2"
+                    fill={isFavorite ? "#e4002b" : "transparent"}
+                  />
+                </svg>
+              )}
             </button>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
-              {/* Main image carousel - Zillow style */}
+              {/* 5-Photo Grid Layout */}
               <div 
-                className={`${styles.styledGallery} ${galleryStyles.styledGallery}`} 
+                className={galleryStyles.styledGallery}
                 style={{ 
-                  position: 'relative', 
-                  height: '100%', 
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1fr',
+                  gridTemplateRows: '1fr 1fr',
+                  gap: '8px',
+                  height: '100%',
                   width: '100%',
-                  display: 'block',
+                  borderRadius: '12px',
                   overflow: 'hidden',
                   backgroundColor: '#f7f7f7'
                 }}
               >
-                {/* Main large image */}
+                {/* Main large image (takes 2/4 of space) */}
                 {selectedProperty && (
-                  <div style={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
-                    overflow: 'hidden'
-                  }}>
+                  <div 
+                    style={{
+                      gridColumn: '1',
+                      gridRow: '1 / span 2',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      overflow: 'hidden'
+                    }}
+                    onClick={() => handleImageClick(0)}
+                  >
                     <img 
-                      src={currentImageIndex === 0 ? selectedProperty.image_url : additionalImages[currentImageIndex - 1]} 
-                      alt={`Property image ${currentImageIndex + 1}`} 
+                      src={selectedProperty.image_url} 
+                      alt="Main property image" 
                       style={{ 
                         width: '100%', 
                         height: '100%', 
@@ -222,67 +350,69 @@ export default function PropertyPopup({
                         transition: 'transform 0.3s ease'
                       }}
                     />
-                    
-                    {/* Navigation arrows - Zillow style */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChange('prev');
-                      }}
-                      style={{ 
-                        position: 'absolute', 
-                        left: '20px', 
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        color: '#2a2a33',
-                        border: 'none',
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        fontSize: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        zIndex: 20,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      }}
-                    >
-                      ‹
-                    </button>
-                    
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageChange('next');
-                      }}
-                      style={{ 
-                        position: 'absolute', 
-                        right: '20px', 
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        color: '#2a2a33',
-                        border: 'none',
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        fontSize: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        zIndex: 20,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      }}
-                    >
-                      ›
-                    </button>
+                    {/* Image counter overlay */}
+                    <div style={{ 
+                      position: 'absolute', 
+                      bottom: '16px', 
+                      left: '16px', 
+                      zIndex: 5,
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      color: 'white',
+                      borderRadius: '4px',
+                      padding: '4px 10px',
+                      fontSize: '14px'
+                    }}>
+                      1 of {additionalImages.length + 1}
+                    </div>
                   </div>
                 )}
                 
-                {/* Zillow-style "View all photos" button */}
+                {/* Four smaller images (each takes 1/4 of space) */}
+                {additionalImages.slice(0, 4).map((image, index) => (
+                  <div 
+                    key={index}
+                    style={{
+                      gridColumn: '2',
+                      gridRow: index < 2 ? '1' : '2',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      overflow: 'hidden'
+                    }}
+                    onClick={() => handleImageClick(index + 1)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Property image ${index + 2}`} 
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease'
+                      }}
+                    />
+                    {/* Show "+X more" overlay on the last image if there are more photos */}
+                    {index === 3 && additionalImages.length > 4 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '18px',
+                        fontWeight: 'bold'
+                      }}>
+                        +{additionalImages.length - 3} more
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {/* "View all photos" button */}
                 <div style={{ 
                   position: 'absolute', 
                   bottom: '16px', 
@@ -303,31 +433,21 @@ export default function PropertyPopup({
                       fontSize: '14px',
                       fontWeight: '600',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Here you could open a full-screen gallery
+                      console.log('View all photos clicked');
                     }}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4 4h16v16H4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M4 16l4-4 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M14 14l2-2 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="18" cy="6" r="2" fill="currentColor" />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                      <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     {additionalImages.length + 1} Photos
                   </button>
-                </div>
-                
-                {/* Photo counter - Zillow style */}
-                <div style={{ 
-                  position: 'absolute', 
-                  bottom: '16px', 
-                  left: '16px', 
-                  zIndex: 5,
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                  color: 'white',
-                  borderRadius: '4px',
-                  padding: '4px 10px',
-                  fontSize: '14px'
-                }}>
-                  {currentImageIndex + 1} of {additionalImages.length + 1}
                 </div>
               </div>
             </div>
@@ -342,7 +462,7 @@ export default function PropertyPopup({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                     <div>
                       <span style={{ 
-                        backgroundColor: '#e4002b', 
+                        backgroundColor: getOperationStatusBadge().backgroundColor, 
                         color: 'white', 
                         padding: '4px 8px', 
                         borderRadius: '4px', 
@@ -350,7 +470,7 @@ export default function PropertyPopup({
                         fontWeight: '600',
                         display: 'inline-block',
                         marginBottom: '8px'
-                      }}>For Sale</span>
+                      }}>{getOperationStatusBadge().text}</span>
                       <h1 style={{ 
                         fontSize: '28px', 
                         fontWeight: '600', 
@@ -478,19 +598,6 @@ export default function PropertyPopup({
                     >
                       Location
                     </li>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'schools' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'schools' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'schools' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('schools')}
-                    >
-                      Schools
-                    </li>
                   </ul>
                 </div>
                 
@@ -530,102 +637,26 @@ export default function PropertyPopup({
                             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                             gap: '16px'
                           }}>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Air Conditioning</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Heating</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Garage</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Swimming Pool</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Garden</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Balcony</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Fireplace</span>
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '20px',
-                                lineHeight: 1
-                              }}>•</span>
-                              <span>Hardwood Floor</span>
-                            </div>
+                            {loadingFeatures ? (
+                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
+                            ) : propertyFeatures.length > 0 ? (
+                              propertyFeatures.map((feature) => (
+                                <div key={feature.id} style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '8px'
+                                }}>
+                                  <span style={{ 
+                                    color: '#1277e1', 
+                                    fontSize: '20px',
+                                    lineHeight: 1
+                                  }}>{feature.icon || '•'}</span>
+                                  <span>{feature.name}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div style={{ color: '#666', fontSize: '14px' }}>No features assigned to this property</div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -804,32 +835,28 @@ export default function PropertyPopup({
                               marginBottom: '8px'
                             }}>Heating and cooling</div>
                             
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              marginBottom: '4px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Air conditioning</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Heating system</span>
-                            </div>
+                            {loadingFeatures ? (
+                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
+                            ) : (
+                              propertyFeatures
+                                .filter(feature => feature.category === 'climate')
+                                .slice(0, 3)
+                                .map((feature) => (
+                                  <div key={feature.id} style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px',
+                                    marginBottom: '4px',
+                                    fontSize: '14px'
+                                  }}>
+                                    <span style={{ 
+                                      color: '#1277e1', 
+                                      fontSize: '16px'
+                                    }}>{feature.icon || '•'}</span>
+                                    <span>{feature.name}</span>
+                                  </div>
+                                ))
+                            )}
                           </div>
                         </div>
                         
@@ -1034,7 +1061,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Public Transportation</div>
-                              <div style={{ fontSize: '14px' }}>10 minute walk to nearest subway station</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.subway_access || '10 minute walk to nearest subway station'}
+                              </div>
                             </div>
                           </div>
                           
@@ -1051,7 +1080,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Highway Access</div>
-                              <div style={{ fontSize: '14px' }}>5 minute drive to nearest highway</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.highway_access || '5 minute drive to nearest highway'}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1082,7 +1113,9 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Restaurants</div>
-                              <div style={{ fontSize: '14px' }}>Variety of dining options within walking distance</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.dining_options || 'Variety of dining options within walking distance'}
+                              </div>
                             </div>
                           </div>
                           
@@ -1096,154 +1129,12 @@ export default function PropertyPopup({
                             </svg>
                             <div>
                               <div style={{ fontSize: '14px', fontWeight: '600' }}>Shopping</div>
-                              <div style={{ fontSize: '14px' }}>Shopping centers and grocery stores nearby</div>
+                              <div style={{ fontSize: '14px' }}>
+                                {neighborhoodData?.shopping_access || 'Shopping centers and grocery stores nearby'}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Schools section */}
-                  <div ref={schoolsRef} id="schools-section" style={{ padding: '24px', marginBottom: '40px' }}>
-                    <h3 style={{ 
-                      fontSize: '20px', 
-                      fontWeight: '600', 
-                      marginBottom: '16px',
-                      color: '#2a2a33'
-                    }}>Nearby Schools in {selectedProperty.city}</h3>
-                    <p style={{ 
-                      fontSize: '14px', 
-                      color: '#767676',
-                      marginBottom: '24px'
-                    }}>School service boundaries are intended to be used as a reference only; they may change and are not guaranteed. Contact the school directly to verify enrollment eligibility.</p>
-                    
-                    <div style={{ marginBottom: '24px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>ELEMENTARY</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Elementary School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>K-5</div>
-                        <div>0.5 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>9</div>
-                      </div>
-                    </div>
-                    
-                    <div style={{ marginBottom: '24px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>MIDDLE</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield Middle School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>6-8</div>
-                        <div>1.2 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>8</div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        borderBottom: '1px solid #e9e9e9',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '14px',
-                        fontWeight: '600'
-                      }}>
-                        <span>HIGH</span>
-                        <span>GRADES</span>
-                        <span>DISTANCE</span>
-                        <span>RATING</span>
-                      </div>
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                      }}>
-                        <div>
-                          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Springfield High School</div>
-                          <div style={{ color: '#767676' }}>Public</div>
-                        </div>
-                        <div>9-12</div>
-                        <div>2.1 miles</div>
-                        <div style={{ 
-                          backgroundColor: '#1277e1', 
-                          color: 'white',
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '600'
-                        }}>7</div>
                       </div>
                     </div>
                   </div>

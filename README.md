@@ -1,11 +1,40 @@
-# Real Estate App
+# Ubika - Real Estate App
 
-This is a Next.js application built with TypeScript and React for a real estate project. The application features a user-friendly interface to help users find their new homes.
+This is a Next.js application built with TypeScript and React for a real estate project. The application features a user-friendly interface to help users find their new homes, now powered by **Neon Database** for serverless PostgreSQL.
 
 ## Features
 
-- **Banner**: A welcoming banner that displays the message "Encuentra tu nuevo hogar".
-- **Search Bar**: An input field for users to search for addresses.
+- **Modern Property Search**: Advanced filtering by price, location, property type, and features
+- **Interactive Map**: Google Maps integration for property visualization
+- **Property Gallery**: Beautiful image galleries for each property
+- **Neighborhood Information**: Detailed neighborhood data with walkability scores
+- **Responsive Design**: Mobile-first design with modern UI components
+- **Serverless Database**: Powered by Neon Database for optimal performance
+
+## Database
+
+This application uses **Neon Database**, a serverless PostgreSQL platform that provides:
+- Automatic scaling to zero when not in use
+- Built-in connection pooling
+- Point-in-time recovery
+- Database branching for development
+- Seamless Vercel integration
+
+### Database Setup
+
+```bash
+# Test database connection
+npm run db:test
+
+# Complete database setup (recommended)
+npm run db:setup
+
+# Reset database (truncate tables)
+npm run db:reset
+
+# List properties for verification
+npm run db:list
+```
 
 ## Project Structure
 
