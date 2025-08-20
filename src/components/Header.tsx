@@ -96,9 +96,7 @@ const Header: React.FC<HeaderProps> = () => {
         </nav>
       </div>
     </header>
-        </nav>
-      </div>
-    </header>
+  // ...existing code...
   );
 };
 
