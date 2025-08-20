@@ -101,7 +101,7 @@ const SavedProperties: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ paddingTop: '80px' }}>
   <Header selectedOperation="buy" onOperationChange={() => {}} />
       
       {/* Page Header */}

@@ -136,7 +136,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ paddingTop: '80px' }}>
   <Header selectedOperation={selectedOperation} onOperationChange={setSelectedOperation} />
       <Banner />
 
@@ -192,27 +192,8 @@ const Home: React.FC = () => {
       </section>
 
       <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerSection}>
-            <h3>About Us</h3>
-            <p>Ubika is a leading real estate marketplace dedicated to empowering consumers with data.</p>
-          </div>
-          <div className={styles.footerSection}>
-            <h3>Contact</h3>
-            <p>Email: info@ubika.com</p>
-            <p>Phone: (123) 456-7890</p>
-          </div>
-          <div className={styles.footerSection}>
-            <h3>Follow Us</h3>
-            <div className={styles.socialIcons}>
-              <a href="#" aria-label="Facebook">FB</a>
-              <a href="#" aria-label="Twitter">TW</a>
-              <a href="#" aria-label="Instagram">IG</a>
-            </div>
-          </div>
-        </div>
         <div className={styles.footerBottom}>
-          <p>&copy; {new Date().getFullYear()} Ubika. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Ubika - Leading real estate marketplace | Email: info@ubika.com</p>
         </div>
       </footer>
     </div>

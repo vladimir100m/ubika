@@ -465,7 +465,7 @@ const MapPage: React.FC = () => {
       router.push({ pathname: '/map', query: { ...router.query, operation } });
     }} 
   />
-      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', paddingTop: '80px' }}>
         {/* Search Bar */}
         <div style={{ padding: '1rem', backgroundColor: '#ffffff', borderRadius: '8px', marginBottom: '0.5rem', zIndex: 10 }}>
           <div style={{

@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
     <header className={styles.navbar}>
       <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
         <div className={styles.logo} onClick={() => router.push('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '32px' }}>
-          <Image src="/ubika-logo.png" alt="Ubika Logo" width={40} height={40} />
+          <Image src="/ubika-logo.png" alt="Ubika Logo" width={40} height={40} priority />
           <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
         </div>
         <nav className={styles.navigation} style={{ flex: 1 }}>

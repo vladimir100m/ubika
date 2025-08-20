@@ -434,7 +434,7 @@ const SellerDashboard: React.FC = () => {
   }
 
   return (
-    <div>
+    <div style={{ paddingTop: '80px' }}>
   <Header selectedOperation="buy" onOperationChange={() => {}} />
       <div className={styles.container}>
 

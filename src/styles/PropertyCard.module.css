@@ -1,110 +1,280 @@
-/* Updated color palette for real estate app */
- .card {
+/* Modern Property Card Design */
+.card {
   display: flex;
   flex-direction: column;
-  background: var(--background-light);
-  border-radius: var(--radius-lg);
+  background: white;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(26, 115, 232, 0.06);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: var(--space-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   height: 100%;
-  min-height: 320px;
-  border: 1px solid rgba(26, 115, 232, 0.1);
-}
-
-@media (max-width: 768px) {
-  .card {
-    min-height: 220px;
-    margin-bottom: var(--space-md);
-  }
-  .imageContainer {
-    height: 140px;
-  }
-  .cardTitle {
-    font-size: 1rem;
-  }
-  .cardDetails {
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .card {
-    min-height: 160px;
-    margin-bottom: var(--space-sm);
-    padding: var(--space-xs);
-  }
-  .imageContainer {
-    height: 90px;
-  }
-  .cardTitle {
-    font-size: 0.8rem;
-  }
-  .cardDetails {
-    font-size: 0.8rem;
-  }
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(26, 115, 232, 0.12);
-  border-color: rgba(26, 115, 232, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 116, 228, 0.2);
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 220px;
+  height: 240px;
   overflow: hidden;
 }
 
-.image {
+.propertyImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.imageContainer:hover .image {
-  transform: scale(1.05);
+.card:hover .propertyImage {
+  transform: scale(1.08);
 }
 
-.imageOverlay {
+.priceOverlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-md);
-  z-index: 2;
+  top: 16px;
+  left: 16px;
+  z-index: 3;
 }
 
-.statusTag {
-  background-color: var(--accent);
+.priceTag {
+  background: linear-gradient(135deg, #0074e4 0%, #0099ff 100%);
   color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  text-transform: uppercase;
-  box-shadow: 0 2px 4px rgba(0, 176, 255, 0.2);
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 116, 228, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .favoriteButton {
-  background: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.95);
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 3;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.favoriteButton:hover {
+  transform: scale(1.1);
+  background: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.favoriteButton.favorited {
+  background: rgba(255, 71, 87, 0.1);
+  border: 2px solid #ff4757;
+}
+
+.statusBadge {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+}
+
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 16px;
+}
+
+.propertyHeader {
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.address {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.propertySpecs {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.spec {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.spec svg {
+  opacity: 0.7;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cardFooter {
+  margin-top: auto;
+}
+
+.propertyActions {
+  display: flex;
+  gap: 12px;
+}
+
+.contactButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: 2px solid #e1e7eb;
+  color: #555;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contactButton:hover {
+  border-color: #0074e4;
+  color: #0074e4;
+  background: rgba(0, 116, 228, 0.05);
+}
+
+.viewButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0074e4 0%, #0099ff 100%);
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.viewButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 116, 228, 0.3);
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 16px;
+  }
+  
+  .imageContainer {
+    height: 200px;
+  }
+  
+  .content {
+    padding: 20px;
+    gap: 12px;
+  }
+  
+  .title {
+    font-size: 1.1rem;
+  }
+  
+  .propertySpecs {
+    gap: 16px;
+  }
+  
+  .propertyActions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    margin-bottom: 12px;
+  }
+  
+  .imageContainer {
+    height: 180px;
+  }
+  
+  .content {
+    padding: 16px;
+    gap: 10px;
+  }
+  
+  .title {
+    font-size: 1rem;
+  }
+  
+  .priceTag {
+    font-size: 1rem;
+    padding: 6px 12px;
+  }
+  
+  .favoriteButton {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Expandable content for mobile cards */
+.expandedContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.expandedContent.show {
+  max-height: 500px; /* Adjust as needed */
 }
 
 .favoriteButton:hover {
@@ -1278,3 +1448,85 @@
     font-size: 0.8rem;
   }
 }
+
+/* Enhanced operation type styling */
+.operationType {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+  display: inline-block;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced description styling */
+.description {
+  margin: 12px 0;
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.descriptionText {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Enhanced property type styling */
+.propertyType {
+  color: #0073e6;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Enhanced action buttons */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.viewDetailsButton {
+  flex: 1;
+  background: #0073e6;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewDetailsButton:hover {
+  background: #005bb5;
+  transform: translateY(-1px);
+}
+
+.contactButton {
+  flex: 1;
+  background: transparent;
+  color: #0073e6;
+  border: 1px solid #0073e6;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contactButton:hover {
+  background: #00  b6;
+  color: whit}
+
+.descriptionText {
+  color: #66}
