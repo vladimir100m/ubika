@@ -47,7 +47,7 @@ const SavedProperties: React.FC = () => {
 
   if (isLoading || loading) return (
     <div className={styles.container}>
-      <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
       <main className={styles.main}>
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: '18px', color: '#666' }}>Loading...</div>
@@ -61,7 +61,7 @@ const SavedProperties: React.FC = () => {
   if (!user) {
     return (
       <div className={styles.container}>
-        <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
         <main className={styles.main}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
@@ -102,7 +102,7 @@ const SavedProperties: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
       
       {/* Page Header */}
       <div style={{ 

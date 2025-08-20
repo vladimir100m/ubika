@@ -77,7 +77,7 @@ const RecentSearches: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
 
       <section className={styles.featuredProperties}>
         <div className={styles.searchHistoryHeader}>

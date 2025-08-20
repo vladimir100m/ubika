@@ -28,6 +28,11 @@ const MapPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null); // Add error state
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   
+  // Read operation filter from query
+  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
+    ? router.query.operation as 'buy' | 'rent'
+    : 'buy';
+  
   const isMobile = useMediaQuery('(max-width: 768px)');
   
   // Toggle the mobile drawer
@@ -454,7 +459,12 @@ const MapPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Header />
+  <Header 
+    selectedOperation={selectedOperation} 
+    onOperationChange={(operation) => {
+      router.push({ pathname: '/map', query: { ...router.query, operation } });
+    }} 
+  />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
         {/* Search Bar */}
         <div style={{ padding: '1rem', backgroundColor: '#ffffff', borderRadius: '8px', marginBottom: '0.5rem', zIndex: 10 }}>

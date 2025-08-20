@@ -55,7 +55,7 @@ const SignIn: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
       
       <main className={styles.main}>
         <div style={{ maxWidth: '400px', margin: '60px auto', padding: '40px 20px' }}>
