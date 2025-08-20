@@ -8,10 +8,11 @@ import mobileStyles from '../styles/Mobile.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
 
 interface HeaderProps {
-  // Add any props if needed
+  selectedOperation: 'buy' | 'rent';
+  onOperationChange: (operation: 'buy' | 'rent') => void;
 }
 
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange }) => {
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { data: session, status } = useSession();
@@ -47,52 +48,56 @@ const Header: React.FC<HeaderProps> = () => {
   
   return (
     <header className={styles.navbar}>
-      <div className={styles.logo} onClick={() => router.push('/')}> 
-        <Image src="/ubika-logo.png" alt="Ubika Logo" width={40} height={40} />
-        <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
-      </div>
-      {/* Desktop Navigation */}
-      <div className={mobileStyles.onlyDesktop}>
-        <nav className={styles.navigation}>
-          <div className={styles.navLinks}>
-            <Link href="/map">Buy</Link>
-            <Link href="/map">Rent</Link>
+      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+        <div className={styles.logo} onClick={() => router.push('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '32px' }}>
+          <Image src="/ubika-logo.png" alt="Ubika Logo" width={40} height={40} />
+          <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
+        </div>
+        <nav className={styles.navigation} style={{ flex: 1 }}>
+          <div className={styles.navLinks} style={{ display: 'flex', alignItems: 'center', gap: '18px', justifyContent: 'flex-start' }}>
+            <button
+              className={styles.navItem}
+              style={{ background: selectedOperation === 'rent' ? '#fff' : 'none', color: selectedOperation === 'rent' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
+              onClick={() => {
+                router.push({ pathname: '/map', query: { operation: 'rent' } });
+              }}
+            >
+              <span role="img" aria-label="Rent" style={{ marginRight: '6px' }}>🏡</span>Rent
+            </button>
+            <button
+              className={styles.navItem}
+              style={{ background: selectedOperation === 'buy' ? '#fff' : 'none', color: selectedOperation === 'buy' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
+              onClick={() => {
+                router.push({ pathname: '/map', query: { operation: 'buy' } });
+              }}
+            >
+              <span role="img" aria-label="Buy" style={{ marginRight: '6px' }}>🏠</span>Buy
+            </button>
+            <button
+              className={styles.navItem}
+              style={{ background: 'none', color: '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
+              onClick={() => router.push('/seller')}
+            >
+              <span role="img" aria-label="Sell" style={{ marginRight: '6px' }}>💼</span>Sell
+            </button>
             {!isLoading && (
               <React.Fragment>
                 {user ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    {/* ...existing code for user dropdown... */}
-                  </div>
+                  <Link href="/account" legacyBehavior>
+                    <a className={styles.navItem}><span role="img" aria-label="Account" style={{ marginRight: '6px' }}>👤</span>Account</a>
+                  </Link>
                 ) : (
-                  <div style={{ display: 'flex', gap: '15px' }}>
-                    {/* ...existing code for sign in/join... */}
-                  </div>
+                  <button 
+                    onClick={() => signIn('google')}
+                    className={styles.navItem}
+                    style={{ background: 'none', border: '1px solid #fff', color: '#fff', cursor: 'pointer', fontSize: '1rem', fontWeight: '500', padding: '6px 18px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
+                  >
+                    <span role="img" aria-label="Login" style={{ marginRight: '8px' }}>🔑</span>Login
+                  </button>
                 )}
               </React.Fragment>
             )}
           </div>
-        </nav>
-      </div>
-      {/* Mobile Navigation */}
-      <div className={mobileStyles.onlyMobile}>
-        <nav className={mobileStyles.mobileNavigation}>
-          <Link href="/map" legacyBehavior><a className={mobileStyles.navItem}><span className={mobileStyles.navIcon}>🏠</span><span>Buy</span></a></Link>
-          <Link href="/map" legacyBehavior><a className={mobileStyles.navItem}><span className={mobileStyles.navIcon}>🏡</span><span>Rent</span></a></Link>
-          {!isLoading && (
-            <React.Fragment>
-              {user ? (
-                <Link href="/account" legacyBehavior><a className={mobileStyles.navItem}><span className={mobileStyles.navIcon}>👤</span><span>Account</span></a></Link>
-              ) : (
-                <button 
-                  onClick={() => signIn('google')} 
-                  className={mobileStyles.navItem}
-                  style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '1rem', fontWeight: '500' }}
-                >
-                  <span className={mobileStyles.navIcon}>🔑</span><span>Login</span>
-                </button>
-              )}
-            </React.Fragment>
-          )}
         </nav>
       </div>
     </header>

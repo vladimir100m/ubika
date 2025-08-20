@@ -211,7 +211,7 @@ function Profile() {
           }
         }
       `}</style>
-      <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
       
       {/* Profile Header - Focused on Selling */}
       <div style={{ 

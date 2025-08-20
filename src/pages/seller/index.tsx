@@ -435,7 +435,7 @@ const SellerDashboard: React.FC = () => {
 
   return (
     <div>
-      <Header />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
       <div className={styles.container}>
 
         <div className={styles.tabs}>
