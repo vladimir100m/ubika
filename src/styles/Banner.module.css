@@ -1,5 +1,5 @@
 /* Updated styles for the enhanced Banner */
-.Banner_banner__biC5I {
+ .Banner_banner__biC5I {
   position: relative;
   background-image: url('/departamento-familiar.jpg');
   background-size: cover;
@@ -12,6 +12,32 @@
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   font-family: 'Inter', sans-serif;
+}
+
+@media (max-width: 768px) {
+  .Banner_banner__biC5I {
+    height: 60vh;
+    padding: 0 1rem;
+  }
+  .Banner_content__biC5I h1 {
+    font-size: 2rem;
+  }
+  .Banner_content__biC5I p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .Banner_banner__biC5I {
+    height: 40vh;
+    padding: 0 0.5rem;
+  }
+  .Banner_content__biC5I h1 {
+    font-size: 1.2rem;
+  }
+  .Banner_content__biC5I p {
+    font-size: 0.9rem;
+  }
 }
 
 .Banner_content__biC5I {

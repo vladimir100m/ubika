@@ -1,5 +1,5 @@
 /* Placeholder styles for Home.module.css */
-.container {
+ .container {
   font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
@@ -8,6 +8,32 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  .navbar {
+    padding: 10px 16px;
+    font-size: 1rem;
+  }
+  .logo {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.2rem;
+  }
+  .navbar {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
+  .logo {
+    font-size: 0.9rem;
+  }
 }
 
 .navbar {
