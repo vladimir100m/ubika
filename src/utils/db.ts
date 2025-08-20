@@ -11,9 +11,9 @@ if (hasDatabase) {
   // Create a connection pool using Neon database
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? {
+    ssl: {
       rejectUnauthorized: false
-    } : false, // Disable SSL for local development
+    }, // Enable SSL for cloud databases like Neon
     max: 20, // Maximum number of clients in the pool
     idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
     connectionTimeoutMillis: 10000, // Increased timeout for serverless environments

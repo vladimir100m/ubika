@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
+import { getDbClient } from '../../../utils/db';
 
 // This endpoint handles deletion of properties
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -20,16 +20,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Seller ID is required' });
   }
 
-  const client = new Client({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB,
-    password: String(process.env.POSTGRES_PASSWORD),
-    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-  });
+  const client = await getDbClient();
 
   try {
-    await client.connect();
 
     // Check if property exists and belongs to the seller
     const checkQuery = `
@@ -63,7 +56,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error('Error deleting property:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   } finally {
-    await client.end();
+    client.release();
   }
 };
 
