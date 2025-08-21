@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
+import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
 import { getSavedProperties, unsaveProperty, type SavedProperty } from '../utils/savedPropertiesApi';
 
@@ -12,6 +13,19 @@ const SavedProperties: React.FC = () => {
   const [savedProperties, setSavedProperties] = useState<SavedProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // Get operation from query parameters, default to 'buy'
+  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
+    ? router.query.operation as 'buy' | 'rent'
+    : 'buy';
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter instead of filtering saved properties
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
 
   // Load saved properties when user is authenticated
   useEffect(() => {
@@ -46,7 +60,7 @@ const SavedProperties: React.FC = () => {
 
   if (isLoading || loading) return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+      <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
       <main className={styles.main}>
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: '18px', color: '#666' }}>Loading...</div>
@@ -60,7 +74,7 @@ const SavedProperties: React.FC = () => {
   if (!user) {
     return (
       <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+        <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
         <main className={styles.main}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
@@ -101,7 +115,7 @@ const SavedProperties: React.FC = () => {
 
   return (
     <div className={styles.container} style={{ paddingTop: '80px' }}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+      <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
       
       {/* Page Header */}
       <div style={{ 
@@ -298,40 +312,14 @@ const SavedProperties: React.FC = () => {
               </div>
 
               {/* Properties Grid */}
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-                gap: '24px' 
-              }}>
+              <div className={styles.propertiesGrid}>
                 {savedProperties.map((property) => (
-                  <div key={property.id} style={{ position: 'relative' }}>
-                    <div style={{ 
-                      padding: '20px', 
-                      border: '1px solid #ddd', 
-                      borderRadius: '8px',
-                      backgroundColor: '#fff'
-                    }}>
-                      <h3>{property.description}</h3>
-                      <p>Price: {property.price}</p>
-                      <p>{property.address}</p>
-                      <p>Rooms: {property.rooms}</p>
-                      <p>Bathrooms: {property.bathrooms}</p>
-                      <button 
-                        onClick={() => handleFavoriteToggle(property.id, false)}
-                        style={{
-                          marginTop: '10px',
-                          padding: '5px 10px',
-                          backgroundColor: '#ff4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Remove from favorites
-                      </button>
-                    </div>
-                  </div>
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    isFavorite={true}
+                    onFavoriteToggle={() => handleFavoriteToggle(property.id, false)}
+                  />
                 ))}
               </div>
             </>

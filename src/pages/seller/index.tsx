@@ -39,6 +39,15 @@ const SellerDashboard: React.FC = () => {
   const user = session?.user;
   const u = user as (typeof user & { sub?: string; picture?: string | null; image?: string | null });
   const isLoading = status === 'loading';
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
+
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -435,7 +444,7 @@ const SellerDashboard: React.FC = () => {
 
   return (
     <div style={{ paddingTop: '80px' }}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header selectedOperation="buy" onOperationChange={handleOperationChange} />
       <div className={styles.container}>
 
         <div className={styles.tabs}>

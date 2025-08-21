@@ -11,9 +11,10 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
 import useMediaQuery from '../utils/useMediaQuery';
 import PropertyPopup from 'components/PropertyPopup';
+import PropertyCard from 'components/PropertyCard';
 import Header from 'components/Header';
 import { useSession } from 'next-auth/react';
-import { checkSavedStatus } from '../utils/savedPropertiesApi';
+import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -31,6 +32,13 @@ const MapPage: React.FC = () => {
   const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
     ? router.query.operation as 'buy' | 'rent'
     : 'buy';
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    router.push({
+      pathname: '/map',
+      query: { ...router.query, operation }
+    });
+  };
   
   const isMobile = useMediaQuery('(max-width: 768px)');
   
@@ -69,16 +77,29 @@ const MapPage: React.FC = () => {
 
   // Function to toggle favorite status using database API
   const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    setSavedPropertyIds(prevSavedIds => {
+    if (!user) {
+      // Redirect to login if user is not authenticated
+      router.push('/auth/signin');
+      return;
+    }
+
+    try {
       const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      const newSavedIds = new Set(prevSavedIds);
-      if (isCurrentlySaved) {
-        newSavedIds.delete(propertyId);
-      } else {
-        newSavedIds.add(propertyId);
-      }
-      return newSavedIds;
-    });
+      await toggleSaveProperty(propertyId, !isCurrentlySaved);
+      
+      // Update local state
+      setSavedPropertyIds(prevSavedIds => {
+        const newSavedIds = new Set(prevSavedIds);
+        if (isCurrentlySaved) {
+          newSavedIds.delete(propertyId);
+        } else {
+          newSavedIds.add(propertyId);
+        }
+        return newSavedIds;
+      });
+    } catch (error) {
+      console.error('Error toggling favorite status:', error);
+    }
   };
 
   useEffect(() => {
@@ -461,9 +482,7 @@ const MapPage: React.FC = () => {
     <div className={styles.container}>
   <Header 
     selectedOperation={selectedOperation} 
-    onOperationChange={(operation) => {
-      router.push({ pathname: '/map', query: { ...router.query, operation } });
-    }} 
+    onOperationChange={handleOperationChange}
   />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', paddingTop: '80px' }}>
         {/* Search Bar */}
@@ -624,19 +643,16 @@ const MapPage: React.FC = () => {
                   </button>
                 </div>
               ) : propertyLocations.length > 0 ? (
-                propertyLocations.map((property) => (
-                  <div
-                    key={property.id}
-                    style={{ cursor: 'pointer' }}
-                    ref={el => { setPropertyRef(el, property.id); }}
-                  >
-                    <div style={{ padding: '10px', border: '1px solid #ddd', margin: '5px' }}>
-                      <h3>{property.description}</h3>
-                      <p>Price: ${property.price}</p>
-                      <p>{property.address}</p>
-                    </div>
-                  </div>
-                ))
+                <div className={styles.propertiesGrid}>
+                  {propertyLocations.map((property) => (
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      isFavorite={savedPropertyIds.has(property.id)}
+                      onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className={styles.emptyState}>
                   <p>No properties found matching your criteria.</p>
@@ -875,29 +891,16 @@ const MapPage: React.FC = () => {
                     </button>
                   </div>
                 ) : propertyLocations.length > 0 ? (
-                  propertyLocations.map((property) => (
-                    <div
-                      key={property.id}
-                      style={{
-                        cursor: 'pointer',
-                        padding: '1rem',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                      }}
-                      ref={el => { setPropertyRef(el, property.id); }}
-                      onClick={() => {
-                        handlePropertyClick(property);
-                        setDrawerOpen(false);
-                      }}
-                    >
-                      <div style={{ padding: '10px' }}>
-                        <h3>{property.description}</h3>
-                        <p>Price: ${property.price}</p>
-                        <p>{property.address}</p>
-                      </div>
-                    </div>
-                  ))
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {propertyLocations.map((property) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        isFavorite={savedPropertyIds.has(property.id)}
+                        onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                      />
+                    ))}
+                  </div>
                 ) : (
                   <div className={mobileStyles.emptyState} style={{ textAlign: 'center', padding: '1rem' }}>
                     <p>No properties found matching your criteria.</p>

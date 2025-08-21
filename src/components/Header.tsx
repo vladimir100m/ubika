@@ -55,7 +55,6 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
             width={40} 
             height={40}
             loading="eager"
-            fetchPriority="high"
             style={{ display: 'block' }}
           />
           <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
@@ -66,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
               className={styles.navItem}
               style={{ background: selectedOperation === 'rent' ? '#fff' : 'none', color: selectedOperation === 'rent' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
               onClick={() => {
-                router.push({ pathname: '/map', query: { operation: 'rent' } });
+                onOperationChange('rent');
               }}
             >
               <span role="img" aria-label="Rent" style={{ marginRight: '6px' }}>🏡</span>Rent
@@ -75,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
               className={styles.navItem}
               style={{ background: selectedOperation === 'buy' ? '#fff' : 'none', color: selectedOperation === 'buy' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
               onClick={() => {
-                router.push({ pathname: '/map', query: { operation: 'buy' } });
+                onOperationChange('buy');
               }}
             >
               <span role="img" aria-label="Buy" style={{ marginRight: '6px' }}>🏠</span>Buy

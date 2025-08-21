@@ -20,6 +20,19 @@ const RecentSearches: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get operation from query parameters, default to 'buy'
+  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
+    ? router.query.operation as 'buy' | 'rent'
+    : 'buy';
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
+
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -77,7 +90,7 @@ const RecentSearches: React.FC = () => {
 
   return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
 
       <section className={styles.featuredProperties}>
         <div className={styles.searchHistoryHeader}>

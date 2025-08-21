@@ -9,6 +9,14 @@ const SignIn: React.FC = () => {
   const [error, setError] = useState('');
   const router = useRouter();
 
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setError('');
@@ -25,7 +33,7 @@ const SignIn: React.FC = () => {
 
   return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header selectedOperation="buy" onOperationChange={handleOperationChange} />
       
       <main className={styles.main}>
         <div style={{ maxWidth: '400px', margin: '60px auto', padding: '40px 20px' }}>

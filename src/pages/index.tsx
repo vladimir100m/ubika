@@ -17,12 +17,26 @@ const Home: React.FC = () => {
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get operation from query parameters, default to 'buy'
+  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
+    ? router.query.operation as 'buy' | 'rent'
+    : 'buy';
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter instead of filtering home page
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
 
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch all properties without operation filter for home page
         const response = await fetch('/api/properties');
         if (!response.ok) {
           throw new Error(`Error fetching properties: ${response.statusText}`);
@@ -123,11 +137,11 @@ const Home: React.FC = () => {
 
   return (
     <div className={styles.container} style={{ paddingTop: '80px' }}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+      <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
       <Banner />
 
       <section className={styles.featuredProperties}>
-        <h2>Propiedades que estabas buscando</h2>
+        <h2>All Properties</h2>
         
         {loading ? (
           <div className={styles.loadingContainer}>

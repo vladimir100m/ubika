@@ -24,6 +24,15 @@ function Profile() {
   const u = user as (typeof user & { picture?: string | null; image?: string | null; sub?: string; email_verified?: boolean; updated_at?: string | number | Date });
   const isLoading = status === 'loading';
   const [sellerProperties, setSellerProperties] = useState<Property[]>([]);
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
+
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
     description: '',
@@ -210,7 +219,7 @@ function Profile() {
           }
         }
       `}</style>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header selectedOperation="buy" onOperationChange={handleOperationChange} />
       
       {/* Profile Header - Focused on Selling */}
       <div style={{ 
