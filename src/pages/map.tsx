@@ -5,7 +5,6 @@ import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { SearchFilters } from '../components/SearchBar';
-import MapFilters  from '../components/MapFilters';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
@@ -456,63 +455,49 @@ const MapPage: React.FC = () => {
     });
   };
 
+  // Handle filter changes for MapFilters in header
+  const handleFilterChange = (filters: any) => {
+    // Build query object from filters
+    const query: any = {};
+    
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    // Update URL which will trigger a re-fetch of properties
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
   return (
     <div className={styles.container}>
-  <Header />
+  <Header 
+    showMapFilters={true}
+    onFilterChange={handleFilterChange}
+    initialFilters={{
+      operation: router.query.operation as string || '',
+      priceMin: router.query.minPrice as string || '',
+      priceMax: router.query.maxPrice as string || '',
+      beds: router.query.bedrooms as string || '',
+      baths: router.query.bathrooms as string || '',
+      homeType: router.query.propertyType as string || '',
+      moreFilters: {
+        minArea: router.query.minArea as string || '',
+        maxArea: router.query.maxArea as string || '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: []
+      }
+    }}
+  />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', paddingTop: '80px' }}>
-        {/* Enhanced Filter Bar - Zillow Style */}
-        <div style={{ marginBottom: '1rem', zIndex: 5 }}>
-          <MapFilters 
-            onFilterChange={(filters) => {
-              // Build query object from filters
-              const query: any = {};
-              
-              if (filters.operation) query.operation = filters.operation;
-              if (filters.priceMin) query.minPrice = filters.priceMin;
-              if (filters.priceMax) query.maxPrice = filters.priceMax;
-              if (filters.beds) query.bedrooms = filters.beds;
-              if (filters.baths) query.bathrooms = filters.baths;
-              if (filters.homeType) query.propertyType = filters.homeType;
-              if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
-              if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
-              
-              // Update URL which will trigger a re-fetch of properties
-              router.push({
-                pathname: '/map',
-                query
-              });
-            }}
-            onSearchLocationChange={(location) => {
-              // Handle location search
-              console.log('Searching for location:', location);
-              // You can implement geocoding here to center the map on the searched location
-              // For now, we'll just log it
-            }}
-            onRemoveBoundary={() => {
-              // Remove any custom boundary and reset to default view
-              setMapCenter({ lat: -34.5897318, lng: -58.4232065 });
-              // You can add logic here to clear any drawn boundaries on the map
-            }}
-            initialFilters={{
-              operation: router.query.operation as string || '',
-              priceMin: router.query.minPrice as string || '',
-              priceMax: router.query.maxPrice as string || '',
-              beds: router.query.bedrooms as string || '',
-              baths: router.query.bathrooms as string || '',
-              homeType: router.query.propertyType as string || '',
-              moreFilters: {
-                minArea: router.query.minArea as string || '',
-                maxArea: router.query.maxArea as string || '',
-                yearBuiltMin: '',
-                yearBuiltMax: '',
-                keywords: []
-              }
-            }}
-            propertyCount={propertyLocations.length}
-            showBoundaryButton={!!router.query.location}
-            searchLocation={router.query.location as string || ''}
-          />
-        </div>
         {/* Scroll-Down Layout: Map at top, properties below */}
         <div className={styles.scrollDownContainer}>
           {/* Map section - fixed height at top */}

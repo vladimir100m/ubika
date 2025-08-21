@@ -26,6 +26,7 @@ interface MapFiltersProps {
   showBoundaryButton?: boolean;
   onRemoveBoundary?: () => void;
   searchLocation?: string;
+  inHeader?: boolean;
 }
 
 const MapFilters: React.FC<MapFiltersProps> = ({ 
@@ -34,7 +35,8 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   initialFilters = {},
   showBoundaryButton = false,
   onRemoveBoundary,
-  searchLocation = ''
+  searchLocation = '',
+  inHeader = false
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(searchLocation);
@@ -152,7 +154,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                           filters.moreFilters.keywords.length > 0;
 
   return (
-    <div className={styles.filtersContainer} onClick={handleClickOutside}>
+    <div className={`${styles.filtersContainer} ${inHeader ? styles.headerFilters : ''}`} onClick={handleClickOutside}>
       {/* Single Unified Filter Dropdown */}
       <div className={styles.filterGroup}>
         <button 

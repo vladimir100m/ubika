@@ -5,10 +5,15 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
+import MapFilters, { FilterOptions } from './MapFilters';
 
-interface HeaderProps {}
+interface HeaderProps {
+  showMapFilters?: boolean;
+  onFilterChange?: (filters: FilterOptions) => void;
+  initialFilters?: Partial<FilterOptions>;
+}
 
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC<HeaderProps> = ({ showMapFilters = false, onFilterChange, initialFilters }) => {
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { data: session, status } = useSession();
@@ -56,6 +61,20 @@ const Header: React.FC<HeaderProps> = () => {
               >
                 <span role="img" aria-label="Sell" style={{ marginRight: '6px' }}>💼</span>Sell
               </button>
+            </div>
+            
+            {/* Right side - Map Filters and Account */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto' }}>
+              {showMapFilters && onFilterChange && (
+                <div style={{ transform: 'scale(0.9)' }}>
+                  <MapFilters
+                    onFilterChange={onFilterChange}
+                    initialFilters={initialFilters}
+                    inHeader={true}
+                  />
+                </div>
+              )}
+              
               {!isLoading && (
                 <React.Fragment>
                   {user ? (
@@ -115,6 +134,15 @@ const Header: React.FC<HeaderProps> = () => {
                     Login
                   </button>
                 )
+              )}
+              {showMapFilters && onFilterChange && (
+                <div style={{ marginLeft: 'auto', transform: 'scale(0.8)' }}>
+                  <MapFilters
+                    onFilterChange={onFilterChange}
+                    initialFilters={initialFilters}
+                    inHeader={true}
+                  />
+                </div>
               )}
             </div>
           </div>
