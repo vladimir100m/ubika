@@ -21,11 +21,9 @@ const RecentSearches: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Get operation from query parameters, default to 'buy'
-  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
     ? router.query.operation as 'buy' | 'rent'
     : 'buy';
 
-  const handleOperationChange = (operation: 'buy' | 'rent') => {
     // Navigate to map page with operation filter
     router.push({
       pathname: '/map',
@@ -90,7 +88,7 @@ const RecentSearches: React.FC = () => {
 
   return (
     <div className={styles.container}>
-  <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
+  <Header />
 
       <section className={styles.featuredProperties}>
         <div className={styles.searchHistoryHeader}>

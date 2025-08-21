@@ -12,21 +12,13 @@ const AccountSettings: React.FC = () => {
   const isLoading = status === 'loading';
   const router = useRouter();
 
-  const handleOperationChange = (operation: 'buy' | 'rent') => {
-    // Navigate to map page with operation filter
-    router.push({
-      pathname: '/map',
-      query: { operation }
-    });
-  };
-
   if (isLoading) return <div>Loading...</div>;
   // Note: useSession doesn't expose an error field; handle auth states via `status`.
 
   if (!user) {
     return (
       <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={handleOperationChange} />
+  <Header />
         <main className={styles.main}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
@@ -67,7 +59,7 @@ const AccountSettings: React.FC = () => {
 
   return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={handleOperationChange} />
+  <Header />
       
       {/* Page Header */}
       <div style={{ 

@@ -11,7 +11,7 @@ export interface SearchFilters {
     bedrooms?: string;
     bathrooms?: string;
     propertyType?: string;
-    operation?: string; // 'sale' or 'rent'
+    operation?: string;
     zone?: string;
     minArea?: string;
     maxArea?: string;
@@ -48,7 +48,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         bedrooms: '',
         bathrooms: '',
         propertyType: '',
-        operation: '',
         zone: '',
         minArea: '',
         maxArea: ''
@@ -130,7 +129,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
             bedrooms: '',
             bathrooms: '',
             propertyType: '',
-            operation: '',
             zone: '',
             minArea: '',
             maxArea: ''
@@ -165,19 +163,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
             {showAdvanced && (
                 <div className={styles.advancedFilters}>
                     <div className={styles.filterRow}>
-                        <div className={styles.filterGroup}>
-                            <label>Operación</label>
-                            <select 
-                                className={styles.filterSelect}
-                                value={filters.operation || ''}
-                                onChange={(e) => handleFilterChange('operation', e.target.value)}
-                            >
-                                <option value="">Cualquiera</option>
-                                <option value="sale">Venta</option>
-                                <option value="rent">Alquiler</option>
-                            </select>
-                        </div>
-
                         <div className={styles.filterGroup}>
                             <label>Tipo de Propiedad</label>
                             <select 

@@ -25,14 +25,6 @@ function Profile() {
   const isLoading = status === 'loading';
   const [sellerProperties, setSellerProperties] = useState<Property[]>([]);
 
-  const handleOperationChange = (operation: 'buy' | 'rent') => {
-    // Navigate to map page with operation filter
-    router.push({
-      pathname: '/map',
-      query: { operation }
-    });
-  };
-
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
     description: '',
@@ -219,7 +211,7 @@ function Profile() {
           }
         }
       `}</style>
-  <Header selectedOperation="buy" onOperationChange={handleOperationChange} />
+  <Header />
       
       {/* Profile Header - Focused on Selling */}
       <div style={{ 

@@ -3,6 +3,7 @@ import styles from '../styles/MapFilters.module.css';
 
 export interface FilterOptions {
   sold: boolean;
+  operation: string;
   priceMin: string;
   priceMax: string;
   beds: string;
@@ -39,6 +40,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   const [searchValue, setSearchValue] = useState(searchLocation);
   const [filters, setFilters] = useState<FilterOptions>({
     sold: initialFilters.sold || false,
+    operation: initialFilters.operation || '',
     priceMin: initialFilters.priceMin || '',
     priceMax: initialFilters.priceMax || '',
     beds: initialFilters.beds || '',
@@ -82,6 +84,13 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   const handleHomeTypeChange = (homeType: string) => {
     const newFilters = { ...filters, homeType };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
+    setActiveDropdown(null);
+  };
+
+  const handleOperationChange = (operation: string) => {
+    const newFilters = { ...filters, operation };
     setFilters(newFilters);
     onFilterChange(newFilters);
     setActiveDropdown(null);
@@ -132,6 +141,36 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   return (
     <div className={styles.filtersContainer} onClick={handleClickOutside}>
+      {/* Operation Filter (Rent/Buy) */}
+      <div className={styles.filterGroup}>
+        <button 
+          className={`${styles.dropdownButton} ${activeDropdown === 'operation' ? styles.active : ''} ${filters.operation ? styles.hasFilter : ''}`}
+          onClick={() => handleDropdownToggle('operation')}
+        >
+          {filters.operation ? (filters.operation === 'rent' ? 'For Rent' : 'For Sale') : 'For Sale / Rent'}
+          {filters.operation && <span className={styles.filterBadge}></span>}
+          <span className={styles.chevron}>▼</span>
+        </button>
+        {activeDropdown === 'operation' && (
+          <div className={styles.dropdown}>
+            <div className={styles.btnGroup}>
+              <button 
+                className={filters.operation === 'buy' ? styles.selected : ''} 
+                onClick={() => handleOperationChange('buy')}
+              >
+                For Sale
+              </button>
+              <button 
+                className={filters.operation === 'rent' ? styles.selected : ''} 
+                onClick={() => handleOperationChange('rent')}
+              >
+                For Rent
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Price Filter */}
       <div className={styles.filterGroup}>
         <button 

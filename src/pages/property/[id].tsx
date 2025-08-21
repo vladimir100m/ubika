@@ -20,7 +20,6 @@ const PropertyDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [selectedOperation, setSelectedOperation] = useState<'buy' | 'rent'>('buy');
 
   // Fetch property data
   useEffect(() => {
@@ -106,7 +105,7 @@ const PropertyDetail: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.container}>
-        <Header selectedOperation={selectedOperation} onOperationChange={setSelectedOperation} />
+        <Header />
         <div className={styles.loading}>
           <div className={styles.spinner}></div>
           <p>Loading property details...</p>
@@ -118,7 +117,7 @@ const PropertyDetail: React.FC = () => {
   if (error || !property) {
     return (
       <div className={styles.container}>
-        <Header selectedOperation={selectedOperation} onOperationChange={setSelectedOperation} />
+        <Header />
         <div className={styles.error}>
           <h1>Property Not Found</h1>
           <p>{error || 'The property you are looking for does not exist.'}</p>
@@ -145,7 +144,7 @@ const PropertyDetail: React.FC = () => {
       </Head>
 
       <div className={styles.container}>
-        <Header selectedOperation={selectedOperation} onOperationChange={setSelectedOperation} />
+        <Header />
         
         <main className={styles.main}>
           {/* Property Images */}

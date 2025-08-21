@@ -15,11 +15,9 @@ const SavedProperties: React.FC = () => {
   const router = useRouter();
 
   // Get operation from query parameters, default to 'buy'
-  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
     ? router.query.operation as 'buy' | 'rent'
     : 'buy';
 
-  const handleOperationChange = (operation: 'buy' | 'rent') => {
     // Navigate to map page with operation filter instead of filtering saved properties
     router.push({
       pathname: '/map',
@@ -60,7 +58,7 @@ const SavedProperties: React.FC = () => {
 
   if (isLoading || loading) return (
     <div className={styles.container}>
-      <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
+      <Header />
       <main className={styles.main}>
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: '18px', color: '#666' }}>Loading...</div>
@@ -74,7 +72,7 @@ const SavedProperties: React.FC = () => {
   if (!user) {
     return (
       <div className={styles.container}>
-        <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
+        <Header />
         <main className={styles.main}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
@@ -115,7 +113,7 @@ const SavedProperties: React.FC = () => {
 
   return (
     <div className={styles.container} style={{ paddingTop: '80px' }}>
-      <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
+      <Header />
       
       {/* Page Header */}
       <div style={{ 

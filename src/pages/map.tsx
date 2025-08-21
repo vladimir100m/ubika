@@ -28,18 +28,6 @@ const MapPage: React.FC = () => {
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [showFloatingGallery, setShowFloatingGallery] = useState(false); // Add floating gallery state
   
-  // Read operation filter from query
-  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
-    ? router.query.operation as 'buy' | 'rent'
-    : 'buy';
-
-  const handleOperationChange = (operation: 'buy' | 'rent') => {
-    router.push({
-      pathname: '/map',
-      query: { ...router.query, operation }
-    });
-  };
-  
   const isMobile = useMediaQuery('(max-width: 768px)');
   
   // Create a ref object for each property card
@@ -450,12 +438,12 @@ const MapPage: React.FC = () => {
     const query: any = { address };
     
     if (filters) {
+      if (filters.operation) query.operation = filters.operation;
       if (filters.minPrice) query.minPrice = filters.minPrice;
       if (filters.maxPrice) query.maxPrice = filters.maxPrice;
       if (filters.bedrooms) query.bedrooms = filters.bedrooms;
       if (filters.bathrooms) query.bathrooms = filters.bathrooms;
       if (filters.propertyType) query.propertyType = filters.propertyType;
-      if (filters.operation) query.operation = filters.operation;
       if (filters.zone) query.zone = filters.zone;
       if (filters.minArea) query.minArea = filters.minArea;
       if (filters.maxArea) query.maxArea = filters.maxArea;
@@ -470,10 +458,7 @@ const MapPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-  <Header 
-    selectedOperation={selectedOperation} 
-    onOperationChange={handleOperationChange}
-  />
+  <Header />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', paddingTop: '80px' }}>
         {/* Enhanced Filter Bar - Zillow Style */}
         <div style={{ marginBottom: '1rem', zIndex: 5 }}>
@@ -482,8 +467,7 @@ const MapPage: React.FC = () => {
               // Build query object from filters
               const query: any = {};
               
-              if (filters.forSale) query.operation = 'buy';
-              if (filters.forRent) query.operation = 'rent';
+              if (filters.operation) query.operation = filters.operation;
               if (filters.priceMin) query.minPrice = filters.priceMin;
               if (filters.priceMax) query.maxPrice = filters.priceMax;
               if (filters.beds) query.bedrooms = filters.beds;
@@ -510,8 +494,7 @@ const MapPage: React.FC = () => {
               // You can add logic here to clear any drawn boundaries on the map
             }}
             initialFilters={{
-              forRent: router.query.operation === 'rent',
-              forSale: router.query.operation === 'buy' || router.query.operation === 'sale',
+              operation: router.query.operation as string || '',
               priceMin: router.query.minPrice as string || '',
               priceMax: router.query.maxPrice as string || '',
               beds: router.query.bedrooms as string || '',

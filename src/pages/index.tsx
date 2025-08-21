@@ -17,19 +17,6 @@ const Home: React.FC = () => {
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Get operation from query parameters, default to 'buy'
-  const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
-    ? router.query.operation as 'buy' | 'rent'
-    : 'buy';
-
-  const handleOperationChange = (operation: 'buy' | 'rent') => {
-    // Navigate to map page with operation filter instead of filtering home page
-    router.push({
-      pathname: '/map',
-      query: { operation }
-    });
-  };
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -137,7 +124,7 @@ const Home: React.FC = () => {
 
   return (
     <div className={styles.container} style={{ paddingTop: '80px' }}>
-      <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
+      <Header />
       
       {/* Hero Section */}
       <div className={styles.heroSection}>

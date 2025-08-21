@@ -6,12 +6,9 @@ import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
 
-interface HeaderProps {
-  selectedOperation: 'buy' | 'rent';
-  onOperationChange: (operation: 'buy' | 'rent') => void;
-}
+interface HeaderProps {}
 
-const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange }) => {
+const Header: React.FC<HeaderProps> = () => {
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { data: session, status } = useSession();
@@ -40,21 +37,17 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
             <div className={styles.navLinks} style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-start' }}>
               <button
                 className={styles.navItem}
-                style={{ background: selectedOperation === 'rent' ? '#fff' : 'none', color: selectedOperation === 'rent' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
-                onClick={() => {
-                  onOperationChange('rent');
-                }}
+                style={{ background: 'none', color: '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
+                onClick={() => router.push('/map?operation=rent')}
               >
-                <span role="img" aria-label="Rent" style={{ marginRight: '6px' }}>🏡</span>Rent
+                <span role="img" aria-label="Rent" style={{ marginRight: '6px' }}>🏠</span>Rent
               </button>
               <button
                 className={styles.navItem}
-                style={{ background: selectedOperation === 'buy' ? '#fff' : 'none', color: selectedOperation === 'buy' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
-                onClick={() => {
-                  onOperationChange('buy');
-                }}
+                style={{ background: 'none', color: '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
+                onClick={() => router.push('/map?operation=buy')}
               >
-                <span role="img" aria-label="Buy" style={{ marginRight: '6px' }}>🏠</span>Buy
+                <span role="img" aria-label="Buy" style={{ marginRight: '6px' }}>🏡</span>Buy
               </button>
               <button
                 className={styles.navItem}
@@ -89,14 +82,14 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
           <div className={styles.mobileNavContainer}>
             <div className={styles.mobileNavScroll}>
               <button
-                className={`${styles.mobilePill} ${selectedOperation === 'rent' ? styles.mobilePillActive : ''}`}
-                onClick={() => onOperationChange('rent')}
+                className={styles.mobilePill}
+                onClick={() => router.push('/map?operation=rent')}
               >
                 Rent
               </button>
               <button
-                className={`${styles.mobilePill} ${selectedOperation === 'buy' ? styles.mobilePillActive : ''}`}
-                onClick={() => onOperationChange('buy')}
+                className={styles.mobilePill}
+                onClick={() => router.push('/map?operation=buy')}
               >
                 Buy
               </button>
