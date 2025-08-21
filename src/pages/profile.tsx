@@ -2,7 +2,6 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
-import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
 import { Property, PropertyFormData } from '../types';
 
@@ -545,23 +544,18 @@ function Profile() {
                     <div className="property-grid">
                       {savedProperties.map((property) => (
                         <div key={property.id} className="modern-card">
-                          <PropertyCard 
-                            id={property.id}
-                            title={property.title}
-                            image_url={property.image_url}
-                            description={property.description}
-                            price={property.price}
-                            rooms={property.rooms}
-                            bathrooms={property.bathrooms}
-                            address={property.address}
-                            squareMeters={property.squareMeters}
-                            yearBuilt={property.yearBuilt}
-                            latitude={property.latitude}
-                            longitude={property.longitude}
-                            operation_status_id={property.operation_status_id}
-                            operation_status={property.operation_status}
-                            operation_status_display={property.operation_status_display}
-                          />
+                          <div style={{ 
+                            padding: '20px', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '8px',
+                            backgroundColor: '#fff'
+                          }}>
+                            <h3>{property.description}</h3>
+                            <p>Price: {property.price}</p>
+                            <p>{property.address}</p>
+                            <p>Rooms: {property.rooms}</p>
+                            <p>Bathrooms: {property.bathrooms}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1052,22 +1046,18 @@ function Profile() {
                           <div className="property-grid">
                             {sellerProperties.map((property) => (
                               <div key={property.id} style={{ position: 'relative' }} className="modern-card">
-                                <PropertyCard 
-                                  id={property.id}
-                                  image_url={property.image_url}
-                                  description={property.description}
-                                  price={property.price}
-                                  rooms={property.rooms}
-                                  bathrooms={property.bathrooms}
-                                  address={property.address}
-                                  squareMeters={property.squareMeters}
-                                  yearBuilt={property.yearBuilt}
-                                  latitude={property.latitude}
-                                  longitude={property.longitude}
-                                  operation_status_id={property.operation_status_id}
-                                  operation_status={property.operation_status}
-                                  operation_status_display={property.operation_status_display}
-                                />
+                                <div style={{ 
+                                  padding: '20px', 
+                                  border: '1px solid #ddd', 
+                                  borderRadius: '8px',
+                                  backgroundColor: '#fff'
+                                }}>
+                                  <h3>{property.description}</h3>
+                                  <p>Price: {property.price}</p>
+                                  <p>{property.address}</p>
+                                  <p>Rooms: {property.rooms}</p>
+                                  <p>Bathrooms: {property.bathrooms}</p>
+                                </div>
                                 <button
                                   onClick={() => handleDeleteProperty(property.id)}
                                   style={{

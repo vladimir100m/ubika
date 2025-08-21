@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
-import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
 import { getSavedProperties, unsaveProperty, type SavedProperty } from '../utils/savedPropertiesApi';
 
@@ -38,7 +37,7 @@ const SavedProperties: React.FC = () => {
     }
   }, [user, isLoading]);
 
-  // Handle favorite toggle from PropertyCard
+  // Handle favorite toggle
   const handleFavoriteToggle = async (propertyId: number, newStatus: boolean) => {
     if (!newStatus) {
       setSavedProperties(prev => prev.filter(prop => prop.id !== propertyId));
@@ -306,26 +305,32 @@ const SavedProperties: React.FC = () => {
               }}>
                 {savedProperties.map((property) => (
                   <div key={property.id} style={{ position: 'relative' }}>
-                    <PropertyCard 
-                      id={property.id}
-                      image_url={property.image_url}
-                      description={property.description}
-                      price={property.price}
-                      rooms={property.rooms}
-                      bathrooms={property.bathrooms}
-                      address={property.address}
-                      squareMeters={property.squareMeters}
-                      yearBuilt={property.yearBuilt}
-                      latitude={property.latitude}
-                      longitude={property.longitude}
-                      operation_status_id={property.operation_status_id}
-                      operation_status={property.operation_status}
-                      operation_status_display={property.operation_status_display}
-                      onFavoriteToggle={handleFavoriteToggle}
-                      isFavorite={true}
-                    />
-                    
-                    {/* Remove from favorites button */}
+                    <div style={{ 
+                      padding: '20px', 
+                      border: '1px solid #ddd', 
+                      borderRadius: '8px',
+                      backgroundColor: '#fff'
+                    }}>
+                      <h3>{property.description}</h3>
+                      <p>Price: {property.price}</p>
+                      <p>{property.address}</p>
+                      <p>Rooms: {property.rooms}</p>
+                      <p>Bathrooms: {property.bathrooms}</p>
+                      <button 
+                        onClick={() => handleFavoriteToggle(property.id, false)}
+                        style={{
+                          marginTop: '10px',
+                          padding: '5px 10px',
+                          backgroundColor: '#ff4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Remove from favorites
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

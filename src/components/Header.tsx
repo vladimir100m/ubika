@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import styles from '../styles/Home.module.css';
@@ -50,7 +49,15 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
     <header className={styles.navbar}>
       <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
         <div className={styles.logo} onClick={() => router.push('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '32px' }}>
-          <Image src="/ubika-logo.png" alt="Ubika Logo" width={40} height={40} priority />
+          <img 
+            src="/ubika-logo.png" 
+            alt="Ubika Logo" 
+            width={40} 
+            height={40}
+            loading="eager"
+            fetchPriority="high"
+            style={{ display: 'block' }}
+          />
           <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
         </div>
         <nav className={styles.navigation} style={{ flex: 1 }}>

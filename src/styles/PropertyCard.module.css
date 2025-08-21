@@ -1,28 +1,25 @@
-/* Modern Property Card Design */
-.card {
+.propertyCard {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
   height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  position: relative;
 }
 
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  border-color: rgba(0, 116, 228, 0.2);
+.propertyCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+/* Image Section */
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 240px;
+  height: 250px;
   overflow: hidden;
 }
 
@@ -30,1503 +27,353 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease;
 }
 
-.card:hover .propertyImage {
-  transform: scale(1.08);
+.propertyCard:hover .propertyImage {
+  transform: scale(1.05);
 }
 
-.priceOverlay {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 3;
-}
-
-.priceTag {
-  background: linear-gradient(135deg, #0074e4 0%, #0099ff 100%);
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 8px 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 116, 228, 0.3);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.favoriteButton {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 3;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.favoriteButton:hover {
-  transform: scale(1.1);
-  background: white;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.favoriteButton.favorited {
-  background: rgba(255, 71, 87, 0.1);
-  border: 2px solid #ff4757;
-}
-
-.statusBadge {
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  backdrop-filter: blur(10px);
-}
-
-.content {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  gap: 16px;
-}
-
-.propertyHeader {
-  margin-bottom: 4px;
-}
-
-.title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
-}
-
-.address {
-  font-size: 0.95rem;
-  color: #666;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.propertySpecs {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.spec {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #555;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.spec svg {
-  opacity: 0.7;
-}
-
-.description {
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.cardFooter {
-  margin-top: auto;
-}
-
-.propertyActions {
-  display: flex;
-  gap: 12px;
-}
-
-.contactButton {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: transparent;
-  border: 2px solid #e1e7eb;
-  color: #555;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.contactButton:hover {
-  border-color: #0074e4;
-  color: #0074e4;
-  background: rgba(0, 116, 228, 0.05);
-}
-
-.viewButton {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #0074e4 0%, #0099ff 100%);
-  color: white;
-  border: none;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.viewButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 116, 228, 0.3);
-}
-
-/* Mobile Responsive Design */
-@media (max-width: 768px) {
-  .card {
-    margin-bottom: 16px;
-  }
-  
-  .imageContainer {
-    height: 200px;
-  }
-  
-  .content {
-    padding: 20px;
-    gap: 12px;
-  }
-  
-  .title {
-    font-size: 1.1rem;
-  }
-  
-  .propertySpecs {
-    gap: 16px;
-  }
-  
-  .propertyActions {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .card {
-    margin-bottom: 12px;
-  }
-  
-  .imageContainer {
-    height: 180px;
-  }
-  
-  .content {
-    padding: 16px;
-    gap: 10px;
-  }
-  
-  .title {
-    font-size: 1rem;
-  }
-  
-  .priceTag {
-    font-size: 1rem;
-    padding: 6px 12px;
-  }
-  
-  .favoriteButton {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-/* Expandable content for mobile cards */
-.expandedContent {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.expandedContent.show {
-  max-height: 500px; /* Adjust as needed */
-}
-
-.favoriteButton:hover {
-  transform: scale(1.1);
-  background: white;
-}
-
-.details {
-  padding: 16px;
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.price {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: var(--primary);
-  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.propertySpecs {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 1rem;
-  color: var(--text-secondary);
-}
-
-.bulletSeparator {
-  margin: 0 6px;
-  color: var(--border-color);
-}
-
-.address {
-  font-size: 0.95rem;
-  margin-bottom: 12px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.cardFooter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.viewDetailsButton {
-  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  box-shadow: 0 2px 4px rgba(26, 115, 232, 0.2);
-}
-
-.viewDetailsButton:hover {
-  box-shadow: 0 4px 8px rgba(26, 115, 232, 0.3);
-  transform: translateY(-2px);
-}
-
-.viewDetailsButton:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  z-index: -1;
-}
-
-.viewDetailsButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 116, 228, 0.3);
-}
-
-.viewDetailsButton:hover:before {
-  left: 0;
-}
-
-.saveButton {
-  background: transparent;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.savedButton {
-  background: rgba(255, 91, 91, 0.1);
-  color: #ff5b5b;
-}
-
-.saveButton:hover {
-  transform: scale(1.1);
-}
-
-.shareButton {
-  background: transparent;
-  color: #555;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.shareButton:hover {
-  background: #f5f5f5;
-  transform: rotate(15deg) scale(1.1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Dialog styles - Zillow inspired */
-.dialogOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  overflow-y: auto;
-}
-
-.zillowDialog {
-  background: #fff;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 1000px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
-}
-
-.zillowDialog::-webkit-scrollbar {
-  width: 8px;
-}
-
-.zillowDialog::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.zillowDialog::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 10px;
-}
-
-.dialogHeader {
-  padding: 20px 24px;
-  border-bottom: 1px solid #e1e7eb;
-  display: flex;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 10;
-}
-
-.dialogHeaderContent {
-  flex: 1;
-}
-
-.dialogPrice {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0 0 8px 0;
-  color: #2a2a33;
-}
-
-.dialogAddress {
-  font-size: 1.2rem;
-  margin: 0 0 8px 0;
-  color: #2a2a33;
-}
-
-.dialogQuickInfo {
-  display: flex;
-  align-items: center;
-  font-size: 1rem;
-  color: #5a6a7a;
-}
-
-.dialogActions {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.actionButton {
-  background: transparent;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #2a2a33;
-}
-
-.actionButton:hover {
-  background: #f5f5f5;
-}
-
-.savedActionButton {
-  background: rgba(255, 91, 91, 0.1);
-  color: #ff5b5b;
-  border-color: #ffcece;
-}
-
-.closeDialogButton {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #666;
-  padding: 4px 8px;
-}
-
-.closeDialogButton:hover {
-  color: #000;
-}
-
-.dialogTabs {
-  display: flex;
-  border-bottom: 1px solid #e1e7eb;
-  background: white;
-  position: sticky;
-  top: 76px;
-  z-index: 9;
-}
-
-.tabButton {
-  padding: 16px 24px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  color: #5a6a7a;
-  border-bottom: 3px solid transparent;
-}
-
-.activeTab {
-  color: #0074e4;
-  border-bottom: 3px solid #0074e4;
-  font-weight: bold;
-}
-
-.dialogContent {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .dialogContent {
-    padding: 16px;
-  }
-}
-
-/* Image gallery styles - Enhanced */
-.imageGalleryContainer {
-  margin-bottom: 30px;
-  width: 100%;
-}
-
-.mainImageContainer {
-  position: relative;
-  width: 100%;
-  height: 450px;
-  margin-bottom: 15px;
-  cursor: pointer;
-  overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.mainGalleryImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: all 0.5s ease;
-  display: block;
-}
-
-.expandedImage {
-  max-height: 80vh;
-}
-
-.imageControls {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  display: flex;
-  gap: 10px;
-}
-
-.minimizeButton, .expandButton {
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.minimizeButton:hover, .expandButton:hover {
-  background: rgba(0, 0, 0, 0.9);
-}
-
-.galleryNavButtons {
+/* Image Navigation */
+.imageNav {
   position: absolute;
   top: 50%;
-  left: 0;
-  right: 0;
   transform: translateY(-50%);
-  display: flex;
-  justify-content: space-between;
-  padding: 0 20px;
-  pointer-events: none;
-}
-
-.galleryNavButton {
-  background: rgba(255, 255, 255, 0.8);
-  color: #333;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 1.2rem;
-  cursor: pointer;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.galleryNavButton:hover {
-  background: white;
-  transform: scale(1.1);
-}
-
-.thumbnailsContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
-  padding-bottom: 15px;
-  max-width: 100%;
-  margin: 0 auto;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
-  padding: 10px 0;
-
-  /* Scrollbar styles moved to top-level selectors below to satisfy CSS Modules purity */
-
-  /* Media queries for responsive behavior */
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 6px;
-  }
-  
-  @media (max-width: 480px) {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 4px;
-  }
-}
-
-/* For WebKit browsers - scoped to the local class */
-.thumbnailsContainer::-webkit-scrollbar {
-  height: 6px;
-}
-.thumbnailsContainer::-webkit-scrollbar-track {
-  background: transparent;
-}
-.thumbnailsContainer::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 10px;
-}
-
-.thumbnailWrapper {
-  aspect-ratio: 1 / 1;
-  border-radius: 6px;
-  overflow: hidden;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
 }
 
-.thumbnailWrapper::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.1);
+.propertyCard:hover .imageNav {
   opacity: 1;
-  transition: opacity 0.2s ease;
 }
 
-.thumbnailWrapper:hover::after {
-  opacity: 0;
+.imageNav:hover {
+  background: rgba(0, 0, 0, 0.7);
 }
 
-.activeThumbnail {
-  border-color: #0074e4;
-  transform: scale(1.05);
+.prevBtn {
+  left: 12px;
 }
 
-.activeThumbnail::after {
-  opacity: 0;
+.nextBtn {
+  right: 12px;
 }
 
-.thumbnailImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.thumbnailWrapper:hover .thumbnailImage {
-  transform: scale(1.1);
-}
-
+/* Image Counter */
 .imageCounter {
   position: absolute;
-  top: 15px;
-  left: 15px;
+  bottom: 12px;
+  left: 12px;
   background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 20px;
-  padding: 5px 10px;
-  font-size: 0.8rem;
-}
-
-/* Overview content grid - Improved layout */
-.overviewContentGrid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
-  margin-top: 20px;
-}
-
-.propertyMainDetails {
-  padding-right: 20px;
-  border-right: 1px solid #e1e7eb;
-}
-
-.propertyAsideDetails {
-  padding-left: 5px;
-}
-
-.sectionTitle {
-  font-size: 1.4rem;
-  font-weight: bold;
-  margin-bottom: 16px;
-  color: #2a2a33;
-  border-bottom: 1px solid #e1e7eb;
-  padding-bottom: 8px;
-  position: relative;
-}
-
-.sectionTitle::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 50px;
-  height: 3px;
-  background-color: #0074e4;
-}
-
-.propertyDescription {
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 24px;
-  color: #2a2a33;
-}
-
-/* Enhanced details grid */
-.detailsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-  background-color: #f7f9fc;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.detailItem {
-  display: flex;
-  flex-direction: column;
-}
-
-.detailLabel {
-  font-size: 0.9rem;
-  color: #5a6a7a;
-  margin-bottom: 5px;
-}
-
-.detailValue {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #2a2a33;
-}
-
-/* Features section */
-.featuresSection {
-  margin-bottom: 30px;
-}
-
-.featuresList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 24px;
-}
-
-.featureCategory h4 {
-  font-size: 1.1rem;
-  color: #2a2a33;
-  margin-bottom: 12px;
-}
-
-.featureCategory ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.featureCategory li {
-  padding: 6px 0;
-  color: #5a6a7a;
-  display: flex;
-  align-items: center;
-}
-
-.featureCategory li:before {
-  content: "✓";
-  color: #0074e4;
-  margin-right: 8px;
-}
-
-/* Map preview */
-.mapPreviewContainer {
-  margin-bottom: 24px;
-}
-
-.smallMapContainer {
-  height: 200px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.viewMoreButton {
-  background: transparent;
-  border: 1px solid #ddd;
-  width: 100%;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #0074e4;
-  font-size: 0.9rem;
-}
-
-.viewMoreButton:hover {
-  background: #f5f5f5;
-}
-
-/* Contact section */
-.contactSection {
-  background: #f7f9fc;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-}
-
-.contactButton {
-  width: 100%;
-  background: #0074e4;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 10px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-bottom: 10px;
-  transition: background 0.2s ease;
-}
-
-.contactButton:hover {
-  background: #0061c0;
-}
-
-/* Price history */
-.priceHistoryContainer {
-  margin-bottom: 24px;
-}
-
-.priceHistoryItem {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.priceHistoryDate {
-  color: #5a6a7a;
-}
-
-.priceHistoryPrice {
-  font-weight: bold;
-  color: #2a2a33;
-}
-
-/* Full photos gallery */
-.fullPhotoGallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-  position: relative;
-}
-
-.galleryImageWrapper {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.fullGalleryImage {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.galleryImageWrapper:hover .fullGalleryImage {
-  transform: scale(1.05);
-}
-
-.photoInfo {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 8px;
-  font-size: 0.8rem;
-}
-
-/* Lightbox */
-.lightbox {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
-}
-
-.lightboxContent {
-  position: relative;
-  max-width: 90%;
-  max-height: 90%;
-}
-
-.lightboxImage {
-  max-width: 100%;
-  max-height: 80vh;
-  display: block;
-}
-
-.lightboxClose {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.lightboxNav {
-  position: absolute;
-  bottom: -40px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-
-.lightboxNavButton {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  margin: 0 15px;
-}
-
-/* Map tab */
-.fullMapContainer {
-  position: relative;
-  height: 500px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.mapOverlay {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-}
-
-.locationPin {
-  font-size: 1.4rem;
-  margin-right: 8px;
-}
-
-.locationInfo p {
-  margin: 0;
-  font-weight: bold;
-  color: #2a2a33;
-}
-
-.noMapData {
-  height: 300px;
-  background: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  margin-bottom: 24px;
-}
-
-/* Neighborhood info */
-.neighborhoodInfo {
-  margin-bottom: 30px;
-}
-
-.neighborhoodGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.neighborhoodItem h4 {
-  font-size: 1.1rem;
-  color: #2a2a33;
-  margin-bottom: 12px;
-}
-
-.neighborhoodItem ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.neighborhoodItem li {
-  padding: 6px 0;
-  color: #5a6a7a;
-}
-
-.dialogFooter {
-  padding: 16px 24px;
-  border-top: 1px solid #e1e7eb;
-  text-align: center;
-}
-
-.closeButton {
-  background: #f5f5f5;
-  color: #333;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.closeButton:hover {
-  background: #e5e5e5;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .zillowDialog {
-    width: 95%;
-    max-width: 95%;
-  }
-  
-  .overviewContentGrid {
-    grid-template-columns: 3fr 2fr;
-    gap: 20px;
-  }
-  
-  .mainImageContainer {
-    height: 400px;
-  }
-}
-
-@media (max-width: 992px) {
-  .overviewContentGrid {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-  
-  .propertyMainDetails {
-    padding-right: 0;
-    border-right: none;
-  }
-  
-  .propertyAsideDetails {
-    padding-left: 0;
-  }
-  
-  .featuresSection .featuresList {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-  
-  .mainImageContainer {
-    height: 350px;
-  }
-}
-
-@media (max-width: 768px) {
-  .zillowDialog {
-    width: 100%;
-    max-width: 100%;
-    height: 100%;
-    max-height: 100%;
-    border-radius: 0;
-  }
-  
-  .dialogHeader {
-    flex-direction: column;
-  }
-  
-  .dialogActions {
-    margin-top: 16px;
-  }
-  
-  .dialogTabs {
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 0 8px;
-  }
-  
-  .tabButton {
-    padding: 12px 16px;
-    font-size: 0.9rem;
-  }
-  
-  .dialogContent {
-    padding: 16px;
-  }
-  
-  .overviewContentGrid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .propertyMainDetails {
-    padding-right: 0;
-    border-right: none;
-    order: 1;
-  }
-  
-  .propertyAsideDetails {
-    padding-left: 0;
-    order: 0;
-    margin-bottom: 20px;
-  }
-  
-  .detailsGrid {
-    grid-template-columns: 1fr 1fr;
-    padding: 15px;
-  }
-  
-  .dialogPrice {
-    font-size: 1.5rem;
-  }
-  
-  .dialogAddress {
-    font-size: 1rem;
-  }
-  
-  .dialogQuickInfo {
-    font-size: 0.9rem;
-  }
-  
-  .sectionTitle {
-    font-size: 1.2rem;
-  }
-  
-  .mainImageContainer {
-    height: 300px;
-  }
-  
-  /* Card responsive adjustments */
-  .card {
-    min-height: 300px;
-  }
-  
-  .imageContainer {
-    height: 180px;
-  }
-  
-  .price {
-    font-size: 1.3rem;
-  }
-  
-  .propertySpecs {
-    font-size: 0.9rem;
-  }
-  
-  .address {
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-  }
-  
-  .viewDetailsButton {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-  
-  .shareButton {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .statusTag {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-  }
-  
-  /* Grid view adjustments for smaller screens */
-  .fullPhotoGallery {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-  
-  .neighborhoodGrid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  .dialogHeader {
-    padding: 15px;
-  }
-  
-  .dialogContent {
-    padding: 12px;
-  }
-  
-  .tabButton {
-    padding: 10px 12px;
-    font-size: 0.85rem;
-  }
-  
-  .detailsGrid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .actionButton {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-  
-  .closeDialogButton {
-    font-size: 1rem;
-  }
-  
-  .dialogPrice {
-    font-size: 1.3rem;
-  }
-  
-  .dialogFooter {
-    padding: 12px;
-  }
-  
-  .closeButton {
-    padding: 10px 20px;
-  }
-}
-
-/* Responsive card adjustments */
-@media (max-width: 768px) {
-  .card {
-    min-height: 300px;
-  }
-  
-  .imageContainer {
-    height: 180px;
-  }
-  
-  .price {
-    font-size: 1.3rem;
-  }
-  
-  .propertySpecs {
-    font-size: 0.9rem;
-  }
-  
-  .address {
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-  }
-  
-  .viewDetailsButton {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-  
-  .shareButton {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .statusTag {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .card {
-    min-height: 280px;
-  }
-  
-  .imageContainer {
-    height: 160px;
-  }
-  
-  .fullPhotoGallery {
-    grid-template-columns: 1fr;
-  }
-  
-  .galleryImageWrapper {
-    height: 180px;
-  }
-  
-  .fullGalleryImage {
-    height: 180px;
-  }
-  
-  .featuresSection .featuresList {
-    grid-template-columns: 1fr;
-  }
-  
-  .neighborhoodGrid {
-    grid-template-columns: 1fr;
-  }
-  
-  .mainImageContainer {
-    height: 250px;
-  }
-  
-  .thumbnailsContainer {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 5px;
-  }
-}
-
-/* Extra small devices */
-@media (max-width: 360px) {
-  .dialogQuickInfo {
-    flex-wrap: wrap;
-  }
-  
-  .bulletSeparator {
-    margin: 0 4px;
-  }
-  
-  .dialogActions {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .actionButton {
-    flex: 1;
-    min-width: 80px;
-    justify-content: center;
-  }
-  
-  .mainImageContainer {
-    height: 200px;
-  }
-  
-  .imageContainer {
-    height: 140px;
-  }
-  
-  .card {
-    min-height: 260px;
-  }
-  
-  .price {
-    font-size: 1.2rem;
-  }
-  
-  .propertySpecs {
-    font-size: 0.8rem;
-  }
-}
-
-/* Enhanced operation type styling */
-.operationType {
-  background: rgba(255, 255, 255, 0.15);
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  margin-top: 4px;
-  display: inline-block;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Enhanced description styling */
-.description {
-  margin: 12px 0;
-  padding: 12px 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.descriptionText {
-  color: #666;
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Enhanced property type styling */
-.propertyType {
-  color: #0073e6;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-/* Enhanced action buttons */
-.actionButtons {
+/* Favorite Button */
+.favoriteBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
 }
 
-.viewDetailsButton {
+.favoriteBtn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.favoriteActive {
+  background: rgba(231, 76, 60, 0.9);
+}
+
+/* Status Badge */
+.statusBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sale {
+  background: #27ae60;
+  color: white;
+}
+
+.rent {
+  background: #3498db;
+  color: white;
+}
+
+.not_available {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Content Section */
+.content {
+  padding: 20px;
   flex: 1;
-  background: #0073e6;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Price */
+.price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.period {
+  font-size: 16px;
+  font-weight: 400;
+  color: #7f8c8d;
+}
+
+/* Title */
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Property Details */
+.details {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #34495e;
+  font-weight: 500;
+}
+
+.detailIcon {
+  font-size: 16px;
+}
+
+/* Location */
+.location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.locationIcon {
+  font-size: 14px;
+}
+
+/* Property Type */
+.propertyType {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #34495e;
+  font-weight: 500;
+}
+
+.typeIcon {
+  font-size: 14px;
+}
+
+/* Description */
+.description {
+  margin-bottom: 16px;
+}
+
+.description p {
+  font-size: 14px;
+  color: #7f8c8d;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Additional Details */
+.additionalDetails {
+  margin-bottom: 16px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.value {
+  color: #34495e;
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.viewDetailsBtn {
+  flex: 1;
+  background: #3498db;
   color: white;
   border: none;
-  padding: 10px 16px;
   border-radius: 6px;
+  padding: 12px 16px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.3s ease;
 }
 
-.viewDetailsButton:hover {
-  background: #005bb5;
-  transform: translateY(-1px);
+.viewDetailsBtn:hover {
+  background: #2980b9;
 }
 
-.contactButton {
+.contactBtn {
   flex: 1;
   background: transparent;
-  color: #0073e6;
-  border: 1px solid #0073e6;
-  padding: 10px 16px;
+  color: #3498db;
+  border: 2px solid #3498db;
   border-radius: 6px;
+  padding: 10px 16px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-.contactButton:hover {
-  background: #00  b6;
-  color: whit}
+.contactBtn:hover {
+  background: #3498db;
+  color: white;
+}
 
-.descriptionText {
-  color: #66}
+/* Responsive Design */
+@media (max-width: 768px) {
+  .propertyCard {
+    margin-bottom: 16px;
+  }
+
+  .imageContainer {
+    height: 200px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .price {
+    font-size: 20px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .details {
+    gap: 12px;
+  }
+
+  .detailItem {
+    font-size: 13px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .imageNav {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .prevBtn {
+    left: 8px;
+  }
+
+  .nextBtn {
+    right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .details {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detailItem {
+    justify-content: space-between;
+  }
+
+  .imageContainer {
+    height: 180px;
+  }
+}

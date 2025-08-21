@@ -122,7 +122,7 @@
   gap: 30px;
 }
 
-/* Old property card styles removed - now using standardized PropertyCard component */
+/* Old property card styles removed */
 
 /* Property Detail Floating Window Styles */
 .propertyDetailOverlay {
@@ -1663,4 +1663,109 @@
 .deleteSearchButton:hover {
   color: #e53e3e;
   background-color: #fff5f5;
+}
+
+/* Properties Grid Styles */
+.propertiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.emptyState h3 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 12px;
+}
+
+.emptyState p {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ecf0f1;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.errorMessage {
+  font-size: 16px;
+  color: #e74c3c;
+  margin-bottom: 20px;
+}
+
+.retryButton {
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.retryButton:hover {
+  background: #2980b9;
+}
+
+/* Responsive Grid */
+@media (max-width: 768px) {
+  .propertiesGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .featuredProperties {
+    padding: 20px;
+  }
+  
+  .featuredProperties h2 {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+  }
 }

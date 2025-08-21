@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
-import { PropertyCard } from '../components';
 import { SearchFilters } from '../components/SearchBar';
 import MapFilters  from '../components/MapFilters';
 import axios from 'axios';
@@ -192,6 +191,7 @@ const MapPage: React.FC = () => {
     const loader = new Loader({
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
       version: 'weekly',
+      libraries: ['places'],
     });
 
     loader.load().then(() => {
@@ -630,8 +630,11 @@ const MapPage: React.FC = () => {
                     style={{ cursor: 'pointer' }}
                     ref={el => { setPropertyRef(el, property.id); }}
                   >
-                    <PropertyCard {...property} onFavoriteToggle={handleFavoriteToggle} isFavorite={savedPropertyIds.has(property.id)} onClick={() => handlePropertyClick(property)} />
-                
+                    <div style={{ padding: '10px', border: '1px solid #ddd', margin: '5px' }}>
+                      <h3>{property.description}</h3>
+                      <p>Price: ${property.price}</p>
+                      <p>{property.address}</p>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -888,7 +891,11 @@ const MapPage: React.FC = () => {
                         setDrawerOpen(false);
                       }}
                     >
-                      <PropertyCard {...property}  onFavoriteToggle={handleFavoriteToggle} isFavorite={savedPropertyIds.has(property.id)} />
+                      <div style={{ padding: '10px' }}>
+                        <h3>{property.description}</h3>
+                        <p>Price: ${property.price}</p>
+                        <p>{property.address}</p>
+                      </div>
                     </div>
                   ))
                 ) : (

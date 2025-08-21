@@ -5,9 +5,7 @@ import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
 import { Property } from '../types'; // Import Property type
-import Carousel from 'react-multi-carousel';
-import 'react-multi-carousel/lib/styles.css';
-import Header from 'components/Header';
+import Header from '../components/Header';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 const Home: React.FC = () => {
@@ -53,6 +51,12 @@ const Home: React.FC = () => {
   useEffect(() => {
     // Load saved properties status if user is authenticated
     const loadSavedStatus = async () => {
+      // Skip if no user or in development without proper database
+      if (!user) {
+        setSavedPropertyIds(new Set());
+        return;
+      }
+
       try {
         const savedStatus = await checkSavedStatus(properties.map(p => p.id));
         // `checkSavedStatus` returns an object map { [propertyId]: boolean }
@@ -64,12 +68,11 @@ const Home: React.FC = () => {
         }
         setSavedPropertyIds(savedIds);
       } catch (error) {
-        console.error('Error loading saved properties status:', error);
-        
-        // Check if it's an auth error
-        if (error instanceof Error && error.message.includes('Unauthorized')) {
-          // Just set empty set - no need to redirect as this is a background load
-          console.log('User not authenticated for saved properties check');
+        // Silently handle errors in development to avoid console spam
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Saved properties API not available in development');
+        } else {
+          console.error('Error loading saved properties status:', error);
         }
         
         setSavedPropertyIds(new Set());
@@ -81,7 +84,7 @@ const Home: React.FC = () => {
     if (!isLoading && properties.length > 0) {
       loadSavedStatus();
     }
-  }, [isLoading, properties ]);
+  }, [isLoading, properties, user ]);
 
   // Function to handle property card click
   const handlePropertyClick = (propertyId: number) => {
@@ -93,34 +96,28 @@ const Home: React.FC = () => {
 
   // Function to toggle favorite status using database API
   const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    setSavedPropertyIds(prevSavedIds => {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      const newSavedIds = new Set(prevSavedIds);
-      if (isCurrentlySaved) {
-        newSavedIds.delete(propertyId);
-      } else {
-        newSavedIds.add(propertyId);
-      }
-      return newSavedIds;
-    });
-  };
+    if (!user) {
+      // Redirect to login if user is not authenticated
+      router.push('/auth/signin');
+      return;
+    }
 
-  const responsive = {
-    superLargeDesktop: {
-      breakpoint: { max: 4000, min: 1024 },
-      items: 5
-    },
-    desktop: {
-      breakpoint: { max: 1024, min: 768 },
-      items: 3
-    },
-    tablet: {
-      breakpoint: { max: 768, min: 464 },
-      items: 2
-    },
-    mobile: {
-      breakpoint: { max: 464, min: 0 },
-      items: 1
+    try {
+      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
+      await toggleSaveProperty(propertyId, !isCurrentlySaved);
+      
+      // Update local state
+      setSavedPropertyIds(prevSavedIds => {
+        const newSavedIds = new Set(prevSavedIds);
+        if (isCurrentlySaved) {
+          newSavedIds.delete(propertyId);
+        } else {
+          newSavedIds.add(propertyId);
+        }
+        return newSavedIds;
+      });
+    } catch (error) {
+      console.error('Error toggling favorite status:', error);
     }
   };
 
@@ -148,30 +145,23 @@ const Home: React.FC = () => {
             </button>
           </div>
         ) : (
-          <Carousel responsive={responsive}>
-            {properties.map((property) => (
+          <div className={styles.propertiesGrid}>
+            {properties.length > 0 ? (
+              properties.map((property) => (
                 <PropertyCard
                   key={property.id}
-                  id={property.id}
-                  image_url={property.image_url}
-                  description={property.description}
-                  price={`$${property.price}`}
-                  address={property.address}
-                  rooms={property.rooms}
-                  bathrooms={property.bathrooms}
-                  squareMeters={property.squareMeters}
-                  yearBuilt={property.yearBuilt}
-                  latitude={property.latitude ?? property.geocode?.lat}
-                  longitude={property.longitude ?? property.geocode?.lng}
-                  operation_status_id={property.operation_status_id}
-                  operation_status={property.operation_status}
-                  operation_status_display={property.operation_status_display}
-                  onClick={() => handlePropertyClick(property.id)}
-                  onFavoriteToggle={handleFavoriteToggle}
+                  property={property}
                   isFavorite={savedPropertyIds.has(property.id)}
+                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
                 />
-              ))}
-          </Carousel>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <h3>No properties found</h3>
+                <p>We couldn't find any properties matching your criteria.</p>
+              </div>
+            )}
+          </div>
         )}
       </section>
 
