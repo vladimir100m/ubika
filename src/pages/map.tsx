@@ -23,10 +23,10 @@ const MapPage: React.FC = () => {
   const [markers, setMarkers] = useState<{ id: number; lat: number; lng: number }[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [drawerOpen, setDrawerOpen] = useState(false); // Mobile drawer state
   const [loading, setLoading] = useState(true); // Add loading state
   const [error, setError] = useState<string | null>(null); // Add error state
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
+  const [showFloatingGallery, setShowFloatingGallery] = useState(false); // Add floating gallery state
   
   // Read operation filter from query
   const selectedOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
@@ -41,11 +41,6 @@ const MapPage: React.FC = () => {
   };
   
   const isMobile = useMediaQuery('(max-width: 768px)');
-  
-  // Toggle the mobile drawer
-  const toggleMobileDrawer = () => {
-    setDrawerOpen(prevState => !prevState);
-  };
   
   // Create a ref object for each property card
   const propertyRefs = useRef<{[key: number]: HTMLDivElement | null}>({});
@@ -419,10 +414,7 @@ const MapPage: React.FC = () => {
     setCurrentImageIndex(index);
   };
 
-  // Add state for floating gallery
-  const [showFloatingGallery, setShowFloatingGallery] = useState(false);
-  
-  // Touch handling for mobile drawer
+  // Touch handling functions (can be removed later if not needed)
   const touchStartY = useRef<number | null>(null);
   const touchEndY = useRef<number | null>(null);
   
@@ -440,9 +432,7 @@ const MapPage: React.FC = () => {
     const distance = touchEndY.current - touchStartY.current;
     const isSwipeDown = distance > 50;
     
-    if (isSwipeDown) {
-      setDrawerOpen(false);
-    }
+    // Touch handling logic can be implemented if needed for other gestures
     
     // Reset values
     touchStartY.current = null;
@@ -540,9 +530,10 @@ const MapPage: React.FC = () => {
             searchLocation={router.query.location as string || ''}
           />
         </div>
-        <div className={styles.mapAndPropertiesContainer}>
-          <div className={styles.mapWrapper}>
-            {/* Show loading state while fetching data */}
+        {/* Scroll-Down Layout: Map at top, properties below */}
+        <div className={styles.scrollDownContainer}>
+          {/* Map section - fixed height at top */}
+          <div className={styles.mapSection}>
             {loading ? (
               <div className={styles.loadingContainer}>
                 <div className={styles.loadingSpinner}></div>
@@ -556,35 +547,29 @@ const MapPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <>
-                {/* Map container to render the Google Map */}
-                <div className={styles.mapContainer}>
-                  <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
-                </div>
-              </>
-            )}
-            
-            {/* Mobile floating action button to show properties */}
-            {isMobile && (
-              <button 
-                className={mobileStyles.drawerToggleButton}
-                onClick={toggleMobileDrawer}
-                aria-label="Show properties"
-              >
-                <span className={mobileStyles.buttonIcon}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-                <span className={mobileStyles.badgeCount}>{propertyLocations.length}</span>
-              </button>
+              <div className={styles.mapContainer}>
+                <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+              </div>
             )}
           </div>
           
-          {/* Desktop property list */}
-          <div className={styles.propertiesListContainer + ' ' + mobileStyles.onlyDesktop}>
-            <div className={styles.propertyGrid}>
+          {/* Properties section - scrollable below map */}
+          <div className={styles.propertiesSection}>
+            <div className={styles.propertiesSectionHeader}>
+              <h2 className={styles.propertiesTitle}>
+                {propertyLocations.length} Properties Found
+              </h2>
+              <div className={styles.sortControls}>
+                <select className={styles.sortSelect}>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="newest">Newest First</option>
+                  <option value="bedrooms">Bedrooms</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className={styles.propertiesScrollContainer}>
               {loading ? (
                 <div className={styles.loadingContainer}>
                   <div className={styles.loadingSpinner}></div>
@@ -613,255 +598,6 @@ const MapPage: React.FC = () => {
                   <p>No properties found matching your criteria.</p>
                 </div>
               )}
-            </div>
-          </div>
-          
-          {/* Mobile drawer backdrop */}
-          {drawerOpen && isMobile && (
-            <div 
-              className={mobileStyles.drawerBackdrop} 
-              onClick={() => setDrawerOpen(false)}
-              aria-hidden="true"
-            />
-          )}
-          
-          {/* Mobile drawer with property list */}
-          <div 
-            className={
-              `${mobileStyles.mobileDrawer} ${drawerOpen ? mobileStyles.open : ''}`
-            }
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              transition: 'transform 0.3s ease-in-out',
-              boxShadow: drawerOpen ? '0px -4px 10px rgba(0, 0, 0, 0.1)' : 'none',
-            }}
-          >
-            <div 
-              className={mobileStyles.drawerHandle} 
-              onClick={() => setDrawerOpen(false)}
-              style={{
-                height: '4px',
-                width: '40px',
-                backgroundColor: '#ccc',
-                borderRadius: '2px',
-                margin: '10px auto',
-              }}
-            />
-            <div 
-              className={
-                `${mobileStyles.drawerContent} ${mobileStyles.noScrollbar} ${mobileStyles.touchScrolling}`
-              }
-              style={{
-                padding: '1rem',
-                backgroundColor: '#fff',
-                borderRadius: '10px 10px 0 0',
-              }}
-            >
-              <div className={mobileStyles.drawerHeader}>
-                <h3 
-                  className={mobileStyles.drawerTitle}
-                  style={{
-                    fontSize: '1.2rem',
-                    fontWeight: 'bold',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Properties ({propertyLocations.length})
-                </h3>
-                <button 
-                  className={mobileStyles.closeDrawerButton} 
-                  onClick={() => setDrawerOpen(false)}
-                  aria-label="Close property list"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '1.5rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Mobile filter pills - Zillow style with state management */}
-              <div className={mobileStyles.mobileFilterPills} style={{ 
-                display: 'flex', 
-                gap: '8px', 
-                overflowX: 'auto', 
-                marginBottom: '1rem',
-                padding: '4px'
-              }}>
-                <button 
-                  className={mobileStyles.filterPill} 
-                  style={{
-                    background: router.query.operation === 'rent' || !router.query.operation ? '#006aff' : 'white',
-                    color: router.query.operation === 'rent' || !router.query.operation ? 'white' : '#2a2a33',
-                    border: router.query.operation === 'rent' || !router.query.operation ? 'none' : '1px solid #d1d1d5',
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => {
-                    const query = { ...router.query };
-                    if (query.operation === 'rent') {
-                      query.operation = 'buy';
-                    } else {
-                      query.operation = 'rent';
-                    }
-                    router.push({ pathname: '/map', query });
-                  }}
-                >
-                  {router.query.operation === 'buy' || router.query.operation === 'sale' ? 'For Sale' : 'For Rent'}
-                </button>
-                <button 
-                  className={mobileStyles.filterPill} 
-                  style={{
-                    background: router.query.minPrice || router.query.maxPrice ? '#006aff' : 'white',
-                    color: router.query.minPrice || router.query.maxPrice ? 'white' : '#2a2a33',
-                    border: router.query.minPrice || router.query.maxPrice ? 'none' : '1px solid #d1d1d5',
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                >
-                  Price
-                  {(router.query.minPrice || router.query.maxPrice) && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white'
-                    }}></span>
-                  )}
-                </button>
-                <button 
-                  className={mobileStyles.filterPill} 
-                  style={{
-                    background: router.query.bedrooms || router.query.bathrooms ? '#006aff' : 'white',
-                    color: router.query.bedrooms || router.query.bathrooms ? 'white' : '#2a2a33',
-                    border: router.query.bedrooms || router.query.bathrooms ? 'none' : '1px solid #d1d1d5',
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                >
-                  Beds & Baths
-                  {(router.query.bedrooms || router.query.bathrooms) && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white'
-                    }}></span>
-                  )}
-                </button>
-                <button 
-                  className={mobileStyles.filterPill} 
-                  style={{
-                    background: router.query.propertyType ? '#006aff' : 'white',
-                    color: router.query.propertyType ? 'white' : '#2a2a33',
-                    border: router.query.propertyType ? 'none' : '1px solid #d1d1d5',
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                >
-                  Home Type
-                  {router.query.propertyType && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white'
-                    }}></span>
-                  )}
-                </button>
-                <button 
-                  className={mobileStyles.filterPill} 
-                  style={{
-                    background: router.query.minArea || router.query.maxArea ? '#006aff' : 'white',
-                    color: router.query.minArea || router.query.maxArea ? 'white' : '#2a2a33',
-                    border: router.query.minArea || router.query.maxArea ? 'none' : '1px solid #d1d1d5',
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    position: 'relative'
-                  }}
-                >
-                  More
-                  {(router.query.minArea || router.query.maxArea) && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white'
-                    }}></span>
-                  )}
-                </button>
-              </div>
-
-              {/* Property grid - modified for mobile */}
-              <div 
-                className={styles.propertyGrid} 
-                style={{ gridTemplateColumns: '1fr', gap: '1rem' }}
-              >
-                {loading ? (
-                  <div className={styles.loadingContainer}>
-                    <div className={styles.loadingSpinner}></div>
-                    <p>Loading properties...</p>
-                  </div>
-                ) : error ? (
-                  <div className={styles.errorContainer}>
-                    <p className={styles.errorMessage}>{error}</p>
-                    <button className={styles.retryButton} onClick={() => router.reload()}>
-                      Try Again
-                    </button>
-                  </div>
-                ) : propertyLocations.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {propertyLocations.map((property) => (
-                      <PropertyCard
-                        key={property.id}
-                        property={property}
-                        isFavorite={savedPropertyIds.has(property.id)}
-                        onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className={mobileStyles.emptyState} style={{ textAlign: 'center', padding: '1rem' }}>
-                    <p>No properties found matching your criteria.</p>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

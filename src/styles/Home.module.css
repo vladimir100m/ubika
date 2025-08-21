@@ -1237,6 +1237,327 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Hero Section Styles */
+.heroSection {
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+/* Featured Section Styles */
+.featuredSection {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  margin-bottom: 3rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2a2a33;
+  margin: 0 0 0.5rem 0;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.featuredPropertiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.allPropertiesSection {
+  background-color: #f9fafb;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.allPropertiesSection .sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.viewMapButton {
+  background-color: #006aff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.viewMapButton:hover {
+  background-color: #0056d2;
+}
+
+.propertiesScrollContainer {
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Mobile responsive styles for home page */
+@media (max-width: 768px) {
+  .featuredSection {
+    padding: 0 1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+  
+  .sectionSubtitle {
+    font-size: 1rem;
+  }
+  
+  .featuredPropertiesGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .allPropertiesSection {
+    padding: 1rem;
+  }
+  
+  .allPropertiesSection .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .viewMapButton {
+    width: 100%;
+    padding: 0.875rem;
+  }
+  
+  .propertiesScrollContainer {
+    max-height: 60vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .featuredSection {
+    padding: 0 0.75rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+  
+  .allPropertiesSection {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+}
+
+/* Scroll-Down Layout Styles */
+.scrollDownContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: calc(100vh - 180px);
+}
+
+.mapSection {
+  width: 100%;
+  height: 60vh;
+  min-height: 500px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.mapSection .mapContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.propertiesSection {
+  flex: 1;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  overflow: visible;
+}
+
+.propertiesSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #ffffff;
+  position: relative;
+  z-index: 10;
+}
+
+.propertiesTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2a2a33;
+  margin: 0;
+}
+
+.sortControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sortSelect {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d1d5;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.875rem;
+  color: #2a2a33;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.sortSelect:hover {
+  border-color: #006aff;
+}
+
+.sortSelect:focus {
+  border-color: #006aff;
+  box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.1);
+}
+
+.propertiesScrollContainer {
+  overflow-y: visible;
+  padding: 0 2rem 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.propertiesScrollContainer::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.propertiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+/* Mobile responsive styles for scroll-down layout */
+@media (max-width: 768px) {
+  .mapSection {
+    height: 50vh;
+    min-height: 350px;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+  }
+  
+  .propertiesSectionHeader {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .propertiesTitle {
+    font-size: 1.25rem;
+  }
+  
+  .sortControls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .propertiesScrollContainer {
+    padding: 0 1rem 1rem;
+  }
+  
+  .propertiesGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mapSection {
+    height: 40vh;
+    min-height: 280px;
+    border-radius: 4px;
+  }
+  
+  .propertiesSectionHeader {
+    padding: 0.75rem;
+  }
+  
+  .propertiesTitle {
+    font-size: 1.125rem;
+  }
+  
+  .propertiesScrollContainer {
+    padding: 0 0.75rem 0.75rem;
+  }
+  
+  .propertiesGrid {
+    gap: 0.75rem;
+  }
+}
+
 /* Map and Properties Layout */
 .mapAndPropertiesContainer {
   display: flex;

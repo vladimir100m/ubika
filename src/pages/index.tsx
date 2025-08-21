@@ -138,10 +138,18 @@ const Home: React.FC = () => {
   return (
     <div className={styles.container} style={{ paddingTop: '80px' }}>
       <Header selectedOperation={selectedOperation} onOperationChange={handleOperationChange} />
-      <Banner />
+      
+      {/* Hero Section */}
+      <div className={styles.heroSection}>
+        <Banner />
+      </div>
 
-      <section className={styles.featuredProperties}>
-        <h2>All Properties</h2>
+      {/* Featured Properties Section */}
+      <section className={styles.featuredSection}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Featured Properties</h2>
+          <p className={styles.sectionSubtitle}>Discover the best properties in Argentina</p>
+        </div>
         
         {loading ? (
           <div className={styles.loadingContainer}>
@@ -159,23 +167,54 @@ const Home: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className={styles.propertiesGrid}>
-            {properties.length > 0 ? (
-              properties.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  isFavorite={savedPropertyIds.has(property.id)}
-                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                />
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                <h3>No properties found</h3>
-                <p>We couldn't find any properties matching your criteria.</p>
+          <>
+            {/* Featured properties carousel/grid - first 6 properties */}
+            {properties.length > 0 && (
+              <div className={styles.featuredPropertiesGrid}>
+                {properties.slice(0, 6).map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    isFavorite={savedPropertyIds.has(property.id)}
+                    onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                  />
+                ))}
               </div>
             )}
-          </div>
+            
+            {/* All Properties Section */}
+            <div className={styles.allPropertiesSection}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>All Properties ({properties.length})</h2>
+                <button 
+                  className={styles.viewMapButton}
+                  onClick={() => router.push('/map')}
+                >
+                  View on Map
+                </button>
+              </div>
+              
+              <div className={styles.propertiesScrollContainer}>
+                <div className={styles.propertiesGrid}>
+                  {properties.length > 0 ? (
+                    properties.map((property) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        isFavorite={savedPropertyIds.has(property.id)}
+                        onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                      />
+                    ))
+                  ) : (
+                    <div className={styles.emptyState}>
+                      <h3>No properties found</h3>
+                      <p>We couldn't find any properties matching your criteria.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </section>
 
