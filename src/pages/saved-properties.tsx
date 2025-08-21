@@ -15,9 +15,11 @@ const SavedProperties: React.FC = () => {
   const router = useRouter();
 
   // Get operation from query parameters, default to 'buy'
+  const operation = router.query.operation
     ? router.query.operation as 'buy' | 'rent'
     : 'buy';
 
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
     // Navigate to map page with operation filter instead of filtering saved properties
     router.push({
       pathname: '/map',
