@@ -19,17 +19,6 @@ const Home: React.FC = () => {
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Read filter from query if present
-  const initialOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
-    ? router.query.operation as 'buy' | 'rent'
-    : 'buy';
-  const [selectedOperation, setSelectedOperation] = useState<'buy' | 'rent'>(initialOperation);
-
-  useEffect(() => {
-    if (typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')) {
-      setSelectedOperation(router.query.operation as 'buy' | 'rent');
-    }
-  }, [router.query.operation]);
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -137,7 +126,7 @@ const Home: React.FC = () => {
 
   return (
     <div className={styles.container} style={{ paddingTop: '80px' }}>
-  <Header selectedOperation={selectedOperation} onOperationChange={setSelectedOperation} />
+  <Header selectedOperation="buy" onOperationChange={() => {}} />
       <Banner />
 
       <section className={styles.featuredProperties}>
@@ -160,15 +149,7 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <Carousel responsive={responsive}>
-            {properties
-              .filter(property => {
-                if (selectedOperation === 'buy') {
-                  return property.operation_status_id === 1 || property.operation_status?.toLowerCase() === 'sale';
-                } else {
-                  return property.operation_status_id === 2 || property.operation_status?.toLowerCase() === 'rent';
-                }
-              })
-              .map((property) => (
+            {properties.map((property) => (
                 <PropertyCard
                   key={property.id}
                   id={property.id}
