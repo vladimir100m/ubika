@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import styles from '../styles/MapFilters.module.css';
 
 export interface FilterOptions {
-  forSale: boolean;
-  forRent: boolean;
   sold: boolean;
   priceMin: string;
   priceMax: string;
@@ -40,8 +38,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState(searchLocation);
   const [filters, setFilters] = useState<FilterOptions>({
-    forSale: initialFilters.forSale || false,
-    forRent: initialFilters.forRent || true,
     sold: initialFilters.sold || false,
     priceMin: initialFilters.priceMin || '',
     priceMax: initialFilters.priceMax || '',
@@ -59,18 +55,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   const handleDropdownToggle = (dropdownName: string) => {
     setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
-  };
-
-  const handlePropertyStatusChange = (status: 'forSale' | 'forRent' | 'sold') => {
-    const newFilters = {
-      ...filters,
-      forSale: status === 'forSale',
-      forRent: status === 'forRent',
-      sold: status === 'sold'
-    };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-    setActiveDropdown(null);
   };
 
   const handlePriceChange = (min: string, max: string, closePopup = false) => {
@@ -148,39 +132,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   return (
     <div className={styles.filtersContainer} onClick={handleClickOutside}>
-      {/* For Sale/Rent/Sold Filter */}
-      <div className={styles.filterGroup}>
-        <button 
-          className={`${styles.dropdownButton} ${activeDropdown === 'forRent' ? styles.active : ''}`}
-          onClick={() => handleDropdownToggle('forRent')}
-        >
-          {filters.forSale ? 'For Sale' : filters.forRent ? 'For Rent' : 'Sold'}
-          <span className={styles.chevron}>▼</span>
-        </button>
-        {activeDropdown === 'forRent' && (
-          <div className={styles.dropdown}>
-            <label className={styles.radioLabel}>
-              <input 
-                type="radio" 
-                name="propertyStatus" 
-                checked={filters.forSale} 
-                onChange={() => handlePropertyStatusChange('forSale')} 
-              />
-              For Sale
-            </label>
-            <label className={styles.radioLabel}>
-              <input 
-                type="radio" 
-                name="propertyStatus" 
-                checked={filters.forRent} 
-                onChange={() => handlePropertyStatusChange('forRent')} 
-              />
-              For Rent
-            </label>
-          </div>
-        )}
-      </div>
-
       {/* Price Filter */}
       <div className={styles.filterGroup}>
         <button 
