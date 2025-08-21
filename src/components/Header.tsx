@@ -18,6 +18,7 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
   const user = session?.user;
   const isLoading = status === 'loading';
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside dropdown to close it
@@ -25,12 +26,27 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+        setIsMobileMenuOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close mobile menu on route change and on ESC
+  useEffect(() => {
+    const handleRoute = () => setIsMobileMenuOpen(false);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    router.events.on('routeChangeStart', handleRoute);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      router.events.off('routeChangeStart', handleRoute);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [router.events]);
 
   const profileMenuItems = [
     { label: 'Saved homes', icon: '🏠', action: () => { router.push('/saved-properties'); setIsDropdownOpen(false); } },
@@ -46,9 +62,10 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
   ];
   
   return (
+    <>
     <header className={styles.navbar}>
       <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-        <div className={styles.logo} onClick={() => router.push('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '32px' }}>
+        <div className={styles.logo} onClick={() => router.push('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: '16px' }}>
           <img 
             src="/ubika-logo.png" 
             alt="Ubika Logo" 
@@ -59,8 +76,8 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
           />
           <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>
         </div>
-        <nav className={styles.navigation} style={{ flex: 1 }}>
-          <div className={styles.navLinks} style={{ display: 'flex', alignItems: 'center', gap: '18px', justifyContent: 'flex-start' }}>
+        <nav className={styles.navigation} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <div className={styles.navLinks} style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-start' }}>
             <button
               className={styles.navItem}
               style={{ background: selectedOperation === 'rent' ? '#fff' : 'none', color: selectedOperation === 'rent' ? '#0070f3' : '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
@@ -104,10 +121,75 @@ const Header: React.FC<HeaderProps> = ({ selectedOperation, onOperationChange })
               </React.Fragment>
             )}
           </div>
+          {/* Hamburger for small screens */}
+          <button
+            aria-label="Open menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
+            className={styles.hamburger}
+            onClick={() => setIsMobileMenuOpen(v => !v)}
+            style={{ marginLeft: 'auto' }}
+          >
+            ☰
+          </button>
+          {/* Mobile dropdown menu */}
+      {isMobile && (
+            <div
+              id="mobile-menu"
+              className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.open : ''}`}
+              role="menu"
+        ref={dropdownRef}
+            >
+              <button
+                className={styles.mobileMenuItem}
+                onClick={() => { onOperationChange('rent'); setIsMobileMenuOpen(false); }}
+              >
+                <span role="img" aria-label="Rent" style={{ marginRight: 8 }}>🏡</span>
+                Rent {selectedOperation === 'rent' ? '✓' : ''}
+              </button>
+              <button
+                className={styles.mobileMenuItem}
+                onClick={() => { onOperationChange('buy'); setIsMobileMenuOpen(false); }}
+              >
+                <span role="img" aria-label="Buy" style={{ marginRight: 8 }}>🏠</span>
+                Buy {selectedOperation === 'buy' ? '✓' : ''}
+              </button>
+              <button
+                className={styles.mobileMenuItem}
+                onClick={() => { router.push('/seller'); setIsMobileMenuOpen(false); }}
+              >
+                <span role="img" aria-label="Sell" style={{ marginRight: 8 }}>💼</span>
+                Sell
+              </button>
+              {!isLoading && (
+                user ? (
+                  <button
+                    className={styles.mobileMenuItem}
+                    onClick={() => { router.push('/account'); setIsMobileMenuOpen(false); }}
+                  >
+                    <span role="img" aria-label="Account" style={{ marginRight: 8 }}>👤</span>
+                    Account
+                  </button>
+                ) : (
+                  <button
+                    className={styles.mobileMenuItem}
+                    onClick={() => { signIn('google'); setIsMobileMenuOpen(false); }}
+                  >
+                    <span role="img" aria-label="Login" style={{ marginRight: 8 }}>🔑</span>
+                    Login
+                  </button>
+                )
+              )}
+            </div>
+          )}
         </nav>
       </div>
     </header>
-  // ...existing code...
+    {/* Overlay to close menu when clicking outside */}
+    {isMobile && isMobileMenuOpen && (
+      <div className={styles.mobileMenuOverlay} onClick={() => setIsMobileMenuOpen(false)} />
+    )}
+    </>
   );
 };
 
