@@ -485,51 +485,6 @@ const MapPage: React.FC = () => {
     onOperationChange={handleOperationChange}
   />
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', paddingTop: '80px' }}>
-        {/* Search Bar */}
-        <div style={{ padding: '1rem', backgroundColor: '#ffffff', borderRadius: '8px', marginBottom: '0.5rem', zIndex: 10 }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
-            backgroundColor: '#ffffff',
-            border: '1px solid #d1d1d5',
-            borderRadius: '8px',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-            overflow: 'hidden',
-            transition: 'box-shadow 0.3s ease'
-          }}>
-            <div style={{ padding: '0 12px', color: '#666' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </div>
-            <input 
-              type="text" 
-              placeholder="Enter an address, city, or ZIP code"
-              style={{
-                flex: 1,
-                padding: '12px 8px 12px 0',
-                fontSize: '16px',
-                border: 'none',
-                outline: 'none'
-              }}
-            />
-            <button style={{
-              padding: '10px 16px',
-              backgroundColor: '#006aff',
-              color: 'white',
-              border: 'none',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              cursor: 'pointer',
-              height: '100%'
-            }}>
-              Search
-            </button>
-          </div>
-        </div>
-        
         {/* Enhanced Filter Bar - Zillow Style */}
         <div style={{ marginBottom: '1rem', zIndex: 5 }}>
           <MapFilters 
