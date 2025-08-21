@@ -518,7 +518,7 @@ const MapPage: React.FC = () => {
               // Build query object from filters
               const query: any = {};
               
-              if (filters.forSale) query.operation = 'sale';
+              if (filters.forSale) query.operation = 'buy';
               if (filters.forRent) query.operation = 'rent';
               if (filters.priceMin) query.minPrice = filters.priceMin;
               if (filters.priceMax) query.maxPrice = filters.priceMax;
@@ -547,7 +547,7 @@ const MapPage: React.FC = () => {
             }}
             initialFilters={{
               forRent: router.query.operation === 'rent',
-              forSale: router.query.operation === 'sale',
+              forSale: router.query.operation === 'buy' || router.query.operation === 'sale',
               priceMin: router.query.minPrice as string || '',
               priceMax: router.query.maxPrice as string || '',
               beds: router.query.bedrooms as string || '',
@@ -735,14 +735,14 @@ const MapPage: React.FC = () => {
                   onClick={() => {
                     const query = { ...router.query };
                     if (query.operation === 'rent') {
-                      query.operation = 'sale';
+                      query.operation = 'buy';
                     } else {
                       query.operation = 'rent';
                     }
                     router.push({ pathname: '/map', query });
                   }}
                 >
-                  {router.query.operation === 'sale' ? 'For Sale' : 'For Rent'}
+                  {router.query.operation === 'buy' || router.query.operation === 'sale' ? 'For Sale' : 'For Rent'}
                 </button>
                 <button 
                   className={mobileStyles.filterPill} 

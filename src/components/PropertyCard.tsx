@@ -18,6 +18,9 @@ export type PropertyCardProps = Pick<
   | 'yearBuilt'
   | 'latitude'
   | 'longitude'
+  | 'operation_status_id'
+  | 'operation_status'
+  | 'operation_status_display'
 > & {
   title?: string;
   city?: string;
@@ -73,7 +76,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ isFavorite, onFavoriteToggl
 
           {/* Property status badge */}
           <div className={styles.statusBadge}>
-            For Sale
+            {p.operation_status_display || (p.operation_status_id === 1 ? 'For Sale' : p.operation_status_id === 2 ? 'For Rent' : 'Not Available')}
           </div>
         </div>
 

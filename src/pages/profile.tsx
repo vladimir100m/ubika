@@ -558,6 +558,9 @@ function Profile() {
                             yearBuilt={property.yearBuilt}
                             latitude={property.latitude}
                             longitude={property.longitude}
+                            operation_status_id={property.operation_status_id}
+                            operation_status={property.operation_status}
+                            operation_status_display={property.operation_status_display}
                           />
                         </div>
                       ))}
@@ -1061,6 +1064,9 @@ function Profile() {
                                   yearBuilt={property.yearBuilt}
                                   latitude={property.latitude}
                                   longitude={property.longitude}
+                                  operation_status_id={property.operation_status_id}
+                                  operation_status={property.operation_status}
+                                  operation_status_display={property.operation_status_display}
                                 />
                                 <button
                                   onClick={() => handleDeleteProperty(property.id)}

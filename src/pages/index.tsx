@@ -182,6 +182,9 @@ const Home: React.FC = () => {
                   yearBuilt={property.yearBuilt}
                   latitude={property.latitude ?? property.geocode?.lat}
                   longitude={property.longitude ?? property.geocode?.lng}
+                  operation_status_id={property.operation_status_id}
+                  operation_status={property.operation_status}
+                  operation_status_display={property.operation_status_display}
                   onClick={() => handlePropertyClick(property.id)}
                   onFavoriteToggle={handleFavoriteToggle}
                   isFavorite={savedPropertyIds.has(property.id)}
