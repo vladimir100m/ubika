@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Client } from 'pg';
+import { query } from '../../../utils/db';
 
 interface PropertyFeature {
   id: number;
@@ -19,18 +19,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Property ID is required' });
   }
 
-  const client = new Client({
-    user: process.env.POSTGRES_USER || 'admin',
-    host: process.env.POSTGRES_HOST || 'localhost',
-    database: process.env.POSTGRES_DB || 'ubika',
-    password: process.env.POSTGRES_PASSWORD || 'admin',
-    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-  });
-
   try {
-    await client.connect();
-
-    const query = `
+    const queryText = `
       SELECT pf.id, pf.name, pf.category, pf.icon
       FROM property_features pf
       INNER JOIN property_feature_assignments pfa ON pf.id = pfa.feature_id
@@ -38,13 +28,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       ORDER BY pf.category, pf.name
     `;
 
-    const result = await client.query(query, [propertyId]);
+    const result = await query(queryText, [propertyId]);
     res.status(200).json(result.rows);
   } catch (error) {
     console.error('Error fetching property features:', error);
     res.status(500).json({ error: 'Internal Server Error' });
-  } finally {
-    await client.end();
   }
 };
 

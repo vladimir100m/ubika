@@ -20,10 +20,18 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Skip caching for development-related requests
+  if (event.request.url.includes('/_next/webpack-hmr') || 
+      event.request.url.includes('.hot-update.') ||
+      event.request.url.includes('_next/static/webpack/') ||
+      event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return the response from the cached version
+        // Cache hit - return response
         if (response) {
           return response;
         }
@@ -36,17 +44,23 @@ self.addEventListener('fetch', (event) => {
               return response;
             }
 
-            // Clone the response as it's a stream that can only be consumed once
-            const responseToCache = response.clone();
+            // Only cache GET requests
+            if (event.request.method === 'GET') {
+              // Clone the response as it's a stream that can only be consumed once
+              const responseToCache = response.clone();
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
 
             return response;
           }
-        );
+        ).catch(() => {
+          // Return a fallback response for failed requests
+          return new Response('Network error', { status: 503, statusText: 'Service Unavailable' });
+        });
       })
   );
 });

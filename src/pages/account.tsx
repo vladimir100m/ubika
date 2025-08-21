@@ -18,7 +18,7 @@ const AccountSettings: React.FC = () => {
   if (!user) {
     return (
       <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header />
         <main className={styles.main}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
@@ -59,7 +59,7 @@ const AccountSettings: React.FC = () => {
 
   return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header />
       
       {/* Page Header */}
       <div style={{ 

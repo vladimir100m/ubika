@@ -39,6 +39,7 @@ const SellerDashboard: React.FC = () => {
   const user = session?.user;
   const u = user as (typeof user & { sub?: string; picture?: string | null; image?: string | null });
   const isLoading = status === 'loading';
+
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -416,7 +417,7 @@ const SellerDashboard: React.FC = () => {
 
   // Call this function when the component mounts and when the activeTab changes
   useEffect(() => {
-  if (u?.sub) {
+    if (u?.sub) {
       fetchSellerProperties();
     }
     // Only run in the browser, not during SSR
@@ -434,8 +435,8 @@ const SellerDashboard: React.FC = () => {
   }
 
   return (
-    <div>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+    <div style={{ paddingTop: '80px' }}>
+  <Header />
       <div className={styles.container}>
 
         <div className={styles.tabs}>

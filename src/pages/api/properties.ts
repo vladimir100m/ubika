@@ -93,7 +93,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       // Use the new operation_status_id field
       if (filters.operation === 'rent') {
         queryText += ` AND p.operation_status_id = 2`;
-      } else if (filters.operation === 'sale') {
+      } else if (filters.operation === 'sale' || filters.operation === 'buy') {
         queryText += ` AND p.operation_status_id = 1`;
       }
     }

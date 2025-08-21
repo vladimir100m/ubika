@@ -5,9 +5,7 @@ import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
 import { Property } from '../types'; // Import Property type
-import Carousel from 'react-multi-carousel';
-import 'react-multi-carousel/lib/styles.css';
-import Header from 'components/Header';
+import Header from '../components/Header';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 
 const Home: React.FC = () => {
@@ -19,23 +17,13 @@ const Home: React.FC = () => {
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Read filter from query if present
-  const initialOperation = typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')
-    ? router.query.operation as 'buy' | 'rent'
-    : 'buy';
-  const [selectedOperation, setSelectedOperation] = useState<'buy' | 'rent'>(initialOperation);
-
-  useEffect(() => {
-    if (typeof router.query.operation === 'string' && (router.query.operation === 'buy' || router.query.operation === 'rent')) {
-      setSelectedOperation(router.query.operation as 'buy' | 'rent');
-    }
-  }, [router.query.operation]);
 
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch all properties without operation filter for home page
         const response = await fetch('/api/properties');
         if (!response.ok) {
           throw new Error(`Error fetching properties: ${response.statusText}`);
@@ -64,6 +52,12 @@ const Home: React.FC = () => {
   useEffect(() => {
     // Load saved properties status if user is authenticated
     const loadSavedStatus = async () => {
+      // Skip if no user or in development without proper database
+      if (!user) {
+        setSavedPropertyIds(new Set());
+        return;
+      }
+
       try {
         const savedStatus = await checkSavedStatus(properties.map(p => p.id));
         // `checkSavedStatus` returns an object map { [propertyId]: boolean }
@@ -75,12 +69,11 @@ const Home: React.FC = () => {
         }
         setSavedPropertyIds(savedIds);
       } catch (error) {
-        console.error('Error loading saved properties status:', error);
-        
-        // Check if it's an auth error
-        if (error instanceof Error && error.message.includes('Unauthorized')) {
-          // Just set empty set - no need to redirect as this is a background load
-          console.log('User not authenticated for saved properties check');
+        // Silently handle errors in development to avoid console spam
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Saved properties API not available in development');
+        } else {
+          console.error('Error loading saved properties status:', error);
         }
         
         setSavedPropertyIds(new Set());
@@ -92,7 +85,7 @@ const Home: React.FC = () => {
     if (!isLoading && properties.length > 0) {
       loadSavedStatus();
     }
-  }, [isLoading, properties ]);
+  }, [isLoading, properties, user ]);
 
   // Function to handle property card click
   const handlePropertyClick = (propertyId: number) => {
@@ -104,44 +97,46 @@ const Home: React.FC = () => {
 
   // Function to toggle favorite status using database API
   const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    setSavedPropertyIds(prevSavedIds => {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      const newSavedIds = new Set(prevSavedIds);
-      if (isCurrentlySaved) {
-        newSavedIds.delete(propertyId);
-      } else {
-        newSavedIds.add(propertyId);
-      }
-      return newSavedIds;
-    });
-  };
+    if (!user) {
+      // Redirect to login if user is not authenticated
+      router.push('/auth/signin');
+      return;
+    }
 
-  const responsive = {
-    superLargeDesktop: {
-      breakpoint: { max: 4000, min: 1024 },
-      items: 5
-    },
-    desktop: {
-      breakpoint: { max: 1024, min: 768 },
-      items: 3
-    },
-    tablet: {
-      breakpoint: { max: 768, min: 464 },
-      items: 2
-    },
-    mobile: {
-      breakpoint: { max: 464, min: 0 },
-      items: 1
+    try {
+      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
+      await toggleSaveProperty(propertyId, !isCurrentlySaved);
+      
+      // Update local state
+      setSavedPropertyIds(prevSavedIds => {
+        const newSavedIds = new Set(prevSavedIds);
+        if (isCurrentlySaved) {
+          newSavedIds.delete(propertyId);
+        } else {
+          newSavedIds.add(propertyId);
+        }
+        return newSavedIds;
+      });
+    } catch (error) {
+      console.error('Error toggling favorite status:', error);
     }
   };
 
   return (
-    <div className={styles.container}>
-  <Header selectedOperation={selectedOperation} onOperationChange={setSelectedOperation} />
-      <Banner />
+    <div className={styles.container} style={{ paddingTop: '80px' }}>
+      <Header />
+      
+      {/* Hero Section */}
+      <div className={styles.heroSection}>
+        <Banner />
+      </div>
 
-      <section className={styles.featuredProperties}>
-        <h2>Propiedades que estabas buscando</h2>
+      {/* Featured Properties Section */}
+      <section className={styles.featuredSection}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Featured Properties</h2>
+          <p className={styles.sectionSubtitle}>Discover the best properties in Argentina</p>
+        </div>
         
         {loading ? (
           <div className={styles.loadingContainer}>
@@ -159,60 +154,60 @@ const Home: React.FC = () => {
             </button>
           </div>
         ) : (
-          <Carousel responsive={responsive}>
-            {properties
-              .filter(property => {
-                if (selectedOperation === 'buy') {
-                  return property.operation_status_id === 1 || property.operation_status?.toLowerCase() === 'sale';
-                } else {
-                  return property.operation_status_id === 2 || property.operation_status?.toLowerCase() === 'rent';
-                }
-              })
-              .map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  id={property.id}
-                  image_url={property.image_url}
-                  description={property.description}
-                  price={`$${property.price}`}
-                  address={property.address}
-                  rooms={property.rooms}
-                  bathrooms={property.bathrooms}
-                  squareMeters={property.squareMeters}
-                  yearBuilt={property.yearBuilt}
-                  latitude={property.latitude ?? property.geocode?.lat}
-                  longitude={property.longitude ?? property.geocode?.lng}
-                  onClick={() => handlePropertyClick(property.id)}
-                  onFavoriteToggle={handleFavoriteToggle}
-                  isFavorite={savedPropertyIds.has(property.id)}
-                />
-              ))}
-          </Carousel>
+          <>
+            {/* Featured properties carousel/grid - first 6 properties */}
+            {properties.length > 0 && (
+              <div className={styles.featuredPropertiesGrid}>
+                {properties.slice(0, 6).map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    isFavorite={savedPropertyIds.has(property.id)}
+                    onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {/* All Properties Section */}
+            <div className={styles.allPropertiesSection}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>All Properties ({properties.length})</h2>
+                <button 
+                  className={styles.viewMapButton}
+                  onClick={() => router.push('/map')}
+                >
+                  View on Map
+                </button>
+              </div>
+              
+              <div className={styles.propertiesScrollContainer}>
+                <div className={styles.propertiesGrid}>
+                  {properties.length > 0 ? (
+                    properties.map((property) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        isFavorite={savedPropertyIds.has(property.id)}
+                        onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                      />
+                    ))
+                  ) : (
+                    <div className={styles.emptyState}>
+                      <h3>No properties found</h3>
+                      <p>We couldn't find any properties matching your criteria.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </section>
 
       <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerSection}>
-            <h3>About Us</h3>
-            <p>Ubika is a leading real estate marketplace dedicated to empowering consumers with data.</p>
-          </div>
-          <div className={styles.footerSection}>
-            <h3>Contact</h3>
-            <p>Email: info@ubika.com</p>
-            <p>Phone: (123) 456-7890</p>
-          </div>
-          <div className={styles.footerSection}>
-            <h3>Follow Us</h3>
-            <div className={styles.socialIcons}>
-              <a href="#" aria-label="Facebook">FB</a>
-              <a href="#" aria-label="Twitter">TW</a>
-              <a href="#" aria-label="Instagram">IG</a>
-            </div>
-          </div>
-        </div>
         <div className={styles.footerBottom}>
-          <p>&copy; {new Date().getFullYear()} Ubika. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Ubika - Leading real estate marketplace | Email: info@ubika.com</p>
         </div>
       </footer>
     </div>

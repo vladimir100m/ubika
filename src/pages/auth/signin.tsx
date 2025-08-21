@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Header from '../../components/Header';
 import styles from '../../styles/Home.module.css';
 
 const SignIn: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -26,36 +23,9 @@ const SignIn: React.FC = () => {
     }
   };
 
-  const handleCredentialsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Invalid credentials');
-      } else {
-        const session = await getSession();
-        if (session) {
-          router.push((router.query.callbackUrl as string) || '/');
-        }
-      }
-    } catch (error) {
-      setError('An error occurred during sign in');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+  <Header />
       
       <main className={styles.main}>
         <div style={{ maxWidth: '400px', margin: '60px auto', padding: '40px 20px' }}>
@@ -99,7 +69,6 @@ const SignIn: React.FC = () => {
                 fontSize: '16px',
                 fontWeight: '500',
                 cursor: googleLoading ? 'not-allowed' : 'pointer',
-                marginBottom: '24px',
                 transition: 'background-color 0.2s ease',
                 color: '#3c4043'
               }}
@@ -123,126 +92,35 @@ const SignIn: React.FC = () => {
               {googleLoading ? 'Signing in with Google...' : 'Continue with Google'}
             </button>
 
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '24px'
+            {error && (
+              <div style={{
+                color: '#dc2626',
+                fontSize: '14px',
+                marginTop: '16px',
+                textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ 
+              borderTop: '1px solid #e5e7eb',
+              paddingTop: '24px',
+              marginTop: '32px',
+              textAlign: 'center'
             }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
-              <span style={{ padding: '0 16px', color: '#6b7280', fontSize: '14px' }}>or</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
-            </div>
-
-            {/* Credentials Form */}
-            <form onSubmit={handleCredentialsSubmit}>
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ 
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '8px',
-                  color: '#374151'
-                }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '16px',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ 
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '8px',
-                  color: '#374151'
-                }}>
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '16px',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="Enter your password"
-                />
-              </div>
-
-              {error && (
-                <div style={{
-                  color: '#dc2626',
-                  fontSize: '14px',
-                  marginBottom: '16px',
-                  textAlign: 'center'
-                }}>
-                  {error}
-                </div>
-              )}
-
               <button
-                type="submit"
-                disabled={loading}
+                onClick={() => router.push('/')}
                 style={{
-                  width: '100%',
-                  backgroundColor: loading ? '#9CA3AF' : '#0073e6',
-                  color: 'white',
+                  background: 'none',
                   border: 'none',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  marginBottom: '24px'
+                  color: '#0073e6',
+                  cursor: 'pointer',
+                  fontSize: '14px'
                 }}
               >
-                {loading ? 'Signing in...' : 'Sign in with Email'}
+                ← Back to Home
               </button>
-            </form>
-
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
-                Development mode: Email/password accepts any values
-              </p>
-              
-              <div style={{ 
-                borderTop: '1px solid #e5e7eb',
-                paddingTop: '24px',
-                marginTop: '24px'
-              }}>
-                <button
-                  onClick={() => router.push('/')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#0073e6',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  ← Back to Home
-                </button>
-              </div>
             </div>
           </div>
         </div>

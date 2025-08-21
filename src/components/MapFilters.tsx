@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import styles from '../styles/MapFilters.module.css';
 
 export interface FilterOptions {
-  forSale: boolean;
-  forRent: boolean;
   sold: boolean;
+  operation: string;
   priceMin: string;
   priceMax: string;
   beds: string;
@@ -27,6 +26,7 @@ interface MapFiltersProps {
   showBoundaryButton?: boolean;
   onRemoveBoundary?: () => void;
   searchLocation?: string;
+  inHeader?: boolean;
 }
 
 const MapFilters: React.FC<MapFiltersProps> = ({ 
@@ -35,14 +35,14 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   initialFilters = {},
   showBoundaryButton = false,
   onRemoveBoundary,
-  searchLocation = ''
+  searchLocation = '',
+  inHeader = false
 }) => {
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(searchLocation);
   const [filters, setFilters] = useState<FilterOptions>({
-    forSale: initialFilters.forSale || false,
-    forRent: initialFilters.forRent || true,
     sold: initialFilters.sold || false,
+    operation: initialFilters.operation || '',
     priceMin: initialFilters.priceMin || '',
     priceMax: initialFilters.priceMax || '',
     beds: initialFilters.beds || '',
@@ -57,50 +57,38 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     }
   });
 
-  const handleDropdownToggle = (dropdownName: string) => {
-    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const handlePropertyStatusChange = (status: 'forSale' | 'forRent' | 'sold') => {
-    const newFilters = {
-      ...filters,
-      forSale: status === 'forSale',
-      forRent: status === 'forRent',
-      sold: status === 'sold'
-    };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-    setActiveDropdown(null);
-  };
-
-  const handlePriceChange = (min: string, max: string, closePopup = false) => {
+  const handlePriceChange = (min: string, max: string) => {
     const newFilters = { ...filters, priceMin: min, priceMax: max };
     setFilters(newFilters);
     onFilterChange(newFilters);
-    if (closePopup) {
-      setActiveDropdown(null);
-    }
   };
 
   const handleBedsChange = (beds: string) => {
     const newFilters = { ...filters, beds };
     setFilters(newFilters);
     onFilterChange(newFilters);
-    setActiveDropdown(null);
   };
 
   const handleBathsChange = (baths: string) => {
     const newFilters = { ...filters, baths };
     setFilters(newFilters);
     onFilterChange(newFilters);
-    setActiveDropdown(null);
   };
 
   const handleHomeTypeChange = (homeType: string) => {
     const newFilters = { ...filters, homeType };
     setFilters(newFilters);
     onFilterChange(newFilters);
-    setActiveDropdown(null);
+  };
+
+  const handleOperationChange = (operation: string) => {
+    const newFilters = { ...filters, operation };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const handleMoreFiltersChange = (newMoreFilters: FilterOptions['moreFilters']) => {
@@ -111,8 +99,8 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   const handleClickOutside = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (!target.closest(`.${styles.dropdown}`) && !target.closest(`.${styles.dropdownButton}`)) {
-      setActiveDropdown(null);
+    if (!target.closest(`.${styles.singleDropdown}`) && !target.closest(`.${styles.singleDropdownButton}`)) {
+      setIsDropdownOpen(false);
     }
   };
 
@@ -137,252 +125,203 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     }
   };
 
-  // Helper to check if any filter is active to display badges
-  const isPriceFilterActive = filters.priceMin || filters.priceMax;
-  const isBedsFilterActive = filters.beds !== '';
-  const isBathsFilterActive = filters.baths !== '';
-  const isHomeTypeFilterActive = filters.homeType !== '';
-  const isMoreFiltersActive = filters.moreFilters.minArea || filters.moreFilters.maxArea || 
-                            filters.moreFilters.yearBuiltMin || filters.moreFilters.yearBuiltMax ||
-                            filters.moreFilters.keywords.length > 0;
+  const clearAllFilters = () => {
+    const clearedFilters: FilterOptions = {
+      sold: false,
+      operation: '',
+      priceMin: '',
+      priceMax: '',
+      beds: '',
+      baths: '',
+      homeType: '',
+      moreFilters: {
+        minArea: '',
+        maxArea: '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: [],
+      }
+    };
+    setFilters(clearedFilters);
+    onFilterChange(clearedFilters);
+  };
+
+  // Helper to check if any filter is active
+  const hasActiveFilters = filters.operation || filters.priceMin || filters.priceMax || 
+                          filters.beds || filters.baths || filters.homeType ||
+                          filters.moreFilters.minArea || filters.moreFilters.maxArea || 
+                          filters.moreFilters.yearBuiltMin || filters.moreFilters.yearBuiltMax ||
+                          filters.moreFilters.keywords.length > 0;
 
   return (
-    <div className={styles.filtersContainer} onClick={handleClickOutside}>
-      {/* Search Bar */}
-      <div className={styles.searchBar}>
-        <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-          <input 
-            type="text" 
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder="Search location..."
-            className={styles.searchInput}
-          />
-          <button type="submit" className={styles.searchButton}>
-            Search
-          </button>
-        </form>
-        {showBoundaryButton && searchValue && (
-          <button className={styles.removeBoundaryButton} onClick={handleRemoveBoundary}>
-            Remove Boundary
-          </button>
-        )}
-      </div>
-
-      {/* For Sale/Rent/Sold Filter */}
+    <div className={`${styles.filtersContainer} ${inHeader ? styles.headerFilters : ''}`} onClick={handleClickOutside}>
+      {/* Single Unified Filter Dropdown */}
       <div className={styles.filterGroup}>
         <button 
-          className={`${styles.dropdownButton} ${activeDropdown === 'forRent' ? styles.active : ''}`}
-          onClick={() => handleDropdownToggle('forRent')}
+          className={`${styles.singleDropdownButton} ${isDropdownOpen ? styles.active : ''} ${hasActiveFilters ? styles.hasFilter : ''}`}
+          onClick={handleDropdownToggle}
         >
-          {filters.forSale ? 'For Sale' : filters.forRent ? 'For Rent' : 'Sold'}
-          <span className={styles.chevron}>▼</span>
+          🔍
+          {hasActiveFilters && <span className={styles.filterBadge}></span>}
         </button>
-        {activeDropdown === 'forRent' && (
-          <div className={styles.dropdown}>
-            <label className={styles.radioLabel}>
-              <input 
-                type="radio" 
-                name="propertyStatus" 
-                checked={filters.forSale} 
-                onChange={() => handlePropertyStatusChange('forSale')} 
-              />
-              For Sale
-            </label>
-            <label className={styles.radioLabel}>
-              <input 
-                type="radio" 
-                name="propertyStatus" 
-                checked={filters.forRent} 
-                onChange={() => handlePropertyStatusChange('forRent')} 
-              />
-              For Rent
-            </label>
-          </div>
-        )}
-      </div>
-
-      {/* Price Filter */}
-      <div className={styles.filterGroup}>
-        <button 
-          className={`${styles.dropdownButton} ${activeDropdown === 'price' ? styles.active : ''} ${isPriceFilterActive ? styles.hasFilter : ''}`}
-          onClick={() => handleDropdownToggle('price')}
-        >
-          Price
-          {isPriceFilterActive && <span className={styles.filterBadge}></span>}
-          <span className={styles.chevron}>▼</span>
-        </button>
-        {activeDropdown === 'price' && (
-          <div className={styles.dropdown}>
-            <div className={styles.rangeFilter}>
-              <input 
-                type="text" 
-                placeholder="Min"
-                value={filters.priceMin}
-                onChange={(e) => handlePriceChange(e.target.value, filters.priceMax)}
-                className={styles.rangeInput}
-              />
-              <span className={styles.rangeSeparator}>to</span>
-              <input 
-                type="text" 
-                placeholder="Max"
-                value={filters.priceMax}
-                onChange={(e) => handlePriceChange(filters.priceMin, e.target.value)}
-                className={styles.rangeInput}
-              />
-            </div>
-            <div className={styles.presetRanges}>
-              <button onClick={() => handlePriceChange('', '', true)}>Any</button>
-              <button onClick={() => handlePriceChange('', '100000', true)}>Under $100,000</button>
-              <button onClick={() => handlePriceChange('100000', '300000', true)}>$100k-$300k</button>
-              <button onClick={() => handlePriceChange('300000', '500000', true)}>$300k-$500k</button>
-              <button onClick={() => handlePriceChange('500000', '', true)}>$500k+</button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Beds & Baths Filter */}
-      <div className={styles.filterGroup}>
-        <button 
-          className={`${styles.dropdownButton} ${activeDropdown === 'bedsBaths' ? styles.active : ''} ${isBedsFilterActive || isBathsFilterActive ? styles.hasFilter : ''}`}
-          onClick={() => handleDropdownToggle('bedsBaths')}
-        >
-          Beds & Baths
-          {(isBedsFilterActive || isBathsFilterActive) && <span className={styles.filterBadge}></span>}
-          <span className={styles.chevron}>▼</span>
-        </button>
-        {activeDropdown === 'bedsBaths' && (
-          <div className={styles.dropdown}>
-            <div className={styles.bedsAndBaths}>
-              <div className={styles.bedsFilter}>
-                <h4>Bedrooms</h4>
-                <div className={styles.btnGroup}>
-                  <button 
-                    className={filters.beds === '' ? styles.selected : ''} 
-                    onClick={() => handleBedsChange('')}
-                  >
-                    Any
-                  </button>
-                  {['1', '2', '3', '4', '5+'].map((num) => (
-                    <button 
-                      key={num} 
-                      className={filters.beds === num ? styles.selected : ''} 
-                      onClick={() => handleBedsChange(num)}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
+        
+        {isDropdownOpen && (
+          <div className={`${styles.singleDropdown} ${styles.allFiltersDropdown}`}>
+            
+            {/* Operation Filter Section */}
+            <div className={styles.filterSection}>
+              <h4>Type</h4>
+              <div className={styles.btnGroup}>
+                <button 
+                  className={filters.operation === 'buy' ? styles.selected : ''} 
+                  onClick={() => handleOperationChange('buy')}
+                >
+                  For Sale
+                </button>
+                <button 
+                  className={filters.operation === 'rent' ? styles.selected : ''} 
+                  onClick={() => handleOperationChange('rent')}
+                >
+                  For Rent
+                </button>
               </div>
-              <div className={styles.bathsFilter}>
-                <h4>Bathrooms</h4>
-                <div className={styles.btnGroup}>
-                  <button 
-                    className={filters.baths === '' ? styles.selected : ''} 
-                    onClick={() => handleBathsChange('')}
-                  >
-                    Any
-                  </button>
-                  {['1', '1.5', '2', '3', '4+'].map((num) => (
+            </div>
+
+            {/* Price Filter Section */}
+            <div className={styles.filterSection}>
+              <h4>Price Range</h4>
+              <div className={styles.rangeFilter}>
+                <input 
+                  type="text" 
+                  placeholder="Min"
+                  value={filters.priceMin}
+                  onChange={(e) => handlePriceChange(e.target.value, filters.priceMax)}
+                  className={styles.rangeInput}
+                />
+                <span className={styles.rangeSeparator}>to</span>
+                <input 
+                  type="text" 
+                  placeholder="Max"
+                  value={filters.priceMax}
+                  onChange={(e) => handlePriceChange(filters.priceMin, e.target.value)}
+                  className={styles.rangeInput}
+                />
+              </div>
+              <div className={styles.presetRanges}>
+                <button onClick={() => handlePriceChange('', '')}>Any</button>
+                <button onClick={() => handlePriceChange('', '100000')}>Under $100k</button>
+                <button onClick={() => handlePriceChange('100000', '300000')}>$100k-$300k</button>
+                <button onClick={() => handlePriceChange('300000', '500000')}>$300k-$500k</button>
+                <button onClick={() => handlePriceChange('500000', '')}>$500k+</button>
+              </div>
+            </div>
+
+            {/* Beds & Baths Section */}
+            <div className={styles.filterSection}>
+              <div className={styles.bedsAndBaths}>
+                <div className={styles.bedsFilter}>
+                  <h4>Bedrooms</h4>
+                  <div className={styles.btnGroup}>
                     <button 
-                      key={num} 
-                      className={filters.baths === num ? styles.selected : ''} 
-                      onClick={() => handleBathsChange(num)}
+                      className={filters.beds === '' ? styles.selected : ''} 
+                      onClick={() => handleBedsChange('')}
                     >
-                      {num}
+                      Any
                     </button>
-                  ))}
+                    {['1', '2', '3', '4', '5+'].map((num) => (
+                      <button 
+                        key={num} 
+                        className={filters.beds === num ? styles.selected : ''} 
+                        onClick={() => handleBedsChange(num)}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className={styles.bathsFilter}>
+                  <h4>Bathrooms</h4>
+                  <div className={styles.btnGroup}>
+                    <button 
+                      className={filters.baths === '' ? styles.selected : ''} 
+                      onClick={() => handleBathsChange('')}
+                    >
+                      Any
+                    </button>
+                    {['1', '1.5', '2', '3', '4+'].map((num) => (
+                      <button 
+                        key={num} 
+                        className={filters.baths === num ? styles.selected : ''} 
+                        onClick={() => handleBathsChange(num)}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Home Type Filter */}
-      <div className={styles.filterGroup}>
-        <button 
-          className={`${styles.dropdownButton} ${activeDropdown === 'homeType' ? styles.active : ''} ${isHomeTypeFilterActive ? styles.hasFilter : ''}`}
-          onClick={() => handleDropdownToggle('homeType')}
-        >
-          Home Type
-          {isHomeTypeFilterActive && <span className={styles.filterBadge}></span>}
-          <span className={styles.chevron}>▼</span>
-        </button>
-        {activeDropdown === 'homeType' && (
-          <div className={styles.dropdown}>
-            <div className={styles.homeTypes}>
-              <label className={styles.checkboxLabel}>
-                <input 
-                  type="radio" 
-                  name="homeType" 
-                  checked={filters.homeType === ''} 
-                  onChange={() => handleHomeTypeChange('')} 
-                />
-                Any
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input 
-                  type="radio" 
-                  name="homeType" 
-                  checked={filters.homeType === 'House'} 
-                  onChange={() => handleHomeTypeChange('House')} 
-                />
-                House
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input 
-                  type="radio" 
-                  name="homeType" 
-                  checked={filters.homeType === 'Apartment'} 
-                  onChange={() => handleHomeTypeChange('Apartment')} 
-                />
-                Apartment
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input 
-                  type="radio" 
-                  name="homeType" 
-                  checked={filters.homeType === 'Condo'} 
-                  onChange={() => handleHomeTypeChange('Condo')} 
-                />
-                Condo
-              </label>
-              <label className={styles.checkboxLabel}>
-                <input 
-                  type="radio" 
-                  name="homeType" 
-                  checked={filters.homeType === 'Townhouse'} 
-                  onChange={() => handleHomeTypeChange('Townhouse')} 
-                />
-                Townhouse
-              </label>
+            {/* Home Type Section */}
+            <div className={styles.filterSection}>
+              <h4>Property Type</h4>
+              <div className={styles.homeTypes}>
+                <label className={styles.checkboxLabel}>
+                  <input 
+                    type="radio" 
+                    name="homeType" 
+                    checked={filters.homeType === ''} 
+                    onChange={() => handleHomeTypeChange('')} 
+                  />
+                  Any
+                </label>
+                <label className={styles.checkboxLabel}>
+                  <input 
+                    type="radio" 
+                    name="homeType" 
+                    checked={filters.homeType === 'House'} 
+                    onChange={() => handleHomeTypeChange('House')} 
+                  />
+                  House
+                </label>
+                <label className={styles.checkboxLabel}>
+                  <input 
+                    type="radio" 
+                    name="homeType" 
+                    checked={filters.homeType === 'Apartment'} 
+                    onChange={() => handleHomeTypeChange('Apartment')} 
+                  />
+                  Apartment
+                </label>
+                <label className={styles.checkboxLabel}>
+                  <input 
+                    type="radio" 
+                    name="homeType" 
+                    checked={filters.homeType === 'Condo'} 
+                    onChange={() => handleHomeTypeChange('Condo')} 
+                  />
+                  Condo
+                </label>
+                <label className={styles.checkboxLabel}>
+                  <input 
+                    type="radio" 
+                    name="homeType" 
+                    checked={filters.homeType === 'Townhouse'} 
+                    onChange={() => handleHomeTypeChange('Townhouse')} 
+                  />
+                  Townhouse
+                </label>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* More Filters */}
-      <div className={styles.filterGroup}>
-        <button 
-          className={`${styles.dropdownButton} ${activeDropdown === 'moreFilters' ? styles.active : ''} ${isMoreFiltersActive ? styles.hasFilter : ''}`}
-          onClick={() => handleDropdownToggle('moreFilters')}
-        >
-          More
-          {isMoreFiltersActive && <span className={styles.filterBadge}></span>}
-          <span className={styles.chevron}>▼</span>
-        </button>
-        {activeDropdown === 'moreFilters' && (
-          <div className={`${styles.dropdown} ${styles.moreFiltersDropdown}`}>
-            <div className={styles.moreFiltersSection}>
+            {/* Advanced Filters Section */}
+            <div className={styles.filterSection}>
               <h4>Square Feet</h4>
               <div className={styles.rangeFilter}>
                 <input 
                   type="number" 
                   placeholder="Min"
                   value={filters.moreFilters.minArea}
-                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     minArea: e.target.value
@@ -394,7 +333,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                   type="number" 
                   placeholder="Max"
                   value={filters.moreFilters.maxArea}
-                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     maxArea: e.target.value
@@ -403,14 +341,14 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                 />
               </div>
             </div>
-            <div className={styles.moreFiltersSection}>
+
+            <div className={styles.filterSection}>
               <h4>Year Built</h4>
               <div className={styles.rangeFilter}>
                 <input 
                   type="number" 
                   placeholder="Min"
                   value={filters.moreFilters.yearBuiltMin}
-                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     yearBuiltMin: e.target.value
@@ -422,7 +360,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                   type="number" 
                   placeholder="Max"
                   value={filters.moreFilters.yearBuiltMax}
-                  maxLength={10}
                   onChange={(e) => handleMoreFiltersChange({
                     ...filters.moreFilters,
                     yearBuiltMax: e.target.value
@@ -431,12 +368,22 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                 />
               </div>
             </div>
-            <button 
-              className={styles.applyButton}
-              onClick={() => setActiveDropdown(null)}
-            >
-              Apply Filters
-            </button>
+
+            {/* Action Buttons */}
+            <div className={styles.actionButtons}>
+              <button 
+                className={styles.clearButton}
+                onClick={clearAllFilters}
+              >
+                Clear All
+              </button>
+              <button 
+                className={styles.applyButton}
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                Apply Filters
+              </button>
+            </div>
           </div>
         )}
       </div>

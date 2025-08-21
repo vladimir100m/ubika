@@ -14,6 +14,19 @@ const SavedProperties: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Get operation from query parameters, default to 'buy'
+  const operation = router.query.operation
+    ? router.query.operation as 'buy' | 'rent'
+    : 'buy';
+
+  const handleOperationChange = (operation: 'buy' | 'rent') => {
+    // Navigate to map page with operation filter instead of filtering saved properties
+    router.push({
+      pathname: '/map',
+      query: { operation }
+    });
+  };
+
   // Load saved properties when user is authenticated
   useEffect(() => {
     const loadSavedProperties = async () => {
@@ -38,7 +51,7 @@ const SavedProperties: React.FC = () => {
     }
   }, [user, isLoading]);
 
-  // Handle favorite toggle from PropertyCard
+  // Handle favorite toggle
   const handleFavoriteToggle = async (propertyId: number, newStatus: boolean) => {
     if (!newStatus) {
       setSavedProperties(prev => prev.filter(prop => prop.id !== propertyId));
@@ -47,7 +60,7 @@ const SavedProperties: React.FC = () => {
 
   if (isLoading || loading) return (
     <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+      <Header />
       <main className={styles.main}>
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: '18px', color: '#666' }}>Loading...</div>
@@ -61,7 +74,7 @@ const SavedProperties: React.FC = () => {
   if (!user) {
     return (
       <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+        <Header />
         <main className={styles.main}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
@@ -101,8 +114,8 @@ const SavedProperties: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
-  <Header selectedOperation="buy" onOperationChange={() => {}} />
+    <div className={styles.container} style={{ paddingTop: '80px' }}>
+      <Header />
       
       {/* Page Header */}
       <div style={{ 
@@ -299,31 +312,14 @@ const SavedProperties: React.FC = () => {
               </div>
 
               {/* Properties Grid */}
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-                gap: '24px' 
-              }}>
+              <div className={styles.propertiesGrid}>
                 {savedProperties.map((property) => (
-                  <div key={property.id} style={{ position: 'relative' }}>
-                    <PropertyCard 
-                      id={property.id}
-                      image_url={property.image_url}
-                      description={property.description}
-                      price={property.price}
-                      rooms={property.rooms}
-                      bathrooms={property.bathrooms}
-                      address={property.address}
-                      squareMeters={property.squareMeters}
-                      yearBuilt={property.yearBuilt}
-                      latitude={property.latitude}
-                      longitude={property.longitude}
-                      onFavoriteToggle={handleFavoriteToggle}
-                      isFavorite={true}
-                    />
-                    
-                    {/* Remove from favorites button */}
-                  </div>
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    isFavorite={true}
+                    onFavoriteToggle={() => handleFavoriteToggle(property.id, false)}
+                  />
                 ))}
               </div>
             </>

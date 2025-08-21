@@ -22,6 +22,9 @@ export interface SavedProperty {
   created_at: string;
   updated_at: string;
   saved_at: string;
+  operation_status_id?: number;
+  operation_status?: string;
+  operation_status_display?: string;
 }
 
 export interface SavedPropertiesResponse {

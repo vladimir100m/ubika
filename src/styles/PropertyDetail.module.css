@@ -1,0 +1,466 @@
+/* PropertyDetail.module.css */
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Loading and Error States */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0073e6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.error p {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+.backButton {
+  background: #0073e6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background: #005bb5;
+}
+
+/* Image Section */
+.imageSection {
+  background: white;
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.placeholderImage {
+  height: 400px;
+  overflow: hidden;
+}
+
+.placeholderImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Content */
+.content {
+  padding: 0 20px 40px;
+}
+
+/* Property Header */
+.propertyHeader {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.propertyInfo {
+  flex: 1;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.address {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0073e6;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.saveButton,
+.shareButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.saveButton {
+  background: #f8f9fa;
+  color: #333;
+  border: 2px solid #e1e5e9;
+}
+
+.saveButton:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+.saveButton.saved {
+  background: #ff4757;
+  color: white;
+  border-color: #ff4757;
+}
+
+.saveButton.saved:hover {
+  background: #ff3742;
+}
+
+.shareButton {
+  background: #0073e6;
+  color: white;
+}
+
+.shareButton:hover {
+  background: #005bb5;
+}
+
+/* Property Specs */
+.specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.spec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #555;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.spec svg {
+  opacity: 0.7;
+}
+
+/* Description Section */
+.description {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.description h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+  border-bottom: 3px solid #0073e6;
+  padding-bottom: 8px;
+  display: inline-block;
+}
+
+.description p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+  margin: 0;
+}
+
+/* Details Section */
+.detailsSection {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.detailsSection h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 24px 0;
+  border-bottom: 3px solid #0073e6;
+  padding-bottom: 8px;
+  display: inline-block;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailLabel {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Contact Section */
+.contactSection {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contactCard h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.contactCard p {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+.contactActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.primaryButton {
+  background: #0073e6;
+  color: white;
+}
+
+.primaryButton:hover {
+  background: #005bb5;
+  transform: translateY(-1px);
+}
+
+.secondaryButton {
+  background: #f8f9fa;
+  color: #333;
+  border: 2px solid #e1e5e9;
+}
+
+.secondaryButton:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* Map Section */
+.mapSection {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mapSection h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 24px 0;
+  border-bottom: 3px solid #0073e6;
+  padding-bottom: 8px;
+  display: inline-block;
+}
+
+.mapPlaceholder {
+  background: #f8f9fa;
+  border: 2px dashed #ced4da;
+  border-radius: 8px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.locationText {
+  font-weight: 600;
+  margin-top: 8px;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content {
+    padding: 0 16px 24px;
+  }
+
+  .propertyHeader,
+  .description,
+  .detailsSection,
+  .contactSection,
+  .mapSection {
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .price {
+    font-size: 1.6rem;
+  }
+
+  .actions {
+    align-self: stretch;
+  }
+
+  .saveButton,
+  .shareButton {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .specs {
+    gap: 16px;
+  }
+
+  .detailsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  .contactActions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 0 12px 20px;
+  }
+
+  .propertyHeader,
+  .description,
+  .detailsSection,
+  .contactSection,
+  .mapSection {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .price {
+    font-size: 1.4rem;
+  }
+
+  .specs {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
