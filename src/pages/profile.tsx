@@ -917,7 +917,7 @@ function Profile() {
                             />
                             <input
                               type="number"
-                              placeholder="Square Feet"
+                              placeholder="Square Meters"
                               value={formData.squareMeters}
                               onChange={(e) => setFormData(prev => ({ ...prev, squareMeters: parseInt(e.target.value) || 0 }))}
                               required

@@ -30,10 +30,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
     };
 
     // Build dynamic query
-    let queryText = `
+  let queryText = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.area as squareMeters, 
+  p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
         CASE 
           WHEN p.type = 'house' THEN '/properties/casa-moderna.jpg'
           WHEN p.type = 'apartment' THEN '/properties/apartamento-moderno.jpg'
@@ -105,13 +105,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
     }
 
     if (filters.minArea) {
-      queryText += ` AND p.area >= $${paramIndex}`;
+      queryText += ` AND p.square_meters >= $${paramIndex}`;
       queryParams.push(parseInt(filters.minArea, 10));
       paramIndex++;
     }
 
     if (filters.maxArea) {
-      queryText += ` AND p.area <= $${paramIndex}`;
+      queryText += ` AND p.square_meters <= $${paramIndex}`;
       queryParams.push(parseInt(filters.maxArea, 10));
       paramIndex++;
     }

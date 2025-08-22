@@ -64,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const result = await query(
           `SELECT p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-           p.zip_code, p.type, p.room as rooms, p.bathrooms, p.area as squareMeters, 
+           p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
            CASE 
              WHEN p.type = 'house' THEN '/properties/casa-moderna.jpg'
              WHEN p.type = 'apartment' THEN '/properties/apartamento-moderno.jpg'

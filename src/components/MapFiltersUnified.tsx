@@ -304,7 +304,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
       {/* Advanced Filters Section */}
       <div className={styles.filterSection}>
-        <h4>Square Feet</h4>
+        <h4>Square Meters</h4>
         <div className={styles.rangeFilter}>
           <input 
             type="number" 

@@ -366,12 +366,12 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         <div className={styles.twoColumnSection}>
           <div className={styles.filterSection}>
             <label className={styles.inputLabel}>
-              📏 Square Feet
+              📏 Square Meters
               {(tempFilters.moreFilters.minArea || tempFilters.moreFilters.maxArea) && (
                 <span className={styles.activeIndicator}>
-                  {tempFilters.moreFilters.minArea && `${tempFilters.moreFilters.minArea} sqft`}
+                  {tempFilters.moreFilters.minArea && `${tempFilters.moreFilters.minArea} m²`}
                   {tempFilters.moreFilters.minArea && tempFilters.moreFilters.maxArea && ' - '}
-                  {tempFilters.moreFilters.maxArea && `${tempFilters.moreFilters.maxArea} sqft`}
+                  {tempFilters.moreFilters.maxArea && `${tempFilters.moreFilters.maxArea} m²`}
                 </span>
               )}
             </label>
@@ -379,7 +379,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               <div className={styles.inputGroup}>
                 <input 
                   type="number" 
-                  placeholder="Min sqft"
+                  placeholder="Min m²"
                   value={tempFilters.moreFilters.minArea}
                   onChange={(e) => handleMoreFiltersChange({
                     ...tempFilters.moreFilters,
@@ -392,7 +392,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               <div className={styles.inputGroup}>
                 <input 
                   type="number" 
-                  placeholder="Max sqft"
+                  placeholder="Max m²"
                   value={tempFilters.moreFilters.maxArea}
                   onChange={(e) => handleMoreFiltersChange({
                     ...tempFilters.moreFilters,

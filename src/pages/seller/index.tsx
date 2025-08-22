@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
+import MultiImageUpload from '../../components/MultiImageUpload';
 import Header from 'components/Header';
 
 interface PropertyType {
@@ -58,7 +59,10 @@ const SellerDashboard: React.FC = () => {
     squareMeters: 0,
     status: 'available',
     operation_status_id: 1, // Default to Sale
-    seller_id: ''
+  seller_id: '',
+  zip_code: '',
+  yearBuilt: undefined,
+  image_url: ''
   });
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -68,6 +72,9 @@ const SellerDashboard: React.FC = () => {
   const [loadingFormData, setLoadingFormData] = useState(true);
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
+  // New state for improved image management
+  const [images, setImages] = useState<string[]>([]);
+  const [coverIndex, setCoverIndex] = useState<number>(0);
 
   useEffect(() => {
     if (isLoading) return;
@@ -274,10 +281,15 @@ const SellerDashboard: React.FC = () => {
       squareMeters: 0,
       status: 'available',
       operation_status_id: 1, // Default to Sale
-  seller_id: u?.sub || ''
+      seller_id: u?.sub || '',
+      zip_code: '',
+      yearBuilt: undefined,
+      image_url: ''
     });
     setEditingPropertyId(null);
     setSelectedFeatures([]);
+  setImages([]);
+  setCoverIndex(0);
   };
 
   const fetchPropertyFeatures = async (propertyId: number) => {
@@ -314,10 +326,13 @@ const SellerDashboard: React.FC = () => {
       squareMeters: property.squareMeters,
       status: property.status,
       image_url: property.image_url,
-      yearBuilt: property.yearBuilt,
+      yearBuilt: property.yearBuilt ?? undefined,
       operation_status_id: property.operation_status_id || 1, // Default to Sale if not set
-  seller_id: u?.sub || ''
+      seller_id: u?.sub || ''
     });
+  // Initialize images array with existing single image
+  setImages([property.image_url]);
+  setCoverIndex(0);
     
     // Set the editing property ID
     setEditingPropertyId(property.id);
@@ -591,7 +606,7 @@ const SellerDashboard: React.FC = () => {
                   type="text" 
                   id="title" 
                   name="title" 
-                  value={formData.title} 
+                  value={formData.title ?? ''} 
                   onChange={handleInputChange} 
                   required 
                   placeholder="e.g., Modern Apartment with Ocean View"
@@ -604,7 +619,7 @@ const SellerDashboard: React.FC = () => {
                 <textarea 
                   id="description" 
                   name="description" 
-                  value={formData.description} 
+                  value={formData.description ?? ''} 
                   onChange={handleInputChange} 
                   required 
                   rows={4}
@@ -620,7 +635,7 @@ const SellerDashboard: React.FC = () => {
                     type="text" 
                     id="price" 
                     name="price" 
-                    value={formData.price} 
+                    value={formData.price ?? ''} 
                     onChange={handleInputChange} 
                     required 
                     placeholder="e.g., 250000"
@@ -633,7 +648,7 @@ const SellerDashboard: React.FC = () => {
                   <select 
                     id="type" 
                     name="type" 
-                    value={formData.type} 
+                    value={formData.type ?? ''} 
                     onChange={handleInputChange} 
                     required
                     className={styles.formSelect}
@@ -657,7 +672,7 @@ const SellerDashboard: React.FC = () => {
                     type="text" 
                     id="address" 
                     name="address" 
-                    value={formData.address} 
+                    value={formData.address ?? ''} 
                     onChange={handleInputChange} 
                     required 
                     className={styles.formInput}
@@ -671,7 +686,7 @@ const SellerDashboard: React.FC = () => {
                     type="text" 
                     id="city" 
                     name="city" 
-                    value={formData.city} 
+                    value={formData.city ?? ''} 
                     onChange={handleInputChange} 
                     required 
                     className={styles.formInput}
@@ -684,7 +699,7 @@ const SellerDashboard: React.FC = () => {
                     type="text" 
                     id="state" 
                     name="state" 
-                    value={formData.state} 
+                    value={formData.state ?? ''} 
                     onChange={handleInputChange} 
                     required 
                     className={styles.formInput}
@@ -699,7 +714,7 @@ const SellerDashboard: React.FC = () => {
                     type="text" 
                     id="country" 
                     name="country" 
-                    value={formData.country} 
+                    value={formData.country ?? ''} 
                     onChange={handleInputChange} 
                     required 
                     className={styles.formInput}
@@ -712,7 +727,7 @@ const SellerDashboard: React.FC = () => {
                     type="text" 
                     id="zip_code" 
                     name="zip_code" 
-                    value={formData.zip_code || ''} 
+                    value={formData.zip_code ?? ''} 
                     onChange={handleInputChange}
                     className={styles.formInput}
                   />
@@ -726,7 +741,7 @@ const SellerDashboard: React.FC = () => {
                     type="number" 
                     id="rooms" 
                     name="rooms" 
-                    value={formData.rooms} 
+                    value={formData.rooms ?? 0} 
                     onChange={handleInputChange} 
                     required 
                     min="0"
@@ -740,7 +755,7 @@ const SellerDashboard: React.FC = () => {
                     type="number" 
                     id="bathrooms" 
                     name="bathrooms" 
-                    value={formData.bathrooms} 
+                    value={formData.bathrooms ?? 0} 
                     onChange={handleInputChange} 
                     required 
                     min="0"
@@ -757,7 +772,7 @@ const SellerDashboard: React.FC = () => {
                     type="number" 
                     id="squareMeters" 
                     name="squareMeters" 
-                    value={formData.squareMeters} 
+                    value={formData.squareMeters ?? 0} 
                     onChange={handleInputChange} 
                     required 
                     min="0"
@@ -770,7 +785,7 @@ const SellerDashboard: React.FC = () => {
                   <select 
                     id="status" 
                     name="status" 
-                    value={formData.status} 
+                    value={formData.status ?? 'available'} 
                     onChange={handleInputChange} 
                     required
                     className={styles.formSelect}
@@ -794,7 +809,7 @@ const SellerDashboard: React.FC = () => {
                   <select 
                     id="operation_status_id" 
                     name="operation_status_id" 
-                    value={formData.operation_status_id || 1} 
+                    value={formData.operation_status_id ?? 1} 
                     onChange={handleInputChange} 
                     required
                     className={styles.formSelect}
@@ -817,7 +832,7 @@ const SellerDashboard: React.FC = () => {
                     type="number" 
                     id="yearBuilt" 
                     name="yearBuilt" 
-                    value={formData.yearBuilt || ''} 
+                    value={formData.yearBuilt ?? ''} 
                     onChange={handleInputChange} 
                     placeholder="e.g., 2010"
                     min="1800"
@@ -828,10 +843,19 @@ const SellerDashboard: React.FC = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Property Image</label>
-                <ImageUpload 
-                  onImageChange={(imageUrl) => setFormData(prev => ({...prev, image_url: imageUrl || ''}))}
-                  defaultValue={formData.image_url || ''}
+                <label className={styles.formLabel}>Property Images</label>
+                <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+                  Upload multiple images, set a cover, reorder, or use sample images.
+                </p>
+        <MultiImageUpload 
+                  images={images}
+                  coverIndex={coverIndex}
+                  onChange={(imgs, cover) => {
+                    setImages(imgs);
+                    setCoverIndex(cover);
+                    // Map cover image to legacy single image field for backend compatibility
+          setFormData(prev => ({ ...prev, image_url: imgs[cover] ?? '' }));
+                  }}
                 />
               </div>
 

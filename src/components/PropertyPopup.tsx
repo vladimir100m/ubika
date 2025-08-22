@@ -527,7 +527,7 @@ export default function PropertyPopup({
                   <div className={styles.propertyStatsRow}>
                     <div className={styles.propertyStat}><strong>{selectedProperty.rooms}</strong><span>beds</span></div>
                     <div className={styles.propertyStat}><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.squareMeters}</strong><span>sqft</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.squareMeters}</strong><span>m²</span></div>
                     <div className={styles.propertyStat}><strong>{selectedProperty.type || 'House'}</strong></div>
                     {selectedProperty.yearBuilt && (
                       <div className={styles.propertyStat}><strong>{selectedProperty.yearBuilt}</strong><span>built</span></div>
@@ -600,7 +600,7 @@ export default function PropertyPopup({
                       <div className={styles.overviewMain}>
                         <div className={styles.descBlock}>
                           <h3 className={styles.sectionHeading}>Overview</h3>
-                          <p className={`${styles.descText} ${!descExpanded ? styles.descClamp : ''}`}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square feet of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
+                          <p className={`${styles.descText} ${!descExpanded ? styles.descClamp : ''}`}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square meters of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
                           {(!descExpanded && (selectedProperty.description?.length || 0) > 320) && (
                             <button className={styles.readMoreBtn} onClick={() => setDescExpanded(true)}>Read more</button>
                           )}
@@ -839,7 +839,7 @@ export default function PropertyPopup({
                               justifyContent: 'space-between', 
                               fontSize: '14px'
                             }}>
-                              <span>Square feet</span>
+                              <span>Square meters</span>
                               <span>{selectedProperty.squareMeters}</span>
                             </div>
                           </div>
