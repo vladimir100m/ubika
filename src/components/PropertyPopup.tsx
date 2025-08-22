@@ -24,6 +24,19 @@ interface Neighborhood {
   highway_access: string;
 }
 
+// Infer a simple emoji/icon fallback when API feature lacks explicit icon
+function inferIconFromCategory(category?: string) {
+  if(!category) return '•';
+  const key = category.toLowerCase();
+  if (key.includes('kitchen')) return '🍳';
+  if (key.includes('outdoor') || key.includes('garden') || key.includes('patio')) return '🌳';
+  if (key.includes('security')) return '🔒';
+  if (key.includes('parking') || key.includes('garage')) return '🚗';
+  if (key.includes('climate') || key.includes('heating') || key.includes('cooling')) return '🌡️';
+  if (key.includes('internet') || key.includes('tech')) return '📶';
+  return '•';
+}
+
 // Function to generate additional property images based on property type
 const generatePropertyImages = (property: Property) => {
   const baseImages = [
@@ -81,6 +94,7 @@ export default function PropertyPopup({
   const [loadingFeatures, setLoadingFeatures] = useState(true);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -596,20 +610,64 @@ export default function PropertyPopup({
                         </div>
                         <div className={styles.featureBlock}>
                           <h3 className={styles.sectionHeading}>Home Features</h3>
-                          <div className={styles.featuresGridPopup}>
-                            {loadingFeatures ? (
-                              <div className={styles.loadingMuted}>Loading features...</div>
-                            ) : propertyFeatures.length > 0 ? (
-                              propertyFeatures.map(feature => (
-                                <div key={feature.id} className={styles.featureItemPopup}>
-                                  <span className={styles.featureIconPopup}>{feature.icon || '•'}</span>
-                                  <span className={styles.featureNamePopup}>{feature.name}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <div className={styles.loadingMuted}>No features assigned to this property</div>
-                            )}
-                          </div>
+                          {/* Feature content area */}
+                          {loadingFeatures && (
+                            <div className={styles.featuresSkeletonWrap} aria-live="polite" aria-busy="true">
+                              {Array.from({length:8}).map((_,i)=>(
+                                <div key={i} className={styles.featureSkeleton} />
+                              ))}
+                            </div>
+                          )}
+                          {!loadingFeatures && propertyFeatures.length === 0 && (
+                            <div className={styles.featuresEmpty}>
+                              <p>No features have been recorded for this home yet.</p>
+                              <small>Ask the seller or agent to add amenities to improve visibility.</small>
+                            </div>
+                          )}
+                          {!loadingFeatures && propertyFeatures.length > 0 && (
+                            <div className={styles.featuresCategoryList}>
+                              {Object.entries(
+                                propertyFeatures.reduce<Record<string, PropertyFeature[]>>((acc, f) => {
+                                  const cat = (f.category || 'General').trim();
+                                  if(!acc[cat]) acc[cat] = [];
+                                  acc[cat].push(f);
+                                  return acc;
+                                }, {})
+                              ).map(([category, feats]) => {
+                                // Limit features if not expanded
+                                const displayFeats = showAllFeatures ? feats : feats.slice(0, 6);
+                                return (
+                                  <div key={category} className={styles.featureCategoryGroup}>
+                                    <div className={styles.featureCategoryHeader}>
+                                      <h4 className={styles.featureCategoryTitle}>{category}</h4>
+                                      {!showAllFeatures && feats.length > 6 && (
+                                        <span className={styles.featureCategoryCount}>{feats.length} total</span>
+                                      )}
+                                    </div>
+                                    <ul className={styles.featureChips}>
+                                      {displayFeats.map(f => (
+                                        <li key={f.id} className={styles.featureChip}>
+                                          <span className={styles.featureIconWrap} aria-hidden="true">{f.icon || inferIconFromCategory(f.category)}</span>
+                                          <span className={styles.featureChipLabel}>{f.name}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                );
+                              })}
+                              {/* Show more / less */}
+                              {propertyFeatures.length > 12 && (
+                                <button
+                                  type="button"
+                                  className={styles.featureExpandBtn}
+                                  onClick={()=>setShowAllFeatures(s=>!s)}
+                                  aria-expanded={showAllFeatures}
+                                >
+                                  {showAllFeatures ? 'Show fewer features' : 'Show all features'}
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className={styles.overviewAside}>
