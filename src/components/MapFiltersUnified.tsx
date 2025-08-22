@@ -380,7 +380,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       {/* Search Location Input - Only show in popup mode */}
       {!inHeader && (
         <div className={styles.searchSection}>
-          <h4 className={styles.sectionTitle}>Search Location</h4>
+          <h4 className={styles.propertyTitle}>Search Location</h4>
           <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
             <input
               type="text"
@@ -408,7 +408,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       <div className={styles.filtersSection}>
         {/* Header for popup mode */}
         {!inHeader && (
-          <h4 className={styles.sectionTitle}>Property Filters</h4>
+          <h4 className={styles.propertyTitle}>Property Filters</h4>
         )}
         
         {/* Single Unified Filter Dropdown for header mode, or expanded filters for popup */}

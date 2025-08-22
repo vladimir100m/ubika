@@ -192,7 +192,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     <>
       {/* Quick Filter Chips - Most Common Filters */}
       <div className={styles.quickFilters}>
-        <h4 className={styles.sectionTitle}>Quick Filters</h4>
+  <h4 className={styles.propertyTitle}>Quick Filters</h4>
         <div className={styles.chipGroup}>
           <button 
             className={`${styles.filterChip} ${tempFilters.operation === 'rent' ? styles.chipSelected : ''}`}
@@ -223,7 +223,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
       {/* Price Range with Visual Slider */}
       <div className={styles.filterSection}>
-        <h4 className={styles.sectionTitle}>
+  <h4 className={styles.propertyTitle}>
           💰 Price Range
           {(tempFilters.priceMin || tempFilters.priceMax) && (
             <span className={styles.activeIndicator}>
@@ -295,7 +295,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       {/* Bedrooms & Bathrooms in one row */}
       <div className={styles.twoColumnSection}>
         <div className={styles.filterSection}>
-          <h4 className={styles.sectionTitle}>
+          <h4 className={styles.propertyTitle}>
             🛏️ Bedrooms
             {tempFilters.beds && <span className={styles.activeIndicator}>{tempFilters.beds}</span>}
           </h4>
@@ -313,7 +313,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         </div>
 
         <div className={styles.filterSection}>
-          <h4 className={styles.sectionTitle}>
+          <h4 className={styles.propertyTitle}>
             🚿 Bathrooms
             {tempFilters.baths && <span className={styles.activeIndicator}>{tempFilters.baths}</span>}
           </h4>
@@ -333,7 +333,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
       {/* Property Type with Icons */}
       <div className={styles.filterSection}>
-        <h4 className={styles.sectionTitle}>
+  <h4 className={styles.propertyTitle}>
           🏠 Property Type
           {tempFilters.homeType && <span className={styles.activeIndicator}>{tempFilters.homeType}</span>}
         </h4>
@@ -361,7 +361,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
       {/* Advanced Filters Section */}
       <div className={styles.advancedSection}>
-        <h4 className={styles.sectionTitle}>📐 Advanced Filters</h4>
+  <h4 className={styles.propertyTitle}>📐 Advanced Filters</h4>
         
         <div className={styles.twoColumnSection}>
           <div className={styles.filterSection}>
@@ -471,7 +471,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       {/* Search Location Input - Only show in popup mode */}
       {!inHeader && (
         <div className={styles.searchSection}>
-          <h4 className={styles.sectionTitle}>
+          <h4 className={styles.propertyTitle}>
             📍 Search Location
             {searchValue && (
               <span className={styles.activeIndicator}>{searchValue}</span>
@@ -504,7 +504,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       <div className={styles.filtersSection}>
         {/* Header for popup mode */}
         {!inHeader && (
-          <h4 className={styles.sectionTitle}>Property Filters</h4>
+          <h4 className={styles.propertyTitle}>Property Filters</h4>
         )}
         
         {/* Single Unified Filter Dropdown for header mode, or expanded filters for popup */}

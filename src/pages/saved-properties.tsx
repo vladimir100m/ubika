@@ -312,7 +312,7 @@ const SavedProperties: React.FC = () => {
               </div>
 
               {/* Properties Grid */}
-              <div className={styles.propertiesGrid}>
+              <div className={styles.propertyGrid}>
                 {savedProperties.map((property) => (
                   <PropertyCard
                     key={property.id}

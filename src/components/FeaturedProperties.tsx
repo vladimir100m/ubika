@@ -100,8 +100,10 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
 
   if (loading) {
     return (
-      <div className={styles.featuredProperties}>
-        <h2>{title}</h2>
+      <div className={styles.propertySection}>
+        <div className={styles.propertyHeader}>
+          <h2 className={styles.propertyTitle}>{title}</h2>
+        </div>
         <div className={styles.loadingContainer}>
           <div className={styles.loadingSpinner}></div>
           <p>Loading properties...</p>
@@ -112,8 +114,10 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
 
   if (error) {
     return (
-      <div className={styles.featuredProperties}>
-        <h2>{title}</h2>
+      <div className={styles.propertySection}>
+        <div className={styles.propertyHeader}>
+          <h2 className={styles.propertyTitle}>{title}</h2>
+        </div>
         <div className={styles.errorContainer}>
           <p className={styles.errorMessage}>{error}</p>
         </div>
@@ -122,10 +126,12 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
   }
 
   return (
-    <div className={styles.featuredProperties}>
-      <h2>{title}</h2>
+    <div className={styles.propertySection}>
+      <div className={styles.propertyHeader}>
+        <h2 className={styles.propertyTitle}>{title}</h2>
+      </div>
       {properties.length > 0 ? (
-        <div className={styles.propertiesGrid}>
+        <div className={styles.propertyGrid}>
           {properties.map((property) => (
             <PropertyCard
               key={property.id}

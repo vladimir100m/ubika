@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
+import Footer from '../components/Footer';
+import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
 import styles from '../styles/Home.module.css';
 import layoutStyles from '../styles/Layout.module.css';
 import { Property } from '../types'; // Import Property type
@@ -203,52 +205,54 @@ const Home: React.FC = () => {
           <Banner />
         </div>
 
-        {/* Featured Properties Section */}
-        <section className={styles.featuredSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Featured Properties</h2>
-          <p className={styles.sectionSubtitle}>Discover the best properties in Argentina</p>
-        </div>
-        
-        {loading ? (
-          <div className={styles.loadingContainer}>
-            <div className={styles.loadingSpinner}></div>
-            <p>Loading properties...</p>
-          </div>
-        ) : error ? (
-          <div className={styles.errorContainer}>
-            <p className={styles.errorMessage}>{error}</p>
-            <button 
-              className={styles.retryButton}
-              onClick={() => router.reload()}
-            >
-              Try Again
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Featured properties carousel/grid - first 6 properties */}
-            {properties.length > 0 && (
-              <div className={styles.featuredPropertiesGrid}>
-                {properties.slice(0, 6).map((property) => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    isFavorite={savedPropertyIds.has(property.id)}
-                    onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </section>
+        {/* Properties Section - Standardized Structure */}
+        <PropertySection 
+          title="Featured Properties" 
+          subtitle="Discover the best properties in Argentina"
+        >
+          {/* Results Summary */}
+          <ResultsInfo 
+            count={properties.length}
+            loading={loading}
+          />
+          
+          {/* Loading State */}
+          {loading && <LoadingState />}
+          
+          {/* Error State */}
+          {error && (
+            <ErrorState 
+              message={error}
+              onRetry={() => router.reload()}
+            />
+          )}
+          
+          {/* Properties Grid */}
+          {!loading && !error && properties.length > 0 && (
+            <div className={styles.propertyGrid}>
+              {properties.slice(0, 6).map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  isFavorite={savedPropertyIds.has(property.id)}
+                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                  onClick={() => handlePropertyClick(property.id)}
+                />
+              ))}
+            </div>
+          )}
+          
+          {/* Empty State */}
+          {!loading && !error && properties.length === 0 && (
+            <EmptyState 
+              showClearFilters={true}
+              onClearFilters={() => router.push('/')}
+            />
+          )}
+        </PropertySection>
 
-      <footer className={styles.footer}>
-        <div className={styles.footerBottom}>
-          <p>&copy; {new Date().getFullYear()} Ubika - Leading real estate marketplace | Email: info@ubika.com</p>
-        </div>
-      </footer>
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );
