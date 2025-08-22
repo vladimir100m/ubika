@@ -62,8 +62,18 @@ export const saveProperty = async (propertyId: number): Promise<void> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to save property');
+    // Try to parse JSON; if it fails, fallback to text
+    let message = 'Failed to save property';
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      try {
+        const error = await response.json();
+        message = error.error || message;
+      } catch (_) {}
+    } else {
+      try { message = await response.text(); } catch (_) {}
+    }
+    throw new Error(message);
   }
 };
 
@@ -84,8 +94,17 @@ export const unsaveProperty = async (propertyId: string) => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to unsave property');
+    let message = 'Failed to unsave property';
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      try {
+        const error = await response.json();
+        message = error.error || message;
+      } catch (_) {}
+    } else {
+      try { message = await response.text(); } catch (_) {}
+    }
+    throw new Error(message);
   }
 };
 

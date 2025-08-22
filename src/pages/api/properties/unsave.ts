@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 import { query } from '../../../utils/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,25 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const session = await getServerSession(req, res, {
-      // Basic auth options for server session
-      providers: [],
-      callbacks: {
-        session: ({ session, token }) => ({
-          ...session,
-          user: {
-            ...session.user,
-            sub: token.sub
-          }
-        })
-      }
-    });
+  const session = await getServerSession(req, res, authOptions);
     
-    if (!session || !session.user || !session.user.sub) {
+  if (!session || !session.user || !(session.user as any).sub) {
       return res.status(401).json({ error: 'Unauthorized. Please log in.' });
     }
 
-    const userId = session.user.sub;
+  const userId = (session.user as any).sub;
     const { propertyId } = req.body;
 
     if (!propertyId) {

@@ -1,9 +1,9 @@
-import NextAuth from 'next-auth';
+import NextAuth, { type AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
-export default NextAuth({
+// Export a shared authOptions object so other API routes can reliably access session state.
+export const authOptions: AuthOptions = {
   providers: [
-    // Google provider - primary authentication method
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -16,7 +16,7 @@ export default NextAuth({
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) {
-        token.sub = user.id;
+        token.sub = (user as any).id ?? (user as any).sub ?? token.sub;
         token.provider = account?.provider;
       }
       return token;
@@ -24,14 +24,16 @@ export default NextAuth({
     async session({ session, token }) {
       if (token.sub) {
         (session.user as any).sub = token.sub;
-        (session.user as any).provider = token.provider;
+        (session.user as any).provider = (token as any).provider;
       }
       return session;
     },
   },
   events: {
-    signIn({ user, account, profile }) {
+    signIn({ user, account }) {
       console.log(`User ${user.email} signed in via ${account?.provider}`);
     },
   },
-});
+};
+
+export default NextAuth(authOptions);
