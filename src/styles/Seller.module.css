@@ -279,6 +279,91 @@
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
+/* Enhanced Number Input Styles */
+.numberInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.numberInput {
+  width: 100%;
+  padding: 10px 50px 10px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+.numberInput:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.numberControls {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 2px;
+  border-left: 1px solid #ced4da;
+}
+
+.numberControlUp,
+.numberControlDown {
+  width: 40px;
+  height: 18px;
+  border: none;
+  background: #f8f9fa;
+  color: #495057;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.numberControlUp:hover,
+.numberControlDown:hover {
+  background: #e9ecef;
+  color: #3498db;
+}
+
+.numberControlUp:active,
+.numberControlDown:active {
+  background: #dee2e6;
+  transform: scale(0.95);
+}
+
+.numberControlUp {
+  border-bottom: 1px solid #ced4da;
+  border-radius: 2px 2px 0 0;
+}
+
+.numberControlDown {
+  border-radius: 0 0 2px 2px;
+}
+
+/* Hide browser default number input spinners */
+.numberInput::-webkit-outer-spin-button,
+.numberInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.numberInput[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .formHelp {
   margin-top: 5px;
   font-size: 0.85rem;
@@ -460,5 +545,22 @@
   
   .submitButton, .cancelButton {
     width: 100%;
+  }
+
+  /* Enhanced mobile styles for number controls */
+  .numberControls {
+    right: 4px;
+  }
+
+  .numberControlUp,
+  .numberControlDown {
+    width: 44px;
+    height: 22px;
+    font-size: 12px;
+  }
+
+  .numberInput {
+    padding: 12px 56px 12px 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }

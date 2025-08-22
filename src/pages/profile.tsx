@@ -756,59 +756,214 @@ function Profile() {
                                 e.target.style.boxShadow = 'none';
                               }}
                             />
-                            <input
-                              type="number"
-                              placeholder="Bedrooms"
-                              value={formData.rooms}
-                              onChange={(e) => setFormData(prev => ({ ...prev, rooms: parseInt(e.target.value) || 0 }))}
-                              required
-                              min="0"
-                              style={{
-                                padding: '12px 16px',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                backgroundColor: '#f9fafb',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onFocus={(e) => {
-                                e.target.style.backgroundColor = 'white';
-                                e.target.style.borderColor = '#0073e6';
-                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
-                              }}
-                              onBlur={(e) => {
-                                e.target.style.backgroundColor = '#f9fafb';
-                                e.target.style.borderColor = '#d1d5db';
-                                e.target.style.boxShadow = 'none';
-                              }}
-                            />
-                            <input
-                              type="number"
-                              placeholder="Bathrooms"
-                              value={formData.bathrooms}
-                              onChange={(e) => setFormData(prev => ({ ...prev, bathrooms: parseInt(e.target.value) || 0 }))}
-                              required
-                              min="0"
-                              step="0.5"
-                              style={{
-                                padding: '12px 16px',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                backgroundColor: '#f9fafb',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onFocus={(e) => {
-                                e.target.style.backgroundColor = 'white';
-                                e.target.style.borderColor = '#0073e6';
-                                e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
-                              }}
-                              onBlur={(e) => {
-                                e.target.style.backgroundColor = '#f9fafb';
-                                e.target.style.borderColor = '#d1d5db';
-                                e.target.style.boxShadow = 'none';
-                              }}
-                            />
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                              <input
+                                type="number"
+                                placeholder="Bedrooms (e.g., 3)"
+                                value={formData.rooms}
+                                onChange={(e) => setFormData(prev => ({ ...prev, rooms: parseInt(e.target.value) || 0 }))}
+                                required
+                                min="0"
+                                max="20"
+                                step="1"
+                                style={{
+                                  padding: '12px 50px 12px 16px',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '8px',
+                                  fontSize: '16px',
+                                  backgroundColor: '#f9fafb',
+                                  transition: 'all 0.2s ease',
+                                  width: '100%'
+                                }}
+                                onFocus={(e) => {
+                                  e.target.style.backgroundColor = 'white';
+                                  e.target.style.borderColor = '#0073e6';
+                                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                  e.target.style.backgroundColor = '#f9fafb';
+                                  e.target.style.borderColor = '#d1d5db';
+                                  e.target.style.boxShadow = 'none';
+                                }}
+                              />
+                              <div style={{
+                                position: 'absolute',
+                                right: '2px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                background: '#fff',
+                                borderRadius: '2px',
+                                borderLeft: '1px solid #d1d5db'
+                              }}>
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const newValue = Math.min((formData.rooms || 0) + 1, 20);
+                                    setFormData(prev => ({ ...prev, rooms: newValue }));
+                                  }}
+                                  style={{
+                                    width: '40px',
+                                    height: '18px',
+                                    border: 'none',
+                                    background: '#f8f9fa',
+                                    color: '#495057',
+                                    fontSize: '10px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderBottom: '1px solid #d1d5db',
+                                    borderRadius: '2px 2px 0 0'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#e9ecef';
+                                    e.currentTarget.style.color = '#0073e6';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#f8f9fa';
+                                    e.currentTarget.style.color = '#495057';
+                                  }}
+                                >
+                                  ▲
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const newValue = Math.max((formData.rooms || 0) - 1, 0);
+                                    setFormData(prev => ({ ...prev, rooms: newValue }));
+                                  }}
+                                  style={{
+                                    width: '40px',
+                                    height: '18px',
+                                    border: 'none',
+                                    background: '#f8f9fa',
+                                    color: '#495057',
+                                    fontSize: '10px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '0 0 2px 2px'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#e9ecef';
+                                    e.currentTarget.style.color = '#0073e6';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#f8f9fa';
+                                    e.currentTarget.style.color = '#495057';
+                                  }}
+                                >
+                                  ▼
+                                </button>
+                              </div>
+                            </div>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                              <input
+                                type="number"
+                                placeholder="Bathrooms (e.g., 2)"
+                                value={formData.bathrooms}
+                                onChange={(e) => setFormData(prev => ({ ...prev, bathrooms: parseInt(e.target.value) || 0 }))}
+                                required
+                                min="0"
+                                max="10"
+                                step="1"
+                                style={{
+                                  padding: '12px 50px 12px 16px',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '8px',
+                                  fontSize: '16px',
+                                  backgroundColor: '#f9fafb',
+                                  transition: 'all 0.2s ease',
+                                  width: '100%'
+                                }}
+                                onFocus={(e) => {
+                                  e.target.style.backgroundColor = 'white';
+                                  e.target.style.borderColor = '#0073e6';
+                                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 115, 230, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                  e.target.style.backgroundColor = '#f9fafb';
+                                  e.target.style.borderColor = '#d1d5db';
+                                  e.target.style.boxShadow = 'none';
+                                }}
+                              />
+                              <div style={{
+                                position: 'absolute',
+                                right: '2px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                background: '#fff',
+                                borderRadius: '2px',
+                                borderLeft: '1px solid #d1d5db'
+                              }}>
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const newValue = Math.min((formData.bathrooms || 0) + 1, 10);
+                                    setFormData(prev => ({ ...prev, bathrooms: newValue }));
+                                  }}
+                                  style={{
+                                    width: '40px',
+                                    height: '18px',
+                                    border: 'none',
+                                    background: '#f8f9fa',
+                                    color: '#495057',
+                                    fontSize: '10px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderBottom: '1px solid #d1d5db',
+                                    borderRadius: '2px 2px 0 0'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#e9ecef';
+                                    e.currentTarget.style.color = '#0073e6';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#f8f9fa';
+                                    e.currentTarget.style.color = '#495057';
+                                  }}
+                                >
+                                  ▲
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const newValue = Math.max((formData.bathrooms || 0) - 1, 0);
+                                    setFormData(prev => ({ ...prev, bathrooms: newValue }));
+                                  }}
+                                  style={{
+                                    width: '40px',
+                                    height: '18px',
+                                    border: 'none',
+                                    background: '#f8f9fa',
+                                    color: '#495057',
+                                    fontSize: '10px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '0 0 2px 2px'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#e9ecef';
+                                    e.currentTarget.style.color = '#0073e6';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#f8f9fa';
+                                    e.currentTarget.style.color = '#495057';
+                                  }}
+                                >
+                                  ▼
+                                </button>
+                              </div>
+                            </div>
                           </div>
 
                           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px' }}>

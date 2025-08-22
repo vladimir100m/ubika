@@ -162,7 +162,13 @@ const SellerDashboard: React.FC = () => {
 
     // Convert numeric fields
     if (['rooms', 'bathrooms', 'squareMeters', 'yearBuilt', 'operation_status_id'].includes(name)) {
-      parsedValue = value === '' ? 0 : Number(value);
+      if (name === 'rooms' || name === 'bathrooms') {
+        // Parse as integer for rooms and bathrooms
+        parsedValue = value === '' ? 0 : parseInt(value, 10) || 0;
+      } else {
+        // Use Number for other numeric fields that might have decimals
+        parsedValue = value === '' ? 0 : Number(value);
+      }
     }
 
     setFormData(prev => ({
@@ -736,48 +742,134 @@ const SellerDashboard: React.FC = () => {
 
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="rooms" className={styles.formLabel}>Number of Rooms*</label>
-                  <input 
-                    type="number" 
-                    id="rooms" 
-                    name="rooms" 
-                    value={formData.rooms ?? 0} 
-                    onChange={handleInputChange} 
-                    required 
-                    min="0"
-                    className={styles.formInput}
-                  />
+                  <label htmlFor="rooms" className={styles.formLabel}>Number of Bedrooms*</label>
+                  <div className={styles.numberInputContainer}>
+                    <input 
+                      type="number" 
+                      id="rooms" 
+                      name="rooms" 
+                      value={formData.rooms ?? 0} 
+                      onChange={handleInputChange} 
+                      required 
+                      min="0"
+                      max="20"
+                      step="1"
+                      className={styles.numberInput}
+                      placeholder="e.g., 3"
+                    />
+                    <div className={styles.numberControls}>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlUp}
+                        onClick={() => {
+                          const newValue = Math.min((formData.rooms || 0) + 1, 20);
+                          setFormData(prev => ({ ...prev, rooms: newValue }));
+                        }}
+                        aria-label="Increase bedrooms"
+                      >
+                        ▲
+                      </button>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlDown}
+                        onClick={() => {
+                          const newValue = Math.max((formData.rooms || 0) - 1, 0);
+                          setFormData(prev => ({ ...prev, rooms: newValue }));
+                        }}
+                        aria-label="Decrease bedrooms"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className={styles.formGroup}>
                   <label htmlFor="bathrooms" className={styles.formLabel}>Number of Bathrooms*</label>
-                  <input 
-                    type="number" 
-                    id="bathrooms" 
-                    name="bathrooms" 
-                    value={formData.bathrooms ?? 0} 
-                    onChange={handleInputChange} 
-                    required 
-                    min="0"
-                    step="0.5"
-                    className={styles.formInput}
-                  />
+                  <div className={styles.numberInputContainer}>
+                    <input 
+                      type="number" 
+                      id="bathrooms" 
+                      name="bathrooms" 
+                      value={formData.bathrooms ?? 0} 
+                      onChange={handleInputChange} 
+                      required 
+                      min="0"
+                      max="10"
+                      step="1"
+                      className={styles.numberInput}
+                      placeholder="e.g., 2"
+                    />
+                    <div className={styles.numberControls}>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlUp}
+                        onClick={() => {
+                          const newValue = Math.min((formData.bathrooms || 0) + 1, 10);
+                          setFormData(prev => ({ ...prev, bathrooms: newValue }));
+                        }}
+                        aria-label="Increase bathrooms"
+                      >
+                        ▲
+                      </button>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlDown}
+                        onClick={() => {
+                          const newValue = Math.max((formData.bathrooms || 0) - 1, 0);
+                          setFormData(prev => ({ ...prev, bathrooms: newValue }));
+                        }}
+                        aria-label="Decrease bathrooms"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label htmlFor="squareMeters" className={styles.formLabel}>Area (square meters)*</label>
-                  <input 
-                    type="number" 
-                    id="squareMeters" 
-                    name="squareMeters" 
-                    value={formData.squareMeters ?? 0} 
-                    onChange={handleInputChange} 
-                    required 
-                    min="0"
-                    className={styles.formInput}
-                  />
+                  <div className={styles.numberInputContainer}>
+                    <input 
+                      type="number" 
+                      id="squareMeters" 
+                      name="squareMeters" 
+                      value={formData.squareMeters ?? 0} 
+                      onChange={handleInputChange} 
+                      required 
+                      min="0"
+                      max="10000"
+                      step="1"
+                      className={styles.numberInput}
+                      placeholder="e.g., 120"
+                    />
+                    <div className={styles.numberControls}>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlUp}
+                        onClick={() => {
+                          const newValue = Math.min((formData.squareMeters || 0) + 10, 10000);
+                          setFormData(prev => ({ ...prev, squareMeters: newValue }));
+                        }}
+                        aria-label="Increase area by 10 m²"
+                      >
+                        ▲
+                      </button>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlDown}
+                        onClick={() => {
+                          const newValue = Math.max((formData.squareMeters || 0) - 10, 0);
+                          setFormData(prev => ({ ...prev, squareMeters: newValue }));
+                        }}
+                        aria-label="Decrease area by 10 m²"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className={styles.formGroup}>
@@ -828,17 +920,45 @@ const SellerDashboard: React.FC = () => {
 
                 <div className={styles.formGroup}>
                   <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
-                  <input 
-                    type="number" 
-                    id="yearBuilt" 
-                    name="yearBuilt" 
-                    value={formData.yearBuilt ?? ''} 
-                    onChange={handleInputChange} 
-                    placeholder="e.g., 2010"
-                    min="1800"
-                    max={new Date().getFullYear()}
-                    className={styles.formInput}
-                  />
+                  <div className={styles.numberInputContainer}>
+                    <input 
+                      type="number" 
+                      id="yearBuilt" 
+                      name="yearBuilt" 
+                      value={formData.yearBuilt ?? ''} 
+                      onChange={handleInputChange} 
+                      placeholder="e.g., 2010"
+                      min="1800"
+                      max={new Date().getFullYear()}
+                      step="1"
+                      className={styles.numberInput}
+                    />
+                    <div className={styles.numberControls}>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlUp}
+                        onClick={() => {
+                          const currentYear = new Date().getFullYear();
+                          const newValue = Math.min((formData.yearBuilt || currentYear) + 1, currentYear);
+                          setFormData(prev => ({ ...prev, yearBuilt: newValue }));
+                        }}
+                        aria-label="Increase year"
+                      >
+                        ▲
+                      </button>
+                      <button 
+                        type="button" 
+                        className={styles.numberControlDown}
+                        onClick={() => {
+                          const newValue = Math.max((formData.yearBuilt || 2000) - 1, 1800);
+                          setFormData(prev => ({ ...prev, yearBuilt: newValue }));
+                        }}
+                        aria-label="Decrease year"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
