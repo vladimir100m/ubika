@@ -177,12 +177,28 @@ const SellerDashboard: React.FC = () => {
         : '/api/properties/create';
       const method = isEditing ? 'PUT' : 'POST';
 
+      // Prepare payload and strip large base64 image strings to avoid 413 (>1MB)
+      let payload = { ...formData } as any;
+      if (payload.image_url && typeof payload.image_url === 'string' && payload.image_url.startsWith('data:image')) {
+        const approxBytes = Math.ceil((payload.image_url.length * 3) / 4); // base64 size estimate
+        const ONE_MB = 1024 * 1024;
+        if (approxBytes > 750 * 1024) { // be conservative below 1MB limit
+          console.warn('Stripping large inline image from payload (size:', approxBytes, ')');
+          // Option 1: remove image so API keeps existing or assigns default
+          delete payload.image_url;
+          // Optionally set a placeholder if new property without image
+          if (!isEditing) {
+            payload.image_url = '/properties/casa-moderna.jpg';
+          }
+        }
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -320,7 +336,7 @@ const SellerDashboard: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+  body: JSON.stringify({ status: newStatus, seller_id: u?.sub }),
       });
 
       if (!response.ok) {
@@ -814,8 +830,8 @@ const SellerDashboard: React.FC = () => {
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Property Image</label>
                 <ImageUpload 
-                  onImageChange={(imageUrl) => setFormData(prev => ({...prev, image_url: imageUrl}))}
-                  defaultValue={formData.image_url}
+                  onImageChange={(imageUrl) => setFormData(prev => ({...prev, image_url: imageUrl || ''}))}
+                  defaultValue={formData.image_url || ''}
                 />
               </div>
 
