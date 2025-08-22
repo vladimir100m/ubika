@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
 import MultiImageUpload from '../../components/MultiImageUpload';
-import Header from 'components/Header';
+import Header from '../../components/Header';
 
 interface PropertyType {
   id: number;
@@ -23,8 +23,8 @@ interface PropertyStatus {
 interface PropertyFeature {
   id: number;
   name: string;
-  category: string;
-  icon: string;
+  category?: string;
+  icon?: string;
 }
 
 interface PropertyOperationStatus {
@@ -38,7 +38,10 @@ const SellerDashboard: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user;
-  const u = user as (typeof user & { sub?: string; picture?: string | null; image?: string | null });
+  const u = useMemo(() => 
+    user as (typeof user & { sub?: string; picture?: string | null; image?: string | null }),
+    [user]
+  );
   const isLoading = status === 'loading';
 
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
@@ -76,6 +79,29 @@ const SellerDashboard: React.FC = () => {
   const [images, setImages] = useState<string[]>([]);
   const [coverIndex, setCoverIndex] = useState<number>(0);
 
+  const fetchSellerProperties = useCallback(async () => {
+    if (!u?.sub) return;
+      
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/properties/seller?seller_id=${u.sub}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`Failed to fetch properties: ${errorData.error || response.statusText}`);
+      }
+      const data = await response.json();
+      setProperties(data);
+    } catch (error) {
+      console.error('Error fetching seller properties:', error);
+      setMessage({
+        text: `Failed to load your properties. ${error instanceof Error ? error.message : 'Please try again later.'}`,
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [u?.sub]);
+
   useEffect(() => {
     if (isLoading) return;
     
@@ -85,12 +111,11 @@ const SellerDashboard: React.FC = () => {
       return;
     }
     
-    // Set seller_id in form data
-  setFormData(prev => ({ ...prev, seller_id: u?.sub || '' }));
-    
     // Fetch seller properties once user is authenticated
-    fetchSellerProperties();
-  }, [user, isLoading, router]);
+    if (u?.sub) {
+      fetchSellerProperties();
+    }
+  }, [user, isLoading, router]); // Removed u?.sub from dependencies
 
   // Fetch property types and statuses
   useEffect(() => {
@@ -132,29 +157,6 @@ const SellerDashboard: React.FC = () => {
 
     fetchFormData();
   }, []);
-
-  const fetchSellerProperties = async () => {
-  if (!u?.sub) return;
-    
-    setLoading(true);
-    try {
-  const response = await fetch(`/api/properties/seller?seller_id=${u.sub}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(`Failed to fetch properties: ${errorData.error || response.statusText}`);
-      }
-      const data = await response.json();
-      setProperties(data);
-    } catch (error) {
-      console.error('Error fetching seller properties:', error);
-      setMessage({
-        text: `Failed to load your properties. ${error instanceof Error ? error.message : 'Please try again later.'}`,
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -419,49 +421,12 @@ const SellerDashboard: React.FC = () => {
     }
   };
 
-  // Add className to all labels and form controls
-  const updateFormClasses = () => {
-    // Add className={styles.formLabel} to all labels
-    const labels = document.querySelectorAll('label');
-    labels.forEach(label => {
-      if (!label.className.includes(styles.formLabel)) {
-        label.className = label.className ? `${label.className} ${styles.formLabel}` : styles.formLabel;
-      }
-    });
-
-    // Add appropriate className to all inputs, textareas, and selects
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-      if (!input.className.includes(styles.formInput)) {
-        input.className = input.className ? `${input.className} ${styles.formInput}` : styles.formInput;
-      }
-    });
-
-    const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-      if (!textarea.className.includes(styles.formTextarea)) {
-        textarea.className = textarea.className ? `${textarea.className} ${styles.formTextarea}` : styles.formTextarea;
-      }
-    });
-
-    const selects = document.querySelectorAll('select');
-    selects.forEach(select => {
-      if (!select.className.includes(styles.formSelect)) {
-        select.className = select.className ? `${select.className} ${styles.formSelect}` : styles.formSelect;
-      }
-    });
-  };
-
   // Call this function when the component mounts and when the activeTab changes
   useEffect(() => {
     if (u?.sub) {
       fetchSellerProperties();
     }
-    // Only run in the browser, not during SSR
-    if (typeof window !== 'undefined') {
-      updateFormClasses();
-    }
-  }, [activeTab, user]);
+  }, [activeTab, user, fetchSellerProperties]);
 
   // Authentication checks
   if (isLoading) return <div>Loading...</div>;
@@ -634,45 +599,6 @@ const SellerDashboard: React.FC = () => {
                 />
               </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="price" className={styles.formLabel}>Price (USD)*</label>
-                  <input 
-                    type="text" 
-                    id="price" 
-                    name="price" 
-                    value={formData.price ?? ''} 
-                    onChange={handleInputChange} 
-                    required 
-                    placeholder="e.g., 250000"
-                    className={styles.formInput}
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label htmlFor="type" className={styles.formLabel}>Property Type*</label>
-                  <select 
-                    id="type" 
-                    name="type" 
-                    value={formData.type ?? ''} 
-                    onChange={handleInputChange} 
-                    required
-                    className={styles.formSelect}
-                  >
-                    <option value="">Select type</option>
-                    {loadingFormData ? (
-                      <option value="" disabled>Loading...</option>
-                    ) : (
-                      propertyTypes.map(type => (
-                        <option key={type.id} value={type.name}>
-                          {type.display_name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-              </div>
-
               <div className={styles.formGroup}>
                 <label htmlFor="address" className={styles.formLabel}>Street Address*</label>                <input 
                     type="text" 
@@ -740,158 +666,277 @@ const SellerDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="rooms" className={styles.formLabel}>Number of Bedrooms*</label>
-                  <div className={styles.numberInputContainer}>
-                    <input 
-                      type="number" 
-                      id="rooms" 
-                      name="rooms" 
-                      value={formData.rooms ?? 0} 
-                      onChange={handleInputChange} 
-                      required 
-                      min="0"
-                      max="20"
-                      step="1"
-                      className={styles.numberInput}
-                      placeholder="e.g., 3"
-                    />
-                    <div className={styles.numberControls}>
-                      <button 
-                        type="button" 
-                        className={styles.numberControlUp}
-                        onClick={() => {
-                          const newValue = Math.min((formData.rooms || 0) + 1, 20);
-                          setFormData(prev => ({ ...prev, rooms: newValue }));
-                        }}
-                        aria-label="Increase bedrooms"
-                      >
-                        ▲
-                      </button>
-                      <button 
-                        type="button" 
-                        className={styles.numberControlDown}
-                        onClick={() => {
-                          const newValue = Math.max((formData.rooms || 0) - 1, 0);
-                          setFormData(prev => ({ ...prev, rooms: newValue }));
-                        }}
-                        aria-label="Decrease bedrooms"
-                      >
-                        ▼
-                      </button>
+              {/* Basic Property Details Section */}
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>🏠</span>
+                  Basic Property Details
+                </h3>
+                <p className={styles.sectionDescription}>
+                  Essential information about your property's physical characteristics
+                </p>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="rooms" className={styles.formLabel}>Bedrooms*</label>
+                    <div className={styles.numberInputContainer}>
+                      <input 
+                        type="number" 
+                        id="rooms" 
+                        name="rooms" 
+                        value={formData.rooms ?? 0} 
+                        onChange={handleInputChange} 
+                        required 
+                        min="0"
+                        max="20"
+                        step="1"
+                        className={styles.numberInput}
+                        placeholder="e.g., 3"
+                      />
+                      <div className={styles.numberControls}>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlUp}
+                          onClick={() => {
+                            const newValue = Math.min((formData.rooms || 0) + 1, 20);
+                            setFormData(prev => ({ ...prev, rooms: newValue }));
+                          }}
+                          aria-label="Increase bedrooms"
+                        >
+                          ▲
+                        </button>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlDown}
+                          onClick={() => {
+                            const newValue = Math.max((formData.rooms || 0) - 1, 0);
+                            setFormData(prev => ({ ...prev, rooms: newValue }));
+                          }}
+                          aria-label="Decrease bedrooms"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="bathrooms" className={styles.formLabel}>Bathrooms*</label>
+                    <div className={styles.numberInputContainer}>
+                      <input 
+                        type="number" 
+                        id="bathrooms" 
+                        name="bathrooms" 
+                        value={formData.bathrooms ?? 0} 
+                        onChange={handleInputChange} 
+                        required 
+                        min="0"
+                        max="10"
+                        step="1"
+                        className={styles.numberInput}
+                        placeholder="e.g., 2"
+                      />
+                      <div className={styles.numberControls}>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlUp}
+                          onClick={() => {
+                            const newValue = Math.min((formData.bathrooms || 0) + 1, 10);
+                            setFormData(prev => ({ ...prev, bathrooms: newValue }));
+                          }}
+                          aria-label="Increase bathrooms"
+                        >
+                          ▲
+                        </button>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlDown}
+                          onClick={() => {
+                            const newValue = Math.max((formData.bathrooms || 0) - 1, 0);
+                            setFormData(prev => ({ ...prev, bathrooms: newValue }));
+                          }}
+                          aria-label="Decrease bathrooms"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="squareMeters" className={styles.formLabel}>Area (m²)*</label>
+                    <div className={styles.numberInputContainer}>
+                      <input 
+                        type="number" 
+                        id="squareMeters" 
+                        name="squareMeters" 
+                        value={formData.squareMeters ?? 0} 
+                        onChange={handleInputChange} 
+                        required 
+                        min="0"
+                        max="10000"
+                        step="1"
+                        className={styles.numberInput}
+                        placeholder="e.g., 120"
+                      />
+                      <div className={styles.numberControls}>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlUp}
+                          onClick={() => {
+                            const newValue = Math.min((formData.squareMeters || 0) + 10, 10000);
+                            setFormData(prev => ({ ...prev, squareMeters: newValue }));
+                          }}
+                          aria-label="Increase area by 10 m²"
+                        >
+                          ▲
+                        </button>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlDown}
+                          onClick={() => {
+                            const newValue = Math.max((formData.squareMeters || 0) - 10, 0);
+                            setFormData(prev => ({ ...prev, squareMeters: newValue }));
+                          }}
+                          aria-label="Decrease area by 10 m²"
+                        >
+                          ▼
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="bathrooms" className={styles.formLabel}>Number of Bathrooms*</label>
-                  <div className={styles.numberInputContainer}>
-                    <input 
-                      type="number" 
-                      id="bathrooms" 
-                      name="bathrooms" 
-                      value={formData.bathrooms ?? 0} 
-                      onChange={handleInputChange} 
-                      required 
-                      min="0"
-                      max="10"
-                      step="1"
-                      className={styles.numberInput}
-                      placeholder="e.g., 2"
-                    />
-                    <div className={styles.numberControls}>
-                      <button 
-                        type="button" 
-                        className={styles.numberControlUp}
-                        onClick={() => {
-                          const newValue = Math.min((formData.bathrooms || 0) + 1, 10);
-                          setFormData(prev => ({ ...prev, bathrooms: newValue }));
-                        }}
-                        aria-label="Increase bathrooms"
-                      >
-                        ▲
-                      </button>
-                      <button 
-                        type="button" 
-                        className={styles.numberControlDown}
-                        onClick={() => {
-                          const newValue = Math.max((formData.bathrooms || 0) - 1, 0);
-                          setFormData(prev => ({ ...prev, bathrooms: newValue }));
-                        }}
-                        aria-label="Decrease bathrooms"
-                      >
-                        ▼
-                      </button>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="yearBuilt" className={styles.formLabel}>Year Built</label>
+                    <div className={styles.numberInputContainer}>
+                      <input 
+                        type="number" 
+                        id="yearBuilt" 
+                        name="yearBuilt" 
+                        value={formData.yearBuilt ?? ''} 
+                        onChange={handleInputChange} 
+                        placeholder="e.g., 2010"
+                        min="1800"
+                        max={new Date().getFullYear()}
+                        step="1"
+                        className={styles.numberInput}
+                      />
+                      <div className={styles.numberControls}>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlUp}
+                          onClick={() => {
+                            const currentYear = new Date().getFullYear();
+                            const newValue = Math.min((formData.yearBuilt || currentYear) + 1, currentYear);
+                            setFormData(prev => ({ ...prev, yearBuilt: newValue }));
+                          }}
+                          aria-label="Increase year"
+                        >
+                          ▲
+                        </button>
+                        <button 
+                          type="button" 
+                          className={styles.numberControlDown}
+                          onClick={() => {
+                            const newValue = Math.max((formData.yearBuilt || 2000) - 1, 1800);
+                            setFormData(prev => ({ ...prev, yearBuilt: newValue }));
+                          }}
+                          aria-label="Decrease year"
+                        >
+                          ▼
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="squareMeters" className={styles.formLabel}>Area (square meters)*</label>
-                  <div className={styles.numberInputContainer}>
-                    <input 
-                      type="number" 
-                      id="squareMeters" 
-                      name="squareMeters" 
-                      value={formData.squareMeters ?? 0} 
+                  <div className={styles.formGroup}>
+                    <label htmlFor="type" className={styles.formLabel}>Property Type*</label>
+                    <select 
+                      id="type" 
+                      name="type" 
+                      value={formData.type ?? ''} 
                       onChange={handleInputChange} 
-                      required 
-                      min="0"
-                      max="10000"
-                      step="1"
-                      className={styles.numberInput}
-                      placeholder="e.g., 120"
-                    />
-                    <div className={styles.numberControls}>
-                      <button 
-                        type="button" 
-                        className={styles.numberControlUp}
-                        onClick={() => {
-                          const newValue = Math.min((formData.squareMeters || 0) + 10, 10000);
-                          setFormData(prev => ({ ...prev, squareMeters: newValue }));
-                        }}
-                        aria-label="Increase area by 10 m²"
-                      >
-                        ▲
-                      </button>
-                      <button 
-                        type="button" 
-                        className={styles.numberControlDown}
-                        onClick={() => {
-                          const newValue = Math.max((formData.squareMeters || 0) - 10, 0);
-                          setFormData(prev => ({ ...prev, squareMeters: newValue }));
-                        }}
-                        aria-label="Decrease area by 10 m²"
-                      >
-                        ▼
-                      </button>
-                    </div>
+                      required
+                      className={styles.formSelect}
+                    >
+                      <option value="" disabled>Select property type</option>
+                      {loadingFormData ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        propertyTypes.map(type => (
+                          <option key={type.id} value={type.name}>
+                            {type.display_name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="status" className={styles.formLabel}>Status*</label>
+                    <select 
+                      id="status" 
+                      name="status" 
+                      value={formData.status ?? 'available'} 
+                      onChange={handleInputChange} 
+                      required
+                      className={styles.formSelect}
+                    >
+                      {loadingFormData ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        propertyStatuses.map(status => (
+                          <option key={status.id} value={status.name}>
+                            {status.display_name}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="status" className={styles.formLabel}>Status*</label>
-                  <select 
-                    id="status" 
-                    name="status" 
-                    value={formData.status ?? 'available'} 
-                    onChange={handleInputChange} 
-                    required
-                    className={styles.formSelect}
-                  >
-                    {loadingFormData ? (
-                      <option value="" disabled>Loading...</option>
-                    ) : (
-                      propertyStatuses.map(status => (
-                        <option key={status.id} value={status.name}>
-                          {status.display_name}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="operation_status_id" className={styles.formLabel}>Operation Type*</label>
+                    <select 
+                      id="operation_status_id" 
+                      name="operation_status_id" 
+                      value={formData.operation_status_id ?? 1} 
+                      onChange={handleInputChange} 
+                      required
+                      className={styles.formSelect}
+                    >
+                      {loadingFormData ? (
+                        <option value="" disabled>Loading...</option>
+                      ) : (
+                        propertyOperationStatuses.map(operationStatus => (
+                          <option key={operationStatus.id} value={operationStatus.id}>
+                            {operationStatus.display_name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="price" className={styles.formLabel}>Price (USD)*</label>
+                    <input 
+                      type="text" 
+                      id="price" 
+                      name="price" 
+                      value={formData.price ?? ''} 
+                      onChange={handleInputChange} 
+                      required 
+                      placeholder="e.g., 250,000"
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    {/* Empty space for better visual balance */}
+                  </div>
                 </div>
               </div>
 
@@ -981,35 +1026,40 @@ const SellerDashboard: React.FC = () => {
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Property Features</label>
-                <p style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
-                  Select the features that apply to your property
-                </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                    Select the features that apply to your property
+                  </p>
+                  <div className={styles.featureActions}>
+                    <span className={styles.featureSummary}>
+                      {selectedFeatures.length} of {propertyFeatures.length} selected
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.quickActionBtn}
+                      onClick={() => setSelectedFeatures(propertyFeatures.map(f => f.id))}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickActionBtn}
+                      onClick={() => setSelectedFeatures([])}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
                 {loadingFormData ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
                     Loading features...
                   </div>
                 ) : (
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-                    gap: '12px',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    border: '1px solid #e1e5e9',
-                    borderRadius: '4px',
-                    padding: '16px'
-                  }}>
+                  <div className={styles.allFeaturesGrid}>
                     {propertyFeatures.map(feature => (
-                      <label key={feature.id} style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px',
-                        cursor: 'pointer',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        border: selectedFeatures.includes(feature.id) ? '2px solid #1277e1' : '1px solid #e1e5e9',
-                        backgroundColor: selectedFeatures.includes(feature.id) ? '#f0f7ff' : 'white'
-                      }}>
+                      <label key={feature.id} className={`${styles.featureCard} ${
+                        selectedFeatures.includes(feature.id) ? styles.featureSelected : ''
+                      }`}>
                         <input
                           type="checkbox"
                           checked={selectedFeatures.includes(feature.id)}
@@ -1020,10 +1070,12 @@ const SellerDashboard: React.FC = () => {
                               setSelectedFeatures(prev => prev.filter(id => id !== feature.id));
                             }
                           }}
-                          style={{ marginRight: '4px' }}
+                          className={styles.featureCheckbox}
                         />
-                        <span style={{ fontSize: '16px' }}>{feature.icon || '•'}</span>
-                        <span style={{ fontSize: '14px' }}>{feature.name}</span>
+                        <div className={styles.featureContent}>
+                          <span className={styles.featureIcon}>{feature.icon || '🏠'}</span>
+                          <span className={styles.featureName}>{feature.name}</span>
+                        </div>
                       </label>
                     ))}
                   </div>
