@@ -240,39 +240,6 @@ const Home: React.FC = () => {
                 ))}
               </div>
             )}
-            
-            {/* All Properties Section */}
-            <div className={styles.allPropertiesSection}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>All Properties ({properties.length})</h2>
-                <button 
-                  className={styles.viewMapButton}
-                  onClick={() => router.push('/map')}
-                >
-                  View on Map
-                </button>
-              </div>
-              
-              <div className={styles.propertiesScrollContainer}>
-                <div className={styles.propertiesGrid}>
-                  {properties.length > 0 ? (
-                    properties.map((property) => (
-                      <PropertyCard
-                        key={property.id}
-                        property={property}
-                        isFavorite={savedPropertyIds.has(property.id)}
-                        onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                      />
-                    ))
-                  ) : (
-                    <div className={styles.emptyState}>
-                      <h3>No properties found</h3>
-                      <p>We couldn't find any properties matching your criteria.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </>
         )}
       </section>
