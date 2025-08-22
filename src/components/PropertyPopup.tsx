@@ -74,6 +74,7 @@ export default function PropertyPopup({
   const isLoading = status === 'loading';
   const isFavorite = selectedProperty.isFavorite || false;
   const [activeTab, setActiveTab] = useState('overview');
+  const [descExpanded, setDescExpanded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
@@ -279,39 +280,63 @@ export default function PropertyPopup({
   return (
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeButton} onClick={onClose}>×</button>
-            
-            {/* Favorite button - Zillow style */}
-            <button 
-              className={`${galleryStyles.favoriteButton} ${isFavorite ? galleryStyles.favoriteActive : ''}`} 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSaveProperty();
-              }}
-              disabled={isSaving}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              style={{
-                top: '15px',
-                right: '60px',
-                zIndex: 50,
-                width: '46px',
-                height: '46px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-              }}
-            >
-              {isSaving ? (
-                <div style={{ fontSize: '18px' }}>⏳</div>
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
-                  <path 
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                    stroke={isFavorite ? "transparent" : "currentColor"}
-                    strokeWidth="2"
-                    fill={isFavorite ? "#e4002b" : "transparent"}
-                  />
+            <div style={{position:'absolute', top:12, right:12, display:'flex', gap:'10px', zIndex:60}}>
+              <button 
+                onClick={(e)=>{e.stopPropagation(); onClose();}}
+                aria-label="Close"
+                style={{
+                  background:'rgba(255,255,255,0.9)',
+                  border:'1px solid rgba(0,0,0,0.1)',
+                  backdropFilter:'blur(4px)',
+                  width:44, height:44, borderRadius:12,
+                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)'
+                }}
+              >
+                <span style={{fontSize:22,lineHeight:1}}>×</span>
+              </button>
+              <button 
+                onClick={(e)=>{e.stopPropagation(); handleSaveProperty();}} 
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                disabled={isSaving}
+                style={{
+                  background:isFavorite ? '#e4002b' : 'rgba(255,255,255,0.9)',
+                  color:isFavorite ? '#fff' : '#333',
+                  border:isFavorite ? '1px solid #c30023' : '1px solid rgba(0,0,0,0.1)',
+                  backdropFilter:'blur(4px)',
+                  width:44, height:44, borderRadius:12,
+                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)',
+                  position:'relative'
+                }}
+              >
+                {isSaving ? '⏳' : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill={isFavorite? 'currentColor':'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                )}
+              </button>
+              <button 
+                onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
+                aria-label="Share property"
+                style={{
+                  background:'rgba(255,255,255,0.9)',
+                  border:'1px solid rgba(0,0,0,0.1)',
+                  backdropFilter:'blur(4px)',
+                  width:44, height:44, borderRadius:12,
+                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.59 13.51l6.83 3.98" />
+                  <path d="M15.41 6.51L8.59 10.49" />
                 </svg>
-              )}
-            </button>
+              </button>
+            </div>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
               {/* 5-Photo Grid Layout */}
@@ -455,12 +480,8 @@ export default function PropertyPopup({
             <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 {/* Property Basic Info - Zillow style */}
-                <div className={styles.propertyDetailInfo} style={{ 
-                  padding: '24px', 
-                  borderBottom: '1px solid #e9e9e9',
-                  backgroundColor: 'white'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '8px' }}>
                     <div>
                       <span style={{ 
                         backgroundColor: getOperationStatusBadge().backgroundColor, 
@@ -480,32 +501,6 @@ export default function PropertyPopup({
                         lineHeight: '1.2'
                       }}>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h1>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button style={{ 
-                        backgroundColor: '#1277e1', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '4px', 
-                        padding: '10px 16px', 
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}>
-                        Contact Agent
-                      </button>
-                      <button style={{ 
-                        backgroundColor: 'white', 
-                        color: '#2a2a33', 
-                        border: '1px solid #a7a6ab', 
-                        borderRadius: '4px', 
-                        padding: '10px 16px', 
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}>
-                        Share
-                      </button>
-                    </div>
                   </div>
                   <h2 style={{ 
                     fontSize: '16px',
@@ -514,33 +509,14 @@ export default function PropertyPopup({
                     margin: '0 0 4px 0' 
                   }}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
                   
-                  {/* Property Stats - Zillow style */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '24px', 
-                    margin: '16px 0',
-                    fontSize: '16px',
-                    color: '#2a2a33'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.rooms}</span>
-                      <span>beds</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.bathrooms}</span>
-                      <span>baths</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.squareMeters}</span>
-                      <span>sqft</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.type || 'House'}</span>
-                    </div>
+                  {/* Property Stats */}
+                  <div className={styles.propertyStatsRow}>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.rooms}</strong><span>beds</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.squareMeters}</strong><span>sqft</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.type || 'House'}</strong></div>
                     {selectedProperty.yearBuilt && (
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ fontWeight: '600', marginRight: '4px' }}>Built {selectedProperty.yearBuilt}</span>
-                      </div>
+                      <div className={styles.propertyStat}><strong>{selectedProperty.yearBuilt}</strong><span>built</span></div>
                     )}
                   </div>
                 </div>
@@ -605,148 +581,45 @@ export default function PropertyPopup({
                 {/* All content sections displayed one after another */}
                 <div style={{ backgroundColor: 'white' }}>
                   {/* Overview section */}
-                  <div ref={overviewRef} id="overview-section" style={{ padding: '24px', marginBottom: '40px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-                      {/* Left column */}
-                      <div>
-                        {/* Description Section */}
-                        <div style={{ marginBottom: '32px' }}>
-                          <h3 style={{ 
-                            fontSize: '20px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Overview</h3>
-                          <p style={{ 
-                            fontSize: '16px', 
-                            lineHeight: '1.5', 
-                            color: '#2a2a33',
-                            whiteSpace: 'pre-line'
-                          }}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square feet of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
+                  <div ref={overviewRef} id="overview-section" className={styles.overviewSection}>
+                    <div className={styles.overviewGrid}>
+                      <div className={styles.overviewMain}>
+                        <div className={styles.descBlock}>
+                          <h3 className={styles.sectionHeading}>Overview</h3>
+                          <p className={`${styles.descText} ${!descExpanded ? styles.descClamp : ''}`}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square feet of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
+                          {(!descExpanded && (selectedProperty.description?.length || 0) > 320) && (
+                            <button className={styles.readMoreBtn} onClick={() => setDescExpanded(true)}>Read more</button>
+                          )}
+                          {descExpanded && (
+                            <button className={styles.readMoreBtn} onClick={() => setDescExpanded(false)}>Show less</button>
+                          )}
                         </div>
-                        
-                        {/* Features Section */}
-                        <div style={{ marginBottom: '32px' }}>
-                          <h3 style={{ 
-                            fontSize: '20px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Home Features</h3>
-                          <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                            gap: '16px'
-                          }}>
+                        <div className={styles.featureBlock}>
+                          <h3 className={styles.sectionHeading}>Home Features</h3>
+                          <div className={styles.featuresGridPopup}>
                             {loadingFeatures ? (
-                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
+                              <div className={styles.loadingMuted}>Loading features...</div>
                             ) : propertyFeatures.length > 0 ? (
-                              propertyFeatures.map((feature) => (
-                                <div key={feature.id} style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: '8px'
-                                }}>
-                                  <span style={{ 
-                                    color: '#1277e1', 
-                                    fontSize: '20px',
-                                    lineHeight: 1
-                                  }}>{feature.icon || '•'}</span>
-                                  <span>{feature.name}</span>
+                              propertyFeatures.map(feature => (
+                                <div key={feature.id} className={styles.featureItemPopup}>
+                                  <span className={styles.featureIconPopup}>{feature.icon || '•'}</span>
+                                  <span className={styles.featureNamePopup}>{feature.name}</span>
                                 </div>
                               ))
                             ) : (
-                              <div style={{ color: '#666', fontSize: '14px' }}>No features assigned to this property</div>
+                              <div className={styles.loadingMuted}>No features assigned to this property</div>
                             )}
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Right column - Zillow style */}
-                      <div>
-                        {/* Contact form - Zillow style */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px',
-                          marginBottom: '24px'
-                        }}>
-                          <h3 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            textAlign: 'center'
-                          }}>Contact an agent about this home</h3>
-                          
-                          <div style={{ marginBottom: '12px' }}>
-                            <input 
-                              type="text" 
-                              placeholder="Your Name" 
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }} 
-                            />
-                          </div>
-                          <div style={{ marginBottom: '12px' }}>
-                            <input 
-                              type="text" 
-                              placeholder="Phone" 
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }} 
-                            />
-                          </div>
-                          <div style={{ marginBottom: '12px' }}>
-                            <input 
-                              type="email" 
-                              placeholder="Email" 
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }} 
-                            />
-                          </div>
-                          <div style={{ marginBottom: '16px' }}>
-                            <textarea 
-                              placeholder="I'm interested in this property" 
-                              rows={4}
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px', 
-                                resize: 'none'
-                              }} 
-                            />
-                          </div>
-                          <button 
-                            style={{ 
-                              width: '100%',
-                              backgroundColor: '#1277e1', 
-                              color: 'white', 
-                              border: 'none', 
-                              borderRadius: '4px', 
-                              padding: '12px', 
-                              fontWeight: '600',
-                              fontSize: '14px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Contact Agent
-                          </button>
+                      <div className={styles.overviewAside}>
+                        <div className={styles.contactSideCard}>
+                          <h3 className={styles.sideCardTitle}>Contact an agent about this home</h3>
+                          <div className={styles.sideFieldWrap}><input type="text" placeholder="Your Name" className={styles.sideInput} /></div>
+                          <div className={styles.sideFieldWrap}><input type="text" placeholder="Phone" className={styles.sideInput} /></div>
+                          <div className={styles.sideFieldWrap}><input type="email" placeholder="Email" className={styles.sideInput} /></div>
+                          <div className={styles.sideFieldWrap}><textarea rows={4} placeholder="I'm interested in this property" className={styles.sideTextarea} /></div>
+                          <button className={styles.sideSubmitBtn}>Contact Agent</button>
                         </div>
                       </div>
                     </div>
