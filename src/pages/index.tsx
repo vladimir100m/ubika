@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
+import PropertyPopup from '../components/PropertyPopup';
 import Footer from '../components/Footer';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
 import styles from '../styles/Home.module.css';
@@ -19,6 +20,8 @@ const Home: React.FC = () => {
   const isLoading = status === 'loading';
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
   const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
+  const [selectedProperty, setSelectedProperty] = useState<(Property & { isFavorite?: boolean }) | null>(null);
+  const popupMapRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,11 +107,12 @@ const Home: React.FC = () => {
   }, [isLoading, properties, user ]);
 
   // Function to handle property card click
-  const handlePropertyClick = (propertyId: number) => {
-    router.push({
-      pathname: '/map',
-      query: { selectedPropertyId: propertyId }
-    });
+  const handlePropertyClick = (property: Property) => {
+    setSelectedProperty({ ...property, isFavorite: savedPropertyIds.has(property.id) });
+  };
+
+  const handleClosePropertyDetail = () => {
+    setSelectedProperty(null);
   };
 
   // Function to toggle favorite status using database API
@@ -230,13 +234,13 @@ const Home: React.FC = () => {
           {/* Properties Grid */}
           {!loading && !error && properties.length > 0 && (
             <div className={styles.propertyGrid}>
-              {properties.slice(0, 6).map((property) => (
+        {properties.slice(0, 6).map((property) => (
                 <PropertyCard
                   key={property.id}
                   property={property}
                   isFavorite={savedPropertyIds.has(property.id)}
                   onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                  onClick={() => handlePropertyClick(property.id)}
+          onClick={() => handlePropertyClick(property)}
                 />
               ))}
             </div>
@@ -254,6 +258,23 @@ const Home: React.FC = () => {
         {/* Footer */}
         <Footer />
       </div>
+
+      {/* Property detail popup overlay (mirrors map page behavior) */}
+      {selectedProperty && (
+        <PropertyPopup
+          mapRef={popupMapRef}
+          selectedProperty={selectedProperty}
+          onClose={handleClosePropertyDetail}
+          onFavoriteToggle={(propertyId, newStatus) => {
+            setSavedPropertyIds(prev => {
+              const ns = new Set(prev);
+              if (newStatus) ns.add(propertyId); else ns.delete(propertyId);
+              return ns;
+            });
+            setSelectedProperty(prev => prev && prev.id === propertyId ? { ...prev, isFavorite: newStatus } : prev);
+          }}
+        />
+      )}
     </div>
   );
 };
