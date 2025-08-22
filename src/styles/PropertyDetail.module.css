@@ -464,3 +464,29 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Ultra-small devices (<=360px width e.g. iPhone SE old) */
+@media (max-width: 360px) {
+  .propertyHeader,
+  .description,
+  .detailsSection,
+  .contactSection,
+  .mapSection { padding: 16px 14px; }
+  .title { font-size: 1.4rem; }
+  .address { font-size: 0.9rem; }
+  .price { font-size: 1.2rem; }
+  .headerContent { gap: 16px; }
+  .actions { flex-direction: column; width: 100%; }
+  .saveButton, .shareButton { width: 100%; justify-content: center; padding: 10px 14px; font-size: 0.85rem; }
+  .specs { flex-direction: column; gap: 10px; }
+  .spec { font-size: 0.9rem; }
+  .description h2, .detailsSection h2, .mapSection h2, .contactCard h2 { font-size: 1.3rem; }
+  .description p { font-size: 0.95rem; }
+  .detailsGrid { gap: 14px; }
+  .detailLabel { font-size: 0.7rem; }
+  .detailValue { font-size: 0.95rem; }
+  .contactActions { flex-direction: column; }
+  .primaryButton, .secondaryButton { width: 100%; padding: 12px 14px; font-size: 0.9rem; }
+  .mapSection { margin-bottom: 16px; }
+  .mapPlaceholder { padding: 40px 10px; font-size: 0.85rem; }
+}
