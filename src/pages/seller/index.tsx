@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
-import { Property, PropertyFormData } from '../../types';
+import { Property, PropertyFormData, PropertyImage } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
-import MultiImageUpload from '../../components/MultiImageUpload';
+import MultiImageUploadAPI from '../../components/MultiImageUploadAPI';
 import Header from '../../components/Header';
 
 interface PropertyType {
@@ -44,6 +44,62 @@ const SellerDashboard: React.FC = () => {
   );
   const isLoading = status === 'loading';
 
+  // Helper function to get the cover image for property display
+  const getCoverImageUrl = (property: Property): string => {
+    // First check if property has uploaded images with a cover image
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) {
+        return coverImage.image_url;
+      }
+      // If no cover image is set, use the first uploaded image
+      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+      return sortedImages[0].image_url;
+    }
+
+    // Fallback to single image_url if available
+    if (property.image_url) {
+      return property.image_url;
+    }
+
+    // Final fallback to sample images based on property type
+    const typeImages: { [key: string]: string } = {
+      'house': '/properties/casa-moderna.jpg',
+      'apartment': '/properties/apartamento-moderno.jpg',
+      'villa': '/properties/villa-lujo.jpg',
+      'penthouse': '/properties/penthouse-lujo.jpg',
+      'cabin': '/properties/cabana-bosque.jpg',
+      'loft': '/properties/loft-urbano.jpg',
+      'duplex': '/properties/duplex-moderno.jpg'
+    };
+
+    const propertyType = property.type?.toLowerCase() || 'house';
+    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+  };
+
+  // Helper function to get image count for display
+  const getImageCount = (property: Property): number => {
+    if (property.images && property.images.length > 0) {
+      return property.images.length;
+    }
+    return property.image_url ? 1 : 0;
+  };
+
+  // Helper function to get cover image info for display
+  const getCoverImageInfo = (property: Property): string => {
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) {
+        return "Cover image from uploads";
+      }
+      return "First uploaded image";
+    }
+    if (property.image_url) {
+      return "Legacy image";
+    }
+    return "Sample image";
+  };
+
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -75,9 +131,26 @@ const SellerDashboard: React.FC = () => {
   const [loadingFormData, setLoadingFormData] = useState(true);
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
-  // New state for improved image management
-  const [images, setImages] = useState<string[]>([]);
-  const [coverIndex, setCoverIndex] = useState<number>(0);
+  // Updated state for API-based image management
+  const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
+  const [currentPropertyId, setCurrentPropertyId] = useState<string | number | null>(null);
+
+  // Load property images from API
+  const loadPropertyImages = async (propertyId: string | number) => {
+    try {
+      const response = await fetch(`/api/properties/images/${propertyId}`);
+      if (response.ok) {
+        const result = await response.json();
+        setPropertyImages(result.images || []);
+      } else {
+        console.error('Failed to load property images');
+        setPropertyImages([]);
+      }
+    } catch (error) {
+      console.error('Error loading property images:', error);
+      setPropertyImages([]);
+    }
+  };
 
   const fetchSellerProperties = useCallback(async () => {
     if (!u?.sub) return;
@@ -115,7 +188,7 @@ const SellerDashboard: React.FC = () => {
     if (u?.sub) {
       fetchSellerProperties();
     }
-  }, [user, isLoading, router]); // Removed u?.sub from dependencies
+  }, [user, isLoading]);
 
   // Fetch property types and statuses
   useEffect(() => {
@@ -224,6 +297,11 @@ const SellerDashboard: React.FC = () => {
       const propertyData = await response.json();
       const propertyId = isEditing ? editingPropertyId : propertyData.id;
 
+      // If we just created a new property, update the current property ID for image uploads
+      if (!isEditing && propertyData.id) {
+        setCurrentPropertyId(propertyData.id);
+      }
+
       // Update property features if any are selected
       if (selectedFeatures.length > 0) {
         const featuresResponse = await fetch('/api/properties/features/update', {
@@ -252,6 +330,7 @@ const SellerDashboard: React.FC = () => {
 
       // Success - reset form and show message
       resetForm();
+      setActiveTab('list'); // Switch to list view after creation/update
       
       setMessage({
         text: `Property ${isEditing ? 'updated' : 'listed'} successfully!`,
@@ -296,8 +375,8 @@ const SellerDashboard: React.FC = () => {
     });
     setEditingPropertyId(null);
     setSelectedFeatures([]);
-  setImages([]);
-  setCoverIndex(0);
+    setPropertyImages([]);
+    setCurrentPropertyId(null);
   };
 
   const fetchPropertyFeatures = async (propertyId: number) => {
@@ -338,9 +417,10 @@ const SellerDashboard: React.FC = () => {
       operation_status_id: property.operation_status_id || 1, // Default to Sale if not set
       seller_id: u?.sub || ''
     });
-  // Initialize images array with existing single image
-  setImages([property.image_url]);
-  setCoverIndex(0);
+    
+    // Load property images from API
+    setCurrentPropertyId(property.id);
+    loadPropertyImages(property.id);
     
     // Set the editing property ID
     setEditingPropertyId(property.id);
@@ -426,7 +506,7 @@ const SellerDashboard: React.FC = () => {
     if (u?.sub) {
       fetchSellerProperties();
     }
-  }, [activeTab, user, fetchSellerProperties]);
+  }, [activeTab, u?.sub]);
 
   // Authentication checks
   if (isLoading) return <div>Loading...</div>;
@@ -495,11 +575,18 @@ const SellerDashboard: React.FC = () => {
                   <div key={property.id} className={styles.propertyCard}>
                     <div className={styles.propertyImageContainer}>
                       <img 
-                        src={property.image_url} 
+                        src={getCoverImageUrl(property)} 
                         alt={property.title}
                         className={styles.propertyImage}
+                        onError={(e) => {
+                          // Fallback image if main image fails to load
+                          (e.target as HTMLImageElement).src = '/properties/casa-moderna.jpg';
+                        }}
                       />
-                      <div className={styles.propertyPrice}>${property.price}</div>
+                      <div className={styles.propertyPrice}>${property.price?.toLocaleString()}</div>
+                      <div className={styles.propertyImageBadge}>
+                        📷 {getImageCount(property)} photo{getImageCount(property) !== 1 ? 's' : ''}
+                      </div>
                     </div>
                     <div className={styles.propertyDetails}>
                       <h3>{property.title}</h3>
@@ -1007,21 +1094,54 @@ const SellerDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Property Images</label>
-                <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-                  Upload multiple images, set a cover, reorder, or use sample images.
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>📷</span>
+                  Property Images
+                </h3>
+                <p className={styles.sectionDescription}>
+                  Upload high-quality photos of your property. The first image will be used as the cover photo.
                 </p>
-        <MultiImageUpload 
-                  images={images}
-                  coverIndex={coverIndex}
-                  onChange={(imgs, cover) => {
-                    setImages(imgs);
-                    setCoverIndex(cover);
-                    // Map cover image to legacy single image field for backend compatibility
-          setFormData(prev => ({ ...prev, image_url: imgs[cover] ?? '' }));
+                
+                <div className={styles.imageUploadTips}>
+                  <div className={styles.tip}>
+                    <span className={styles.tipIcon}>💡</span>
+                    <strong>Tips for great photos:</strong>
+                  </div>
+                  <ul className={styles.tipsList}>
+                    <li>Take photos in good lighting (preferably natural light)</li>
+                    <li>Show different rooms and angles</li>
+                    <li>Include exterior shots and special features</li>
+                    <li>Clean and stage rooms before photographing</li>
+                  </ul>
+                </div>
+
+                <MultiImageUploadAPI 
+                  propertyId={currentPropertyId || undefined}
+                  sellerId={u?.sub || u?.email || 'anonymous'}
+                  images={propertyImages}
+                  onChange={(images: PropertyImage[]) => {
+                    setPropertyImages(images);
+                    // Update form data with cover image URL for backward compatibility
+                    const coverImage = images.find(img => img.is_cover);
+                    if (coverImage) {
+                      setFormData(prev => ({ ...prev, image_url: coverImage.image_url }));
+                    }
                   }}
+                  maxImages={15}
                 />
+                
+                {propertyImages.length > 0 && (
+                  <div className={styles.imageStats}>
+                    <span className={styles.statsIcon}>📊</span>
+                    <span>{propertyImages.length} image{propertyImages.length !== 1 ? 's' : ''} uploaded</span>
+                    {propertyImages.find(img => img.is_cover) && (
+                      <span className={styles.coverInfo}>
+                        • Cover: {propertyImages.find(img => img.is_cover)?.image_url.split('/').pop()}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className={styles.formGroup}>

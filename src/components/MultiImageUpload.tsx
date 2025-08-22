@@ -137,16 +137,52 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     const isCover = idx === coverIndex;
     return (
       <div key={idx} className={styles.thumb}>
-        <img src={src} alt={`Property image ${idx + 1}`} className={styles.thumbImg} loading="lazy" />
+        <img 
+          src={src} 
+          alt={`Property image ${idx + 1}`} 
+          className={styles.thumbImg} 
+          loading="lazy"
+          title={`Image ${idx + 1}${isCover ? ' (Cover)' : ''} - Click to view full size`}
+        />
         <div className={styles.thumbActions}>
-          <button type="button" className={styles.smallBtn} onClick={() => setCover(idx)} disabled={isCover} title={isCover ? 'Current cover' : 'Set as cover'}>
-            {isCover ? 'Cover' : 'Set'}
+          <button 
+            type="button" 
+            className={`${styles.smallBtn} ${isCover ? styles.coverBtn : ''}`}
+            onClick={() => setCover(idx)} 
+            disabled={isCover} 
+            title={isCover ? 'Current cover image' : 'Set as cover image'}
+          >
+            {isCover ? '★ Cover' : 'Set Cover'}
           </button>
-          <button type="button" className={styles.smallBtn} onClick={() => move(idx, idx - 1)} disabled={idx === 0}>↑</button>
-          <button type="button" className={styles.smallBtn} onClick={() => move(idx, idx + 1)} disabled={idx === images.length - 1}>↓</button>
-          <button type="button" className={styles.deleteBtn} onClick={() => removeImage(idx)}>✕</button>
+          <button 
+            type="button" 
+            className={styles.smallBtn} 
+            onClick={() => move(idx, idx - 1)} 
+            disabled={idx === 0}
+            title="Move up"
+          >
+            ↑
+          </button>
+          <button 
+            type="button" 
+            className={styles.smallBtn} 
+            onClick={() => move(idx, idx + 1)} 
+            disabled={idx === images.length - 1}
+            title="Move down"
+          >
+            ↓
+          </button>
+          <button 
+            type="button" 
+            className={styles.deleteBtn} 
+            onClick={() => removeImage(idx)}
+            title="Delete image"
+          >
+            🗑️
+          </button>
         </div>
-        {isCover && <div className={styles.coverBadge}>Cover</div>}
+        {isCover && <div className={styles.coverBadge}>★ Cover Photo</div>}
+        <div className={styles.imageNumber}>{idx + 1}</div>
       </div>
     );
   }, [images, coverIndex]);

@@ -28,14 +28,13 @@ const PropertyDetail: React.FC = () => {
     const fetchProperty = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/properties?id=${id}`);
+        const response = await fetch(`/api/properties/${id}`);
         
         if (!response.ok) {
           throw new Error('Property not found');
         }
 
-        const data = await response.json();
-        const propertyData = Array.isArray(data) ? data[0] : data;
+        const propertyData = await response.json();
         
         if (!propertyData) {
           throw new Error('Property not found');
@@ -129,7 +128,26 @@ const PropertyDetail: React.FC = () => {
     );
   }
 
-  const images = property.image_url ? [property.image_url] : [];
+  // Get all property images or fallback to single image
+  const getPropertyImages = (property: Property): string[] => {
+    // First check if property has uploaded images
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          // Sort by is_cover first, then by display_order
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
+    }
+    
+    // Fallback to single image_url or default
+    return property.image_url ? [property.image_url] : ['/properties/casa-moderna.jpg'];
+  };
+
+  const images = getPropertyImages(property);
+  const coverImage = property.images?.find(img => img.is_cover)?.image_url || property.image_url || images[0];
   const formattedAddress = `${property.address}${property.city ? `, ${property.city}` : ''}${property.state ? `, ${property.state}` : ''}`;
 
   return (
@@ -139,7 +157,7 @@ const PropertyDetail: React.FC = () => {
         <meta name="description" content={property.description} />
         <meta property="og:title" content={property.title || `Property in ${property.city}`} />
         <meta property="og:description" content={property.description} />
-        <meta property="og:image" content={property.image_url} />
+        <meta property="og:image" content={coverImage} />
         <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/property/${property.id}`} />
       </Head>
 

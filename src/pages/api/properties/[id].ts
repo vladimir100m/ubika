@@ -2,19 +2,19 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { query } from '../../../utils/db';
 import { Property } from '../../../types';
 
-const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { error: string }>) => {
-  const { seller_id } = req.query;
+const handler = async (req: NextApiRequest, res: NextApiResponse<Property | { error: string }>) => {
+  const { id } = req.query;
 
-  if (!seller_id) {
-    return res.status(400).json({ error: 'Seller ID is required' });
+  if (!id || Array.isArray(id)) {
+    return res.status(400).json({ error: 'Invalid property ID' });
   }
 
   try {
-
-  const sellerQuery = `
+    // Fetch the property
+    const propertyQuery = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-  p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
         CASE 
           WHEN p.type = 'house' THEN '/properties/casa-moderna.jpg'
           WHEN p.type = 'apartment' THEN '/properties/apartamento-moderno.jpg'
@@ -30,32 +30,32 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
         pos.name as operation_status, pos.display_name as operation_status_display
       FROM properties p
       LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
-      WHERE p.seller_id = $1
-      ORDER BY p.created_at DESC
+      WHERE p.id = $1
     `;
 
-    const result = await query(sellerQuery, [seller_id]);
-    console.log(`Found ${result.rows.length} properties for seller ${seller_id}`);
+    const result = await query(propertyQuery, [id]);
     
-    const properties = result.rows;
-
-    // Fetch images for each property
-    for (const property of properties) {
-      try {
-        const imagesResult = await query(
-          'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
-          [property.id]
-        );
-        property.images = imagesResult.rows;
-      } catch (imageError) {
-        console.warn(`Failed to fetch images for property ${property.id}:`, imageError);
-        property.images = [];
-      }
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Property not found' });
     }
 
-    res.status(200).json(properties);
+    const property = result.rows[0];
+
+    // Fetch images for the property
+    try {
+      const imagesResult = await query(
+        'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
+        [property.id]
+      );
+      property.images = imagesResult.rows;
+    } catch (imageError) {
+      console.warn(`Failed to fetch images for property ${property.id}:`, imageError);
+      property.images = [];
+    }
+
+    res.status(200).json(property);
   } catch (error) {
-    console.error('Error fetching seller properties:', error);
+    console.error('Error fetching property:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };

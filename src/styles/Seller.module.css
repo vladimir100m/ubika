@@ -184,6 +184,20 @@
   font-weight: bold;
 }
 
+.propertyImageBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+}
+
 .propertyDetails {
   padding: 15px;
 }
@@ -288,6 +302,72 @@
   font-size: 0.875rem;
   margin-bottom: 16px;
   font-style: italic;
+}
+
+/* Image upload section styles */
+.imageUploadTips {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.tipIcon {
+  font-size: 1rem;
+}
+
+.tipsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tipsList li {
+  padding: 4px 0 4px 20px;
+  position: relative;
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.tipsList li::before {
+  content: "•";
+  color: #3b82f6;
+  font-weight: bold;
+  position: absolute;
+  left: 8px;
+}
+
+.imageStats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #0c4a6e;
+}
+
+.statsIcon {
+  font-size: 1rem;
+}
+
+.coverInfo {
+  color: #1e40af;
+  font-weight: 500;
 }
 
 .formLabel {

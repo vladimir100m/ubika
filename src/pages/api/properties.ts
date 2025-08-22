@@ -29,11 +29,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       maxArea: req.query.maxArea as string,
     };
 
-    // Build dynamic query
-  let queryText = `
+    // Build dynamic query with image support
+    let queryText = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-  p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
         CASE 
           WHEN p.type = 'house' THEN '/properties/casa-moderna.jpg'
           WHEN p.type = 'apartment' THEN '/properties/apartamento-moderno.jpg'
@@ -123,7 +123,23 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
     console.log('Query params:', queryParams);
 
     const result = await query(queryText, queryParams);
-    res.status(200).json(result.rows);
+    const properties = result.rows;
+
+    // Fetch images for each property
+    for (const property of properties) {
+      try {
+        const imagesResult = await query(
+          'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
+          [property.id]
+        );
+        property.images = imagesResult.rows;
+      } catch (imageError) {
+        console.warn(`Failed to fetch images for property ${property.id}:`, imageError);
+        property.images = [];
+      }
+    }
+
+    res.status(200).json(properties);
   } catch (error) {
     console.error('Error fetching properties:', error);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -59,6 +59,17 @@ export interface Property {
   operation_status_id?: number; // 1=Sale, 2=Rent, 3=Not Available
   operation_status?: string; // Name of the operation status
   operation_status_display?: string; // Display name of the operation status
+  images?: PropertyImage[]; // Multiple images support
+}
+
+export interface PropertyImage {
+  id: number;
+  property_id: number;
+  image_url: string;
+  is_cover: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PropertyOperationStatus {

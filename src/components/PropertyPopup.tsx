@@ -37,8 +37,91 @@ function inferIconFromCategory(category?: string) {
   return '•';
 }
 
+// Get the cover image for property display
+const getCoverImage = (property: Property): string => {
+  // First check if property has uploaded images with a cover image
+  if (property.images && property.images.length > 0) {
+    const coverImage = property.images.find(img => img.is_cover);
+    if (coverImage) {
+      return coverImage.image_url;
+    }
+    // If no cover image is set, use the first uploaded image
+    const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+    return sortedImages[0].image_url;
+  }
+
+  // Fallback to single image_url if available
+  if (property.image_url) {
+    return property.image_url;
+  }
+
+  // Final fallback to sample images based on property type
+  const typeImages: { [key: string]: string } = {
+    'house': '/properties/casa-moderna.jpg',
+    'apartment': '/properties/apartamento-moderno.jpg',
+    'villa': '/properties/villa-lujo.jpg',
+    'penthouse': '/properties/penthouse-lujo.jpg',
+    'cabin': '/properties/cabana-bosque.jpg',
+    'loft': '/properties/loft-urbano.jpg',
+    'duplex': '/properties/duplex-moderno.jpg'
+  };
+
+  const propertyType = property.type?.toLowerCase() || 'house';
+  return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+};
+
 // Function to generate additional property images based on property type
-const generatePropertyImages = (property: Property) => {
+const generatePropertyImages = (property: Property): string[] => {
+  const baseImages = [
+    '/properties/casa-moderna.jpg',
+    '/properties/casa-lago.jpg',
+    '/properties/casa-campo.jpg',
+    '/properties/villa-lujo.jpg',
+    '/properties/cabana-playa.jpg',
+    '/properties/casa-playa.jpg',
+    '/properties/casa-colonial.jpg'
+  ];
+
+  // Type-specific images
+  const typeImages: { [key: string]: string[] } = {
+    'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'casa': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
+    'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
+    'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg']
+  };
+
+  const propertyType = property.type?.toLowerCase() || 'house';
+  const relevantImages = typeImages[propertyType] || baseImages;
+  
+  // Return 3-4 additional images plus the main image
+  return relevantImages.slice(0, 3);
+};
+
+// Function to get all property images for gallery
+const getPropertyImages = (property: Property): string[] => {
+  // First check if property has uploaded images
+  if (property.images && property.images.length > 0) {
+    return property.images
+      .sort((a, b) => {
+        // Sort by is_cover first, then by display_order
+        if (a.is_cover && !b.is_cover) return -1;
+        if (!a.is_cover && b.is_cover) return 1;
+        return a.display_order - b.display_order;
+      })
+      .map(img => img.image_url);
+  }
+
+  // Fallback to generating sample images
+  return generatePropertyImages(property);
+};
+
+// Function to generate additional property images based on property type (legacy)
+const generatePropertyImagesLegacy = (property: Property) => {
   const baseImages = [
     '/properties/casa-moderna.jpg',
     '/properties/casa-lago.jpg',
@@ -78,7 +161,7 @@ export default function PropertyPopup({
 }: { 
   selectedProperty: Property & { isFavorite?: boolean }; 
   onClose: () => void; 
-  mapRef: RefObject<HTMLDivElement | null>;
+  mapRef: RefObject<HTMLDivElement>;
   onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void;
 }) {
   const router = useRouter();
@@ -259,7 +342,7 @@ export default function PropertyPopup({
   // Handler for gallery navigation
   const handleImageChange = (direction: 'next' | 'prev') => {
     if (selectedProperty) {
-      const allImages = [selectedProperty.image_url, ...additionalImages];
+      const allImages = getPropertyImages(selectedProperty);
       const totalImages = allImages.length;
       
       if (direction === 'next') {
@@ -381,7 +464,7 @@ export default function PropertyPopup({
                     onClick={() => handleImageClick(0)}
                   >
                     <img 
-                      src={selectedProperty.image_url} 
+                      src={getCoverImage(selectedProperty)} 
                       alt="Main property image" 
                       style={{ 
                         width: '100%', 

@@ -21,8 +21,54 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
-  // Generate multiple images based on property type
+  // Get the cover image for the property card main display
+  const getCoverImage = (property: Property): string => {
+    // First check if property has uploaded images with a cover image
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) {
+        return coverImage.image_url;
+      }
+      // If no cover image is set, use the first uploaded image
+      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+      return sortedImages[0].image_url;
+    }
+
+    // Fallback to single image_url if available
+    if (property.image_url) {
+      return property.image_url;
+    }
+
+    // Final fallback to sample images based on property type
+    const typeImages: { [key: string]: string } = {
+      'house': '/properties/casa-moderna.jpg',
+      'apartment': '/properties/apartamento-moderno.jpg',
+      'villa': '/properties/villa-lujo.jpg',
+      'penthouse': '/properties/penthouse-lujo.jpg',
+      'cabin': '/properties/cabana-bosque.jpg',
+      'loft': '/properties/loft-urbano.jpg',
+      'duplex': '/properties/duplex-moderno.jpg'
+    };
+
+    const propertyType = property.type?.toLowerCase() || 'house';
+    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+  };
+
+  // Get property images for gallery navigation (if multiple images exist)
   const getPropertyImages = (property: Property): string[] => {
+    // First check if property has uploaded images
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          // Sort by is_cover first, then by display_order
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
+    }
+
+    // Fallback to sample images based on property type
     const baseImages = [
       '/properties/casa-moderna.jpg',
       '/properties/apartamento-moderno.jpg',
@@ -44,6 +90,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   const images = getPropertyImages(property);
+  const coverImage = getCoverImage(property);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleImageNavigation = (direction: 'prev' | 'next') => {
@@ -93,13 +140,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       {/* Image Section */}
       <div className={styles.imageContainer}>
         <img
-          src={imageError ? '/properties/casa-moderna.jpg' : images[currentImageIndex]}
+          src={imageError ? '/properties/casa-moderna.jpg' : (images.length > 1 ? images[currentImageIndex] : coverImage)}
           alt={property.title || `Property in ${property.city}`}
           className={styles.propertyImage}
           onError={() => setImageError(true)}
         />
         
-        {/* Image Navigation */}
+        {/* Image Navigation - Only show if multiple images exist */}
         {images.length > 1 && (
           <>
             <button
@@ -125,7 +172,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </>
         )}
 
-        {/* Image Counter */}
+        {/* Image Counter - Only show if multiple images exist */}
         {images.length > 1 && (
           <div className={styles.imageCounter}>
             {currentImageIndex + 1} / {images.length}

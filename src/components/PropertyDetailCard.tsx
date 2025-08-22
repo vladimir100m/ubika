@@ -91,7 +91,53 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
     });
   };
 
+  // Get the cover image for the property detail display
+  const getCoverImage = (property: Property): string => {
+    // First check if property has uploaded images with a cover image
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) {
+        return coverImage.image_url;
+      }
+      // If no cover image is set, use the first uploaded image
+      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+      return sortedImages[0].image_url;
+    }
+
+    // Fallback to single image_url if available
+    if (property.image_url) {
+      return property.image_url;
+    }
+
+    // Final fallback to sample images based on property type
+    const typeImages: { [key: string]: string } = {
+      'house': '/properties/casa-moderna.jpg',
+      'apartment': '/properties/apartamento-moderno.jpg',
+      'villa': '/properties/villa-lujo.jpg',
+      'penthouse': '/properties/penthouse-lujo.jpg',
+      'cabin': '/properties/cabana-bosque.jpg',
+      'loft': '/properties/loft-urbano.jpg',
+      'duplex': '/properties/duplex-moderno.jpg'
+    };
+
+    const propertyType = property.type?.toLowerCase() || 'house';
+    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+  };
+
   const getPropertyImages = (property: Property): string[] => {
+    // First check if property has uploaded images
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          // Sort by is_cover first, then by display_order
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
+    }
+
+    // Fallback to sample images based on property type
     const baseImages = [
       '/properties/casa-moderna.jpg',
       '/properties/apartamento-moderno.jpg',
