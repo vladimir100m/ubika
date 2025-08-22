@@ -2,154 +2,238 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import styles from '../styles/Home.module.css';
-import mobileStyles from '../styles/Mobile.module.css';
+import styles from '../styles/Header.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import MapFilters, { FilterOptions } from './MapFilters';
 
 interface HeaderProps {
   showMapFilters?: boolean;
   onFilterChange?: (filters: FilterOptions) => void;
+  onSearchLocationChange?: (location: string) => void;
+  searchLocation?: string;
   initialFilters?: Partial<FilterOptions>;
 }
 
-const Header: React.FC<HeaderProps> = ({ showMapFilters = false, onFilterChange, initialFilters }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  showMapFilters = false, 
+  onFilterChange, 
+  onSearchLocationChange,
+  searchLocation,
+  initialFilters 
+}) => {
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(max-width: 991px)');
   const { data: session, status } = useSession();
   const user = session?.user;
   const isLoading = status === 'loading';
+  const [isFiltersPopupOpen, setIsFiltersPopupOpen] = useState(false);
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
+
+  const handleLogoClick = () => {
+    router.push('/');
+  };
+
+  const handleAuthAction = () => {
+    if (user) {
+      router.push('/account');
+    } else {
+      signIn('google');
+    }
+  };
+
+  const toggleFiltersPopup = () => {
+    setIsFiltersPopupOpen(!isFiltersPopupOpen);
+  };
+
+  const closeFiltersPopup = () => {
+    setIsFiltersPopupOpen(false);
+  };
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isFiltersPopupOpen && !target.closest(`.${styles.filtersPopup}`) && !target.closest(`.${styles.filtersButton}`)) {
+        closeFiltersPopup();
+      }
+    };
+
+    if (isFiltersPopupOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFiltersPopupOpen]);
 
   return (
-    <>
-    <header className={styles.navbar}>
-      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-        <div className={styles.logo} onClick={() => router.push('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: isMobile ? '8px' : '16px' }}>
+    <header className={styles.header}>
+      <div className={styles.headerContainer}>
+        {/* Logo Section */}
+        <div 
+          className={styles.logoSection} 
+          onClick={handleLogoClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && handleLogoClick()}
+          aria-label="Ubika Home"
+        >
           <img 
             src="/ubika-logo.png" 
             alt="Ubika Logo" 
-            width={isMobile ? 32 : 40} 
-            height={isMobile ? 32 : 40}
+            width={isMobile ? 32 : isTablet ? 36 : 40} 
+            height={isMobile ? 32 : isTablet ? 36 : 40}
             loading="eager"
-            style={{ display: 'block' }}
+            className={styles.logoImage}
           />
-          {!isMobile && <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Ubika</span>}
+          {!isMobile && (
+            <span className={styles.logoText}>Ubika</span>
+          )}
         </div>
         
         {/* Desktop Navigation */}
         {!isMobile && (
-          <nav className={styles.navigation} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-            <div className={styles.navLinks} style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-start' }}>
+          <nav className={styles.desktopNavigation} role="navigation" aria-label="Main navigation">
+            <div className={styles.navLinks}>
               <button
-                className={styles.navItem}
-                style={{ background: 'none', color: '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
-                onClick={() => router.push('/map?operation=rent')}
+                className={styles.navButton}
+                onClick={() => handleNavigation('/map?operation=rent')}
+                aria-label="Search rental properties"
               >
-                <span role="img" aria-label="Rent" style={{ marginRight: '6px' }}>🏠</span>Rent
+                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🏠</span>
+                Rent
               </button>
               <button
-                className={styles.navItem}
-                style={{ background: 'none', color: '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
-                onClick={() => router.push('/map?operation=buy')}
+                className={styles.navButton}
+                onClick={() => handleNavigation('/map?operation=buy')}
+                aria-label="Search properties for sale"
               >
-                <span role="img" aria-label="Buy" style={{ marginRight: '6px' }}>🏡</span>Buy
+                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🏡</span>
+                Buy
               </button>
               <button
-                className={styles.navItem}
-                style={{ background: 'none', color: '#fff', border: '1px solid #fff', borderRadius: '6px', padding: '6px 18px', display: 'flex', alignItems: 'center', fontWeight: '500', cursor: 'pointer' }}
-                onClick={() => router.push('/seller')}
+                className={styles.navButton}
+                onClick={() => handleNavigation('/seller')}
+                aria-label="Sell your property"
               >
-                <span role="img" aria-label="Sell" style={{ marginRight: '6px' }}>💼</span>Sell
+                <span className={styles.navButtonIcon} role="img" aria-hidden="true">💼</span>
+                Sell
               </button>
             </div>
             
-            {/* Right side - Map Filters and Account */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto' }}>
+            {/* Right Section - Filters and Auth */}
+            <div className={styles.rightSection}>
               {showMapFilters && onFilterChange && (
-                <div style={{ transform: 'scale(0.9)' }}>
-                  <MapFilters
-                    onFilterChange={onFilterChange}
-                    initialFilters={initialFilters}
-                    inHeader={true}
-                  />
-                </div>
+                <button 
+                  className={`${styles.filtersButton} ${isFiltersPopupOpen ? styles.active : ''}`}
+                  onClick={toggleFiltersPopup}
+                  aria-label="Open filters"
+                >
+                  <span className={styles.navButtonIcon} role="img" aria-hidden="true">🔍</span>
+                  Filters
+                </button>
               )}
               
               {!isLoading && (
-                <React.Fragment>
-                  {user ? (
-                    <Link href="/account" legacyBehavior>
-                      <a className={styles.navItem}><span role="img" aria-label="Account" style={{ marginRight: '6px' }}>👤</span>Account</a>
-                    </Link>
-                  ) : (
-                    <button 
-                      onClick={() => signIn('google')}
-                      className={styles.navItem}
-                      style={{ background: 'none', border: '1px solid #fff', color: '#fff', cursor: 'pointer', fontSize: '1rem', fontWeight: '500', padding: '6px 18px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
-                    >
-                      <span role="img" aria-label="Login" style={{ marginRight: '8px' }}>🔑</span>Login
-                    </button>
-                  )}
-                </React.Fragment>
+                <button 
+                  onClick={handleAuthAction}
+                  className={styles.navButton}
+                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
+                >
+                  <span className={styles.navButtonIcon} role="img" aria-hidden="true">
+                    {user ? '👤' : '🔑'}
+                  </span>
+                  {user ? 'Account' : 'Login'}
+                </button>
               )}
             </div>
           </nav>
         )}
 
-        {/* Mobile Navigation - Horizontal Scrollable Pills */}
+        {/* Mobile Navigation */}
         {isMobile && (
           <div className={styles.mobileNavContainer}>
-            <div className={styles.mobileNavScroll}>
+            <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
               <button
                 className={styles.mobilePill}
-                onClick={() => router.push('/map?operation=rent')}
+                onClick={() => handleNavigation('/map?operation=rent')}
+                aria-label="Search rental properties"
               >
                 Rent
               </button>
               <button
                 className={styles.mobilePill}
-                onClick={() => router.push('/map?operation=buy')}
+                onClick={() => handleNavigation('/map?operation=buy')}
+                aria-label="Search properties for sale"
               >
                 Buy
               </button>
               <button
                 className={styles.mobilePill}
-                onClick={() => router.push('/seller')}
+                onClick={() => handleNavigation('/seller')}
+                aria-label="Sell your property"
               >
                 Sell
               </button>
               {!isLoading && (
-                user ? (
-                  <button
-                    className={styles.mobilePill}
-                    onClick={() => router.push('/account')}
-                  >
-                    Account
-                  </button>
-                ) : (
-                  <button
-                    className={styles.mobilePill}
-                    onClick={() => signIn('google')}
-                  >
-                    Login
-                  </button>
-                )
+                <button
+                  className={styles.mobilePill}
+                  onClick={handleAuthAction}
+                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
+                >
+                  {user ? 'Account' : 'Login'}
+                </button>
               )}
               {showMapFilters && onFilterChange && (
-                <div style={{ marginLeft: 'auto', transform: 'scale(0.8)' }}>
-                  <MapFilters
-                    onFilterChange={onFilterChange}
-                    initialFilters={initialFilters}
-                    inHeader={true}
-                  />
-                </div>
+                <button
+                  className={`${styles.mobilePill} ${isFiltersPopupOpen ? styles.active : ''}`}
+                  onClick={toggleFiltersPopup}
+                  aria-label="Open filters"
+                >
+                  🔍 Filters
+                </button>
               )}
             </div>
           </div>
         )}
       </div>
+      
+      {/* Filters Popup Modal */}
+      {isFiltersPopupOpen && showMapFilters && onFilterChange && (
+        <>
+          <div className={styles.filtersOverlay} onClick={closeFiltersPopup}></div>
+          <div className={styles.filtersPopup}>
+            <div className={styles.filtersPopupHeader}>
+              <h3>Search Filters</h3>
+              <button 
+                className={styles.closePopupButton}
+                onClick={closeFiltersPopup}
+                aria-label="Close filters"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.filtersPopupContent}>
+              <MapFilters
+                onFilterChange={(filters) => {
+                  onFilterChange(filters);
+                }}
+                onSearchLocationChange={onSearchLocationChange}
+                searchLocation={searchLocation}
+                initialFilters={initialFilters}
+                inHeader={false}
+                onClosePopup={() => setIsFiltersPopupOpen(false)}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </header>
-    </>
   );
 };
 

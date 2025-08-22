@@ -4,9 +4,11 @@ import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
+import layoutStyles from '../styles/Layout.module.css';
 import { Property } from '../types'; // Import Property type
 import Header from '../components/Header';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+import { FilterOptions } from '../components/MapFilters';
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -23,8 +25,20 @@ const Home: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch all properties without operation filter for home page
-        const response = await fetch('/api/properties');
+        // Build query parameters from router query for filters
+        const queryParams = new URLSearchParams();
+        
+        // Add filter parameters if they exist in the URL
+        const filters = ['minPrice', 'maxPrice', 'bedrooms', 'bathrooms', 'propertyType', 'operation', 'zone', 'minArea', 'maxArea'];
+        filters.forEach(filter => {
+          const value = router.query[filter];
+          if (value && typeof value === 'string' && value.trim() !== '') {
+            queryParams.append(filter, value);
+          }
+        });
+
+        const apiUrl = `/api/properties${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        const response = await fetch(apiUrl);
         if (!response.ok) {
           throw new Error(`Error fetching properties: ${response.statusText}`);
         }
@@ -46,7 +60,7 @@ const Home: React.FC = () => {
     };
 
     fetchProperties();
-  }, [user, isLoading]);
+  }, [router.query, user, isLoading]);
 
   // TODO: a veces se llama dos veces, unificar con un use effect general
   useEffect(() => {
@@ -122,17 +136,75 @@ const Home: React.FC = () => {
     }
   };
 
-  return (
-    <div className={styles.container} style={{ paddingTop: '80px' }}>
-      <Header />
-      
-      {/* Hero Section */}
-      <div className={styles.heroSection}>
-        <Banner />
-      </div>
+  // Function to handle filter changes
+  const handleFilterChange = (filters: FilterOptions) => {
+    // Build query object from filters
+    const query: any = {};
+    
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    // Update URL which will trigger a re-fetch of properties
+    router.push({
+      pathname: '/',
+      query
+    });
+  };
 
-      {/* Featured Properties Section */}
-      <section className={styles.featuredSection}>
+  // Function to handle search location changes
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = { ...router.query };
+    
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    } else {
+      delete query.zone;
+    }
+    
+    router.push({
+      pathname: '/',
+      query
+    });
+  };
+
+  return (
+    <div className={layoutStyles.pageContainer}>
+      <Header 
+        showMapFilters={true}
+        onFilterChange={handleFilterChange}
+        onSearchLocationChange={handleSearchLocationChange}
+        searchLocation={router.query.zone as string || ''}
+        initialFilters={{
+          operation: router.query.operation as string || '',
+          priceMin: router.query.minPrice as string || '',
+          priceMax: router.query.maxPrice as string || '',
+          beds: router.query.bedrooms as string || '',
+          baths: router.query.bathrooms as string || '',
+          homeType: router.query.propertyType as string || '',
+          moreFilters: {
+            minArea: router.query.minArea as string || '',
+            maxArea: router.query.maxArea as string || '',
+            yearBuiltMin: '',
+            yearBuiltMax: '',
+            keywords: []
+          }
+        }}
+      />
+      
+      <div className={layoutStyles.pageContent}>
+        {/* Hero Section */}
+        <div className={styles.heroSection}>
+          <Banner />
+        </div>
+
+        {/* Featured Properties Section */}
+        <section className={styles.featuredSection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Featured Properties</h2>
           <p className={styles.sectionSubtitle}>Discover the best properties in Argentina</p>
@@ -210,6 +282,7 @@ const Home: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} Ubika - Leading real estate marketplace | Email: info@ubika.com</p>
         </div>
       </footer>
+      </div>
     </div>
   );
 };

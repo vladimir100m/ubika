@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
+import layoutStyles from '../styles/Layout.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { SearchFilters } from '../components/SearchBar';
@@ -14,6 +15,7 @@ import PropertyCard from 'components/PropertyCard';
 import Header from 'components/Header';
 import { useSession } from 'next-auth/react';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+import { FilterOptions } from '../components/MapFilters';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -456,7 +458,7 @@ const MapPage: React.FC = () => {
   };
 
   // Handle filter changes for MapFilters in header
-  const handleFilterChange = (filters: any) => {
+  const handleFilterChange = (filters: FilterOptions) => {
     // Build query object from filters
     const query: any = {};
     
@@ -476,11 +478,29 @@ const MapPage: React.FC = () => {
     });
   };
 
+  // Function to handle search location changes
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = { ...router.query };
+    
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    } else {
+      delete query.zone;
+    }
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
   return (
-    <div className={styles.container}>
+    <div className={layoutStyles.mapPageContainer}>
   <Header 
     showMapFilters={true}
     onFilterChange={handleFilterChange}
+    onSearchLocationChange={handleSearchLocationChange}
+    searchLocation={router.query.zone as string || ''}
     initialFilters={{
       operation: router.query.operation as string || '',
       priceMin: router.query.minPrice as string || '',
@@ -497,9 +517,8 @@ const MapPage: React.FC = () => {
       }
     }}
   />
-      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', paddingTop: '80px' }}>
-        {/* Scroll-Down Layout: Map at top, properties below */}
-        <div className={styles.scrollDownContainer}>
+      <div className={layoutStyles.pageContainer}>
+        <div className={layoutStyles.pageContent}>
           {/* Map section - fixed height at top */}
           <div className={styles.mapSection}>
             {loading ? (
@@ -521,10 +540,10 @@ const MapPage: React.FC = () => {
             )}
           </div>
           
-          {/* Properties section - scrollable below map */}
-          <div className={styles.propertiesSection}>
-            <div className={styles.propertiesSectionHeader}>
-              <h2 className={styles.propertiesTitle}>
+          {/* Properties section - same as home page structure */}
+          <div className={styles.allPropertiesSection}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>
                 {propertyLocations.length} Properties Found
               </h2>
               <div className={styles.sortControls}>

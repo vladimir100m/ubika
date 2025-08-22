@@ -3,6 +3,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import styles from '../styles/Home.module.css';
+import layoutStyles from '../styles/Layout.module.css';
 
 const AccountSettings: React.FC = () => {
   const { data: session, status } = useSession();
@@ -17,9 +18,9 @@ const AccountSettings: React.FC = () => {
 
   if (!user) {
     return (
-      <div className={styles.container}>
+      <div className={layoutStyles.pageContainer}>
   <Header />
-        <main className={styles.main}>
+        <div className={layoutStyles.pageContent}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{
               textAlign: 'center',
@@ -52,14 +53,15 @@ const AccountSettings: React.FC = () => {
               </button>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
+    <div className={layoutStyles.pageContainer}>
   <Header />
+      <div className={layoutStyles.pageContent}>
       
       {/* Page Header */}
       <div style={{ 
@@ -111,7 +113,6 @@ const AccountSettings: React.FC = () => {
         </div>
       </div>
 
-      <main className={styles.main}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
           <div style={{ 
             backgroundColor: 'white', 
@@ -236,7 +237,7 @@ const AccountSettings: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
