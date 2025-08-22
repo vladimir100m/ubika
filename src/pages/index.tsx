@@ -3,10 +3,14 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
+import Footer from '../components/Footer';
+import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
 import styles from '../styles/Home.module.css';
+import layoutStyles from '../styles/Layout.module.css';
 import { Property } from '../types'; // Import Property type
 import Header from '../components/Header';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+import { FilterOptions } from '../components/MapFilters';
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -23,8 +27,20 @@ const Home: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch all properties without operation filter for home page
-        const response = await fetch('/api/properties');
+        // Build query parameters from router query for filters
+        const queryParams = new URLSearchParams();
+        
+        // Add filter parameters if they exist in the URL
+        const filters = ['minPrice', 'maxPrice', 'bedrooms', 'bathrooms', 'propertyType', 'operation', 'zone', 'minArea', 'maxArea'];
+        filters.forEach(filter => {
+          const value = router.query[filter];
+          if (value && typeof value === 'string' && value.trim() !== '') {
+            queryParams.append(filter, value);
+          }
+        });
+
+        const apiUrl = `/api/properties${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        const response = await fetch(apiUrl);
         if (!response.ok) {
           throw new Error(`Error fetching properties: ${response.statusText}`);
         }
@@ -46,7 +62,7 @@ const Home: React.FC = () => {
     };
 
     fetchProperties();
-  }, [user, isLoading]);
+  }, [router.query, user, isLoading]);
 
   // TODO: a veces se llama dos veces, unificar con un use effect general
   useEffect(() => {
@@ -122,94 +138,122 @@ const Home: React.FC = () => {
     }
   };
 
+  // Function to handle filter changes
+  const handleFilterChange = (filters: FilterOptions) => {
+    // Build query object from filters
+    const query: any = {};
+    
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    // Update URL which will trigger a re-fetch of properties
+    router.push({
+      pathname: '/',
+      query
+    });
+  };
+
+  // Function to handle search location changes
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = { ...router.query };
+    
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    } else {
+      delete query.zone;
+    }
+    
+    router.push({
+      pathname: '/',
+      query
+    });
+  };
+
   return (
-    <div className={styles.container} style={{ paddingTop: '80px' }}>
-      <Header />
+    <div className={layoutStyles.pageContainer}>
+      <Header 
+        showMapFilters={true}
+        onFilterChange={handleFilterChange}
+        onSearchLocationChange={handleSearchLocationChange}
+        searchLocation={router.query.zone as string || ''}
+        initialFilters={{
+          operation: router.query.operation as string || '',
+          priceMin: router.query.minPrice as string || '',
+          priceMax: router.query.maxPrice as string || '',
+          beds: router.query.bedrooms as string || '',
+          baths: router.query.bathrooms as string || '',
+          homeType: router.query.propertyType as string || '',
+          moreFilters: {
+            minArea: router.query.minArea as string || '',
+            maxArea: router.query.maxArea as string || '',
+            yearBuiltMin: '',
+            yearBuiltMax: '',
+            keywords: []
+          }
+        }}
+      />
       
-      {/* Hero Section */}
-      <div className={styles.heroSection}>
-        <Banner />
-      </div>
-
-      {/* Featured Properties Section */}
-      <section className={styles.featuredSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Featured Properties</h2>
-          <p className={styles.sectionSubtitle}>Discover the best properties in Argentina</p>
+      <div className={layoutStyles.pageContent}>
+        {/* Hero Section */}
+        <div className={styles.heroSection}>
+          <Banner />
         </div>
-        
-        {loading ? (
-          <div className={styles.loadingContainer}>
-            <div className={styles.loadingSpinner}></div>
-            <p>Loading properties...</p>
-          </div>
-        ) : error ? (
-          <div className={styles.errorContainer}>
-            <p className={styles.errorMessage}>{error}</p>
-            <button 
-              className={styles.retryButton}
-              onClick={() => router.reload()}
-            >
-              Try Again
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Featured properties carousel/grid - first 6 properties */}
-            {properties.length > 0 && (
-              <div className={styles.featuredPropertiesGrid}>
-                {properties.slice(0, 6).map((property) => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    isFavorite={savedPropertyIds.has(property.id)}
-                    onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                  />
-                ))}
-              </div>
-            )}
-            
-            {/* All Properties Section */}
-            <div className={styles.allPropertiesSection}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>All Properties ({properties.length})</h2>
-                <button 
-                  className={styles.viewMapButton}
-                  onClick={() => router.push('/map')}
-                >
-                  View on Map
-                </button>
-              </div>
-              
-              <div className={styles.propertiesScrollContainer}>
-                <div className={styles.propertiesGrid}>
-                  {properties.length > 0 ? (
-                    properties.map((property) => (
-                      <PropertyCard
-                        key={property.id}
-                        property={property}
-                        isFavorite={savedPropertyIds.has(property.id)}
-                        onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                      />
-                    ))
-                  ) : (
-                    <div className={styles.emptyState}>
-                      <h3>No properties found</h3>
-                      <p>We couldn't find any properties matching your criteria.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+
+        {/* Properties Section - Standardized Structure */}
+        <PropertySection 
+          title="Featured Properties" 
+          subtitle="Discover the best properties in Argentina"
+        >
+          {/* Results Summary */}
+          <ResultsInfo 
+            count={properties.length}
+            loading={loading}
+          />
+          
+          {/* Loading State */}
+          {loading && <LoadingState />}
+          
+          {/* Error State */}
+          {error && (
+            <ErrorState 
+              message={error}
+              onRetry={() => router.reload()}
+            />
+          )}
+          
+          {/* Properties Grid */}
+          {!loading && !error && properties.length > 0 && (
+            <div className={styles.propertyGrid}>
+              {properties.slice(0, 6).map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  isFavorite={savedPropertyIds.has(property.id)}
+                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
+                  onClick={() => handlePropertyClick(property.id)}
+                />
+              ))}
             </div>
-          </>
-        )}
-      </section>
+          )}
+          
+          {/* Empty State */}
+          {!loading && !error && properties.length === 0 && (
+            <EmptyState 
+              showClearFilters={true}
+              onClearFilters={() => router.push('/')}
+            />
+          )}
+        </PropertySection>
 
-      <footer className={styles.footer}>
-        <div className={styles.footerBottom}>
-          <p>&copy; {new Date().getFullYear()} Ubika - Leading real estate marketplace | Email: info@ubika.com</p>
-        </div>
-      </footer>
+        {/* Footer */}
+        <Footer />
+      </div>
     </div>
   );
 };

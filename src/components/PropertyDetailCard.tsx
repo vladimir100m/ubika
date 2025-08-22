@@ -169,14 +169,14 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Description */}
       {property.description && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>About This Property</h2>
+          <h2 className={styles.propertyTitle}>About This Property</h2>
           <p className={styles.description}>{property.description}</p>
         </div>
       )}
 
       {/* Property Information */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Property Information</h2>
+  <h2 className={styles.propertyTitle}>Property Information</h2>
         <div className={styles.propertyInfo}>
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
@@ -252,12 +252,12 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Property Features */}
       {loadingFeatures ? (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Property Features</h2>
+          <h2 className={styles.propertyTitle}>Property Features</h2>
           <div className={styles.loadingFeatures}>Loading features...</div>
         </div>
       ) : propertyFeatures.length > 0 ? (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Property Features</h2>
+          <h2 className={styles.propertyTitle}>Property Features</h2>
           <div className={styles.featuresGrid}>
             {propertyFeatures.map((feature) => (
               <div key={feature.id} className={styles.featureItem}>
@@ -273,7 +273,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Neighborhood Information */}
       {neighborhoodData && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Neighborhood: {neighborhoodData.name}</h2>
+          <h2 className={styles.propertyTitle}>Neighborhood: {neighborhoodData.name}</h2>
           <div className={styles.neighborhoodInfo}>
             <p className={styles.neighborhoodDescription}>
               {neighborhoodData.description}
@@ -307,7 +307,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Contact Section */}
       {showContact && (
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Contact Information</h2>
+          <h2 className={styles.propertyTitle}>Contact Information</h2>
           <div className={styles.contactSection}>
             <div className={styles.contactButtons}>
               <button className={styles.primaryButton}>

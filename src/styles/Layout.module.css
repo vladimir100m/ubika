@@ -1,0 +1,131 @@
+/* Layout.module.css - Standardized layout styles accounting for header */
+
+.pageContainer {
+  min-height: 100vh;
+  padding-top: 64px; /* Default header height */
+  background-color: #f9f9f9;
+  /* Ensure smooth scrolling */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.pageContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  /* Allow content to expand naturally */
+  min-height: calc(100vh - 64px);
+}
+
+.fullWidthContent {
+  width: 100%;
+  padding: 0;
+}
+
+/* Responsive padding adjustments to match header height */
+
+/* Large Desktop */
+@media (min-width: 1200px) {
+  .pageContainer {
+    padding-top: 68px;
+  }
+  
+  .pageContent {
+    min-height: calc(100vh - 68px);
+  }
+}
+
+/* Medium Desktop */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .pageContainer {
+    padding-top: 66px;
+  }
+  
+  .pageContent {
+    min-height: calc(100vh - 66px);
+  }
+}
+
+/* Small Desktop / Large Tablet */
+@media (min-width: 769px) and (max-width: 991px) {
+  .pageContainer {
+    padding-top: 64px;
+  }
+  
+  .pageContent {
+    min-height: calc(100vh - 64px);
+  }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .pageContainer {
+    padding-top: 60px;
+  }
+  
+  .pageContent {
+    padding: 16px;
+    min-height: calc(100vh - 60px);
+  }
+}
+
+/* Large Mobile */
+@media (max-width: 480px) {
+  .pageContainer {
+    padding-top: 56px;
+  }
+  
+  .pageContent {
+    padding: 12px;
+    min-height: calc(100vh - 56px);
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 360px) {
+  .pageContainer {
+    padding-top: 52px;
+  }
+  
+  .pageContent {
+    padding: 8px;
+    min-height: calc(100vh - 52px);
+  }
+}
+
+/* Special cases for map page */
+.mapPageContainer {
+  padding-top: 64px;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@media (min-width: 1200px) {
+  .mapPageContainer {
+    padding-top: 68px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .mapPageContainer {
+    padding-top: 66px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mapPageContainer {
+    padding-top: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mapPageContainer {
+    padding-top: 56px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mapPageContainer {
+    padding-top: 52px;
+  }
+}

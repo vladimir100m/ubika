@@ -8,13 +8,15 @@ interface PropertyCardProps {
   isFavorite?: boolean;
   onFavoriteToggle?: (propertyId: number) => void;
   showFullDetails?: boolean;
+  onClick?: () => void;
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
   isFavorite = false,
   onFavoriteToggle,
-  showFullDetails = false
+  showFullDetails = false,
+  onClick
 }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
@@ -53,7 +55,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   const handleCardClick = () => {
-    router.push(`/property/${property.id}`);
+    if (onClick) {
+      onClick();
+    } else {
+      router.push(`/property/${property.id}`);
+    }
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {

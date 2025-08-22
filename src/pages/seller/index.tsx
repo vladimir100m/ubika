@@ -488,7 +488,7 @@ const SellerDashboard: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className={styles.propertyGrid}>
+              <div className={styles.sellerPropertyGrid}>
                 {properties.map(property => (
                   <div key={property.id} className={styles.propertyCard}>
                     <div className={styles.propertyImageContainer}>

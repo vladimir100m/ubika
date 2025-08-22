@@ -1,0 +1,549 @@
+/* Header.module.css - Standardized header styles for all screen sizes */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
+  color: white;
+  box-shadow: 0 2px 12px rgba(0, 112, 243, 0.15);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 64px;
+  box-sizing: border-box;
+}
+
+/* Logo Section */
+.logoSection {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.logoSection:hover {
+  transform: scale(1.02);
+}
+
+.logoImage {
+  display: block;
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+}
+
+.logoText {
+  margin-left: 10px;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  color: white;
+}
+
+/* Desktop Navigation */
+.desktopNavigation {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 32px;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.navButton:active {
+  transform: translateY(0);
+}
+
+.navButtonIcon {
+  margin-right: 6px;
+  font-size: 1rem;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.filtersContainer {
+  transform: scale(0.9);
+  transform-origin: center;
+}
+
+/* Filters Button and Popup Styles */
+.filtersButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+}
+
+.filtersButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.filtersButton.active {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Popup Modal Overlay */
+.filtersOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  backdrop-filter: blur(4px);
+}
+
+/* Popup Modal */
+.filtersPopup {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 120px);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 1002;
+  overflow: hidden;
+  animation: popupSlideIn 0.3s ease-out;
+}
+
+@keyframes popupSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.filtersPopupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.filtersPopupHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.closePopupButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.closePopupButton:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.filtersPopupContent {
+  padding: 20px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
+/* Mobile Navigation */
+.mobileNavContainer {
+  flex: 1;
+  margin-left: 12px;
+  overflow: hidden;
+}
+
+.mobileNavScroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+  align-items: center;
+}
+
+.mobileNavScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.mobilePill {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.mobilePill:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.mobilePill:active {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.mobilePillActive {
+  background: white !important;
+  color: #0070f3 !important;
+  border-color: white !important;
+  font-weight: 600;
+}
+
+.mobileFiltersContainer {
+  margin-left: auto;
+  transform: scale(0.8);
+  transform-origin: center;
+}
+
+/* Responsive Breakpoints */
+
+/* Large Desktop */
+@media (min-width: 1200px) {
+  .headerContainer {
+    padding: 0 40px;
+    height: 68px;
+  }
+  
+  .logoText {
+    font-size: 1.3rem;
+  }
+  
+  .navButton {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+  
+  .filtersContainer {
+    transform: scale(1);
+  }
+}
+
+/* Medium Desktop */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .headerContainer {
+    padding: 0 32px;
+    height: 66px;
+  }
+  
+  .logoText {
+    font-size: 1.25rem;
+  }
+  
+  .navButton {
+    padding: 9px 18px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Small Desktop / Large Tablet */
+@media (min-width: 769px) and (max-width: 991px) {
+  .headerContainer {
+    padding: 0 24px;
+    height: 64px;
+  }
+  
+  .logoText {
+    font-size: 1.2rem;
+  }
+  
+  .navButton {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .desktopNavigation {
+    margin-left: 24px;
+  }
+  
+  .navLinks {
+    gap: 8px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .headerContainer {
+    padding: 0 16px;
+    height: 60px;
+  }
+  
+  .logoImage {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .logoText {
+    display: none;
+  }
+  
+  .desktopNavigation {
+    display: none;
+  }
+  
+  .mobileNavContainer {
+    display: flex;
+  }
+  
+  .mobilePill {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+  
+  .mobileFiltersContainer {
+    transform: scale(0.85);
+  }
+  
+  /* Mobile popup adjustments */
+  .filtersPopup {
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+  }
+  
+  .filtersPopupHeader {
+    padding: 16px;
+  }
+  
+  .filtersPopupContent {
+    padding: 16px;
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Large Mobile */
+@media (max-width: 480px) {
+  .headerContainer {
+    padding: 0 12px;
+    height: 56px;
+  }
+  
+  .logoImage {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .logoSection {
+    margin-right: 8px;
+  }
+  
+  .mobileNavContainer {
+    margin-left: 8px;
+  }
+  
+  .mobilePill {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  /* Mobile popup adjustments for small screens */
+  .filtersPopup {
+    top: 65px;
+    right: 5px;
+    left: 5px;
+  }
+  
+  .filtersPopupHeader {
+    padding: 12px;
+  }
+  
+  .filtersPopupHeader h3 {
+    font-size: 1.1rem;
+  }
+  
+  .filtersPopupContent {
+    padding: 12px;
+    max-height: calc(100vh - 160px);
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 360px) {
+  .headerContainer {
+    padding: 0 12px;
+    height: 54px;
+  }
+  
+  .logoImage {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .mobilePill {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .filtersButton {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .mobileFiltersContainer {
+    transform: scale(0.7);
+  }
+  
+  /* Extra small popup adjustments */
+  .filtersPopup {
+    top: 60px;
+    right: 5px;
+    left: 5px;
+  }
+  
+  .filtersPopupHeader {
+    padding: 10px;
+  }
+  
+  .filtersPopupHeader h3 {
+    font-size: 1rem;
+  }
+  
+  .filtersPopupContent {
+    padding: 10px;
+    max-height: calc(100vh - 140px);
+  }
+}
+
+/* Hide elements appropriately */
+@media (min-width: 769px) {
+  .mobileNavContainer {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktopNavigation {
+    display: none;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .logoSection,
+  .navButton,
+  .mobilePill {
+    transition: none;
+  }
+  
+  .logoSection:hover {
+    transform: none;
+  }
+  
+  .navButton:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .header {
+    background: #0056b3;
+    border-bottom: 2px solid white;
+  }
+  
+  .navButton,
+  .mobilePill {
+    border-width: 2px;
+  }
+}
+
+/* Focus states for accessibility */
+.logoSection:focus,
+.navButton:focus,
+.mobilePill:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .header {
+    position: static;
+    background: white;
+    color: black;
+    box-shadow: none;
+    border-bottom: 1px solid black;
+  }
+}
