@@ -272,6 +272,15 @@ export default function PropertyPopup({
     };
   }, [router.events, onClose]);
 
+  // Reset state when component unmounts
+  useEffect(() => {
+    return () => {
+      setMapInitialized(false);
+      setShowContactForm(false);
+      setShowCarousel(false);
+    };
+  }, []);
+
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
     const options = {
@@ -286,7 +295,7 @@ export default function PropertyPopup({
           const id = entry.target.id;
           if (id === 'overview-section') setActiveTab('overview');
           else if (id === 'details-section') setActiveTab('details');
-          else if (id === 'map-section') setActiveTab('map');
+          else if (id === 'location-section') setActiveTab('map');
         }
       });
     }, options);
@@ -830,138 +839,6 @@ export default function PropertyPopup({
                           )}
                         </div>
                       </div>
-                      <div className={styles.overviewAside}>
-                        <div className={styles.contactSideCard} style={{
-                          transition: 'all 0.3s ease',
-                          overflow: 'hidden'
-                        }}>
-                          {!showContactForm ? (
-                            // Initial state - just show the contact button
-                            <div style={{ 
-                              opacity: showContactForm ? 0 : 1,
-                              transition: 'opacity 0.3s ease'
-                            }}>
-                              <h3 className={styles.sideCardTitle}>Contact an agent about this home</h3>
-                              <p style={{ 
-                                fontSize: '14px', 
-                                color: '#666', 
-                                marginBottom: '16px',
-                                lineHeight: '1.4'
-                              }}>
-                                Get more information about this property, schedule a viewing, or ask any questions you may have.
-                              </p>
-                              <button 
-                                className={styles.sideSubmitBtn}
-                                onClick={() => setShowContactForm(true)}
-                                style={{
-                                  width: '100%',
-                                  padding: '12px 16px',
-                                  backgroundColor: '#1277e1',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '16px',
-                                  fontWeight: '600',
-                                  cursor: 'pointer',
-                                  transition: 'background-color 0.2s ease'
-                                }}
-                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0f6bc7'}
-                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#1277e1'}
-                              >
-                                Contact Agent
-                              </button>
-                            </div>
-                          ) : (
-                            // Contact form state
-                            <div style={{ 
-                              opacity: showContactForm ? 1 : 0,
-                              transition: 'opacity 0.3s ease'
-                            }}>
-                              <div style={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
-                                alignItems: 'center',
-                                marginBottom: '16px'
-                              }}>
-                                <h3 className={styles.sideCardTitle}>Contact an agent</h3>
-                                <button
-                                  onClick={handleCloseContactForm}
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    fontSize: '20px',
-                                    cursor: 'pointer',
-                                    color: '#666',
-                                    padding: '0',
-                                    lineHeight: '1'
-                                  }}
-                                  aria-label="Close contact form"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                              <div className={styles.sideFieldWrap}>
-                                <input 
-                                  type="text" 
-                                  placeholder="Your Name" 
-                                  className={styles.sideInput}
-                                  value={contactFormData.name}
-                                  onChange={(e) => handleContactFormChange('name', e.target.value)}
-                                />
-                              </div>
-                              <div className={styles.sideFieldWrap}>
-                                <input 
-                                  type="text" 
-                                  placeholder="Phone" 
-                                  className={styles.sideInput}
-                                  value={contactFormData.phone}
-                                  onChange={(e) => handleContactFormChange('phone', e.target.value)}
-                                />
-                              </div>
-                              <div className={styles.sideFieldWrap}>
-                                <input 
-                                  type="email" 
-                                  placeholder="Email" 
-                                  className={styles.sideInput}
-                                  value={contactFormData.email}
-                                  onChange={(e) => handleContactFormChange('email', e.target.value)}
-                                />
-                              </div>
-                              <div className={styles.sideFieldWrap}>
-                                <textarea 
-                                  rows={4} 
-                                  placeholder="I'm interested in this property" 
-                                  className={styles.sideTextarea}
-                                  value={contactFormData.message}
-                                  onChange={(e) => handleContactFormChange('message', e.target.value)}
-                                />
-                              </div>
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button className={styles.sideSubmitBtn} style={{ flex: 1 }}>
-                                  Send Message
-                                </button>
-                                <button 
-                                  onClick={handleCloseContactForm}
-                                  style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#f5f5f5',
-                                    color: '#666',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    transition: 'background-color 0.2s ease'
-                                  }}
-                                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e9e9e9'}
-                                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   </div>
 
@@ -1191,20 +1068,49 @@ export default function PropertyPopup({
                     </div>
                   </div>
                   
-                  {/* Location section */}
-                  <div ref={mapLocationRef} id="map-section" style={{ marginBottom: '40px' }}>
-                    {/* Google Maps integration - show property location */}
-                    <div style={{ width: '100%', height: '500px', position: 'relative' }}>
-                      <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
-                    </div>
-                    
-                    <div style={{ padding: '24px' }}>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '16px',
-                        color: '#2a2a33'
-                      }}>Neighborhood</h3>
+                  {/* Location Section */}
+                  <div ref={mapLocationRef} id="location-section" style={{ 
+                    marginBottom: '40px',
+                    padding: '24px',
+                    borderTop: '1px solid #e9e9e9'
+                  }}>
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                      <h2 style={{ 
+                        fontSize: '28px', 
+                        fontWeight: '700', 
+                        marginBottom: '32px',
+                        color: '#2a2a33',
+                        textAlign: 'center'
+                      }}>Location</h2>
+                      
+                      {/* Map Subsection */}
+                      <div style={{ marginBottom: '32px' }}>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Map</h3>
+                        <div style={{ 
+                          width: '100%', 
+                          height: '400px', 
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          position: 'relative'
+                        }}>
+                          <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+                        </div>
+                      </div>
+                      
+                      {/* Neighborhood Subsection */}
+                      <div>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Neighborhood</h3>
                       <p style={{ 
                         fontSize: '16px', 
                         lineHeight: '1.5', 
@@ -1319,6 +1225,258 @@ export default function PropertyPopup({
                           </div>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                  </div>
+
+                  {/* Contact Agent Section - Moved to the end */}
+                  <div style={{ 
+                    padding: '24px', 
+                    backgroundColor: '#f8f9fa',
+                    borderTop: '1px solid #e9e9e9'
+                  }}>
+                    <div style={{ 
+                      maxWidth: '600px', 
+                      margin: '0 auto', 
+                      textAlign: 'center' 
+                    }}>
+                      {!showContactForm ? (
+                        // Initial state - just show the contact button
+                        <div style={{ 
+                          opacity: showContactForm ? 0 : 1,
+                          transition: 'opacity 0.3s ease'
+                        }}>
+                          <h3 style={{ 
+                            fontSize: '24px', 
+                            fontWeight: '600', 
+                            marginBottom: '16px',
+                            color: '#2a2a33'
+                          }}>Contact an agent about this home</h3>
+                          <p style={{ 
+                            fontSize: '16px', 
+                            color: '#666', 
+                            marginBottom: '24px',
+                            lineHeight: '1.5'
+                          }}>
+                            Get more information about this property, schedule a viewing, or ask any questions you may have.
+                          </p>
+                          <button 
+                            onClick={() => setShowContactForm(true)}
+                            style={{
+                              padding: '16px 32px',
+                              backgroundColor: '#1277e1',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              fontSize: '18px',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 4px 12px rgba(18, 119, 225, 0.3)'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.backgroundColor = '#0f6bc7';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 6px 16px rgba(18, 119, 225, 0.4)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = '#1277e1';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(18, 119, 225, 0.3)';
+                            }}
+                          >
+                            Contact Agent
+                          </button>
+                        </div>
+                      ) : (
+                        // Contact form state
+                        <div style={{ 
+                          opacity: showContactForm ? 1 : 0,
+                          transition: 'opacity 0.3s ease',
+                          backgroundColor: 'white',
+                          padding: '32px',
+                          borderRadius: '12px',
+                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+                          textAlign: 'left'
+                        }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginBottom: '24px'
+                          }}>
+                            <h3 style={{ 
+                              fontSize: '20px', 
+                              fontWeight: '600', 
+                              margin: '0',
+                              color: '#2a2a33'
+                            }}>Contact an agent</h3>
+                            <button
+                              onClick={handleCloseContactForm}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                fontSize: '24px',
+                                cursor: 'pointer',
+                                color: '#666',
+                                padding: '0',
+                                lineHeight: '1',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s ease'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              aria-label="Close contact form"
+                            >
+                              ×
+                            </button>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                            gap: '16px',
+                            marginBottom: '16px'
+                          }}>
+                            <div>
+                              <input 
+                                type="text" 
+                                placeholder="Your Name" 
+                                value={contactFormData.name}
+                                onChange={(e) => handleContactFormChange('name', e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: '2px solid #e9e9e9',
+                                  borderRadius: '8px',
+                                  fontSize: '16px',
+                                  transition: 'border-color 0.2s ease',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                                onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                              />
+                            </div>
+                            <div>
+                              <input 
+                                type="text" 
+                                placeholder="Phone" 
+                                value={contactFormData.phone}
+                                onChange={(e) => handleContactFormChange('phone', e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: '2px solid #e9e9e9',
+                                  borderRadius: '8px',
+                                  fontSize: '16px',
+                                  transition: 'border-color 0.2s ease',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                                onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div style={{ marginBottom: '24px' }}>
+                            <input 
+                              type="email" 
+                              placeholder="Email" 
+                              value={contactFormData.email}
+                              onChange={(e) => handleContactFormChange('email', e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '2px solid #e9e9e9',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                transition: 'border-color 0.2s ease',
+                                boxSizing: 'border-box',
+                                marginBottom: '16px'
+                              }}
+                              onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                              onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                            />
+                            <textarea 
+                              rows={4} 
+                              placeholder="I'm interested in this property" 
+                              value={contactFormData.message}
+                              onChange={(e) => handleContactFormChange('message', e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '2px solid #e9e9e9',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                transition: 'border-color 0.2s ease',
+                                boxSizing: 'border-box',
+                                resize: 'vertical',
+                                minHeight: '100px'
+                              }}
+                              onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                              onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                            />
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            gap: '12px',
+                            justifyContent: 'flex-end'
+                          }}>
+                            <button 
+                              onClick={handleCloseContactForm}
+                              style={{
+                                padding: '12px 24px',
+                                backgroundColor: '#f5f5f5',
+                                color: '#666',
+                                border: '2px solid #e9e9e9',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#e9e9e9';
+                                e.currentTarget.style.borderColor = '#ddd';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f5f5f5';
+                                e.currentTarget.style.borderColor = '#e9e9e9';
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              style={{
+                                padding: '12px 24px',
+                                backgroundColor: '#1277e1',
+                                color: 'white',
+                                border: '2px solid #1277e1',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#0f6bc7';
+                                e.currentTarget.style.borderColor = '#0f6bc7';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#1277e1';
+                                e.currentTarget.style.borderColor = '#1277e1';
+                              }}
+                            >
+                              Send Message
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
