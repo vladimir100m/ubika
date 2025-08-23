@@ -28,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({
   const user = session?.user;
   const isLoading = status === 'loading';
   const [isFiltersPopupOpen, setIsFiltersPopupOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -39,10 +40,28 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleAuthAction = () => {
     if (user) {
-      router.push('/account');
+      setIsAccountDropdownOpen(!isAccountDropdownOpen);
     } else {
       signIn('google');
     }
+  };
+
+  const toggleAccountDropdown = () => {
+    setIsAccountDropdownOpen(!isAccountDropdownOpen);
+  };
+
+  const closeAccountDropdown = () => {
+    setIsAccountDropdownOpen(false);
+  };
+
+  const handleAccountMenuClick = (path: string) => {
+    setIsAccountDropdownOpen(false);
+    router.push(path);
+  };
+
+  const handleSignOut = () => {
+    setIsAccountDropdownOpen(false);
+    signOut();
   };
 
   const toggleFiltersPopup = () => {
@@ -60,16 +79,19 @@ const Header: React.FC<HeaderProps> = ({
       if (isFiltersPopupOpen && !target.closest(`.${styles.filtersPopup}`) && !target.closest(`.${styles.filtersButton}`)) {
         closeFiltersPopup();
       }
+      if (isAccountDropdownOpen && !target.closest(`.${styles.accountDropdown}`) && !target.closest(`.${styles.accountButton}`)) {
+        closeAccountDropdown();
+      }
     };
 
-    if (isFiltersPopupOpen) {
+    if (isFiltersPopupOpen || isAccountDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isFiltersPopupOpen]);
+  }, [isFiltersPopupOpen, isAccountDropdownOpen]);
 
   return (
     <header className={styles.header}>
@@ -141,16 +163,57 @@ const Header: React.FC<HeaderProps> = ({
               )}
               
               {!isLoading && (
-                <button 
-                  onClick={handleAuthAction}
-                  className={styles.navButton}
-                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
-                >
-                  <span className={styles.navButtonIcon} role="img" aria-hidden="true">
-                    {user ? '👤' : '🔑'}
-                  </span>
-                  {user ? 'Account' : 'Login'}
-                </button>
+                <div className={styles.accountContainer}>
+                  <button 
+                    onClick={handleAuthAction}
+                    className={`${styles.navButton} ${styles.accountButton}`}
+                    aria-label={user ? 'Account menu' : 'Sign in with Google'}
+                  >
+                    <span className={styles.navButtonIcon} role="img" aria-hidden="true">
+                      {user ? '👤' : '🔑'}
+                    </span>
+                    {user ? 'Account' : 'Login'}
+                    {user && (
+                      <span className={styles.dropdownArrow}>
+                        {isAccountDropdownOpen ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {user && isAccountDropdownOpen && (
+                    <div className={styles.accountDropdown}>
+                      <button 
+                        className={styles.dropdownItem}
+                        onClick={() => handleAccountMenuClick('/account')}
+                      >
+                        <span className={styles.dropdownIcon}>👤</span>
+                        Account
+                      </button>
+                      <button 
+                        className={styles.dropdownItem}
+                        onClick={() => handleAccountMenuClick('/saved-properties')}
+                      >
+                        <span className={styles.dropdownIcon}>❤️</span>
+                        Saved Properties
+                      </button>
+                      <button 
+                        className={styles.dropdownItem}
+                        onClick={() => handleAccountMenuClick('/profile')}
+                      >
+                        <span className={styles.dropdownIcon}>📝</span>
+                        Profile
+                      </button>
+                      <hr className={styles.dropdownDivider} />
+                      <button 
+                        className={styles.dropdownItem}
+                        onClick={handleSignOut}
+                      >
+                        <span className={styles.dropdownIcon}>🚪</span>
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </nav>

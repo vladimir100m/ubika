@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import Header from '../../components/Header';
-import styles from '../../styles/Home.module.css';
+import { StandardLayout } from '../../components';
+import { FilterOptions } from '../../components/MapFilters';
 
 const SignIn: React.FC = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.beds = filters.beds;
+    if (filters.baths) query.baths = filters.baths;
+    if (filters.homeType) query.homeType = filters.homeType;
+    router.push({ pathname: '/map', query });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    router.push({ pathname: '/map', query: { address: location } });
+  };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -24,30 +40,35 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-  <Header />
-      
-      <main className={styles.main}>
-        <div style={{ maxWidth: '400px', margin: '60px auto', padding: '40px 20px' }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '40px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+    <StandardLayout 
+      title="Sign In" 
+      subtitle="Welcome to Ubika"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
+      <div style={{ maxWidth: '400px', margin: '60px auto', padding: '40px 20px' }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          padding: '40px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+        }}>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: '600', 
+            marginBottom: '8px',
+            textAlign: 'center',
+            color: '#2d3748'
           }}>
-            <h1 style={{ 
-              fontSize: '28px', 
-              fontWeight: '600', 
-              marginBottom: '8px',
-              textAlign: 'center',
-              color: '#2d3748'
-            }}>
-              Welcome to Ubika
-            </h1>
-            <p style={{ 
-              textAlign: 'center',
-              color: '#718096',
-              marginBottom: '32px'
+            Welcome to Ubika
+          </h1>
+          <p style={{ 
+            textAlign: 'center',
+            color: '#718096',
+            marginBottom: '32px'
             }}>
               Sign in to save properties and manage your listings
             </p>
@@ -124,8 +145,7 @@ const SignIn: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </StandardLayout>
   );
 };
 

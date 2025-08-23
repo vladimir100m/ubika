@@ -191,9 +191,13 @@ const MapPage: React.FC = () => {
         .filter((property) => property.geocode)
         .map((property) => ({ id: property.id, ...property.geocode! })); // Added non-null assertion for geocode
       setMarkers(propertyMarkers);
+    } else {
+      // Clear markers when no properties
+      setMarkers([]);
     }
   }, [properties]);
 
+  // Initialize map - separate from properties to ensure map always loads
   useEffect(() => {
     const loader = new Loader({
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -202,26 +206,35 @@ const MapPage: React.FC = () => {
     });
 
     loader.load().then(() => {
-      if (mapRef.current) {
+      if (mapRef.current && !mapInstance.current) {
         mapInstance.current = new google.maps.Map(mapRef.current, {
           center: mapCenter,
           zoom: 12,
         });
-
-        // Add markers to the map for all properties
-        properties.forEach((property) => {
-          if (property.latitude && property.longitude) {
-            const marker = new google.maps.Marker({
-              position: { lat: property.latitude, lng: property.longitude },
-              map: mapInstance.current,
-              title: property.address,
-            });
-            markersRef.current.push(marker);
-          }
-        });
       }
     });
-  }, [properties, mapCenter]);
+  }, [mapCenter]);
+
+  // Add/update markers when properties change
+  useEffect(() => {
+    if (mapInstance.current) {
+      // Clear existing markers before adding new ones
+      markersRef.current.forEach(marker => marker.setMap(null));
+      markersRef.current = [];
+
+      // Add markers for current properties
+      properties.forEach((property) => {
+        if (property.latitude && property.longitude) {
+          const marker = new google.maps.Marker({
+            position: { lat: property.latitude, lng: property.longitude },
+            map: mapInstance.current,
+            title: property.address,
+          });
+          markersRef.current.push(marker);
+        }
+      });
+    }
+  }, [properties]);
 
   useEffect(() => {
     if (mapInstance.current && markers.length > 0) {
@@ -518,8 +531,6 @@ const MapPage: React.FC = () => {
 
   return (
     <StandardLayout 
-      title="Property Map" 
-      subtitle="Explore properties on an interactive map"
       showMapFilters={true}
       onFilterChange={handleFilterChange}
       onSearchLocationChange={handleSearchLocationChange}
@@ -527,25 +538,31 @@ const MapPage: React.FC = () => {
       initialFilters={getInitialFilters()}
     >
       <div className={standardStyles.pageContainer}>
-        {/* Map Section - Fixed height at top */}
+        {/* Map Section - Always show the map */}
         <div className={styles.mapSection}>
-            {loading ? (
-              <LoadingState message="Loading map..." />
-            ) : error ? (
-              <ErrorState 
-                message={error}
-                onRetry={() => router.reload()}
-              />
-            ) : (
-              <div className={styles.mapContainer}>
-                <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+          <div className={styles.mapContainer}>
+            <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+            {loading && (
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                background: 'white',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                fontSize: '12px',
+                color: '#666'
+              }}>
+                Loading properties...
               </div>
             )}
           </div>
+        </div>
           
           {/* Properties Section - Standardized Structure */}
           <PropertySection 
-            title={loading ? 'Loading Properties...' : `${properties.length} Properties Found`}
+            title={loading ? 'Loading Properties...' : 'Properties'}
             subtitle="Browse listings on the map"
           >
             {/* Results Info and Sort Controls */}
@@ -583,6 +600,7 @@ const MapPage: React.FC = () => {
             {/* Empty State */}
             {!loading && !error && properties.length === 0 && (
               <EmptyState 
+                message="No properties found in this area with the current filters. Try adjusting your search criteria or explore the map to discover properties in nearby areas."
                 showClearFilters={true}
                 onClearFilters={() => router.push('/map')}
               />

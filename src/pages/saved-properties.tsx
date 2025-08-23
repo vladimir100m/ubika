@@ -3,7 +3,6 @@ import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { StandardLayout } from '../components';
 import PropertyCard from '../components/PropertyCard';
-import styles from '../styles/Home.module.css';
 import standardStyles from '../styles/StandardComponents.module.css';
 import { getSavedProperties, unsaveProperty, type SavedProperty } from '../utils/savedPropertiesApi';
 import { FilterOptions } from '../components/MapFilters';
@@ -126,10 +125,7 @@ const SavedProperties: React.FC = () => {
   return (
     <StandardLayout 
       title="My Saved Properties" 
-      subtitle={savedProperties.length > 0 
-        ? `You have ${savedProperties.length} saved ${savedProperties.length === 1 ? 'property' : 'properties'}`
-        : 'Properties you save will appear here'
-      }
+      subtitle="Properties you save will appear here"
       showMapFilters={true}
       onFilterChange={handleFilterChange}
       onSearchLocationChange={handleSearchLocationChange}
@@ -277,7 +273,12 @@ const SavedProperties: React.FC = () => {
               </div>
 
               {/* Properties Grid */}
-              <div className={styles.propertyGrid}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '20px',
+                padding: '20px 0'
+              }}>
                 {savedProperties.map((property) => (
                   <PropertyCard
                     key={property.id}
