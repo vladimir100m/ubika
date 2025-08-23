@@ -229,7 +229,12 @@ const PropertyDetail: React.FC = () => {
           </section>
 
           {/* Property Detail Card - Shows all database information */}
-          <PropertyDetailCard property={property} />
+          <PropertyDetailCard 
+            property={property} 
+            isFavorite={isFavorite}
+            onFavoriteToggle={handleSaveProperty}
+            savingFavorite={saving}
+          />
         </main>
       </div>
     </StandardLayout>

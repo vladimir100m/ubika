@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Property } from '../types';
+import HeartButton from './HeartButton';
 import styles from '../styles/PropertyDetailCard.module.css';
 
 interface PropertyFeature {
@@ -22,11 +23,17 @@ interface Neighborhood {
 interface PropertyDetailCardProps {
   property: Property;
   showContact?: boolean;
+  isFavorite?: boolean;
+  onFavoriteToggle?: () => void;
+  savingFavorite?: boolean;
 }
 
 const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   property,
-  showContact = true
+  showContact = true,
+  isFavorite = false,
+  onFavoriteToggle,
+  savingFavorite = false
 }) => {
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
@@ -412,12 +419,18 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   </svg>
                   Message
                 </button>
-                <button className={styles.secondaryButton}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  Save
-                </button>
+                <div className={styles.heartButtonWrapper}>
+                  <HeartButton
+                    isFavorite={isFavorite}
+                    onToggle={onFavoriteToggle || (() => {})}
+                    size="medium"
+                    variant="popup"
+                    isLoading={savingFavorite}
+                  />
+                  <span className={styles.heartButtonLabel}>
+                    {isFavorite ? 'Saved' : 'Save'}
+                  </span>
+                </div>
               </div>
               <div className={styles.contactInfo}>
                 <p><strong>Ubika Real Estate</strong></p>
@@ -434,7 +447,15 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
         <div className={styles.mobilePrice}>{formatPrice(property.price)}{property.operation_status === 'rent' && <span className={styles.period}>/mo</span>}</div>
         <div className={styles.mobileActionButtons}>
           <button className={styles.mobileSmallBtn}>Call</button>
-          <button className={`${styles.mobileSmallBtn} ${styles.secondary}`}>Save</button>
+          <div className={styles.mobileHeartButtonWrapper}>
+            <HeartButton
+              isFavorite={isFavorite}
+              onToggle={onFavoriteToggle || (() => {})}
+              size="small"
+              variant="card"
+              isLoading={savingFavorite}
+            />
+          </div>
         </div>
       </div>
     </div>
