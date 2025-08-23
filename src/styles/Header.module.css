@@ -637,7 +637,7 @@
   }
   
   .accountPopupContent {
-    padding: 14px;
+  padding: 16px; /* standardized */
     max-height: calc(100vh - 140px);
   }
   
@@ -678,7 +678,7 @@
   }
   
   .accountPopup {
-    width: 360px;
+  width: 380px; /* standardized */
     top: 75px;
     right: 16px;
   }
@@ -696,7 +696,7 @@
   }
   
   .accountPopupContent {
-    padding: 20px;
+  padding: 22px; /* standardized */
   }
 }
 
@@ -709,7 +709,7 @@
   }
   
   .accountPopup {
-    width: 420px;
+  width: 440px; /* standardized */
     top: 85px;
     right: 24px;
   }
@@ -741,7 +741,7 @@
   }
   
   .accountPopupContent {
-    padding: 24px;
+  padding: 26px; /* standardized */
   }
   
   .accountPopupItem {
@@ -912,7 +912,7 @@
   position: fixed;
   top: 80px;
   right: 20px;
-  width: 380px;
+  width: 420px; /* standardized to match filtersPopup */
   max-width: calc(100vw - 40px);
   max-height: calc(100vh - 120px);
   background: white;
@@ -958,7 +958,7 @@
 }
 
 .accountPopupContent {
-  padding: 20px;
+  padding: 24px; /* standardized to match filtersPopupContent */
   max-height: calc(100vh - 220px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
