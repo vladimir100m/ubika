@@ -99,6 +99,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className={styles.desktopNavigation} role="navigation" aria-label="Main navigation">
+            {/* Navigation Links - Rent, Buy, Sell */}
             <div className={styles.navLinks}>
               <button
                 className={styles.navButton}
@@ -159,6 +160,7 @@ const Header: React.FC<HeaderProps> = ({
         {isMobile && (
           <div className={styles.mobileNavContainer}>
             <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
+              {/* Order: Rent, Buy, Sell, Filters, Account/Login */}
               <button
                 className={styles.mobilePill}
                 onClick={() => handleNavigation('/map?operation=rent')}
@@ -180,15 +182,6 @@ const Header: React.FC<HeaderProps> = ({
               >
                 Sell
               </button>
-              {!isLoading && (
-                <button
-                  className={styles.mobilePill}
-                  onClick={handleAuthAction}
-                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
-                >
-                  {user ? 'Account' : 'Login'}
-                </button>
-              )}
               {showMapFilters && onFilterChange && (
                 <button
                   className={`${styles.mobilePill} ${isFiltersPopupOpen ? styles.active : ''}`}
@@ -196,6 +189,15 @@ const Header: React.FC<HeaderProps> = ({
                   aria-label="Open filters"
                 >
                   🔍 Filters
+                </button>
+              )}
+              {!isLoading && (
+                <button
+                  className={styles.mobilePill}
+                  onClick={handleAuthAction}
+                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
+                >
+                  {user ? 'Account' : 'Login'}
                 </button>
               )}
             </div>

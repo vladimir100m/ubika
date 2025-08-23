@@ -4,12 +4,10 @@ import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
 import PropertyPopup from '../components/PropertyPopup';
-import Footer from '../components/Footer';
+import StandardLayout from '../components/StandardLayout';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
-import styles from '../styles/Home.module.css';
-import layoutStyles from '../styles/Layout.module.css';
+import standardStyles from '../styles/StandardComponents.module.css';
 import { Property } from '../types'; // Import Property type
-import Header from '../components/Header';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 import { FilterOptions } from '../components/MapFilters';
 
@@ -179,87 +177,108 @@ const Home: React.FC = () => {
     });
   };
 
-  return (
-    <div className={layoutStyles.pageContainer}>
-      <Header 
-        showMapFilters={true}
-        onFilterChange={handleFilterChange}
-        onSearchLocationChange={handleSearchLocationChange}
-        searchLocation={router.query.zone as string || ''}
-        initialFilters={{
-          operation: router.query.operation as string || '',
-          priceMin: router.query.minPrice as string || '',
-          priceMax: router.query.maxPrice as string || '',
-          beds: router.query.bedrooms as string || '',
-          baths: router.query.bathrooms as string || '',
-          homeType: router.query.propertyType as string || '',
-          moreFilters: {
-            minArea: router.query.minArea as string || '',
-            maxArea: router.query.maxArea as string || '',
-            yearBuiltMin: '',
-            yearBuiltMax: '',
-            keywords: []
-          }
-        }}
-      />
-      
-      <div className={layoutStyles.pageContent}>
-        {/* Hero Section */}
-        <div className={styles.heroSection}>
-          <Banner />
-        </div>
+  // Get page title based on operation type
+  const getPageTitle = () => {
+    const operation = router.query.operation as string;
+    switch (operation) {
+      case 'rent': return 'Properties for Rent';
+      case 'sell': return 'Properties for Sale';
+      default: return 'Featured Properties';
+    }
+  };
 
-        {/* Properties Section - Standardized Structure */}
-        <PropertySection 
-          title="Featured Properties" 
-          subtitle="Discover the best properties in Argentina"
-        >
-          {/* Results Summary */}
-          <ResultsInfo 
-            count={properties.length}
-            loading={loading}
+  const getPageSubtitle = () => {
+    const operation = router.query.operation as string;
+    switch (operation) {
+      case 'rent': return 'Find your perfect rental property in Argentina';
+      case 'sell': return 'Discover the best properties for sale in Argentina';
+      default: return 'Discover the best properties in Argentina';
+    }
+  };
+
+  // Convert router query to FilterOptions format for initial filters
+  const getInitialFilters = (): Partial<FilterOptions> => {
+    const query = router.query;
+    return {
+      operation: (query.operation as string) || '',
+      priceMin: (query.minPrice as string) || '',
+      priceMax: (query.maxPrice as string) || '',
+      beds: (query.bedrooms as string) || '',
+      baths: (query.bathrooms as string) || '',
+      homeType: (query.propertyType as string) || '',
+      moreFilters: {
+        minArea: (query.minArea as string) || '',
+        maxArea: (query.maxArea as string) || '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: []
+      }
+    };
+  };
+
+  return (
+    <StandardLayout 
+      showFooter={false}
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation={(router.query.zone as string) || ''}
+      initialFilters={getInitialFilters()}
+    >
+      
+      {/* Hero Section */}
+      <div className={standardStyles.section}>
+        <Banner />
+      </div>
+
+      {/* Properties Section */}
+      <PropertySection 
+        title={getPageTitle()} 
+        subtitle={getPageSubtitle()}
+      >
+        {/* Results Summary */}
+        <ResultsInfo 
+          count={properties.length}
+          loading={loading}
+        />
+        
+        {/* Loading State */}
+        {loading && <LoadingState />}
+        
+        {/* Error State */}
+        {error && (
+          <ErrorState 
+            message={error}
+            onRetry={() => router.reload()}
           />
-          
-          {/* Loading State */}
-          {loading && <LoadingState />}
-          
-          {/* Error State */}
-          {error && (
-            <ErrorState 
-              message={error}
-              onRetry={() => router.reload()}
-            />
-          )}
-          
-          {/* Properties Grid */}
-          {!loading && !error && properties.length > 0 && (
-            <div className={styles.propertyGrid}>
-        {properties.slice(0, 6).map((property) => (
+        )}
+        
+        {/* Properties Grid */}
+        {!loading && !error && properties.length > 0 && (
+          <div className={`${standardStyles.grid} ${standardStyles.grid3}`}>
+            {properties.slice(0, 6).map((property) => (
+              <div key={property.id} className={standardStyles.propertyCard}>
                 <PropertyCard
-                  key={property.id}
                   property={property}
                   isFavorite={savedPropertyIds.has(property.id)}
                   onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-          onClick={() => handlePropertyClick(property)}
+                  onClick={() => handlePropertyClick(property)}
                 />
-              ))}
-            </div>
-          )}
-          
-          {/* Empty State */}
-          {!loading && !error && properties.length === 0 && (
-            <EmptyState 
-              showClearFilters={true}
-              onClearFilters={() => router.push('/')}
-            />
-          )}
-        </PropertySection>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Empty State */}
+        {!loading && !error && properties.length === 0 && (
+          <EmptyState 
+            showClearFilters={true}
+            onClearFilters={() => router.push('/')}
+          />
+        )}
+      </PropertySection>
 
-        {/* Footer */}
-        <Footer />
-      </div>
-
-      {/* Property detail popup overlay (mirrors map page behavior) */}
+      {/* Property detail popup overlay */}
       {selectedProperty && (
         <PropertyPopup
           mapRef={popupMapRef}
@@ -275,7 +294,7 @@ const Home: React.FC = () => {
           }}
         />
       )}
-    </div>
+    </StandardLayout>
   );
 };
 

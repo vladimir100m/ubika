@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
+import standardStyles from '../../styles/StandardComponents.module.css';
 import { Property, PropertyFormData, PropertyImage } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
 import MultiImageUploadAPI from '../../components/MultiImageUploadAPI';
 import PropertyImageEditor from '../../components/PropertyImageEditor';
-import Header from '../../components/Header';
+import { StandardLayout } from '../../components';
+import { FilterOptions } from '../../components/MapFilters';
 
 interface PropertyType {
   id: number;
@@ -44,6 +46,35 @@ const SellerDashboard: React.FC = () => {
     [user]
   );
   const isLoading = status === 'loading';
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
   // Helper function to get the cover image for property display
   const getCoverImageUrl = (property: Property): string => {
@@ -518,19 +549,26 @@ const SellerDashboard: React.FC = () => {
   }
 
   return (
-    <div style={{ paddingTop: '80px' }}>
-  <Header />
-      <div className={styles.container}>
+    <StandardLayout 
+      title="Seller Dashboard" 
+      subtitle="Manage your property listings"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
+      <div className={standardStyles.pageContainer}>
 
-        <div className={styles.tabs}>
+        <div className={standardStyles.tabNavigation}>
           <button 
-            className={`${styles.tabButton} ${activeTab === 'list' ? styles.active : ''}`}
+            className={`${standardStyles.tabButton} ${activeTab === 'list' ? standardStyles.tabButtonActive : ''}`}
             onClick={() => setActiveTab('list')}
           >
             My Properties
           </button>
           <button 
-            className={`${styles.tabButton} ${activeTab === 'add' ? styles.active : ''}`}
+            className={`${standardStyles.tabButton} ${activeTab === 'add' ? standardStyles.tabButtonActive : ''}`}
             onClick={() => {
               resetForm();
               setActiveTab('add');
@@ -540,7 +578,7 @@ const SellerDashboard: React.FC = () => {
           </button>
           {activeTab === 'edit' && (
             <button 
-              className={`${styles.tabButton} ${activeTab === 'edit' ? styles.active : ''}`}
+              className={`${standardStyles.tabButton} ${activeTab === 'edit' ? standardStyles.tabButtonActive : ''}`}
             >
               Edit Property
             </button>
@@ -1229,7 +1267,7 @@ const SellerDashboard: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </StandardLayout>
   );
 };
 

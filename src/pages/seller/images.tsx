@@ -4,8 +4,9 @@ import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import { Property, PropertyImage } from '../../types';
 import PropertyImageEditor from '../../components/PropertyImageEditor';
-import Header from '../../components/Header';
+import { StandardLayout } from '../../components';
 import styles from '../../styles/ImageManager.module.css';
+import { FilterOptions } from '../../components/MapFilters';
 
 const ImageManager: React.FC = () => {
   const router = useRouter();
@@ -15,6 +16,35 @@ const ImageManager: React.FC = () => {
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -88,28 +118,42 @@ const ImageManager: React.FC = () => {
 
   if (status === 'loading' || loading) {
     return (
-      <>
+      <StandardLayout 
+        title="Image Manager" 
+        subtitle="Loading your properties..."
+        showMapFilters={true}
+        onFilterChange={handleFilterChange}
+        onSearchLocationChange={handleSearchLocationChange}
+        searchLocation=""
+        initialFilters={{}}
+      >
         <Head>
           <title>Image Manager - Ubika</title>
         </Head>
-        <Header />
         <div className={styles.container}>
           <div className={styles.loading}>
             <div className={styles.spinner}></div>
             <p>Loading your properties...</p>
           </div>
         </div>
-      </>
+      </StandardLayout>
     );
   }
 
   if (error) {
     return (
-      <>
+      <StandardLayout 
+        title="Image Manager" 
+        subtitle="Error loading properties"
+        showMapFilters={true}
+        onFilterChange={handleFilterChange}
+        onSearchLocationChange={handleSearchLocationChange}
+        searchLocation=""
+        initialFilters={{}}
+      >
         <Head>
           <title>Image Manager - Ubika</title>
         </Head>
-        <Header />
         <div className={styles.container}>
           <div className={styles.error}>
             <h2>Error Loading Properties</h2>
@@ -119,7 +163,7 @@ const ImageManager: React.FC = () => {
             </button>
           </div>
         </div>
-      </>
+      </StandardLayout>
     );
   }
 
@@ -128,12 +172,19 @@ const ImageManager: React.FC = () => {
   }
 
   return (
-    <>
+    <StandardLayout 
+      title="Image Manager" 
+      subtitle="Manage your property images"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
       <Head>
         <title>Image Manager - Ubika</title>
         <meta name="description" content="Manage your property images" />
       </Head>
-      <Header />
       
       <div className={styles.container}>
         {/* Header Section */}
@@ -264,7 +315,7 @@ const ImageManager: React.FC = () => {
           </div>
         )}
       </div>
-    </>
+    </StandardLayout>
   );
 };
 

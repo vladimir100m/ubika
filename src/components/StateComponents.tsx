@@ -107,7 +107,7 @@ export const ResultsInfo: React.FC<ResultsInfoProps> = ({
 );
 
 interface PropertySectionProps {
-  title: string;
+  title?: string;
   subtitle?: string;
   children: React.ReactNode;
   className?: string;
@@ -120,10 +120,6 @@ export const PropertySection: React.FC<PropertySectionProps> = ({
   className = ''
 }) => (
   <section className={`${styles.propertySection} ${className}`}>
-    <div className={styles.propertyHeader}>
-      <h2 className={styles.propertyTitle}>{title}</h2>
-      {subtitle && <p className={styles.propertySubtitle}>{subtitle}</p>}
-    </div>
     {children}
   </section>
 );

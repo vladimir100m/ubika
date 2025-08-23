@@ -271,11 +271,34 @@
   color: #333;
 }
 
-/* Canonical property grid */
+/* Modern Property Grid - Airbnb/Zillow Style */
 .propertyGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  padding: 0;
+}
+
+/* Responsive Property Grid */
+@media (max-width: 767px) {
+  .propertyGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .propertyGrid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .propertyGrid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 32px;
+  }
 }
 
 /* Old property card styles removed */
@@ -1361,12 +1384,6 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Header container */
-.propertyHeader {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
 /* Split header variant (title + controls/action) */
 .propertyHeaderSplit {
   display: flex;
@@ -1375,19 +1392,6 @@
   text-align: left;
   margin-bottom: 1.5rem;
   gap: 1rem;
-}
-
-.propertyTitle {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #2a2a33;
-  margin: 0 0 0.5rem 0;
-}
-
-.propertySubtitle {
-  font-size: 1.125rem;
-  color: #6b7280;
-  margin: 0;
 }
 
 /* Unified property card grid */
@@ -1421,8 +1425,6 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .propertySection { padding: 0 1rem; }
-  .propertyTitle { font-size: 1.5rem; }
-  .propertySubtitle { font-size: 1rem; }
   .propertyGrid { grid-template-columns: 1fr; gap: 1rem; }
   .propertySectionPanel { padding: 1rem; }
   .propertyHeaderSplit { flex-direction: column; align-items: flex-start; }
@@ -1430,7 +1432,6 @@
 }
 @media (max-width: 480px) {
   .propertySection { padding: 0 0.75rem; }
-  .propertyTitle { font-size: 1.25rem; }
   .propertySectionPanel { padding: 0.75rem; border-radius: 8px; }
 }
 

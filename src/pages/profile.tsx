@@ -1,9 +1,10 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Header from '../components/Header';
+import { StandardLayout } from '../components';
 import styles from '../styles/Home.module.css';
 import { Property, PropertyFormData } from '../types';
+import { FilterOptions } from '../components/MapFilters';
 
 interface PropertyType {
   id: number;
@@ -45,6 +46,35 @@ function Profile() {
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [propertyStatuses, setPropertyStatuses] = useState<PropertyStatus[]>([]);
   const router = useRouter();
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
   // Missing states for saved properties and UI tabs
   const [savedProperties, setSavedProperties] = useState<Property[]>([]);
@@ -179,7 +209,15 @@ function Profile() {
   // Note: useSession doesn't return an `error`; manage via status and user.
 
   return (
-    <div className={styles.container}>
+    <StandardLayout 
+      title="Profile" 
+      subtitle="Manage your properties and account"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
       <style jsx>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -211,7 +249,6 @@ function Profile() {
           }
         }
       `}</style>
-  <Header />
       
       {/* Profile Header - Focused on Selling */}
       <div style={{ 
@@ -1255,7 +1292,7 @@ function Profile() {
             )}
         </div>
       </main>
-    </div>
+    </StandardLayout>
   );
 }
 

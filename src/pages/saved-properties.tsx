@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import Header from '../components/Header';
+import { StandardLayout } from '../components';
 import PropertyCard from '../components/PropertyCard';
 import styles from '../styles/Home.module.css';
+import standardStyles from '../styles/StandardComponents.module.css';
 import { getSavedProperties, unsaveProperty, type SavedProperty } from '../utils/savedPropertiesApi';
+import { FilterOptions } from '../components/MapFilters';
 
 const SavedProperties: React.FC = () => {
   const { data: session, status } = useSession();
@@ -13,6 +15,35 @@ const SavedProperties: React.FC = () => {
   const [savedProperties, setSavedProperties] = useState<SavedProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
   // Get operation from query parameters, default to 'buy'
   const operation = router.query.operation
@@ -59,141 +90,75 @@ const SavedProperties: React.FC = () => {
   };
 
   if (isLoading || loading) return (
-    <div className={styles.container}>
-      <Header />
-      <main className={styles.main}>
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: '18px', color: '#666' }}>Loading...</div>
-        </div>
-      </main>
-    </div>
+    <StandardLayout title="Loading..." subtitle="">
+      <div className={standardStyles.loadingContainer}>
+        <div className={standardStyles.loadingSpinner}></div>
+        <p>Loading your saved properties...</p>
+      </div>
+    </StandardLayout>
   );
   
   // Note: useSession doesn't expose an error; only status and session object.
 
   if (!user) {
     return (
-      <div className={styles.container}>
-        <Header />
-        <main className={styles.main}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-            }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '16px' }}>
-                Sign in to view your saved properties
-              </h2>
-              <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-                Create an account or sign in to save your favorite properties and access them anytime.
-              </p>
-              <button
-                onClick={() => signIn('google')}
-                style={{
-                  display: 'inline-block',
-                  padding: '12px 24px',
-                  backgroundColor: '#0073e6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '16px',
-                  cursor: 'pointer'
-                }}
-              >
-                Sign In with Google
-              </button>
-            </div>
+      <StandardLayout title="Sign In Required" subtitle="Access your saved properties">
+        <div className={standardStyles.pageContainer}>
+          <div className={standardStyles.card} style={{ textAlign: 'center' }}>
+            <h2 className={standardStyles.cardTitle}>
+              Sign in to view your saved properties
+            </h2>
+            <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+              Create an account or sign in to save your favorite properties and access them anytime.
+            </p>
+            <button
+              onClick={() => signIn('google')}
+              className={standardStyles.buttonPrimary}
+            >
+              Sign In with Google
+            </button>
           </div>
-        </main>
-      </div>
+        </div>
+      </StandardLayout>
     );
   }
 
   return (
-    <div className={styles.container} style={{ paddingTop: '80px' }}>
-      <Header />
-      
-      {/* Page Header */}
-      <div style={{ 
-        backgroundColor: '#f8f9fa',
-        borderBottom: '1px solid #e9ecef',
-        padding: '20px 0'
-      }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
-          padding: '0 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
+    <StandardLayout 
+      title="My Saved Properties" 
+      subtitle={savedProperties.length > 0 
+        ? `You have ${savedProperties.length} saved ${savedProperties.length === 1 ? 'property' : 'properties'}`
+        : 'Properties you save will appear here'
+      }
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
+      <div className={standardStyles.pageContainer}>
+        {/* Action Buttons */}
+        <div className={standardStyles.actionButtons}>
           <button
             onClick={() => router.back()}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '8px',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className={standardStyles.buttonSecondary}
           >
-            ←
+            ← Back
           </button>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ 
-              fontSize: '28px', 
-              fontWeight: '600', 
-              margin: '0',
-              color: '#2d3748'
-            }}>
-              My Saved Properties
-            </h1>
-            <p style={{ 
-              margin: '4px 0 0 0', 
-              color: '#718096',
-              fontSize: '16px'
-            }}>
-              {savedProperties.length > 0 
-                ? `You have ${savedProperties.length} saved ${savedProperties.length === 1 ? 'property' : 'properties'}`
-                : 'Properties you save will appear here'
-              }
-            </p>
-          </div>
-          
-          {/* Quick Actions */}
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              onClick={() => router.push('/')}
-              style={{
-                backgroundColor: '#0073e6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '10px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#005bb5'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0073e6'}
-            >
-              Browse Properties
-            </button>
-          </div>
+          <button
+            onClick={() => router.push('/')}
+            className={standardStyles.buttonPrimary}
+          >
+            Browse Properties
+          </button>
+          <button
+            onClick={() => router.push('/map')}
+            className={standardStyles.buttonSecondary}
+          >
+            View on Map
+          </button>
         </div>
-      </div>
 
-      <main className={styles.main}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
           {savedProperties.length === 0 ? (
             <div style={{ 
               textAlign: 'center', 
@@ -325,8 +290,7 @@ const SavedProperties: React.FC = () => {
             </>
           )}
         </div>
-      </main>
-    </div>
+    </StandardLayout>
   );
 };
 

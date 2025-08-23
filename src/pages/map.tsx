@@ -3,18 +3,18 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
 import layoutStyles from '../styles/Layout.module.css';
+import standardStyles from '../styles/StandardComponents.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { SearchFilters } from '../components/SearchBar';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
-import Footer from '../components/Footer';
+import { StandardLayout } from '../components';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
 import useMediaQuery from '../utils/useMediaQuery';
 import PropertyPopup from 'components/PropertyPopup';
 import PropertyCard from 'components/PropertyCard';
-import Header from 'components/Header';
 import { useSession } from 'next-auth/react';
 import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
 import { FilterOptions } from '../components/MapFilters';
@@ -496,31 +496,37 @@ const MapPage: React.FC = () => {
     });
   };
 
+  // Convert router query to FilterOptions format for initial filters
+  const getInitialFilters = (): Partial<FilterOptions> => {
+    const query = router.query;
+    return {
+      operation: (query.operation as string) || '',
+      priceMin: (query.minPrice as string) || '',
+      priceMax: (query.maxPrice as string) || '',
+      beds: (query.bedrooms as string) || '',
+      baths: (query.bathrooms as string) || '',
+      homeType: (query.propertyType as string) || '',
+      moreFilters: {
+        minArea: (query.minArea as string) || '',
+        maxArea: (query.maxArea as string) || '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: []
+      }
+    };
+  };
+
   return (
-    <div className={layoutStyles.pageContainer}>
-      <Header 
-        showMapFilters={true}
-        onFilterChange={handleFilterChange}
-        onSearchLocationChange={handleSearchLocationChange}
-        searchLocation={router.query.zone as string || ''}
-        initialFilters={{
-          operation: router.query.operation as string || '',
-          priceMin: router.query.minPrice as string || '',
-          priceMax: router.query.maxPrice as string || '',
-          beds: router.query.bedrooms as string || '',
-          baths: router.query.bathrooms as string || '',
-          homeType: router.query.propertyType as string || '',
-          moreFilters: {
-            minArea: router.query.minArea as string || '',
-            maxArea: router.query.maxArea as string || '',
-            yearBuiltMin: '',
-            yearBuiltMax: '',
-            keywords: []
-          }
-        }}
-      />
-      
-      <div className={layoutStyles.pageContent}>
+    <StandardLayout 
+      title="Property Map" 
+      subtitle="Explore properties on an interactive map"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation={(router.query.zone as string) || ''}
+      initialFilters={getInitialFilters()}
+    >
+      <div className={standardStyles.pageContainer}>
         {/* Map Section - Fixed height at top */}
         <div className={styles.mapSection}>
             {loading ? (
@@ -583,8 +589,6 @@ const MapPage: React.FC = () => {
             )}
           </PropertySection>
           
-          {/* Footer */}
-          <Footer />
       </div>
       
       {/* Property detail floating window - Zillow style */}
@@ -688,7 +692,7 @@ const MapPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </StandardLayout>
   );
 };
 
