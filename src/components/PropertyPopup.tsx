@@ -7,13 +7,6 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
 import { toggleSaveProperty } from '../utils/savedPropertiesApi';
 
-interface PropertyFeature {
-  id: number;
-  name: string;
-  category: string;
-  icon: string;
-}
-
 interface Neighborhood {
   id: number;
   name: string;
@@ -172,16 +165,20 @@ export default function PropertyPopup({
   const [activeTab, setActiveTab] = useState('overview');
   const [descExpanded, setDescExpanded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
-  const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
-  const [loadingFeatures, setLoadingFeatures] = useState(true);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [showCarousel, setShowCarousel] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: 'I\'m interested in this property'
+  });
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -198,13 +195,6 @@ export default function PropertyPopup({
         const additionalPropertyImages = propertyImages.slice(1);
         setAdditionalImages(additionalPropertyImages);
 
-        // Fetch features specifically assigned to this property
-        const featuresResponse = await fetch(`/api/properties/features?propertyId=${selectedProperty.id}`);
-        if (featuresResponse.ok) {
-          const features = await featuresResponse.json();
-          setPropertyFeatures(features);
-        }
-
         // Fetch neighborhood data - try to match by city first
         if (selectedProperty.city) {
           const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(selectedProperty.city)}`);
@@ -217,8 +207,6 @@ export default function PropertyPopup({
         }
       } catch (error) {
         console.error('Error fetching property data:', error);
-      } finally {
-        setLoadingFeatures(false);
       }
     };
 
@@ -438,6 +426,25 @@ export default function PropertyPopup({
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
     setShowCarousel(true);
+  };
+
+  // Handle contact form actions
+  const handleCloseContactForm = () => {
+    setShowContactForm(false);
+    // Reset form data
+    setContactFormData({
+      name: '',
+      phone: '',
+      email: '',
+      message: 'I\'m interested in this property'
+    });
+  };
+
+  const handleContactFormChange = (field: string, value: string) => {
+    setContactFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   // Get dynamic grid layout based on number of images (max 3)
@@ -822,76 +829,137 @@ export default function PropertyPopup({
                             <button className={styles.readMoreBtn} onClick={() => setDescExpanded(false)}>Show less</button>
                           )}
                         </div>
-                        <div className={styles.featureBlock}>
-                          <h3 className={styles.sectionHeading}>Home Features</h3>
-                          {/* Feature content area */}
-                          {loadingFeatures && (
-                            <div className={styles.featuresSkeletonWrap} aria-live="polite" aria-busy="true">
-                              {Array.from({length:8}).map((_,i)=>(
-                                <div key={i} className={styles.featureSkeleton} />
-                              ))}
-                            </div>
-                          )}
-                          {!loadingFeatures && propertyFeatures.length === 0 && (
-                            <div className={styles.featuresEmpty}>
-                              <p>No features have been recorded for this home yet.</p>
-                              <small>Ask the seller or agent to add amenities to improve visibility.</small>
-                            </div>
-                          )}
-                          {!loadingFeatures && propertyFeatures.length > 0 && (
-                            <div className={styles.featuresCategoryList}>
-                              {Object.entries(
-                                propertyFeatures.reduce<Record<string, PropertyFeature[]>>((acc, f) => {
-                                  const cat = (f.category || 'General').trim();
-                                  if(!acc[cat]) acc[cat] = [];
-                                  acc[cat].push(f);
-                                  return acc;
-                                }, {})
-                              ).map(([category, feats]) => {
-                                // Limit features if not expanded
-                                const displayFeats = showAllFeatures ? feats : feats.slice(0, 6);
-                                return (
-                                  <div key={category} className={styles.featureCategoryGroup}>
-                                    <div className={styles.featureCategoryHeader}>
-                                      <h4 className={styles.featureCategoryTitle}>{category}</h4>
-                                      {!showAllFeatures && feats.length > 6 && (
-                                        <span className={styles.featureCategoryCount}>{feats.length} total</span>
-                                      )}
-                                    </div>
-                                    <ul className={styles.featureChips}>
-                                      {displayFeats.map(f => (
-                                        <li key={f.id} className={styles.featureChip}>
-                                          <span className={styles.featureIconWrap} aria-hidden="true">{f.icon || inferIconFromCategory(f.category)}</span>
-                                          <span className={styles.featureChipLabel}>{f.name}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                );
-                              })}
-                              {/* Show more / less */}
-                              {propertyFeatures.length > 12 && (
-                                <button
-                                  type="button"
-                                  className={styles.featureExpandBtn}
-                                  onClick={()=>setShowAllFeatures(s=>!s)}
-                                  aria-expanded={showAllFeatures}
-                                >
-                                  {showAllFeatures ? 'Show fewer features' : 'Show all features'}
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
                       </div>
                       <div className={styles.overviewAside}>
-                        <div className={styles.contactSideCard}>
-                          <h3 className={styles.sideCardTitle}>Contact an agent about this home</h3>
-                          <div className={styles.sideFieldWrap}><input type="text" placeholder="Your Name" className={styles.sideInput} /></div>
-                          <div className={styles.sideFieldWrap}><input type="text" placeholder="Phone" className={styles.sideInput} /></div>
-                          <div className={styles.sideFieldWrap}><input type="email" placeholder="Email" className={styles.sideInput} /></div>
-                          <div className={styles.sideFieldWrap}><textarea rows={4} placeholder="I'm interested in this property" className={styles.sideTextarea} /></div>
-                          <button className={styles.sideSubmitBtn}>Contact Agent</button>
+                        <div className={styles.contactSideCard} style={{
+                          transition: 'all 0.3s ease',
+                          overflow: 'hidden'
+                        }}>
+                          {!showContactForm ? (
+                            // Initial state - just show the contact button
+                            <div style={{ 
+                              opacity: showContactForm ? 0 : 1,
+                              transition: 'opacity 0.3s ease'
+                            }}>
+                              <h3 className={styles.sideCardTitle}>Contact an agent about this home</h3>
+                              <p style={{ 
+                                fontSize: '14px', 
+                                color: '#666', 
+                                marginBottom: '16px',
+                                lineHeight: '1.4'
+                              }}>
+                                Get more information about this property, schedule a viewing, or ask any questions you may have.
+                              </p>
+                              <button 
+                                className={styles.sideSubmitBtn}
+                                onClick={() => setShowContactForm(true)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  backgroundColor: '#1277e1',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '16px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                  transition: 'background-color 0.2s ease'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0f6bc7'}
+                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#1277e1'}
+                              >
+                                Contact Agent
+                              </button>
+                            </div>
+                          ) : (
+                            // Contact form state
+                            <div style={{ 
+                              opacity: showContactForm ? 1 : 0,
+                              transition: 'opacity 0.3s ease'
+                            }}>
+                              <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                marginBottom: '16px'
+                              }}>
+                                <h3 className={styles.sideCardTitle}>Contact an agent</h3>
+                                <button
+                                  onClick={handleCloseContactForm}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '20px',
+                                    cursor: 'pointer',
+                                    color: '#666',
+                                    padding: '0',
+                                    lineHeight: '1'
+                                  }}
+                                  aria-label="Close contact form"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              <div className={styles.sideFieldWrap}>
+                                <input 
+                                  type="text" 
+                                  placeholder="Your Name" 
+                                  className={styles.sideInput}
+                                  value={contactFormData.name}
+                                  onChange={(e) => handleContactFormChange('name', e.target.value)}
+                                />
+                              </div>
+                              <div className={styles.sideFieldWrap}>
+                                <input 
+                                  type="text" 
+                                  placeholder="Phone" 
+                                  className={styles.sideInput}
+                                  value={contactFormData.phone}
+                                  onChange={(e) => handleContactFormChange('phone', e.target.value)}
+                                />
+                              </div>
+                              <div className={styles.sideFieldWrap}>
+                                <input 
+                                  type="email" 
+                                  placeholder="Email" 
+                                  className={styles.sideInput}
+                                  value={contactFormData.email}
+                                  onChange={(e) => handleContactFormChange('email', e.target.value)}
+                                />
+                              </div>
+                              <div className={styles.sideFieldWrap}>
+                                <textarea 
+                                  rows={4} 
+                                  placeholder="I'm interested in this property" 
+                                  className={styles.sideTextarea}
+                                  value={contactFormData.message}
+                                  onChange={(e) => handleContactFormChange('message', e.target.value)}
+                                />
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button className={styles.sideSubmitBtn} style={{ flex: 1 }}>
+                                  Send Message
+                                </button>
+                                <button 
+                                  onClick={handleCloseContactForm}
+                                  style={{
+                                    padding: '12px 16px',
+                                    backgroundColor: '#f5f5f5',
+                                    color: '#666',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s ease'
+                                  }}
+                                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e9e9e9'}
+                                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -972,37 +1040,6 @@ export default function PropertyPopup({
                               <span>Half bathrooms</span>
                               <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
                             </div>
-                          </div>
-                          
-                          <div>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Heating and cooling</div>
-                            
-                            {loadingFeatures ? (
-                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
-                            ) : (
-                              propertyFeatures
-                                .filter(feature => feature.category === 'climate')
-                                .slice(0, 3)
-                                .map((feature) => (
-                                  <div key={feature.id} style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '8px',
-                                    marginBottom: '4px',
-                                    fontSize: '14px'
-                                  }}>
-                                    <span style={{ 
-                                      color: '#1277e1', 
-                                      fontSize: '16px'
-                                    }}>{feature.icon || '•'}</span>
-                                    <span>{feature.name}</span>
-                                  </div>
-                                ))
-                            )}
                           </div>
                         </div>
                         
