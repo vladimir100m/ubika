@@ -5,6 +5,7 @@ import Head from 'next/head';
 import { StandardLayout } from '../../components';
 import PropertyGallery from '../../components/PropertyGallery';
 import PropertyDetailCard from '../../components/PropertyDetailCard';
+import HeartButton from '../../components/HeartButton';
 import { Property } from '../../types';
 import { toggleSaveProperty } from '../../utils/savedPropertiesApi';
 import styles from '../../styles/PropertyDetail.module.css';

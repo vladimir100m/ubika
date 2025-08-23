@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
 import { toggleSaveProperty } from '../utils/savedPropertiesApi';
+import HeartButton from './HeartButton';
 
 interface Neighborhood {
   id: number;
@@ -530,27 +531,13 @@ export default function PropertyPopup({
               >
                 <span style={{fontSize:22,lineHeight:1}}>×</span>
               </button>
-              <button 
-                onClick={(e)=>{e.stopPropagation(); handleSaveProperty();}} 
-                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                disabled={isSaving}
-                style={{
-                  background:isFavorite ? '#e4002b' : 'rgba(255,255,255,0.9)',
-                  color:isFavorite ? '#fff' : '#333',
-                  border:isFavorite ? '1px solid #c30023' : '1px solid rgba(0,0,0,0.1)',
-                  backdropFilter:'blur(4px)',
-                  width:44, height:44, borderRadius:12,
-                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
-                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)',
-                  position:'relative'
-                }}
-              >
-                {isSaving ? '⏳' : (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill={isFavorite? 'currentColor':'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                )}
-              </button>
+              <HeartButton
+                isFavorite={isFavorite}
+                onToggle={handleSaveProperty}
+                size="large"
+                variant="floating"
+                isLoading={isSaving}
+              />
               <button 
                 onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
                 aria-label="Share property"
