@@ -178,6 +178,10 @@ export default function PropertyPopup({
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [showCarousel, setShowCarousel] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -220,6 +224,39 @@ export default function PropertyPopup({
 
     fetchData();
   }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
+
+  // Keyboard navigation for carousel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!showCarousel) return;
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          handleImageChange('prev');
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          handleImageChange('next');
+          break;
+        case 'Escape':
+          event.preventDefault();
+          setShowCarousel(false);
+          break;
+      }
+    };
+
+    if (showCarousel) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Prevent body scroll when carousel is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showCarousel]);
 
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
@@ -344,6 +381,7 @@ export default function PropertyPopup({
   // Handler for gallery navigation
   const handleImageChange = (direction: 'next' | 'prev') => {
     if (selectedProperty) {
+      setImageLoading(true);
       const allImages = getPropertyImages(selectedProperty);
       const totalImages = allImages.length;
       
@@ -373,10 +411,35 @@ export default function PropertyPopup({
   // Handler for clicking on specific images in the grid
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
-    // Optional: You could open a full-screen gallery modal here
+    setShowCarousel(true);
+  };
+
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleImageChange('next');
+    } else if (isRightSwipe) {
+      handleImageChange('prev');
+    }
   };
   
   return (
+    <>
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
             <div style={{position:'absolute', top:12, right:12, display:'flex', gap:'10px', zIndex:60}}>
@@ -562,8 +625,8 @@ export default function PropertyPopup({
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Here you could open a full-screen gallery
-                      console.log('View all photos clicked');
+                      setCurrentImageIndex(0);
+                      setShowCarousel(true);
                     }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -1159,5 +1222,233 @@ export default function PropertyPopup({
               </div>
             </div>
           </div>
-        </div>);
+        </div>
+
+        {/* Full-Screen Image Carousel Modal */}
+        {showCarousel && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.95)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={() => setShowCarousel(false)}
+          >
+            {/* Close Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowCarousel(false);
+              }}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(255, 255, 255, 0.9)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '50px',
+                height: '50px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '24px',
+                color: '#333',
+                zIndex: 10001
+              }}
+            >
+              ×
+            </button>
+
+            {/* Image Counter */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                background: 'rgba(0, 0, 0, 0.7)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '16px',
+                zIndex: 10001
+              }}
+            >
+              {currentImageIndex + 1} of {getPropertyImages(selectedProperty).length}
+            </div>
+
+            {/* Navigation Arrows */}
+            {getPropertyImages(selectedProperty).length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageChange('prev');
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '60px',
+                    height: '60px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '24px',
+                    color: '#333',
+                    zIndex: 10001
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageChange('next');
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '60px',
+                    height: '60px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '24px',
+                    color: '#333',
+                    zIndex: 10001
+                  }}
+                >
+                  ›
+                </button>
+              </>
+            )}
+
+            {/* Main Image */}
+            <div
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <img
+                src={getPropertyImages(selectedProperty)[currentImageIndex]}
+                alt={`Property image ${currentImageIndex + 1}`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                  opacity: imageLoading ? 0.7 : 1,
+                  transition: 'opacity 0.3s ease'
+                }}
+                onLoad={() => setImageLoading(false)}
+                onLoadStart={() => setImageLoading(true)}
+              />
+              
+              {/* Loading spinner */}
+              {imageLoading && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    color: 'white',
+                    fontSize: '20px'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      border: '4px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '4px solid white',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Thumbnail Strip */}
+            {getPropertyImages(selectedProperty).length > 1 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '20px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: '8px',
+                  maxWidth: '90vw',
+                  overflowX: 'auto',
+                  padding: '10px',
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  borderRadius: '12px'
+                }}
+              >
+                {getPropertyImages(selectedProperty).map((image, index) => (
+                  <div
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(index);
+                    }}
+                    style={{
+                      width: '60px',
+                      height: '40px',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      border: currentImageIndex === index ? '2px solid white' : '2px solid transparent',
+                      opacity: currentImageIndex === index ? 1 : 0.7,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <img
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+    </>
+  );
 }
