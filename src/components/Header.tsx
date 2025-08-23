@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({
   const user = session?.user;
   const isLoading = status === 'loading';
   const [isFiltersPopupOpen, setIsFiltersPopupOpen] = useState(false);
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isAccountPopupOpen, setIsAccountPopupOpen] = useState(false);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -40,27 +40,27 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleAuthAction = () => {
     if (user) {
-      setIsAccountDropdownOpen(!isAccountDropdownOpen);
+      setIsAccountPopupOpen(!isAccountPopupOpen);
     } else {
       signIn('google');
     }
   };
 
   const toggleAccountDropdown = () => {
-    setIsAccountDropdownOpen(!isAccountDropdownOpen);
+    setIsAccountPopupOpen(!isAccountPopupOpen);
   };
 
   const closeAccountDropdown = () => {
-    setIsAccountDropdownOpen(false);
+    setIsAccountPopupOpen(false);
   };
 
   const handleAccountMenuClick = (path: string) => {
-    setIsAccountDropdownOpen(false);
+    setIsAccountPopupOpen(false);
     router.push(path);
   };
 
   const handleSignOut = () => {
-    setIsAccountDropdownOpen(false);
+    setIsAccountPopupOpen(false);
     signOut();
   };
 
@@ -72,6 +72,10 @@ const Header: React.FC<HeaderProps> = ({
     setIsFiltersPopupOpen(false);
   };
 
+  const closeAccountPopup = () => {
+    setIsAccountPopupOpen(false);
+  };
+
   // Close popup when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -79,23 +83,22 @@ const Header: React.FC<HeaderProps> = ({
       if (isFiltersPopupOpen && !target.closest(`.${styles.filtersPopup}`) && !target.closest(`.${styles.filtersButton}`)) {
         closeFiltersPopup();
       }
-      if (isAccountDropdownOpen && 
-          !target.closest(`.${styles.accountDropdown}`) && 
+      if (isAccountPopupOpen && 
+          !target.closest(`.${styles.accountPopup}`) && 
           !target.closest(`.${styles.accountButton}`) &&
-          !target.closest(`.${styles.mobileAccountDropdown}`) && 
-          !target.closest(`.${styles.mobileAccountContainer}`)) {
-        closeAccountDropdown();
+          !target.closest(`.${styles.mobilePill}`)) {
+        closeAccountPopup();
       }
     };
 
-    if (isFiltersPopupOpen || isAccountDropdownOpen) {
+    if (isFiltersPopupOpen || isAccountPopupOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isFiltersPopupOpen, isAccountDropdownOpen]);
+  }, [isFiltersPopupOpen, isAccountPopupOpen]);
 
   return (
     <header className={styles.header}>
@@ -167,57 +170,16 @@ const Header: React.FC<HeaderProps> = ({
               )}
               
               {!isLoading && (
-                <div className={styles.accountContainer}>
-                  <button 
-                    onClick={handleAuthAction}
-                    className={`${styles.navButton} ${styles.accountButton}`}
-                    aria-label={user ? 'Account menu' : 'Sign in with Google'}
-                  >
-                    <span className={styles.navButtonIcon} role="img" aria-hidden="true">
-                      {user ? '👤' : '🔑'}
-                    </span>
-                    {user ? 'Account' : 'Login'}
-                    {user && (
-                      <span className={styles.dropdownArrow}>
-                        {isAccountDropdownOpen ? '▲' : '▼'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {user && isAccountDropdownOpen && (
-                    <div className={styles.accountDropdown}>
-                      <button 
-                        className={styles.dropdownItem}
-                        onClick={() => handleAccountMenuClick('/account')}
-                      >
-                        <span className={styles.dropdownIcon}>👤</span>
-                        Account
-                      </button>
-                      <button 
-                        className={styles.dropdownItem}
-                        onClick={() => handleAccountMenuClick('/saved-properties')}
-                      >
-                        <span className={styles.dropdownIcon}>❤️</span>
-                        Saved Properties
-                      </button>
-                      <button 
-                        className={styles.dropdownItem}
-                        onClick={() => handleAccountMenuClick('/profile')}
-                      >
-                        <span className={styles.dropdownIcon}>📝</span>
-                        Profile
-                      </button>
-                      <hr className={styles.dropdownDivider} />
-                      <button 
-                        className={styles.dropdownItem}
-                        onClick={handleSignOut}
-                      >
-                        <span className={styles.dropdownIcon}>🚪</span>
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={handleAuthAction}
+                  className={`${styles.navButton} ${styles.accountButton}`}
+                  aria-label={user ? 'Account menu' : 'Sign in with Google'}
+                >
+                  <span className={styles.navButtonIcon} role="img" aria-hidden="true">
+                    {user ? '👤' : '🔑'}
+                  </span>
+                  {user ? 'Account' : 'Login'}
+                </button>
               )}
             </div>
           </nav>
@@ -259,54 +221,13 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
               {!isLoading && (
-                <div className={styles.mobileAccountContainer}>
-                  <button
-                    className={`${styles.mobilePill} ${user && isAccountDropdownOpen ? styles.active : ''}`}
-                    onClick={handleAuthAction}
-                    aria-label={user ? 'Account menu' : 'Sign in with Google'}
-                  >
-                    {user ? 'Account' : 'Login'}
-                    {user && (
-                      <span className={styles.mobileDropdownArrow}>
-                        {isAccountDropdownOpen ? '▲' : '▼'}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {user && isAccountDropdownOpen && (
-                    <div className={styles.mobileAccountDropdown}>
-                      <button 
-                        className={styles.mobileDropdownItem}
-                        onClick={() => handleAccountMenuClick('/account')}
-                      >
-                        <span className={styles.dropdownIcon}>👤</span>
-                        Account
-                      </button>
-                      <button 
-                        className={styles.mobileDropdownItem}
-                        onClick={() => handleAccountMenuClick('/saved-properties')}
-                      >
-                        <span className={styles.dropdownIcon}>❤️</span>
-                        Saved Properties
-                      </button>
-                      <button 
-                        className={styles.mobileDropdownItem}
-                        onClick={() => handleAccountMenuClick('/profile')}
-                      >
-                        <span className={styles.dropdownIcon}>📝</span>
-                        Profile
-                      </button>
-                      <hr className={styles.dropdownDivider} />
-                      <button 
-                        className={styles.mobileDropdownItem}
-                        onClick={handleSignOut}
-                      >
-                        <span className={styles.dropdownIcon}>🚪</span>
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button
+                  className={styles.mobilePill}
+                  onClick={handleAuthAction}
+                  aria-label={user ? 'Account menu' : 'Sign in with Google'}
+                >
+                  {user ? 'Account' : 'Login'}
+                </button>
               )}
             </div>
           </div>
@@ -339,6 +260,68 @@ const Header: React.FC<HeaderProps> = ({
                 inHeader={false}
                 onClosePopup={() => setIsFiltersPopupOpen(false)}
               />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Account Popup Modal */}
+      {isAccountPopupOpen && user && (
+        <>
+          <div className={styles.accountOverlay} onClick={closeAccountPopup}></div>
+          <div className={styles.accountPopup}>
+            <div className={styles.accountPopupHeader}>
+              <h3>Account Menu</h3>
+              <button 
+                className={styles.closePopupButton}
+                onClick={closeAccountPopup}
+                aria-label="Close account menu"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.accountPopupContent}>
+              <button 
+                className={styles.accountPopupItem}
+                onClick={() => handleAccountMenuClick('/account')}
+              >
+                <span className={styles.accountPopupIcon}>👤</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Account</div>
+                  <div className={styles.accountPopupSubtitle}>Manage your account settings</div>
+                </div>
+              </button>
+              <button 
+                className={styles.accountPopupItem}
+                onClick={() => handleAccountMenuClick('/saved-properties')}
+              >
+                <span className={styles.accountPopupIcon}>❤️</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Saved Properties</div>
+                  <div className={styles.accountPopupSubtitle}>View your favorite properties</div>
+                </div>
+              </button>
+              <button 
+                className={styles.accountPopupItem}
+                onClick={() => handleAccountMenuClick('/profile')}
+              >
+                <span className={styles.accountPopupIcon}>📝</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Profile</div>
+                  <div className={styles.accountPopupSubtitle}>Edit your profile information</div>
+                </div>
+              </button>
+              <hr className={styles.accountPopupDivider} />
+              <button 
+                className={styles.accountPopupItem}
+                onClick={handleSignOut}
+              >
+                <span className={styles.accountPopupIcon}>🚪</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Sign Out</div>
+                  <div className={styles.accountPopupSubtitle}>Sign out of your account</div>
+                </div>
+              </button>
             </div>
           </div>
         </>

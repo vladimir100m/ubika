@@ -599,11 +599,28 @@
     max-height: calc(100vh - 80px);
   }
   
+  .accountPopup {
+    top: 60px;
+    right: 8px;
+    left: 8px;
+    border-radius: 10px;
+    max-height: calc(100vh - 80px);
+  }
+  
   .filtersPopupHeader {
     padding: 16px 16px 12px 16px;
   }
   
+  .accountPopupHeader {
+    padding: 16px 16px 12px 16px;
+  }
+  
   .filtersPopupHeader h3 {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .accountPopupHeader h3 {
     font-size: 1rem;
     font-weight: 700;
   }
@@ -617,6 +634,25 @@
   .filtersPopupContent {
     padding: 16px;
     max-height: calc(100vh - 140px);
+  }
+  
+  .accountPopupContent {
+    padding: 14px;
+    max-height: calc(100vh - 140px);
+  }
+  
+  .accountPopupItem {
+    padding: 12px 10px;
+    gap: 12px;
+    border-radius: 8px;
+  }
+  
+  .accountPopupTitle {
+    font-size: 14px;
+  }
+  
+  .accountPopupSubtitle {
+    font-size: 11px;
   }
 }
 
@@ -641,12 +677,26 @@
     right: 16px;
   }
   
+  .accountPopup {
+    width: 360px;
+    top: 75px;
+    right: 16px;
+  }
+  
   .filtersPopupHeader {
+    padding: 22px 22px 18px 22px;
+  }
+  
+  .accountPopupHeader {
     padding: 22px 22px 18px 22px;
   }
   
   .filtersPopupContent {
     padding: 22px;
+  }
+  
+  .accountPopupContent {
+    padding: 20px;
   }
 }
 
@@ -658,11 +708,25 @@
     right: 24px;
   }
   
+  .accountPopup {
+    width: 420px;
+    top: 85px;
+    right: 24px;
+  }
+  
   .filtersPopupHeader {
     padding: 26px 26px 22px 26px;
   }
   
+  .accountPopupHeader {
+    padding: 26px 26px 22px 26px;
+  }
+  
   .filtersPopupHeader h3 {
+    font-size: 1.5rem;
+  }
+  
+  .accountPopupHeader h3 {
     font-size: 1.5rem;
   }
   
@@ -674,7 +738,24 @@
   
   .filtersPopupContent {
     padding: 26px;
-    max-height: calc(100vh - 240px);
+  }
+  
+  .accountPopupContent {
+    padding: 24px;
+  }
+  
+  .accountPopupItem {
+    padding: 18px;
+    gap: 18px;
+    border-radius: 14px;
+  }
+  
+  .accountPopupTitle {
+    font-size: 17px;
+  }
+  
+  .accountPopupSubtitle {
+    font-size: 14px;
   }
 }
 
@@ -735,7 +816,7 @@
   }
 }
 
-/* Account Dropdown Styles */
+/* Account Dropdown Styles - DEPRECATED - Now using popup */
 .accountContainer {
   position: relative;
 }
@@ -813,6 +894,154 @@
   border: none;
   height: 1px;
   background-color: #e5e5e5;
+}
+
+/* Account Popup Modal Styles */
+.accountOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  backdrop-filter: blur(4px);
+}
+
+.accountPopup {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 120px);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+              0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 1px rgba(0, 0, 0, 0.05);
+  z-index: 1002;
+  overflow: hidden;
+  animation: popupSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+.accountPopup:focus-within {
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+              0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.accountPopupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.accountPopupHeader h3 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountPopupContent {
+  padding: 20px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.accountPopupContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.accountPopupContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accountPopupContent::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.accountPopupContent::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.accountPopupItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+.accountPopupItem:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: translateY(-1px);
+}
+
+.accountPopupItem:focus {
+  background-color: rgba(59, 130, 246, 0.1);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.accountPopupItem:active {
+  transform: translateY(0);
+}
+
+.accountPopupIcon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.accountPopupText {
+  flex: 1;
+}
+
+.accountPopupTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.accountPopupSubtitle {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.accountPopupDivider {
+  margin: 8px 0;
+  border: none;
+  height: 1px;
+  background-color: #e2e8f0;
 }
 
 /* Mobile account dropdown adjustments */
