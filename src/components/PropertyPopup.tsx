@@ -188,9 +188,11 @@ export default function PropertyPopup({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Generate additional images based on property type
-        const generatedImages = generatePropertyImages(selectedProperty);
-        setAdditionalImages(generatedImages);
+        // Use actual property images uploaded by the user
+        const propertyImages = getPropertyImages(selectedProperty);
+        // Remove the first image since it's used as the cover image
+        const additionalPropertyImages = propertyImages.slice(1);
+        setAdditionalImages(additionalPropertyImages);
 
         // Fetch features specifically assigned to this property
         const featuresResponse = await fetch(`/api/properties/features?propertyId=${selectedProperty.id}`);
@@ -485,7 +487,7 @@ export default function PropertyPopup({
                       padding: '4px 10px',
                       fontSize: '14px'
                     }}>
-                      1 of {additionalImages.length + 1}
+                      1 of {getPropertyImages(selectedProperty).length}
                     </div>
                   </div>
                 )}
@@ -514,7 +516,7 @@ export default function PropertyPopup({
                       }}
                     />
                     {/* Show "+X more" overlay on the last image if there are more photos */}
-                    {index === 3 && additionalImages.length > 4 && (
+                    {index === 3 && getPropertyImages(selectedProperty).length > 5 && (
                       <div style={{
                         position: 'absolute',
                         top: 0,
@@ -529,7 +531,7 @@ export default function PropertyPopup({
                         fontSize: '18px',
                         fontWeight: 'bold'
                       }}>
-                        +{additionalImages.length - 3} more
+                        +{getPropertyImages(selectedProperty).length - 5} more
                       </div>
                     )}
                   </div>
@@ -569,7 +571,7 @@ export default function PropertyPopup({
                       <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
                       <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    {additionalImages.length + 1} Photos
+                    {getPropertyImages(selectedProperty).length} Photos
                   </button>
                 </div>
               </div>
