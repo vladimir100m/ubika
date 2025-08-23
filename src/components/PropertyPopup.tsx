@@ -414,6 +414,37 @@ export default function PropertyPopup({
     setShowCarousel(true);
   };
 
+  // Get dynamic grid layout based on number of images (max 3)
+  const getGridLayout = () => {
+    const allImages = getPropertyImages(selectedProperty);
+    const imageCount = Math.min(allImages.length, 3); // Max 3 images in grid
+    
+    switch (imageCount) {
+      case 1:
+        return {
+          gridTemplateColumns: '1fr',
+          gridTemplateRows: '1fr',
+          images: allImages.slice(0, 1),
+          showViewAllButton: allImages.length > 1
+        };
+      case 2:
+        return {
+          gridTemplateColumns: '2fr 1fr',
+          gridTemplateRows: '1fr',
+          images: allImages.slice(0, 2),
+          showViewAllButton: allImages.length > 2
+        };
+      case 3:
+      default:
+        return {
+          gridTemplateColumns: '2fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          images: allImages.slice(0, 3),
+          showViewAllButton: allImages.length > 3
+        };
+    }
+  };
+
   // Touch handlers for swipe navigation
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -501,13 +532,13 @@ export default function PropertyPopup({
             </div>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
-              {/* 5-Photo Grid Layout */}
+              {/* Dynamic Photo Grid Layout (1-3 images) */}
               <div 
                 className={galleryStyles.styledGallery}
                 style={{ 
                   display: 'grid',
-                  gridTemplateColumns: '2fr 1fr',
-                  gridTemplateRows: '1fr 1fr',
+                  gridTemplateColumns: getGridLayout().gridTemplateColumns,
+                  gridTemplateRows: getGridLayout().gridTemplateRows,
                   gap: '8px',
                   height: '100%',
                   width: '100%',
@@ -516,127 +547,136 @@ export default function PropertyPopup({
                   backgroundColor: '#f7f7f7'
                 }}
               >
-                {/* Main large image (takes 2/4 of space) */}
-                {selectedProperty && (
-                  <div 
-                    style={{
-                      gridColumn: '1',
-                      gridRow: '1 / span 2',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      overflow: 'hidden'
-                    }}
-                    onClick={() => handleImageClick(0)}
-                  >
-                    <img 
-                      src={getCoverImage(selectedProperty)} 
-                      alt="Main property image" 
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease'
+                {getGridLayout().images.map((image, index) => {
+                  const isMainImage = index === 0;
+                  const imageCount = getGridLayout().images.length;
+                  
+                  // Determine grid position based on layout
+                  let gridColumn, gridRow;
+                  if (imageCount === 1) {
+                    gridColumn = '1';
+                    gridRow = '1';
+                  } else if (imageCount === 2) {
+                    gridColumn = index === 0 ? '1' : '2';
+                    gridRow = '1';
+                  } else { // 3 images
+                    if (index === 0) {
+                      gridColumn = '1';
+                      gridRow = '1 / span 2';
+                    } else {
+                      gridColumn = '2';
+                      gridRow = index === 1 ? '1' : '2';
+                    }
+                  }
+                  
+                  return (
+                    <div 
+                      key={index}
+                      style={{
+                        gridColumn,
+                        gridRow,
+                        position: 'relative',
+                        cursor: 'pointer',
+                        overflow: 'hidden'
                       }}
-                    />
-                    {/* Image counter overlay */}
-                    <div style={{ 
-                      position: 'absolute', 
-                      bottom: '16px', 
-                      left: '16px', 
-                      zIndex: 5,
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      color: 'white',
-                      borderRadius: '4px',
-                      padding: '4px 10px',
-                      fontSize: '14px'
-                    }}>
-                      1 of {getPropertyImages(selectedProperty).length}
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <img 
+                        src={image} 
+                        alt={`Property image ${index + 1}`} 
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      />
+                      
+                      {/* Image counter overlay on main image */}
+                      {isMainImage && (
+                        <div style={{ 
+                          position: 'absolute', 
+                          bottom: '16px', 
+                          left: '16px', 
+                          zIndex: 5,
+                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                          color: 'white',
+                          borderRadius: '4px',
+                          padding: '4px 10px',
+                          fontSize: '14px'
+                        }}>
+                          1 of {getPropertyImages(selectedProperty).length}
+                        </div>
+                      )}
+                      
+                      {/* Show "+X more" overlay on the last visible image if there are more photos */}
+                      {index === getGridLayout().images.length - 1 && getPropertyImages(selectedProperty).length > 3 && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '18px',
+                          fontWeight: 'bold'
+                        }}>
+                          +{getPropertyImages(selectedProperty).length - 3} more
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+                
+                {/* "View all photos" button - only show if there are more images than displayed */}
+                {getGridLayout().showViewAllButton && (
+                  <div style={{ 
+                    position: 'absolute', 
+                    bottom: '16px', 
+                    right: '16px', 
+                    zIndex: 5
+                  }}>
+                    <button 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                        color: '#2a2a33',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(0);
+                        setShowCarousel(true);
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                        <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {getPropertyImages(selectedProperty).length} Photos
+                    </button>
                   </div>
                 )}
-                
-                {/* Four smaller images (each takes 1/4 of space) */}
-                {additionalImages.slice(0, 4).map((image, index) => (
-                  <div 
-                    key={index}
-                    style={{
-                      gridColumn: '2',
-                      gridRow: index < 2 ? '1' : '2',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      overflow: 'hidden'
-                    }}
-                    onClick={() => handleImageClick(index + 1)}
-                  >
-                    <img 
-                      src={image} 
-                      alt={`Property image ${index + 2}`} 
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease'
-                      }}
-                    />
-                    {/* Show "+X more" overlay on the last image if there are more photos */}
-                    {index === 3 && getPropertyImages(selectedProperty).length > 5 && (
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                      }}>
-                        +{getPropertyImages(selectedProperty).length - 5} more
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {/* "View all photos" button */}
-                <div style={{ 
-                  position: 'absolute', 
-                  bottom: '16px', 
-                  right: '16px', 
-                  zIndex: 5
-                }}>
-                  <button 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '8px', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                      color: '#2a2a33',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '8px 16px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentImageIndex(0);
-                      setShowCarousel(true);
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-                      <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {getPropertyImages(selectedProperty).length} Photos
-                  </button>
-                </div>
               </div>
             </div>
             <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
