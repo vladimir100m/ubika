@@ -258,6 +258,32 @@ export default function PropertyPopup({
     };
   }, [showCarousel]);
 
+  // Close popup when navigating to different routes (header menu clicks)
+  useEffect(() => {
+    const handleRouteChange = () => {
+      // Check if component is still mounted before calling onClose
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    const handleHashChange = () => {
+      // Check if component is still mounted before calling onClose
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    // Listen for route changes and hash changes
+    router.events.on('routeChangeStart', handleRouteChange);
+    router.events.on('hashChangeStart', handleHashChange);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+      router.events.off('hashChangeStart', handleHashChange);
+    };
+  }, [router.events, onClose]);
+
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
     const options = {
