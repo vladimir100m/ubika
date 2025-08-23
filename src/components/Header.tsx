@@ -79,7 +79,11 @@ const Header: React.FC<HeaderProps> = ({
       if (isFiltersPopupOpen && !target.closest(`.${styles.filtersPopup}`) && !target.closest(`.${styles.filtersButton}`)) {
         closeFiltersPopup();
       }
-      if (isAccountDropdownOpen && !target.closest(`.${styles.accountDropdown}`) && !target.closest(`.${styles.accountButton}`)) {
+      if (isAccountDropdownOpen && 
+          !target.closest(`.${styles.accountDropdown}`) && 
+          !target.closest(`.${styles.accountButton}`) &&
+          !target.closest(`.${styles.mobileAccountDropdown}`) && 
+          !target.closest(`.${styles.mobileAccountContainer}`)) {
         closeAccountDropdown();
       }
     };
@@ -255,13 +259,54 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
               {!isLoading && (
-                <button
-                  className={styles.mobilePill}
-                  onClick={handleAuthAction}
-                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
-                >
-                  {user ? 'Account' : 'Login'}
-                </button>
+                <div className={styles.mobileAccountContainer}>
+                  <button
+                    className={`${styles.mobilePill} ${user && isAccountDropdownOpen ? styles.active : ''}`}
+                    onClick={handleAuthAction}
+                    aria-label={user ? 'Account menu' : 'Sign in with Google'}
+                  >
+                    {user ? 'Account' : 'Login'}
+                    {user && (
+                      <span className={styles.mobileDropdownArrow}>
+                        {isAccountDropdownOpen ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {user && isAccountDropdownOpen && (
+                    <div className={styles.mobileAccountDropdown}>
+                      <button 
+                        className={styles.mobileDropdownItem}
+                        onClick={() => handleAccountMenuClick('/account')}
+                      >
+                        <span className={styles.dropdownIcon}>👤</span>
+                        Account
+                      </button>
+                      <button 
+                        className={styles.mobileDropdownItem}
+                        onClick={() => handleAccountMenuClick('/saved-properties')}
+                      >
+                        <span className={styles.dropdownIcon}>❤️</span>
+                        Saved Properties
+                      </button>
+                      <button 
+                        className={styles.mobileDropdownItem}
+                        onClick={() => handleAccountMenuClick('/profile')}
+                      >
+                        <span className={styles.dropdownIcon}>📝</span>
+                        Profile
+                      </button>
+                      <hr className={styles.dropdownDivider} />
+                      <button 
+                        className={styles.mobileDropdownItem}
+                        onClick={handleSignOut}
+                      >
+                        <span className={styles.dropdownIcon}>🚪</span>
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

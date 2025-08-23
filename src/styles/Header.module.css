@@ -823,3 +823,94 @@
     width: 220px;
   }
 }
+
+/* Tablet adjustments for account dropdown */
+@media (min-width: 769px) and (max-width: 991px) {
+  .accountDropdown {
+    right: -10px;
+    min-width: 200px;
+  }
+}
+
+/* Desktop larger screens */
+@media (min-width: 992px) {
+  .accountDropdown {
+    right: 0;
+    min-width: 200px;
+  }
+}
+
+/* Mobile Account Container and Dropdown */
+.mobileAccountContainer {
+  position: relative;
+}
+
+.mobileDropdownArrow {
+  font-size: 10px;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.mobileAccountDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 1300;
+  animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.mobileDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.mobileDropdownItem:hover {
+  background-color: #f5f5f5;
+}
+
+.mobileDropdownItem:focus {
+  background-color: #f0f8ff;
+  outline: none;
+}
+
+/* Responsive adjustments for mobile dropdown */
+@media (max-width: 480px) {
+  .mobileAccountDropdown {
+    right: -10px;
+    width: 200px;
+  }
+  
+  .mobileDropdownItem {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobileAccountDropdown {
+    right: -5px;
+    width: 180px;
+  }
+  
+  .mobileDropdownItem {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
