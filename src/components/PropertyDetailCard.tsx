@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Property } from '../types';
-import HeartButton from './HeartButton';
 import styles from '../styles/PropertyDetailCard.module.css';
 
 interface PropertyFeature {
@@ -23,21 +22,17 @@ interface Neighborhood {
 interface PropertyDetailCardProps {
   property: Property;
   showContact?: boolean;
-  isFavorite?: boolean;
-  onFavoriteToggle?: () => void;
-  savingFavorite?: boolean;
 }
 
 const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   property,
-  showContact = true,
-  isFavorite = false,
-  onFavoriteToggle,
-  savingFavorite = false
+  showContact = true
 }) => {
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
   const [loadingFeatures, setLoadingFeatures] = useState(true);
+
+  // Favorite/save feature removed
   // Collapsible state
   const [openSections, setOpenSections] = useState<{[key:string]: boolean}>({
     description: true,
@@ -171,6 +166,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
     <div className={styles.propertyDetailCard}>
       {/* Header Section */}
       <div className={styles.header}>
+  {/* Favorite/save feature removed */}
         <div className={styles.priceSection}>
           <div className={styles.price}>
             {formatPrice(property.price)}
@@ -419,18 +415,6 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   </svg>
                   Message
                 </button>
-                <div className={styles.heartButtonWrapper}>
-                  <HeartButton
-                    isFavorite={isFavorite}
-                    onToggle={onFavoriteToggle || (() => {})}
-                    size="medium"
-                    variant="popup"
-                    isLoading={savingFavorite}
-                  />
-                  <span className={styles.heartButtonLabel}>
-                    {isFavorite ? 'Saved' : 'Save'}
-                  </span>
-                </div>
               </div>
               <div className={styles.contactInfo}>
                 <p><strong>Ubika Real Estate</strong></p>
@@ -443,21 +427,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       )}
 
       {/* Mobile Sticky Action Bar */}
-      <div className={styles.mobileActionBar} aria-label="Quick actions">
-        <div className={styles.mobilePrice}>{formatPrice(property.price)}{property.operation_status === 'rent' && <span className={styles.period}>/mo</span>}</div>
-        <div className={styles.mobileActionButtons}>
-          <button className={styles.mobileSmallBtn}>Call</button>
-          <div className={styles.mobileHeartButtonWrapper}>
-            <HeartButton
-              isFavorite={isFavorite}
-              onToggle={onFavoriteToggle || (() => {})}
-              size="small"
-              variant="card"
-              isLoading={savingFavorite}
-            />
-          </div>
-        </div>
-      </div>
+  {/* Mobile action bar favorite feature removed */}
     </div>
   );
 };

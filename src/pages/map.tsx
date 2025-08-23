@@ -16,7 +16,7 @@ import useMediaQuery from '../utils/useMediaQuery';
 import PropertyPopup from 'components/PropertyPopup';
 import PropertyCard from 'components/PropertyCard';
 import { useSession } from 'next-auth/react';
-import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import { FilterOptions } from '../components/MapFilters';
 
 const MapPage: React.FC = () => {
@@ -31,7 +31,7 @@ const MapPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
+  // Saved property IDs removed
   const [showFloatingGallery, setShowFloatingGallery] = useState(false);
   
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -62,31 +62,7 @@ const MapPage: React.FC = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
 
   // Function to toggle favorite status using database API
-  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    if (!user) {
-      // Redirect to login if user is not authenticated
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      await toggleSaveProperty(propertyId, !isCurrentlySaved);
-      
-      // Update local state
-      setSavedPropertyIds(prevSavedIds => {
-        const newSavedIds = new Set(prevSavedIds);
-        if (isCurrentlySaved) {
-          newSavedIds.delete(propertyId);
-        } else {
-          newSavedIds.add(propertyId);
-        }
-        return newSavedIds;
-      });
-    } catch (error) {
-      console.error('Error toggling favorite status:', error);
-    }
-  };
+  // Favorite toggle handler removed
 
   useEffect(() => {
     // Fetch properties from the database
@@ -146,40 +122,7 @@ const MapPage: React.FC = () => {
     fetchProperties();
   }, [router.query]);
 
-  useEffect(() => {
-    const loadSavedStatus = async () => {
-      if (!user) {
-        setSavedPropertyIds(new Set());
-        return;
-      }
-
-      try {
-        const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-        const savedIds = new Set<number>();
-        if (savedStatus && typeof savedStatus === 'object') {
-          Object.entries(savedStatus).forEach(([id, val]) => {
-            if (val) savedIds.add(Number(id));
-          });
-        }
-        setSavedPropertyIds(savedIds);
-      } catch (error) {
-        console.error('Error loading saved properties status:', error);
-        
-        // Check if it's an auth error
-        if (error instanceof Error && error.message.includes('Unauthorized')) {
-          // Just set empty set - no need to redirect as this is a background load
-          console.log('User not authenticated for saved properties check');
-        }
-        
-        setSavedPropertyIds(new Set());
-      }
-    };
-
-    // Only load saved status after user loading is complete and we have properties
-    if (!isLoading && properties.length > 0) {
-      loadSavedStatus();
-    }
-  }, [properties, isLoading])
+  // Saved status effect removed
 
   useEffect(() => {
     if (properties.length > 0) {
@@ -589,8 +532,6 @@ const MapPage: React.FC = () => {
                   <PropertyCard
                     key={property.id}
                     property={property}
-                    isFavorite={savedPropertyIds.has(property.id)}
-                    onFavoriteToggle={() => handleFavoriteToggle(property.id)}
                     onClick={() => handlePropertyClick(property)}
                   />
                 ))}

@@ -281,37 +281,7 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
             <div className={styles.accountPopupContent}>
-              <button 
-                className={styles.accountPopupItem}
-                onClick={() => handleAccountMenuClick('/account')}
-              >
-                <span className={styles.accountPopupIcon}>👤</span>
-                <div className={styles.accountPopupText}>
-                  <div className={styles.accountPopupTitle}>Account</div>
-                  <div className={styles.accountPopupSubtitle}>Manage your account settings</div>
-                </div>
-              </button>
-              <button 
-                className={styles.accountPopupItem}
-                onClick={() => handleAccountMenuClick('/saved-properties')}
-              >
-                <span className={styles.accountPopupIcon}>❤️</span>
-                <div className={styles.accountPopupText}>
-                  <div className={styles.accountPopupTitle}>Saved Properties</div>
-                  <div className={styles.accountPopupSubtitle}>View your favorite properties</div>
-                </div>
-              </button>
-              <button 
-                className={styles.accountPopupItem}
-                onClick={() => handleAccountMenuClick('/profile')}
-              >
-                <span className={styles.accountPopupIcon}>📝</span>
-                <div className={styles.accountPopupText}>
-                  <div className={styles.accountPopupTitle}>Profile</div>
-                  <div className={styles.accountPopupSubtitle}>Edit your profile information</div>
-                </div>
-              </button>
-              <hr className={styles.accountPopupDivider} />
+              {/* Profile option removed */}
               <button 
                 className={styles.accountPopupItem}
                 onClick={handleSignOut}

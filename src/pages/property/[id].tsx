@@ -5,9 +5,8 @@ import Head from 'next/head';
 import { StandardLayout } from '../../components';
 import PropertyGallery from '../../components/PropertyGallery';
 import PropertyDetailCard from '../../components/PropertyDetailCard';
-import HeartButton from '../../components/HeartButton';
 import { Property } from '../../types';
-import { toggleSaveProperty } from '../../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import styles from '../../styles/PropertyDetail.module.css';
 import { FilterOptions } from '../../components/MapFilters';
 
@@ -20,8 +19,7 @@ const PropertyDetail: React.FC = () => {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [saving, setSaving] = useState(false);
+  // Favorite/save state removed
 
   // Filter handlers - redirect to map page with filters
   const handleFilterChange = (filters: FilterOptions) => {
@@ -73,14 +71,7 @@ const PropertyDetail: React.FC = () => {
 
         setProperty(propertyData);
 
-        // Check if property is saved
-        if (user) {
-          const savedResponse = await fetch(`/api/properties/saved-status?propertyId=${id}`);
-          if (savedResponse.ok) {
-            const savedData = await savedResponse.json();
-            setIsFavorite(savedData.isSaved);
-          }
-        }
+  // Favorite/save status check removed
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load property');
       } finally {
@@ -91,24 +82,7 @@ const PropertyDetail: React.FC = () => {
     fetchProperty();
   }, [id, user]);
 
-  const handleSaveProperty = async () => {
-    if (!user || !property) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    if (saving) return;
-
-    setSaving(true);
-    try {
-      await toggleSaveProperty(property.id, isFavorite);
-      setIsFavorite(!isFavorite);
-    } catch (error) {
-      console.error('Error saving property:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Save handler removed
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -231,9 +205,6 @@ const PropertyDetail: React.FC = () => {
           {/* Property Detail Card - Shows all database information */}
           <PropertyDetailCard 
             property={property} 
-            isFavorite={isFavorite}
-            onFavoriteToggle={handleSaveProperty}
-            savingFavorite={saving}
           />
         </main>
       </div>

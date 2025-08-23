@@ -1,69 +1,4 @@
-/* HeartButton.module.css - Standardized heart/favorite button component */
-
-.heartButton {
-  position: relative;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 10;
-  overflow: visible;
-  outline: none;
-}
-
-.heartButton:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3), 0 0 0 4px rgba(59, 130, 246, 0.2);
-}
-
-.heartButton:active {
-  transform: scale(0.95);
-}
-
-/* Size variants */
-.small {
-  width: 32px;
-  height: 32px;
-}
-
-.medium {
-  width: 40px;
-  height: 40px;
-}
-
-.large {
-  width: 48px;
-  height: 48px;
-}
-
-/* Style variants */
-.card {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.card:hover {
-  background: rgba(0, 0, 0, 0.8);
-  transform: scale(1.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.popup {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-}
-
-.popup:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
+/* Heart button styles removed */
 
 .floating {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
@@ -293,3 +228,21 @@
     right: -1px;
   }
 }
+
+/* Visibility overrides to ensure heart is always visible on card images */
+.heartButton.card .heartPath {
+  stroke: #ff385c;
+  stroke-width: 2;
+  fill: none;
+}
+
+.active.card .heartPath, .saved.card .heartPath, .favorite.card .heartPath {
+  fill: #ff385c;
+  stroke: #ff385c;
+}
+
+/* Outline / shadow for contrast over bright backgrounds */
+.heartButton.card .heartIcon {
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+

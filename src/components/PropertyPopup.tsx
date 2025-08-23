@@ -5,8 +5,7 @@ import {useRouter} from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
-import { toggleSaveProperty } from '../utils/savedPropertiesApi';
-import HeartButton from './HeartButton';
+// Favorite/save feature removed
 
 interface Neighborhood {
   id: number;
@@ -150,25 +149,22 @@ const generatePropertyImagesLegacy = (property: Property) => {
 export default function PropertyPopup({ 
   selectedProperty, 
   onClose, 
-  mapRef,
-  onFavoriteToggle
+  mapRef
 }: { 
-  selectedProperty: Property & { isFavorite?: boolean }; 
+  selectedProperty: Property; 
   onClose: () => void; 
   mapRef: RefObject<HTMLDivElement>;
-  onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void;
 }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user;
   const isLoading = status === 'loading';
-  const isFavorite = selectedProperty.isFavorite || false;
+  // Favorite/save flags removed
   const [activeTab, setActiveTab] = useState('overview');
   const [descExpanded, setDescExpanded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
   const [showCarousel, setShowCarousel] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -376,31 +372,7 @@ export default function PropertyPopup({
   }, [mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
-  const handleSaveProperty = async () => {
-    if (!user) {
-      // If user is not authenticated, redirect to login
-      window.location.href = '/api/auth/login';
-      return;
-    }
-
-    if (isSaving) return; // Prevent multiple clicks
-    
-    setIsSaving(true);
-    try {
-      const newStatus = !isFavorite;
-      await toggleSaveProperty(selectedProperty.id, isFavorite);
-      
-      // Call parent callback to update UI
-      if (onFavoriteToggle) {
-        onFavoriteToggle(selectedProperty.id, newStatus);
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      alert('Failed to update favorite status. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  }
+  // Favorite/save handlers removed
 
   // Handler for gallery navigation
   const handleImageChange = (direction: 'next' | 'prev') => {
@@ -531,13 +503,7 @@ export default function PropertyPopup({
               >
                 <span style={{fontSize:22,lineHeight:1}}>×</span>
               </button>
-              <HeartButton
-                isFavorite={isFavorite}
-                onToggle={handleSaveProperty}
-                size="large"
-                variant="floating"
-                isLoading={isSaving}
-              />
+              {/* Favorite/save button removed */}
               <button 
                 onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
                 aria-label="Share property"
@@ -832,12 +798,21 @@ export default function PropertyPopup({
                   {/* Facts and features section */}
                   <div ref={detailsRef} id="details-section" style={{ padding: '24px', marginBottom: '40px' }}>
                     <div style={{ marginBottom: '32px' }}>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '16px',
-                        color: '#2a2a33'
-                      }}>Facts and features</h3>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginBottom: '16px'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          margin: '0',
+                          color: '#2a2a33'
+                        }}>Facts and features</h3>
+                        
+                        {/* Favorite/save controls removed */}
+                      </div>
                       
                       <div style={{ 
                         display: 'grid', 

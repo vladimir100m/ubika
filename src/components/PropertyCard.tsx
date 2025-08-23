@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Property } from '../types';
-import HeartButton from './HeartButton';
 import styles from '../styles/PropertyCard.module.css';
 
 interface PropertyCardProps {
   property: Property;
-  isFavorite?: boolean;
-  onFavoriteToggle?: (propertyId: number) => void;
   showFullDetails?: boolean;
   onClick?: () => void;
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
-  isFavorite = false,
-  onFavoriteToggle,
   showFullDetails = false,
   onClick
 }) => {
@@ -110,11 +105,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     }
   };
 
-  const handleFavoriteClick = () => {
-    if (onFavoriteToggle) {
-      onFavoriteToggle(property.id);
-    }
-  };
+  // Favorite/save feature removed
 
   const formatPrice = (price: string) => {
     // Remove any existing formatting and add proper formatting
@@ -179,14 +170,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </div>
         )}
 
-        {/* Favorite Button */}
-        <HeartButton
-          isFavorite={isFavorite || false}
-          onToggle={handleFavoriteClick}
-          size="medium"
-          variant="card"
-          className={styles.favoriteBtn}
-        />
+  {/* Favorite/save feature removed */}
 
         {/* Status Badge */}
         {property.operation_status_display && (

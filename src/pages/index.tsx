@@ -8,7 +8,7 @@ import StandardLayout from '../components/StandardLayout';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
 import standardStyles from '../styles/StandardComponents.module.css';
 import { Property } from '../types'; // Import Property type
-import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import { FilterOptions } from '../components/MapFilters';
 
 const Home: React.FC = () => {
@@ -17,8 +17,7 @@ const Home: React.FC = () => {
   const user = session?.user;
   const isLoading = status === 'loading';
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
-  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
-  const [selectedProperty, setSelectedProperty] = useState<(Property & { isFavorite?: boolean }) | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const popupMapRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,79 +65,19 @@ const Home: React.FC = () => {
   }, [router.query, user, isLoading]);
 
   // TODO: a veces se llama dos veces, unificar con un use effect general
-  useEffect(() => {
-    // Load saved properties status if user is authenticated
-    const loadSavedStatus = async () => {
-      // Skip if no user or in development without proper database
-      if (!user) {
-        setSavedPropertyIds(new Set());
-        return;
-      }
-
-      try {
-        const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-        // `checkSavedStatus` returns an object map { [propertyId]: boolean }
-        const savedIds = new Set<number>();
-        if (savedStatus && typeof savedStatus === 'object') {
-          Object.entries(savedStatus).forEach(([id, val]) => {
-            if (val) savedIds.add(Number(id));
-          });
-        }
-        setSavedPropertyIds(savedIds);
-      } catch (error) {
-        // Silently handle errors in development to avoid console spam
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Saved properties API not available in development');
-        } else {
-          console.error('Error loading saved properties status:', error);
-        }
-        
-        setSavedPropertyIds(new Set());
-      }
-    };
-
-    
-    // Only load saved status after user loading is complete and we have properties
-    if (!isLoading && properties.length > 0) {
-      loadSavedStatus();
-    }
-  }, [isLoading, properties, user ]);
+  // Saved status effect removed
 
   // Function to handle property card click
   const handlePropertyClick = (property: Property) => {
-    setSelectedProperty({ ...property, isFavorite: savedPropertyIds.has(property.id) });
+    setSelectedProperty(property);
   };
 
   const handleClosePropertyDetail = () => {
     setSelectedProperty(null);
   };
 
-  // Function to toggle favorite status using database API
-  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    if (!user) {
-      // Redirect to login if user is not authenticated
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      await toggleSaveProperty(propertyId, !isCurrentlySaved);
-      
-      // Update local state
-      setSavedPropertyIds(prevSavedIds => {
-        const newSavedIds = new Set(prevSavedIds);
-        if (isCurrentlySaved) {
-          newSavedIds.delete(propertyId);
-        } else {
-          newSavedIds.add(propertyId);
-        }
-        return newSavedIds;
-      });
-    } catch (error) {
-      console.error('Error toggling favorite status:', error);
-    }
-  };
+  // Function to handle save status changes using enhanced database API
+  // Save status handler removed
 
   // Function to handle filter changes
   const handleFilterChange = (filters: FilterOptions) => {
@@ -260,8 +199,6 @@ const Home: React.FC = () => {
               <div key={property.id} className={standardStyles.propertyCard}>
                 <PropertyCard
                   property={property}
-                  isFavorite={savedPropertyIds.has(property.id)}
-                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
                   onClick={() => handlePropertyClick(property)}
                 />
               </div>
@@ -284,14 +221,6 @@ const Home: React.FC = () => {
           mapRef={popupMapRef}
           selectedProperty={selectedProperty}
           onClose={handleClosePropertyDetail}
-          onFavoriteToggle={(propertyId, newStatus) => {
-            setSavedPropertyIds(prev => {
-              const ns = new Set(prev);
-              if (newStatus) ns.add(propertyId); else ns.delete(propertyId);
-              return ns;
-            });
-            setSelectedProperty(prev => prev && prev.id === propertyId ? { ...prev, isFavorite: newStatus } : prev);
-          }}
         />
       )}
     </StandardLayout>
