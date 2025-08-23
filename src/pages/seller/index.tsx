@@ -657,100 +657,142 @@ const SellerDashboard: React.FC = () => {
           </div>
         ) : (
           <div className={styles.addPropertyForm}>
-            <h2>{activeTab === 'edit' ? 'Edit Property' : 'List a New Property'}</h2>
+            <div className={styles.formHeader}>
+              <h2 className={styles.formTitle}>
+                <span className={styles.formIcon}>
+                  {activeTab === 'edit' ? '✏️' : '🏠'}
+                </span>
+                {activeTab === 'edit' ? 'Edit Property' : 'List a New Property'}
+              </h2>
+              <p className={styles.formDescription}>
+                {activeTab === 'edit' 
+                  ? 'Update your property information and manage its visibility' 
+                  : 'Fill out the details below to list your property and reach potential buyers or renters'
+                }
+              </p>
+            </div>
+
             <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label htmlFor="title" className={styles.formLabel}>Property Title*</label>
-                <input 
-                  type="text" 
-                  id="title" 
-                  name="title" 
-                  value={formData.title ?? ''} 
-                  onChange={handleInputChange} 
-                  required 
-                  placeholder="e.g., Modern Apartment with Ocean View"
-                  className={styles.formInput}
-                />
+              {/* Basic Information Section */}
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>📝</span>
+                  Basic Information
+                </h3>
+                <p className={styles.sectionDescription}>
+                  Start with the essential details about your property
+                </p>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="title" className={styles.formLabel}>Property Title*</label>
+                  <input 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    value={formData.title ?? ''} 
+                    onChange={handleInputChange} 
+                    required 
+                    placeholder="e.g., Modern Apartment with Ocean View"
+                    className={styles.formInput}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="description" className={styles.formLabel}>Description*</label>
+                  <textarea 
+                    id="description" 
+                    name="description" 
+                    value={formData.description ?? ''} 
+                    onChange={handleInputChange} 
+                    required 
+                    rows={4}
+                    placeholder="Describe your property in detail - highlight unique features, nearby amenities, and what makes it special"
+                    className={styles.formTextarea}
+                  />
+                </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="description" className={styles.formLabel}>Description*</label>
-                <textarea 
-                  id="description" 
-                  name="description" 
-                  value={formData.description ?? ''} 
-                  onChange={handleInputChange} 
-                  required 
-                  rows={4}
-                  placeholder="Describe your property in detail"
-                  className={styles.formTextarea}
-                />
-              </div>
+              {/* Location Section */}
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>📍</span>
+                  Location Details
+                </h3>
+                <p className={styles.sectionDescription}>
+                  Specify the exact location of your property
+                </p>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="address" className={styles.formLabel}>Street Address*</label>                <input 
+                <div className={styles.formGroup}>
+                  <label htmlFor="address" className={styles.formLabel}>Street Address*</label>
+                  <input 
                     type="text" 
                     id="address" 
                     name="address" 
                     value={formData.address ?? ''} 
                     onChange={handleInputChange} 
                     required 
-                    className={styles.formInput}
-                  />
-              </div>
-
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="city" className={styles.formLabel}>City*</label>
-                  <input 
-                    type="text" 
-                    id="city" 
-                    name="city" 
-                    value={formData.city ?? ''} 
-                    onChange={handleInputChange} 
-                    required 
+                    placeholder="e.g., 123 Main Street, Apartment 4B"
                     className={styles.formInput}
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="state" className={styles.formLabel}>State/Province*</label>
-                  <input 
-                    type="text" 
-                    id="state" 
-                    name="state" 
-                    value={formData.state ?? ''} 
-                    onChange={handleInputChange} 
-                    required 
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="city" className={styles.formLabel}>City*</label>
+                    <input 
+                      type="text" 
+                      id="city" 
+                      name="city" 
+                      value={formData.city ?? ''} 
+                      onChange={handleInputChange} 
+                      required 
+                      placeholder="e.g., Miami"
+                      className={styles.formInput}
+                    />
+                  </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label htmlFor="country" className={styles.formLabel}>Country*</label>
-                  <input 
-                    type="text" 
-                    id="country" 
-                    name="country" 
-                    value={formData.country ?? ''} 
-                    onChange={handleInputChange} 
-                    required 
-                    className={styles.formInput}
-                  />
+                  <div className={styles.formGroup}>
+                    <label htmlFor="state" className={styles.formLabel}>State/Province*</label>
+                    <input 
+                      type="text" 
+                      id="state" 
+                      name="state" 
+                      value={formData.state ?? ''} 
+                      onChange={handleInputChange} 
+                      required 
+                      placeholder="e.g., Florida"
+                      className={styles.formInput}
+                    />
+                  </div>
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="zip_code" className={styles.formLabel}>ZIP/Postal Code</label>
-                  <input 
-                    type="text" 
-                    id="zip_code" 
-                    name="zip_code" 
-                    value={formData.zip_code ?? ''} 
-                    onChange={handleInputChange}
-                    className={styles.formInput}
-                  />
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="country" className={styles.formLabel}>Country*</label>
+                    <input 
+                      type="text" 
+                      id="country" 
+                      name="country" 
+                      value={formData.country ?? ''} 
+                      onChange={handleInputChange} 
+                      required 
+                      placeholder="e.g., United States"
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="zip_code" className={styles.formLabel}>ZIP/Postal Code</label>
+                    <input 
+                      type="text" 
+                      id="zip_code" 
+                      name="zip_code" 
+                      value={formData.zip_code ?? ''} 
+                      onChange={handleInputChange}
+                      placeholder="e.g., 33101"
+                      className={styles.formInput}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1053,11 +1095,15 @@ const SellerDashboard: React.FC = () => {
               </div>
               </div>
 
+              {/* Property Images Section */}
               <div className={styles.formSection}>
                 <h3 className={styles.sectionTitle}>
                   <span className={styles.sectionIcon}>📷</span>
                   Property Images
                 </h3>
+                <p className={styles.sectionDescription}>
+                  Upload high-quality images to showcase your property
+                </p>
 
                 <PropertyImageEditor
                   propertyId={currentPropertyId || undefined}
@@ -1089,16 +1135,21 @@ const SellerDashboard: React.FC = () => {
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Property Features</label>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
-                    Select the features that apply to your property
-                  </p>
+              {/* Property Features Section */}
+              <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon}>⭐</span>
+                  Property Features
+                </h3>
+                <p className={styles.sectionDescription}>
+                  Select all features and amenities that apply to your property
+                </p>
+
+                <div className={styles.featureControls}>
+                  <span className={styles.featureSummary}>
+                    {selectedFeatures.length} of {propertyFeatures.length} features selected
+                  </span>
                   <div className={styles.featureActions}>
-                    <span className={styles.featureSummary}>
-                      {selectedFeatures.length} of {propertyFeatures.length} selected
-                    </span>
                     <button
                       type="button"
                       className={styles.quickActionBtn}
@@ -1115,9 +1166,11 @@ const SellerDashboard: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
                 {loadingFormData ? (
-                  <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                    Loading features...
+                  <div className={styles.loadingState}>
+                    <div className={styles.loadingSpinner}></div>
+                    <span>Loading features...</span>
                   </div>
                 ) : (
                   <div className={styles.allFeaturesGrid}>
@@ -1147,6 +1200,7 @@ const SellerDashboard: React.FC = () => {
                 )}
               </div>
 
+              {/* Form Actions */}
               <div className={styles.formActions}>
                 <button 
                   type="button" 
@@ -1157,6 +1211,7 @@ const SellerDashboard: React.FC = () => {
                   className={styles.cancelButton}
                   disabled={submitting}
                 >
+                  <span className={styles.buttonIcon}>❌</span>
                   Cancel
                 </button>
                 <button 
@@ -1164,6 +1219,9 @@ const SellerDashboard: React.FC = () => {
                   className={styles.submitButton}
                   disabled={submitting}
                 >
+                  <span className={styles.buttonIcon}>
+                    {submitting ? '⏳' : activeTab === 'edit' ? '✏️' : '🏠'}
+                  </span>
                   {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'List Property'}
                 </button>
               </div>

@@ -136,32 +136,44 @@ const ImageManager: React.FC = () => {
       <Header />
       
       <div className={styles.container}>
-        <div className={styles.header}>
-          <h1>🖼️ Image Manager</h1>
-          <p className={styles.subtitle}>
+        {/* Header Section */}
+        <div className={styles.pageSection}>
+          <h1 className={styles.sectionTitle}>
+            <span className={styles.sectionIcon}>🖼️</span>
+            Image Manager
+          </h1>
+          <p className={styles.sectionDescription}>
             Manage images for your properties with advanced editing tools
           </p>
         </div>
 
         {properties.length === 0 ? (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>🏠</div>
-            <h2>No Properties Found</h2>
-            <p>You need to create a property first before managing images.</p>
-            <button
-              onClick={() => router.push('/seller')}
-              className={styles.createBtn}
-            >
-              Create Your First Property
-            </button>
+          <div className={styles.pageSection}>
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>🏠</div>
+              <h2>No Properties Found</h2>
+              <p>You need to create a property first before managing images.</p>
+              <button
+                onClick={() => router.push('/seller')}
+                className={styles.createBtn}
+              >
+                Create Your First Property
+              </button>
+            </div>
           </div>
         ) : (
           <div className={styles.layout}>
-            {/* Property Selector */}
+            {/* Property Selector Section */}
             <div className={styles.sidebar}>
-              <h3 className={styles.sidebarTitle}>Your Properties</h3>
+              <h3 className={styles.sectionTitle}>
+                <span className={styles.sectionIcon}>🏠</span>
+                Your Properties
+              </h3>
+              <p className={styles.sectionDescription}>
+                Select a property to manage its images
+              </p>
               <div className={styles.propertyList}>
-                {properties.map((property) => (
+                  {properties.map((property) => (
                   <div
                     key={property.id}
                     className={`${styles.propertyCard} ${
@@ -207,24 +219,26 @@ const ImageManager: React.FC = () => {
               </button>
             </div>
 
-            {/* Image Editor */}
+            {/* Image Editor Section */}
             <div className={styles.main}>
               {selectedProperty ? (
-                <div className={styles.editorSection}>
-                  <div className={styles.editorHeader}>
-                    <h2 className={styles.editorTitle}>
-                      📷 {selectedProperty.title || `Property ${selectedProperty.id}`}
-                    </h2>
-                    <div className={styles.editorMeta}>
-                      <span className={styles.metaBadge}>
-                        {propertyImages.length} image{propertyImages.length !== 1 ? 's' : ''}
+                <div className={styles.pageSection}>
+                  <h3 className={styles.sectionTitle}>
+                    <span className={styles.sectionIcon}>📷</span>
+                    {selectedProperty.title || `Property ${selectedProperty.id}`}
+                  </h3>
+                  <p className={styles.sectionDescription}>
+                    Upload, organize, and manage images for this property
+                  </p>
+                  <div className={styles.editorMeta}>
+                    <span className={styles.metaBadge}>
+                      {propertyImages.length} image{propertyImages.length !== 1 ? 's' : ''}
+                    </span>
+                    {propertyImages.find(img => img.is_cover) && (
+                      <span className={styles.coverBadge}>
+                        ⭐ Cover set
                       </span>
-                      {propertyImages.find(img => img.is_cover) && (
-                        <span className={styles.coverBadge}>
-                          ⭐ Cover set
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
 
                   <PropertyImageEditor
@@ -238,10 +252,12 @@ const ImageManager: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className={styles.selectPrompt}>
-                  <div className={styles.promptIcon}>👈</div>
-                  <h3>Select a Property</h3>
-                  <p>Choose a property from the list to manage its images</p>
+                <div className={styles.pageSection}>
+                  <div className={styles.selectPrompt}>
+                    <div className={styles.promptIcon}>👈</div>
+                    <h3>Select a Property</h3>
+                    <p>Choose a property from the list to manage its images</p>
+                  </div>
                 </div>
               )}
             </div>
