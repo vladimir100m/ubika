@@ -8,4 +8,5 @@ export { default as PropertyDetailCard } from './PropertyDetailCard';
 export { default as Layout } from './Layout';
 export { default as Header } from './Header';
 export { default as Footer } from './Footer';
+export { default as PropertyImageEditor } from './PropertyImageEditor';
 export { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from './StateComponents';

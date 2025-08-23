@@ -5,6 +5,7 @@ import styles from '../../styles/Seller.module.css';
 import { Property, PropertyFormData, PropertyImage } from '../../types';
 import ImageUpload from '../../components/ImageUpload';
 import MultiImageUploadAPI from '../../components/MultiImageUploadAPI';
+import PropertyImageEditor from '../../components/PropertyImageEditor';
 import Header from '../../components/Header';
 
 interface PropertyType {
@@ -984,49 +985,6 @@ const SellerDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className={styles.formRow}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="operation_status_id" className={styles.formLabel}>Operation Type*</label>
-                    <select 
-                      id="operation_status_id" 
-                      name="operation_status_id" 
-                      value={formData.operation_status_id ?? 1} 
-                      onChange={handleInputChange} 
-                      required
-                      className={styles.formSelect}
-                    >
-                      {loadingFormData ? (
-                        <option value="" disabled>Loading...</option>
-                      ) : (
-                        propertyOperationStatuses.map(operationStatus => (
-                          <option key={operationStatus.id} value={operationStatus.id}>
-                            {operationStatus.display_name}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="price" className={styles.formLabel}>Price (USD)*</label>
-                    <input 
-                      type="text" 
-                      id="price" 
-                      name="price" 
-                      value={formData.price ?? ''} 
-                      onChange={handleInputChange} 
-                      required 
-                      placeholder="e.g., 250,000"
-                      className={styles.formInput}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    {/* Empty space for better visual balance */}
-                  </div>
-                </div>
-              </div>
-
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label htmlFor="operation_status_id" className={styles.formLabel}>Operation Type*</label>
@@ -1093,30 +1051,15 @@ const SellerDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
+              </div>
 
               <div className={styles.formSection}>
                 <h3 className={styles.sectionTitle}>
                   <span className={styles.sectionIcon}>📷</span>
                   Property Images
                 </h3>
-                <p className={styles.sectionDescription}>
-                  Upload high-quality photos of your property. The first image will be used as the cover photo.
-                </p>
-                
-                <div className={styles.imageUploadTips}>
-                  <div className={styles.tip}>
-                    <span className={styles.tipIcon}>💡</span>
-                    <strong>Tips for great photos:</strong>
-                  </div>
-                  <ul className={styles.tipsList}>
-                    <li>Take photos in good lighting (preferably natural light)</li>
-                    <li>Show different rooms and angles</li>
-                    <li>Include exterior shots and special features</li>
-                    <li>Clean and stage rooms before photographing</li>
-                  </ul>
-                </div>
 
-                <MultiImageUploadAPI 
+                <PropertyImageEditor
                   propertyId={currentPropertyId || undefined}
                   sellerId={u?.sub || u?.email || 'anonymous'}
                   images={propertyImages}
@@ -1129,6 +1072,8 @@ const SellerDashboard: React.FC = () => {
                     }
                   }}
                   maxImages={15}
+                  allowBulkOperations={true}
+                  showImagePreview={true}
                 />
                 
                 {propertyImages.length > 0 && (
