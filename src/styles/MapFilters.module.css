@@ -1,4 +1,10 @@
 /* MapFilters.module.css */
+/* STANDARDIZATION NOTE (2025-08-24):
+  Updated to align with global design tokens defined in globals.css.
+  Replaced hard-coded blues (#006aff/#0056cc/#004499) with brand primary vars
+  ( --primary-color / --primary-hover ) used across Account & Standard components.
+  Also unified duplicate .applyButton/.clearButton declarations and focus states.
+*/
 
 .filtersContainer {
   display: flex;
@@ -47,8 +53,8 @@
 .activeIndicator {
   font-size: 12px;
   font-weight: 500;
-  color: #006aff;
-  background: rgba(0, 106, 255, 0.1);
+  color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.1); /* brand primary w/ opacity */
   padding: 2px 8px;
   border-radius: 12px;
   margin-left: auto;
@@ -66,8 +72,8 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: #006aff;
-  box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.15);
 }
 
 .expandedFilters {
@@ -107,16 +113,16 @@
 }
 
 .filterChip:hover {
-  border-color: #006aff;
-  background: #f0f7ff;
+  border-color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.08);
   transform: translateY(-1px);
 }
 
 .chipSelected {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
-  box-shadow: 0 4px 8px rgba(0, 106, 255, 0.3);
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-hover);
+  box-shadow: 0 4px 8px rgba(255, 56, 92, 0.35);
 }
 
 /* Filter Sections */
@@ -177,8 +183,8 @@
 
 .priceInput:focus, .numberInput:focus {
   outline: none;
-  border-color: #006aff;
-  box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.15);
 }
 
 .rangeDivider {
@@ -214,9 +220,9 @@
 }
 
 .presetActive {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-hover);
 }
 
 /* Button Grids */
@@ -240,14 +246,14 @@
 }
 
 .optionBtn:hover {
-  border-color: #006aff;
-  background: #f0f7ff;
+  border-color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.08);
 }
 
 .optionSelected {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-hover);
 }
 
 /* Property Type Grid */
@@ -271,17 +277,17 @@
 }
 
 .propertyTypeBtn:hover {
-  border-color: #006aff;
-  background: #f0f7ff;
+  border-color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .propertyTypeSelected {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
-  box-shadow: 0 4px 12px rgba(0, 106, 255, 0.3);
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.35);
 }
 
 .propertyIcon {
@@ -297,70 +303,44 @@
 }
 
 /* Advanced Section */
-.advancedSection {
-  background: #f8f9fa;
-  border-top: 2px solid #e9ecef;
-}
-
-.inputLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Action Buttons */
-.actionButtons {
-  display: flex;
-  gap: 12px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border-top: 1px solid #e9ecef;
-}
-
 .clearButton {
   flex: 1;
   padding: 14px 20px;
   font-size: 14px;
   font-weight: 600;
-  color: #6c757d;
-  background: white;
-  border: 2px solid #dee2e6;
+  color: var(--text-primary);
+  background: #fff;
+  border: 2px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.25,0.46,0.45,0.94);
 }
-
 .clearButton:hover {
-  background: #f8f9fa;
-  border-color: #adb5bd;
-  color: #495057;
+  background: var(--secondary-color);
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-light);
 }
-
 .applyButton {
   flex: 2;
   padding: 14px 20px;
   font-size: 14px;
   font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #006aff 0%, #0056cc 100%);
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 106, 255, 0.3);
+  transition: all 0.25s cubic-bezier(0.25,0.46,0.45,0.94);
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.3);
 }
-
 .applyButton:hover {
-  background: linear-gradient(135deg, #0056cc 0%, #004499 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 106, 255, 0.4);
+  box-shadow: 0 6px 18px rgba(255, 56, 92, 0.4);
+  filter: brightness(0.95);
 }
-
-/* Legacy styles for backward compatibility */
+/* Legacy styles for backward compatibility (trimmed) */
 .filterGroup {
   position: relative;
   min-width: max-content;
@@ -386,14 +366,14 @@
 }
 
 .dropdownButton:hover, .singleDropdownButton:hover {
-  border-color: #006aff;
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  background-color: rgba(255,56,92,0.08);
 }
 
 .dropdownButton.active, .singleDropdownButton.active {
-  border-color: #006aff;
-  box-shadow: 0 0 0 1px #006aff;
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+  background-color: rgba(255,56,92,0.12);
 }
 
 .hasFilter {
@@ -408,7 +388,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #006aff;
+  background-color: var(--primary-color);
 }
 
 .dropdown, .singleDropdown, .allFiltersDropdown {
@@ -885,43 +865,23 @@
   background-color: #0056cc;
 }
 
-.searchBar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.searchForm {
-  flex: 1;
-  display: flex;
-}
-
-.searchInput {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #d1d1d5;
-  border-radius: 6px 0 0 6px;
-  font-size: 14px;
-  outline: none;
-}
-
-.searchInput:focus {
-  border-color: #006aff;
-}
-
 .searchButton {
-  padding: 10px 16px;
-  background-color: #006aff;
-  color: white;
-  border: none;
-  border-radius: 0 6px 6px 0;
-  cursor: pointer;
+  padding: 14px 20px;
+  font-size: 14px;
   font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25,0.46,0.45,0.94);
+  white-space: nowrap;
 }
-
 .searchButton:hover {
-  background-color: #0056cc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,56,92,0.3);
 }
+/* Removed duplicate legacy searchInput/searchButton block */
 
 .removeBoundaryButton {
   padding: 8px 12px;
@@ -955,21 +915,21 @@
 }
 
 .singleDropdownButton:hover {
-  border-color: #006aff;
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  background-color: rgba(255,56,92,0.08);
   transform: scale(1.05);
 }
 
 .singleDropdownButton.active {
-  border-color: #006aff;
-  box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.2);
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 56, 92, 0.25);
+  background-color: rgba(255,56,92,0.12);
 }
 
 .singleDropdownButton.hasFilter {
-  border-color: #006aff;
-  background-color: #006aff;
-  color: white;
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: #fff;
 }
 
 .singleDropdown {
@@ -1018,41 +978,7 @@
   border-top: 1px solid #f0f0f0;
 }
 
-.clearButton {
-  flex: 1;
-  padding: 12px 16px;
-  background-color: transparent;
-  border: 1px solid #d1d1d5;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clearButton:hover {
-  border-color: #999;
-  color: #333;
-}
-
-.applyButton {
-  flex: 2;
-  padding: 12px 16px;
-  background-color: #006aff;
-  border: 1px solid #006aff;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.applyButton:hover {
-  background-color: #0056cc;
-  border-color: #0056cc;
-}
+/* (Duplicate applyButton definitions removed) */
 
 /* Header Integration Styles */
 .filtersContainer.headerFilters {

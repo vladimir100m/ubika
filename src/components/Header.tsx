@@ -128,24 +128,8 @@ const Header: React.FC<HeaderProps> = ({
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className={styles.desktopNavigation} role="navigation" aria-label="Main navigation">
-            {/* Navigation Links - Rent, Buy, Sell */}
+            {/* Navigation Links - (Rent & Buy removed per standardization) */}
             <div className={styles.navLinks}>
-              <button
-                className={styles.navButton}
-                onClick={() => handleNavigation('/map?operation=rent')}
-                aria-label="Search rental properties"
-              >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🏠</span>
-                Rent
-              </button>
-              <button
-                className={styles.navButton}
-                onClick={() => handleNavigation('/map?operation=buy')}
-                aria-label="Search properties for sale"
-              >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🏡</span>
-                Buy
-              </button>
               <button
                 className={styles.navButton}
                 onClick={() => handleNavigation('/seller')}
@@ -189,21 +173,7 @@ const Header: React.FC<HeaderProps> = ({
         {isMobile && (
           <div className={styles.mobileNavContainer}>
             <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
-              {/* Order: Rent, Buy, Sell, Filters, Account/Login */}
-              <button
-                className={styles.mobilePill}
-                onClick={() => handleNavigation('/map?operation=rent')}
-                aria-label="Search rental properties"
-              >
-                Rent
-              </button>
-              <button
-                className={styles.mobilePill}
-                onClick={() => handleNavigation('/map?operation=buy')}
-                aria-label="Search properties for sale"
-              >
-                Buy
-              </button>
+              {/* Order: Sell, Filters, Account/Login (Rent & Buy removed) */}
               <button
                 className={styles.mobilePill}
                 onClick={() => handleNavigation('/seller')}
