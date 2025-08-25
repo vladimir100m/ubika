@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/MapFilters.module.css';
 
 export interface FilterOptions {
@@ -42,6 +42,8 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(searchLocation);
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
   // Applied filters (what's currently active in the database)
   const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
@@ -116,18 +118,49 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-    if (onSearchLocationChange) {
-      onSearchLocationChange(e.target.value);
-    }
+    const value = e.target.value;
+    setSearchValue(value);
+    if (!onSearchLocationChange) return;
+    // Debounced change to avoid excessive queries
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setIsSearching(true);
+    debounceRef.current = setTimeout(() => {
+      onSearchLocationChange(value.trim());
+      setIsSearching(false);
+    }, 350);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearchLocationChange) {
-      onSearchLocationChange(searchValue);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
+    if (onSearchLocationChange) {
+      onSearchLocationChange(searchValue.trim());
+    }
+    setIsSearching(false);
   };
+
+  const handleClearSearch = () => {
+    setSearchValue('');
+    if (onSearchLocationChange) {
+      onSearchLocationChange('');
+    }
+    setIsSearching(false);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  };
+
+  // Allow ESC to clear
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && searchValue) {
+        handleClearSearch();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [searchValue]);
 
   const handleRemoveBoundary = () => {
     setSearchValue('');
@@ -471,24 +504,36 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       {/* Search Location Input - Only show in popup mode */}
       {!inHeader && (
         <div className={styles.searchSection}>
-          <h4 className={styles.propertyTitle}>
-            📍 Search Location
-            {searchValue && (
-              <span className={styles.activeIndicator}>{searchValue}</span>
-            )}
-          </h4>
-          <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-            <input
-              type="text"
-              placeholder="Enter address, city, or neighborhood..."
-              value={searchValue}
-              onChange={handleSearchChange}
-              className={styles.searchInput}
-            />
-            <button type="submit" className={styles.searchButton}>
-              🔍 Search
-            </button>
+          <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
+            <div className={styles.searchBarWrapper}>
+              <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+              <input
+                type="text"
+                placeholder="Search city, neighborhood or address"
+                value={searchValue}
+                onChange={handleSearchChange}
+                className={styles.searchInput}
+                aria-label="Search location"
+                autoComplete="off"
+              />
+              {searchValue && (
+                <button
+                  type="button"
+                  className={styles.clearSearchButton}
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+              <button type="submit" className={styles.submitSearchButton} aria-label="Submit search">
+                Go
+              </button>
+            </div>
           </form>
+          {isSearching && (
+            <span className={styles.searchStatus} aria-live="polite">Searching…</span>
+          )}
           {showBoundaryButton && (
             <button 
               className={styles.removeBoundaryButton}

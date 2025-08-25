@@ -484,6 +484,15 @@
     border-radius: 14px;
     max-height: calc(100vh - 100px);
   }
+  .accountPopup {
+    top: 70px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+    border-radius: 14px;
+    max-height: calc(100vh - 100px);
+  }
   
   .filtersPopupHeader {
     padding: 20px 20px 16px 20px;
@@ -501,6 +510,10 @@
   
   .filtersPopupContent {
     padding: 20px;
+    max-height: calc(100vh - 180px);
+  }
+  .accountPopupContent {
+    padding: 20px; /* standardized */
     max-height: calc(100vh - 180px);
   }
 }
@@ -542,6 +555,13 @@
     border-radius: 12px;
     max-height: calc(100vh - 90px);
   }
+  .accountPopup {
+    top: 65px;
+    right: 12px;
+    left: 12px;
+    border-radius: 12px;
+    max-height: calc(100vh - 90px);
+  }
   
   .filtersPopupHeader {
     padding: 18px 18px 14px 18px;
@@ -560,6 +580,10 @@
   
   .filtersPopupContent {
     padding: 18px;
+    max-height: calc(100vh - 160px);
+  }
+  .accountPopupContent {
+    padding: 18px; /* standardized */
     max-height: calc(100vh - 160px);
   }
 }
@@ -886,6 +910,8 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  /* Match filters min-height for consistent empty state & layout */
+  min-height: 200px;
 }
 
 .accountPopupContent::-webkit-scrollbar {
