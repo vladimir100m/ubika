@@ -220,361 +220,207 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   // Check if there are unsaved changes in temporary filters
   const hasUnsavedChanges = JSON.stringify(tempFilters) !== JSON.stringify(appliedFilters);
 
-  // Render function for filter sections (used in both header dropdown and popup)
-  const renderFilterSections = () => (
-    <>
-      {/* Quick Filter Chips - Most Common Filters */}
-      <div className={styles.quickFilters}>
-  <h4 className={styles.propertyTitle}>Quick Filters</h4>
-        <div className={styles.chipGroup}>
-          <button 
-            className={`${styles.filterChip} ${tempFilters.operation === 'rent' ? styles.chipSelected : ''}`}
-            onClick={() => handleOperationChange(tempFilters.operation === 'rent' ? '' : 'rent')}
-          >
-            🏠 For Rent
-          </button>
-          <button 
-            className={`${styles.filterChip} ${tempFilters.operation === 'buy' ? styles.chipSelected : ''}`}
-            onClick={() => handleOperationChange(tempFilters.operation === 'buy' ? '' : 'buy')}
-          >
-            🏡 For Sale
-          </button>
-          <button 
-            className={`${styles.filterChip} ${tempFilters.beds === '2+' ? styles.chipSelected : ''}`}
-            onClick={() => handleBedsChange(tempFilters.beds === '2+' ? '' : '2+')}
-          >
-            🛏️ 2+ Beds
-          </button>
-          <button 
-            className={`${styles.filterChip} ${tempFilters.homeType === 'apartment' ? styles.chipSelected : ''}`}
-            onClick={() => handleHomeTypeChange(tempFilters.homeType === 'apartment' ? '' : 'apartment')}
-          >
-            🏢 Apartments
-          </button>
-        </div>
-      </div>
-
-      {/* Price Range with Visual Slider */}
-      <div className={styles.filterSection}>
-  <h4 className={styles.propertyTitle}>
-          💰 Price Range
-          {(tempFilters.priceMin || tempFilters.priceMax) && (
-            <span className={styles.activeIndicator}>
-              {tempFilters.priceMin && `$${Number(tempFilters.priceMin).toLocaleString()}`}
-              {tempFilters.priceMin && tempFilters.priceMax && ' - '}
-              {tempFilters.priceMax && `$${Number(tempFilters.priceMax).toLocaleString()}`}
-            </span>
-          )}
-        </h4>
-        <div className={styles.priceContainer}>
-          <div className={styles.rangeInputs}>
-            <div className={styles.inputGroup}>
-              <label>Min Price</label>
-              <input 
-                type="number" 
-                placeholder="Any"
-                value={tempFilters.priceMin}
-                onChange={(e) => handlePriceChange(e.target.value, tempFilters.priceMax)}
-                className={styles.priceInput}
-              />
-            </div>
-            <div className={styles.rangeDivider}>to</div>
-            <div className={styles.inputGroup}>
-              <label>Max Price</label>
-              <input 
-                type="number" 
-                placeholder="Any"
-                value={tempFilters.priceMax}
-                onChange={(e) => handlePriceChange(tempFilters.priceMin, e.target.value)}
-                className={styles.priceInput}
-              />
-            </div>
-          </div>
-          <div className={styles.pricePresets}>
-            <button 
-              className={`${styles.presetBtn} ${!tempFilters.priceMin && !tempFilters.priceMax ? styles.presetActive : ''}`}
-              onClick={() => handlePriceChange('', '')}
-            >
-              Any Price
-            </button>
-            <button 
-              className={`${styles.presetBtn} ${tempFilters.priceMax === '100000' && !tempFilters.priceMin ? styles.presetActive : ''}`}
-              onClick={() => handlePriceChange('', '100000')}
-            >
-              Under $100K
-            </button>
-            <button 
-              className={`${styles.presetBtn} ${tempFilters.priceMin === '100000' && tempFilters.priceMax === '300000' ? styles.presetActive : ''}`}
-              onClick={() => handlePriceChange('100000', '300000')}
-            >
-              $100K - $300K
-            </button>
-            <button 
-              className={`${styles.presetBtn} ${tempFilters.priceMin === '300000' && tempFilters.priceMax === '500000' ? styles.presetActive : ''}`}
-              onClick={() => handlePriceChange('300000', '500000')}
-            >
-              $300K - $500K
-            </button>
-            <button 
-              className={`${styles.presetBtn} ${tempFilters.priceMin === '500000' && !tempFilters.priceMax ? styles.presetActive : ''}`}
-              onClick={() => handlePriceChange('500000', '')}
-            >
-              $500K+
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Bedrooms & Bathrooms in one row */}
-      <div className={styles.twoColumnSection}>
-        <div className={styles.filterSection}>
-          <h4 className={styles.propertyTitle}>
-            🛏️ Bedrooms
-            {tempFilters.beds && <span className={styles.activeIndicator}>{tempFilters.beds}</span>}
-          </h4>
-          <div className={styles.buttonGrid}>
-            {['Any', '1+', '2+', '3+', '4+', '5+'].map((bed) => (
-              <button 
-                key={bed}
-                className={`${styles.optionBtn} ${tempFilters.beds === (bed === 'Any' ? '' : bed) ? styles.optionSelected : ''}`} 
-                onClick={() => handleBedsChange(bed === 'Any' ? '' : bed)}
-              >
-                {bed}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.filterSection}>
-          <h4 className={styles.propertyTitle}>
-            🚿 Bathrooms
-            {tempFilters.baths && <span className={styles.activeIndicator}>{tempFilters.baths}</span>}
-          </h4>
-          <div className={styles.buttonGrid}>
-            {['Any', '1+', '2+', '3+', '4+'].map((bath) => (
-              <button 
-                key={bath}
-                className={`${styles.optionBtn} ${tempFilters.baths === (bath === 'Any' ? '' : bath) ? styles.optionSelected : ''}`} 
-                onClick={() => handleBathsChange(bath === 'Any' ? '' : bath)}
-              >
-                {bath}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Property Type with Icons */}
-      <div className={styles.filterSection}>
-  <h4 className={styles.propertyTitle}>
-          🏠 Property Type
-          {tempFilters.homeType && <span className={styles.activeIndicator}>{tempFilters.homeType}</span>}
-        </h4>
-        <div className={styles.propertyTypeGrid}>
-          {[
-            { type: '', icon: '🏘️', label: 'All Types' },
-            { type: 'house', icon: '🏠', label: 'House' },
-            { type: 'apartment', icon: '🏢', label: 'Apartment' },
-            { type: 'condo', icon: '🏬', label: 'Condo' },
-            { type: 'villa', icon: '🏛️', label: 'Villa' },
-            { type: 'loft', icon: '🏭', label: 'Loft' },
-            { type: 'duplex', icon: '🏘️', label: 'Duplex' }
-          ].map(({ type, icon, label }) => (
-            <button 
-              key={type}
-              className={`${styles.propertyTypeBtn} ${tempFilters.homeType === type ? styles.propertyTypeSelected : ''}`} 
-              onClick={() => handleHomeTypeChange(type)}
-            >
-              <span className={styles.propertyIcon}>{icon}</span>
-              <span className={styles.propertyLabel}>{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Advanced Filters Section */}
-      <div className={styles.advancedSection}>
-  <h4 className={styles.propertyTitle}>📐 Advanced Filters</h4>
-        
-        <div className={styles.twoColumnSection}>
-          <div className={styles.filterSection}>
-            <label className={styles.inputLabel}>
-              📏 Square Meters
-              {(tempFilters.moreFilters.minArea || tempFilters.moreFilters.maxArea) && (
-                <span className={styles.activeIndicator}>
-                  {tempFilters.moreFilters.minArea && `${tempFilters.moreFilters.minArea} m²`}
-                  {tempFilters.moreFilters.minArea && tempFilters.moreFilters.maxArea && ' - '}
-                  {tempFilters.moreFilters.maxArea && `${tempFilters.moreFilters.maxArea} m²`}
-                </span>
-              )}
-            </label>
-            <div className={styles.rangeInputs}>
-              <div className={styles.inputGroup}>
-                <input 
-                  type="number" 
-                  placeholder="Min m²"
-                  value={tempFilters.moreFilters.minArea}
-                  onChange={(e) => handleMoreFiltersChange({
-                    ...tempFilters.moreFilters,
-                    minArea: e.target.value
-                  })}
-                  className={styles.numberInput}
-                />
-              </div>
-              <div className={styles.rangeDivider}>to</div>
-              <div className={styles.inputGroup}>
-                <input 
-                  type="number" 
-                  placeholder="Max m²"
-                  value={tempFilters.moreFilters.maxArea}
-                  onChange={(e) => handleMoreFiltersChange({
-                    ...tempFilters.moreFilters,
-                    maxArea: e.target.value
-                  })}
-                  className={styles.numberInput}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.filterSection}>
-            <label className={styles.inputLabel}>
-              🏗️ Year Built
-              {(tempFilters.moreFilters.yearBuiltMin || tempFilters.moreFilters.yearBuiltMax) && (
-                <span className={styles.activeIndicator}>
-                  {tempFilters.moreFilters.yearBuiltMin && tempFilters.moreFilters.yearBuiltMin}
-                  {tempFilters.moreFilters.yearBuiltMin && tempFilters.moreFilters.yearBuiltMax && ' - '}
-                  {tempFilters.moreFilters.yearBuiltMax && tempFilters.moreFilters.yearBuiltMax}
-                </span>
-              )}
-            </label>
-            <div className={styles.rangeInputs}>
-              <div className={styles.inputGroup}>
-                <input 
-                  type="number" 
-                  placeholder="Min year"
-                  value={tempFilters.moreFilters.yearBuiltMin}
-                  onChange={(e) => handleMoreFiltersChange({
-                    ...tempFilters.moreFilters,
-                    yearBuiltMin: e.target.value
-                  })}
-                  className={styles.numberInput}
-                />
-              </div>
-              <div className={styles.rangeDivider}>to</div>
-              <div className={styles.inputGroup}>
-                <input 
-                  type="number" 
-                  placeholder="Max year"
-                  value={tempFilters.moreFilters.yearBuiltMax}
-                  onChange={(e) => handleMoreFiltersChange({
-                    ...tempFilters.moreFilters,
-                    yearBuiltMax: e.target.value
-                  })}
-                  className={styles.numberInput}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className={styles.actionButtons}>
-        <button 
-          className={styles.clearButton}
-          onClick={clearAllFilters}
-          title="Reset all filters"
-        >
-          🗑️ Clear All
-        </button>
-        <button 
-          className={styles.applyButton}
-          onClick={applyFilters}
-          title="Apply current filters"
-        >
-          ✓ Apply Filters ({Object.values(tempFilters).filter(v => v && v !== '').length + (tempFilters.moreFilters.minArea || tempFilters.moreFilters.maxArea || tempFilters.moreFilters.yearBuiltMin || tempFilters.moreFilters.yearBuiltMax ? 1 : 0)})
-        </button>
-      </div>
-    </>
-  );
 
   return (
-    <div className={`${styles.filtersContainer} ${inHeader ? styles.headerFilters : styles.popupFilters}`} onClick={handleClickOutside}>
-      {/* Search Location Input - Only show in popup mode */}
-      {!inHeader && (
-        <div className={styles.searchSection}>
-          <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
-            <div className={styles.searchBarWrapper}>
-              <span className={styles.searchIcon} aria-hidden="true">🔍</span>
-              <input
-                type="text"
-                placeholder="Search city, neighborhood or address"
-                value={searchValue}
-                onChange={handleSearchChange}
-                className={styles.searchInput}
-                aria-label="Search location"
-                autoComplete="off"
-              />
-              {searchValue && (
-                <button
-                  type="button"
-                  className={styles.clearSearchButton}
-                  onClick={handleClearSearch}
-                  aria-label="Clear search"
-                >
-                  ✕
-                </button>
-              )}
-              <button type="submit" className={styles.submitSearchButton} aria-label="Submit search">
-                Go
-              </button>
-            </div>
-          </form>
-          {isSearching && (
-            <span className={styles.searchStatus} aria-live="polite">Searching…</span>
-          )}
-          {showBoundaryButton && (
-            <button 
-              className={styles.removeBoundaryButton}
-              onClick={handleRemoveBoundary}
+  <div className={styles.searchSection}>
+      {/* Search Bar Section (now at the top) */}
+      <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
+        <div className={styles.searchBarWrapper}>
+          <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            placeholder="Search city, neighborhood or address"
+            value={searchValue}
+            onChange={handleSearchChange}
+            className={styles.searchInput}
+            aria-label="Search location"
+            autoComplete="off"
+          />
+          {searchValue && (
+            <button
+              type="button"
+              className={styles.clearSearchButton}
+              onClick={handleClearSearch}
+              aria-label="Clear search"
             >
-              ✕ Remove Search Area
+              ✕
             </button>
           )}
+          <button type="submit" className={styles.submitSearchButton} aria-label="Submit search">
+            Go
+          </button>
         </div>
+      </form>
+      {isSearching && (
+        <span className={styles.searchStatus} aria-live="polite">Searching…</span>
+      )}
+      {showBoundaryButton && (
+        <button 
+          className={styles.removeBoundaryButton}
+          onClick={handleRemoveBoundary}
+        >
+          ✕ Remove Search Area
+        </button>
       )}
 
-      {/* Filters Section */}
-      <div className={styles.filtersSection}>
-        {/* Header for popup mode */}
-        {!inHeader && (
-          <h4 className={styles.propertyTitle}>Property Filters</h4>
-        )}
-        
-        {/* Single Unified Filter Dropdown for header mode, or expanded filters for popup */}
-        {inHeader ? (
-          <div className={styles.filterGroup}>
-            <button 
-              className={`${styles.singleDropdownButton} ${isDropdownOpen ? styles.active : ''} ${hasActiveFilters ? styles.hasFilter : ''}`}
-              onClick={handleDropdownToggle}
-            >
-              🔍
-              {hasActiveFilters && <span className={styles.filterBadge}></span>}
-            </button>
-            
-            {isDropdownOpen && (
-              <div className={`${styles.singleDropdown} ${styles.allFiltersDropdown}`}>
-                {renderFilterSections()}
-              </div>
-            )}
-          </div>
-        ) : (
-          // Popup mode - show expanded filters directly
-          <div className={styles.expandedFilters}>
-            {renderFilterSections()}
-          </div>
-        )}
+      {/* Operation Type Filter Section */}
+      <div className={styles.filterSection} style={{ marginBottom: 18 }}>
+        <div className={styles.sectionTitle}>Tipo de operación</div>
+        <div className={styles.buttonGrid} style={{ maxWidth: 260 }}>
+          <button
+            type="button"
+            className={
+              tempFilters.operation === 'rent'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.operation === 'rent'}
+            onClick={() => handleOperationChange('rent')}
+          >
+            Alquilar
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.operation === 'buy'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.operation === 'buy'}
+            onClick={() => handleOperationChange('buy')}
+          >
+            Comprar
+          </button>
+        </div>
+      </div>
+
+      {/* Price Filter Section */}
+      <div className={styles.filterSection} style={{ marginBottom: 18 }}>
+        <div className={styles.sectionTitle}>Precio</div>
+        <div className={styles.buttonGrid} style={{ maxWidth: 340 }}>
+          <button
+            type="button"
+            className={
+              tempFilters.priceMax === '1000'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.priceMax === '1000'}
+            onClick={() => handlePriceChange('', '1000')}
+          >
+            {'< $1000'}
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.priceMin === '1000' && tempFilters.priceMax === '2000'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.priceMin === '1000' && tempFilters.priceMax === '2000'}
+            onClick={() => handlePriceChange('1000', '2000')}
+          >
+            {'$1000 - $2000'}
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.priceMin === '2000' && tempFilters.priceMax === '3000'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.priceMin === '2000' && tempFilters.priceMax === '3000'}
+            onClick={() => handlePriceChange('2000', '3000')}
+          >
+            {'$2000 - $3000'}
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.priceMin === '3000' && tempFilters.priceMax === ''
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.priceMin === '3000' && tempFilters.priceMax === ''}
+            onClick={() => handlePriceChange('3000', '')}
+          >
+            {'> $3000'}
+          </button>
+        </div>
+      </div>
+
+      {/* Bethrooms Filter Section */}
+      <div className={styles.filterSection} style={{ marginBottom: 18 }}>
+        <div className={styles.sectionTitle}>Baños</div>
+        <div className={styles.buttonGrid} style={{ maxWidth: 260 }}>
+          <button
+            type="button"
+            className={
+              tempFilters.baths === '1'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.baths === '1'}
+            onClick={() => handleBathsChange('1')}
+          >
+            1+
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.baths === '2'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.baths === '2'}
+            onClick={() => handleBathsChange('2')}
+          >
+            2+
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.baths === '3'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.baths === '3'}
+            onClick={() => handleBathsChange('3')}
+          >
+            3+
+          </button>
+          <button
+            type="button"
+            className={
+              tempFilters.baths === '4'
+                ? `${styles.optionBtn} ${styles.optionSelected}`
+                : styles.optionBtn
+            }
+            aria-pressed={tempFilters.baths === '4'}
+            onClick={() => handleBathsChange('4')}
+          >
+            4+
+          </button>
+        </div>
+  </div>
+      {/* Action Buttons Section (bottom) */}
+      <div className={styles.actionButtons}>
+        <button
+          type="button"
+          className={styles.clearButton}
+          onClick={clearAllFilters}
+        >
+          Limpiar filtros
+        </button>
+        <button
+          type="button"
+          className={styles.applyButton}
+          onClick={applyFilters}
+          disabled={!hasUnsavedChanges}
+          aria-disabled={!hasUnsavedChanges}
+        >
+          Aplicar filtros
+        </button>
       </div>
     </div>
   );

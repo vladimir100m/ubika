@@ -4,8 +4,7 @@ import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
 import standardStyles from '../../styles/StandardComponents.module.css';
 import { Property, PropertyFormData, PropertyImage } from '../../types';
-import ImageUpload from '../../components/ImageUpload';
-import MultiImageUploadAPI from '../../components/MultiImageUploadAPI';
+// ...existing code...
 import PropertyImageEditor from '../../components/PropertyImageEditor';
 import { StandardLayout } from '../../components';
 import { FilterOptions } from '../../components/MapFilters';
