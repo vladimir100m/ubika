@@ -157,12 +157,12 @@ const Header: React.FC<HeaderProps> = ({
                 <button 
                   onClick={handleAuthAction}
                   className={`${styles.navButton} ${styles.accountButton}`}
-                  aria-label={user ? 'Account menu' : 'Sign in with Google'}
+                  aria-label={user ? 'Profile menu' : 'Sign in with Google'}
                 >
                   <span className={styles.navButtonIcon} role="img" aria-hidden="true">
                     {user ? '👤' : '🔑'}
                   </span>
-                  {user ? 'Account' : 'Login'}
+                  {user ? 'Profile' : 'Login'}
                 </button>
               )}
             </div>
@@ -194,9 +194,9 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   className={styles.mobilePill}
                   onClick={handleAuthAction}
-                  aria-label={user ? 'Account menu' : 'Sign in with Google'}
+                  aria-label={user ? 'Profile menu' : 'Sign in with Google'}
                 >
-                  {user ? 'Account' : 'Login'}
+                  {user ? 'Profile' : 'Login'}
                 </button>
               )}
             </div>

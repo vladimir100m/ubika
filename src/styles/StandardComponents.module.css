@@ -90,38 +90,7 @@
   margin-top: auto;
 }
 
-/* Heart/Save Button - Airbnb Style */
-.heartButton {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.5);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 2;
-}
-
-.heartButton:hover {
-  background-color: rgba(0, 0, 0, 0.7);
-  transform: scale(1.1);
-}
-
-.heartButton svg {
-  width: 16px;
-  height: 16px;
-  fill: white;
-}
-
-.heartButton.saved svg {
-  fill: #ff385c;
-}
+/* (Removed unused heartButton styles) */
 
 /* Filter Components - Modern Style */
 .filterContainer {
