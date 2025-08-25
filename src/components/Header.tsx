@@ -128,17 +128,8 @@ const Header: React.FC<HeaderProps> = ({
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className={styles.desktopNavigation} role="navigation" aria-label="Main navigation">
-            {/* Navigation Links - (Rent & Buy removed per standardization) */}
-            <div className={styles.navLinks}>
-              <button
-                className={styles.navButton}
-                onClick={() => handleNavigation('/seller')}
-                aria-label="Sell your property"
-              >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">💼</span>
-                Sell
-              </button>
-            </div>
+            {/* Navigation Links - currently empty (Sell moved into Me menu) */}
+            <div className={styles.navLinks}></div>
             
             {/* Right Section - Filters and Auth */}
             <div className={styles.rightSection}>
@@ -157,12 +148,12 @@ const Header: React.FC<HeaderProps> = ({
                 <button 
                   onClick={handleAuthAction}
                   className={`${styles.navButton} ${styles.accountButton}`}
-                  aria-label={user ? 'Profile menu' : 'Sign in with Google'}
+                  aria-label={user ? 'Me menu' : 'Sign in with Google'}
                 >
                   <span className={styles.navButtonIcon} role="img" aria-hidden="true">
                     {user ? '👤' : '🔑'}
                   </span>
-                  {user ? 'Profile' : 'Login'}
+                  {user ? 'Me' : 'Login'}
                 </button>
               )}
             </div>
@@ -173,14 +164,7 @@ const Header: React.FC<HeaderProps> = ({
         {isMobile && (
           <div className={styles.mobileNavContainer}>
             <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
-              {/* Order: Sell, Filters, Account/Login (Rent & Buy removed) */}
-              <button
-                className={styles.mobilePill}
-                onClick={() => handleNavigation('/seller')}
-                aria-label="Sell your property"
-              >
-                Sell
-              </button>
+              {/* Order: Filters, Account/Login (Sell moved into Me menu) */}
               {showMapFilters && onFilterChange && (
                 <button
                   className={`${styles.mobilePill} ${isFiltersPopupOpen ? styles.active : ''}`}
@@ -194,9 +178,9 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   className={styles.mobilePill}
                   onClick={handleAuthAction}
-                  aria-label={user ? 'Profile menu' : 'Sign in with Google'}
+                  aria-label={user ? 'Me menu' : 'Sign in with Google'}
                 >
-                  {user ? 'Profile' : 'Login'}
+                  {user ? 'Me' : 'Login'}
                 </button>
               )}
             </div>
@@ -251,7 +235,16 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
             <div className={styles.accountPopupContent}>
-              {/* Profile option removed */}
+              <button 
+                className={styles.accountPopupItem}
+                onClick={() => handleAccountMenuClick('/seller')}
+              >
+                <span className={styles.accountPopupIcon}>💼</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Sell</div>
+                  <div className={styles.accountPopupSubtitle}>List your property</div>
+                </div>
+              </button>
               <button 
                 className={styles.accountPopupItem}
                 onClick={handleSignOut}
