@@ -35,19 +35,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       return property.image_url;
     }
 
-    // Final fallback to sample images based on property type
-    const typeImages: { [key: string]: string } = {
-      'house': '/properties/casa-moderna.jpg',
-      'apartment': '/properties/apartamento-moderno.jpg',
-      'villa': '/properties/villa-lujo.jpg',
-      'penthouse': '/properties/penthouse-lujo.jpg',
-      'cabin': '/properties/cabana-bosque.jpg',
-      'loft': '/properties/loft-urbano.jpg',
-      'duplex': '/properties/duplex-moderno.jpg'
-    };
-
-    const propertyType = property.type?.toLowerCase() || 'house';
-    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+  // Final fallback: neutral placeholder (prefer not to show a type-based sample image)
+  return '/ubika-logo.png';
   };
 
   // Get property images for gallery navigation (if multiple images exist)
@@ -64,25 +53,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         .map(img => img.image_url);
     }
 
-    // Fallback to sample images based on property type
-    const baseImages = [
-      '/properties/casa-moderna.jpg',
-      '/properties/apartamento-moderno.jpg',
-      '/properties/villa-lujo.jpg'
-    ];
-
-    const typeImages: { [key: string]: string[] } = {
-      'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-      'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/departamento-familiar.jpg'],
-      'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg', '/properties/casa-playa.jpg'],
-      'penthouse': ['/properties/penthouse-lujo.jpg', '/properties/loft-urbano.jpg'],
-      'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-      'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg'],
-      'duplex': ['/properties/duplex-moderno.jpg', '/properties/casa-moderna.jpg']
-    };
-
-    const propertyType = property.type?.toLowerCase() || 'house';
-    return typeImages[propertyType] || baseImages;
+  // Fallback to a single neutral placeholder image when no uploaded images exist
+  return ['/ubika-logo.png'];
   };
 
   const images = getPropertyImages(property);

@@ -111,7 +111,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                   WHEN type = 'loft' THEN '/properties/loft-urbano.jpg'
                   WHEN type = 'duplex' THEN '/properties/duplex-moderno.jpg'
                   ELSE '/properties/casa-moderna.jpg'
-                END as image_url,
+                  END as image_url,
+                    -- Do not assign a static sample image here; uploaded blob images will be used
+                    NULL
                 status, created_at, updated_at, year_built as yearBuilt, 
                 seller_id
     `;

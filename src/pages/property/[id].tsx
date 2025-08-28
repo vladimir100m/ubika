@@ -165,8 +165,8 @@ const PropertyDetail: React.FC = () => {
         .map(img => img.image_url);
     }
     
-    // Fallback to single image_url or default
-    return property.image_url ? [property.image_url] : ['/properties/casa-moderna.jpg'];
+  // Fallback to single image_url or neutral placeholder
+  return property.image_url ? [property.image_url] : ['/ubika-logo.png'];
   };
 
   const images = getPropertyImages(property);
@@ -197,7 +197,7 @@ const PropertyDetail: React.FC = () => {
               <PropertyGallery images={images} initialIndex={0} />
             ) : (
               <div className={styles.placeholderImage}>
-                <img src="/properties/casa-moderna.jpg" alt="Property" />
+                <img src="/ubika-logo.png" alt="Property" />
               </div>
             )}
           </section>

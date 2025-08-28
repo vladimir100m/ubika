@@ -50,13 +50,13 @@ const getCoverImage = (property: Property): string => {
 
   // Final fallback to sample images based on property type
   const typeImages: { [key: string]: string } = {
-    'house': '/properties/casa-moderna.jpg',
-    'apartment': '/properties/apartamento-moderno.jpg',
-    'villa': '/properties/villa-lujo.jpg',
-    'penthouse': '/properties/penthouse-lujo.jpg',
-    'cabin': '/properties/cabana-bosque.jpg',
-    'loft': '/properties/loft-urbano.jpg',
-    'duplex': '/properties/duplex-moderno.jpg'
+  'house': '/ubika-logo.png',
+  'apartment': '/ubika-logo.png',
+  'villa': '/ubika-logo.png',
+  'penthouse': '/ubika-logo.png',
+  'cabin': '/ubika-logo.png',
+  'loft': '/ubika-logo.png',
+  'duplex': '/ubika-logo.png'
   };
 
   const propertyType = property.type?.toLowerCase() || 'house';
@@ -110,7 +110,7 @@ const getPropertyImages = (property: Property): string[] => {
   }
 
   // Fallback to generating sample images
-  return generatePropertyImages(property);
+  return generatePropertyImages(property).length ? generatePropertyImages(property) : ['/ubika-logo.png'];
 };
 
 // Function to generate additional property images based on property type (legacy)
