@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { query } from '../../../../utils/db';
+import { resolveImageUrl } from '../../../../utils/blob';
 
 let cachedPropIdType: 'uuid' | 'integer' | null = null;
 async function detectPropertyIdType(): Promise<'uuid' | 'integer'> {
@@ -74,10 +75,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
 
+    // Attempt to resolve stored image_url values to public URLs
+    const imgs = imagesResult.rows;
+    for (const img of imgs) {
+      try {
+        img.image_url = await resolveImageUrl(img.image_url);
+      } catch (e) {
+        // leave original if resolution fails
+      }
+    }
+
     res.status(200).json({
       property_id: propertyIdValue,
-      images: imagesResult.rows,
-      count: imagesResult.rows.length
+      images: imgs,
+      count: imgs.length
     });
 
   } catch (error: any) {

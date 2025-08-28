@@ -42,8 +42,43 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     // Delete physical file
     try {
-      const imagePath = path.join(process.cwd(), 'public', image.image_url);
-      await fs.unlink(imagePath);
+      // If image_url points to a blob or external storage, attempt to delete via Blob API
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
+      const imageUrl: string = image.image_url;
+
+      // If stored with a custom blob scheme (blob://<id>) attempt API delete using id
+      if (token && imageUrl && imageUrl.startsWith('blob://')) {
+        const blobId = imageUrl.replace('blob://', '');
+        try {
+          const baseUrl = process.env.BLOB_BASE_URL || 'https://api.vercel.com';
+          await fetch(`${baseUrl}/v1/blob/${encodeURIComponent(blobId)}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (err) {
+          console.warn('Blob delete failed:', err);
+        }
+      } else if (token && imageUrl && /^https?:\/\//i.test(imageUrl)) {
+        // If image_url is a full URL, attempt delete by calling the blob DELETE endpoint if possible
+        try {
+          const baseUrl = process.env.BLOB_BASE_URL || 'https://api.vercel.com';
+          // Some blob services can accept a path-based delete; best-effort
+          await fetch(`${baseUrl}/v1/blob`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: imageUrl }) as any
+          });
+        } catch (err) {
+          console.warn('Blob delete by URL failed:', err);
+        }
+      } else {
+        // Local file fallback (image.image_url expected to be a relative path like /uploads/...)
+        const imagePath = path.join(process.cwd(), 'public', image.image_url);
+        await fs.unlink(imagePath);
+      }
     } catch (fileError) {
       console.warn('Could not delete physical file:', fileError);
       // Continue even if file deletion fails

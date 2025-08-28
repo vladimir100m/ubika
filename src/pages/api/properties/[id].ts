@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { query } from '../../../utils/db';
+import { resolveImageUrl } from '../../../utils/blob';
 import { Property } from '../../../types';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse<Property | { error: string }>) => {
@@ -47,7 +48,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property | { er
         'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
         [property.id]
       );
-      property.images = imagesResult.rows;
+      const imgs = imagesResult.rows;
+      for (const img of imgs) {
+        try {
+          img.image_url = await resolveImageUrl(img.image_url);
+        } catch (e) {
+          // leave original if resolution fails
+        }
+      }
+      property.images = imgs;
     } catch (imageError) {
       console.warn(`Failed to fetch images for property ${property.id}:`, imageError);
       property.images = [];

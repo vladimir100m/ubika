@@ -3,6 +3,8 @@ import { IncomingForm, File } from 'formidable';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { query } from '../../../../utils/db';
+import { resolveImageUrl } from '../../../../utils/blob';
+import { put } from '@vercel/blob';
 
 // Disable body parsing for file uploads
 export const config = {
@@ -69,12 +71,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       multiples: true,
     });
 
-    // Ensure base upload directory exists
-    const baseUploadDir = path.join(process.cwd(), 'public/uploads');
-    try {
-      await fs.access(baseUploadDir);
-    } catch {
-      await fs.mkdir(baseUploadDir, { recursive: true });
+    // Require blob token for Vercel Blob uploads
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!blobToken) {
+      return res.status(500).json({ error: 'BLOB_READ_WRITE_TOKEN is not configured. Image upload requires Vercel Blob token.' });
     }
 
     // Parse the form data
@@ -112,21 +112,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       console.warn('Unrecognized property_id format, treating as string:', trimmedProp);
     }
 
-    // Create unique folder structure: uploads/users/{sellerId}/properties/{propertyId}/YYYY-MM-DD/
-    const now = new Date();
-    const dateFolder = now.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const uniqueUploadPath = path.join('users', String(sellerId), 'properties', String(propertyIdValue), dateFolder);
-    const fullUploadDir = path.join(baseUploadDir, uniqueUploadPath);
-    
-    // Create the unique directory structure
-    try {
-      await fs.mkdir(fullUploadDir, { recursive: true });
-    } catch (error) {
-      console.error('Failed to create upload directory:', error);
-      return res.status(500).json({ error: 'Failed to create upload directory' });
-    }
-
-    // Handle both single and multiple files
+  // Create unique folder structure path used as blob prefix: real-estate-assets/users/{sellerId}/properties/{propertyId}/YYYY-MM-DD/
+  const now = new Date();
+  const dateFolder = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+  const uniqueUploadPath = `real-estate-assets/users/${String(sellerId)}/properties/${String(propertyIdValue)}/${dateFolder}`;
+  // Handle both single and multiple files
     const fileArray = Array.isArray(files.images) ? files.images : [files.images].filter(Boolean);
     
     if (fileArray.length === 0) {
@@ -152,6 +142,44 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     );
     let nextOrder = (maxOrderResult.rows[0]?.max_order || 0) + 1;
 
+    // Helper: upload buffer to Vercel Blob. Returns a public path or blob://<id> on success, throws on failure.
+    const uploadToBlob = async (fullName: string, buffer: Buffer, mimetype?: string) => {
+      const token = blobToken;
+      // Convert Buffer -> ArrayBuffer slice to avoid sharing underlying memory
+      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+
+      // Use SDK put() which wraps the correct Vercel Blob API and supports multipart automatically
+      try {
+        const multipart = arrayBuffer.byteLength > 5 * 1024 * 1024; // enable multipart for files >5MB
+        const blob = await put(fullName, arrayBuffer as any, {
+          access: 'public',
+          contentType: mimetype || undefined,
+          addRandomSuffix: false,
+          token,
+          multipart: multipart || undefined,
+        });
+
+        // Prefer storing a stable pathname (so DB contains a key) while returning a public URL to clients.
+        // We'll store blob://<pathname> in the DB and let resolveImageUrl() translate it to a public URL.
+        if (blob?.pathname) return `blob://${String(blob.pathname)}`;
+        if (blob?.url) {
+          // Try to extract pathname from url if possible
+          try {
+            const u = new URL(String(blob.url));
+            const pathname = u.pathname.replace(/^\//, '');
+            if (pathname) return `blob://${pathname}`;
+          } catch (e) {
+            // ignore
+          }
+          return String(blob.url);
+        }
+        // best-effort fallback
+        return null;
+      } catch (err: any) {
+        throw new Error(`Blob put failed: ${err?.message || String(err)}`);
+      }
+    };
+
     for (const file of fileArray) {
       if (!file || !file.filepath) continue;
 
@@ -161,18 +189,36 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         continue;
       }
 
+      // Read temp file into buffer
+      let buffer: Buffer;
+      try {
+        buffer = await fs.readFile(file.filepath);
+      } catch (e) {
+        console.warn('Failed to read uploaded temp file:', e);
+        continue;
+      }
+
       // Generate unique filename with timestamp and random string
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(2, 15);
-      const extension = path.extname(file.originalFilename || '.jpg');
+      const extension = path.extname(file.originalFilename || '.jpg') || '.jpg';
       const filename = `property_${propertyIdValue}_${timestamp}_${randomStr}${extension}`;
-      const finalPath = path.join(fullUploadDir, filename);
 
-      // Move file to final location
-      await fs.rename(file.filepath, finalPath);
+      // Upload to Vercel Blob under the real-estate-assets prefix
+      let imageUrl: string | null = null;
+      try {
+        const fullName = `${uniqueUploadPath}/${filename}`; // includes 'real-estate-assets/...'
+        imageUrl = await uploadToBlob(fullName, buffer, file.mimetype);
+      } catch (e: any) {
+        console.error('uploadToBlob failed for file', file.originalFilename, e?.message || e);
+        // cleanup temp file
+        await fs.unlink(file.filepath).catch(() => {});
+        // continue to next file instead of performing any local fallback
+        continue;
+      }
 
-      // Store relative path for database (including the unique path structure)
-      const imageUrl = `/uploads/${uniqueUploadPath}/${filename}`;
+      // cleanup temp file if still exists
+      await fs.unlink(file.filepath).catch(() => {});
 
       // Insert into database
       let insertResult;
@@ -226,10 +272,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
 
+    // Resolve image URLs for the response
+    const respImages = [] as any[];
+    for (const img of uploadedImages) {
+      const resolved = { ...img } as any;
+      try {
+        resolved.image_url = await resolveImageUrl(img.image_url);
+      } catch (e) {
+        // leave original
+      }
+      respImages.push(resolved);
+    }
+
     return res.status(200).json({
       message: 'Images uploaded successfully',
-      images: uploadedImages,
-      count: uploadedImages.length,
+      images: respImages,
+      count: respImages.length,
       uploadPath: uniqueUploadPath
     });
   };

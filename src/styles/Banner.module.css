@@ -1,7 +1,7 @@
 /* Updated styles for the enhanced Banner */
  .Banner_banner__biC5I {
   position: relative;
-  background-image: url('/departamento-familiar.jpg');
+  background-image: url('/home_background.png');
   background-size: cover;
   background-position: center;
   height: 100vh;
@@ -73,7 +73,7 @@
 
 .banner {
   position: relative;
-  background-image: url('/properties/loft-urbano.jpg');
+  background-image: url('/home_background.png');
   background-size: cover;
   background-position: center;
   height: 100vh;
