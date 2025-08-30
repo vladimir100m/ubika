@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { IncomingForm, File } from 'formidable';
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 import { query } from '../../../../utils/db';
 import { resolveImageUrl } from '../../../../utils/blob';
 import { put } from '@vercel/blob';
@@ -64,8 +65,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const attempt = async () => {
+    // Do not write uploads into the project `public/` folder (not writable on Vercel).
+    // Use the OS temporary directory which is writable in serverless environments.
     const form = new IncomingForm({
-      uploadDir: path.join(process.cwd(), 'public/uploads'),
+      uploadDir: os.tmpdir(),
       keepExtensions: true,
       maxFileSize: 10 * 1024 * 1024, // 10MB
       multiples: true,
