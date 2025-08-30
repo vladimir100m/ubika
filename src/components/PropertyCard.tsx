@@ -43,13 +43,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const getPropertyImages = (property: Property): string[] => {
     // First check if property has uploaded images
     if (property.images && property.images.length > 0) {
+      // Sort images (cover first, then display order) and limit to 3 for the card grid
       return property.images
         .sort((a, b) => {
-          // Sort by is_cover first, then by display_order
           if (a.is_cover && !b.is_cover) return -1;
           if (!a.is_cover && b.is_cover) return 1;
           return a.display_order - b.display_order;
         })
+        .slice(0, 3)
         .map(img => img.image_url);
     }
 
