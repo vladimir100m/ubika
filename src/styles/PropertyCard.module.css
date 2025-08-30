@@ -47,6 +47,49 @@
   display: block;
 }
 
+/* Two-image layout: two equal halves */
+.gridTwo {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.halfImage {
+  width: 50%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Three-image layout: left half cover, right column stacked two quarters */
+.gridThree {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+}
+
+.halfCover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.rightStack {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+}
+
+.quarterImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .propertyCard:hover .propertyImage {
   transform: scale(1.05);
 }

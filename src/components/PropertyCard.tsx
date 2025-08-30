@@ -105,18 +105,48 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       <div className={styles.imageContainer}>
         {/* If multiple images exist, show them as a 3-image grid (max 3 images). Otherwise show single cover image. */}
         {images.length > 1 ? (
-          <div className={styles.imageGrid}>
-            {images.map((src, idx) => (
+          // Two images: show two halves side-by-side (50% / 50%)
+          images.length === 2 ? (
+            <div className={styles.gridTwo}>
+              {images.map((src, idx) => (
+                <img
+                  key={idx}
+                  src={imageError ? '/properties/casa-moderna.jpg' : src}
+                  alt={property.title || `Property in ${property.city}`}
+                  className={styles.halfImage}
+                  onError={() => setImageError(true)}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          ) : (
+            // Three or more images: show cover as half width and two stacked quarters on the right
+            <div className={styles.gridThree}>
               <img
-                key={idx}
-                src={imageError ? '/properties/casa-moderna.jpg' : src}
+                src={imageError ? '/properties/casa-moderna.jpg' : images[0]}
                 alt={property.title || `Property in ${property.city}`}
-                className={styles.gridImage}
+                className={styles.halfCover}
                 onError={() => setImageError(true)}
                 loading="lazy"
               />
-            ))}
-          </div>
+              <div className={styles.rightStack}>
+                <img
+                  src={imageError ? '/properties/casa-moderna.jpg' : images[1]}
+                  alt={property.title || `Property in ${property.city}`}
+                  className={styles.quarterImage}
+                  onError={() => setImageError(true)}
+                  loading="lazy"
+                />
+                <img
+                  src={imageError ? '/properties/casa-moderna.jpg' : images[2]}
+                  alt={property.title || `Property in ${property.city}`}
+                  className={styles.quarterImage}
+                  onError={() => setImageError(true)}
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          )
         ) : (
           <img
             src={imageError ? '/properties/casa-moderna.jpg' : (images.length > 0 ? images[0] : coverImage)}
