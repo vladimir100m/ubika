@@ -103,44 +103,27 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     <div className={styles.propertyCard} onClick={handleCardClick}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
-        <img
-          src={imageError ? '/properties/casa-moderna.jpg' : (images.length > 1 ? images[currentImageIndex] : coverImage)}
-          alt={property.title || `Property in ${property.city}`}
-          className={styles.propertyImage}
-          onError={() => setImageError(true)}
-        />
-        
-        {/* Image Navigation - Only show if multiple images exist */}
-        {images.length > 1 && (
-          <>
-            <button
-              className={`${styles.imageNav} ${styles.prevBtn}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImageNavigation('prev');
-              }}
-              aria-label="Previous image"
-            >
-              ‹
-            </button>
-            <button
-              className={`${styles.imageNav} ${styles.nextBtn}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImageNavigation('next');
-              }}
-              aria-label="Next image"
-            >
-              ›
-            </button>
-          </>
-        )}
-
-        {/* Image Counter - Only show if multiple images exist */}
-        {images.length > 1 && (
-          <div className={styles.imageCounter}>
-            {currentImageIndex + 1} / {images.length}
+        {/* If multiple images exist, show them as a 3-image grid (max 3 images). Otherwise show single cover image. */}
+        {images.length > 1 ? (
+          <div className={styles.imageGrid}>
+            {images.map((src, idx) => (
+              <img
+                key={idx}
+                src={imageError ? '/properties/casa-moderna.jpg' : src}
+                alt={property.title || `Property in ${property.city}`}
+                className={styles.gridImage}
+                onError={() => setImageError(true)}
+                loading="lazy"
+              />
+            ))}
           </div>
+        ) : (
+          <img
+            src={imageError ? '/properties/casa-moderna.jpg' : (images.length > 0 ? images[0] : coverImage)}
+            alt={property.title || `Property in ${property.city}`}
+            className={styles.propertyImage}
+            onError={() => setImageError(true)}
+          />
         )}
 
   {/* Favorite/save feature removed */}
