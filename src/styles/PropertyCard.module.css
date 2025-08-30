@@ -1,33 +1,42 @@
 .propertyCard {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  border-radius: 16px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: none;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   cursor: pointer;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  position: relative;
 }
 
 .propertyCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* Image Section */
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 250px;
+  height: 280px;
   overflow: hidden;
+}
+
+/* Defensive: hide any images beyond the first three inside the image container
+   (covers unexpected markup variants so cards render no more than 3 visuals) */
+.imageContainer img:nth-of-type(n+4) {
+  display: none !important;
 }
 
 .propertyImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  background-color: #f7f7f7;
+  position: relative;
 }
 
 /* Grid of up to 3 images inside the image container */
@@ -88,6 +97,24 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.thumbnailWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.moreOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .propertyCard:hover .propertyImage {

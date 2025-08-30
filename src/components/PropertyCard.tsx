@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import { Property } from '../types';
 import styles from '../styles/PropertyCard.module.css';
 
+// Use the same class as the home card for the main container
+const HOME_CARD_CLASS = 'PropertyCard_propertyCard__1R75R';
+
 interface PropertyCardProps {
   property: Property;
   showFullDetails?: boolean;
@@ -57,18 +60,22 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   // Fallback to a single neutral placeholder image when no uploaded images exist
   return ['/ubika-logo.png'];
   };
-
-  const images = getPropertyImages(property);
-  const coverImage = getCoverImage(property);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const handleImageNavigation = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
-    } else {
-      setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+  // All images (full set) for navigation
+  const getAllPropertyImages = (property: Property): string[] => {
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
     }
+    return property.image_url ? [property.image_url] : ['/ubika-logo.png'];
   };
+
+  const thumbnails = getPropertyImages(property); // max 3
+  const coverImage = getCoverImage(property);
 
   const handleCardClick = () => {
     if (onClick) {
@@ -100,61 +107,55 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   return (
-    <div className={styles.propertyCard} onClick={handleCardClick}>
+    <div className={HOME_CARD_CLASS} onClick={handleCardClick}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
-        {/* If multiple images exist, show them as a 3-image grid (max 3 images). Otherwise show single cover image. */}
-        {images.length > 1 ? (
-          // Two images: show two halves side-by-side (50% / 50%)
-          images.length === 2 ? (
-            <div className={styles.gridTwo}>
-              {images.map((src, idx) => (
-                <img
-                  key={idx}
-                  src={imageError ? '/properties/casa-moderna.jpg' : src}
-                  alt={property.title || `Property in ${property.city}`}
-                  className={styles.halfImage}
-                  onError={() => setImageError(true)}
-                  loading="lazy"
-                />
-              ))}
-            </div>
+        {/* On mobile, always show only the cover image. On desktop, show grid if >1 image. */}
+        <picture>
+          <source
+            media="(max-width: 768px)"
+            srcSet={imageError ? '/properties/casa-moderna.jpg' : coverImage}
+          />
+          {thumbnails.length === 1 ? (
+            <img
+              src={imageError ? '/properties/casa-moderna.jpg' : coverImage}
+              alt={property.title || `Property in ${property.city}`}
+              className={styles.propertyImage}
+              onError={() => setImageError(true)}
+              loading="lazy"
+            />
           ) : (
-            // Three or more images: show cover as half width and two stacked quarters on the right
             <div className={styles.gridThree}>
               <img
-                src={imageError ? '/properties/casa-moderna.jpg' : images[0]}
+                src={imageError ? '/properties/casa-moderna.jpg' : thumbnails[0]}
                 alt={property.title || `Property in ${property.city}`}
                 className={styles.halfCover}
                 onError={() => setImageError(true)}
                 loading="lazy"
               />
               <div className={styles.rightStack}>
-                <img
-                  src={imageError ? '/properties/casa-moderna.jpg' : images[1]}
-                  alt={property.title || `Property in ${property.city}`}
-                  className={styles.quarterImage}
-                  onError={() => setImageError(true)}
-                  loading="lazy"
-                />
-                <img
-                  src={imageError ? '/properties/casa-moderna.jpg' : images[2]}
-                  alt={property.title || `Property in ${property.city}`}
-                  className={styles.quarterImage}
-                  onError={() => setImageError(true)}
-                  loading="lazy"
-                />
+                {thumbnails[1] && (
+                  <img
+                    src={imageError ? '/properties/casa-moderna.jpg' : thumbnails[1]}
+                    alt={property.title || `Property in ${property.city}`}
+                    className={styles.quarterImage}
+                    onError={() => setImageError(true)}
+                    loading="lazy"
+                  />
+                )}
+                {thumbnails[2] && (
+                  <img
+                    src={imageError ? '/properties/casa-moderna.jpg' : thumbnails[2]}
+                    alt={property.title || `Property in ${property.city}`}
+                    className={styles.quarterImage}
+                    onError={() => setImageError(true)}
+                    loading="lazy"
+                  />
+                )}
               </div>
             </div>
-          )
-        ) : (
-          <img
-            src={imageError ? '/properties/casa-moderna.jpg' : (images.length > 0 ? images[0] : coverImage)}
-            alt={property.title || `Property in ${property.city}`}
-            className={styles.propertyImage}
-            onError={() => setImageError(true)}
-          />
-        )}
+          )}
+        </picture>
 
   {/* Favorite/save feature removed */}
 
