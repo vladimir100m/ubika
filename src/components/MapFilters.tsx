@@ -186,16 +186,10 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         keywords: [],
       }
     };
-    setTempFilters(clearedFilters);
-    // Optionally apply cleared filters immediately and close popup
-    setAppliedFilters(clearedFilters);
-    onFilterChange(clearedFilters);
-    setIsDropdownOpen(false);
-    
-    // Close popup if onClosePopup is provided (for external popup control)
-    if (onClosePopup) {
-      onClosePopup();
-    }
+  setTempFilters(clearedFilters);
+  setAppliedFilters(clearedFilters);
+  onFilterChange(clearedFilters);
+  // Do NOT close the popup here; just clear the form
   };
 
   // Apply filters function - this triggers the database query
