@@ -328,12 +328,14 @@ const SellerDashboard: React.FC = () => {
         });
         fetchSellerProperties();
       } else {
-        setCurrentPropertyId(propertyId);
-        setPropertyCreated(true);
+        // New behavior: after creating a property from the Add New Property form, go back to My Properties
+        // so the user immediately sees their new listing.
+        resetForm();
         setMessage({
-          text: 'Property created with ID! You can now upload images using standardized blob storage with automatic image ID creation.',
+          text: 'Property created successfully!',
           type: 'success'
         });
+        setActiveTab('list');
         fetchSellerProperties();
       }
     } catch (error) {
