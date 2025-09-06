@@ -194,7 +194,7 @@ const Home: React.FC = () => {
         
         {/* Properties Grid */}
         {!loading && !error && properties.length > 0 && (
-          <div className={`${standardStyles.grid} ${standardStyles.grid3}`}>
+          <div className={`${standardStyles.grid} ${standardStyles.grid2}`}>
             {properties.slice(0, 6).map((property) => (
               <div key={property.id} className={standardStyles.propertyCard}>
                 <PropertyCard

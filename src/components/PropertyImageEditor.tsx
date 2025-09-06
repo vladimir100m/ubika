@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect, DragEvent } from 'react';
+import React, { useState, useRef, useCallback, useEffect, DragEvent, useImperativeHandle } from 'react';
 import { PropertyImage } from '../types';
 import styles from '../styles/PropertyImageEditor.module.css';
 
@@ -10,6 +10,7 @@ interface PropertyImageEditorProps {
   maxImages?: number;
   allowBulkOperations?: boolean;
   showImagePreview?: boolean;
+  allowTempImagesBeforeSave?: boolean;
 }
 
 interface UploadItem {
@@ -21,16 +22,13 @@ interface UploadItem {
   file?: File;
 }
 
-const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
-  propertyId,
-  sellerId,
-  images,
-  onChange,
-  maxImages = 15,
-  allowBulkOperations = true,
-  showImagePreview = true
-}) => {
+const PropertyImageEditor = React.forwardRef(function PropertyImageEditor(
+  props: PropertyImageEditorProps,
+  ref: React.Ref<any>
+) {
+  const { propertyId, sellerId, images, onChange, maxImages = 15, allowBulkOperations = true, showImagePreview = true, allowTempImagesBeforeSave = false } = props;
   const inputRef = useRef<HTMLInputElement>(null);
+  const selectModeRef = useRef<'auto' | 'stage'>('auto');
   const [dragOver, setDragOver] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -74,8 +72,24 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
   // File upload handlers
   const triggerFileSelect = () => inputRef.current?.click();
 
+  // Trigger file input with explicit mode: 'auto' => upload immediately, 'stage' => stage files for manual upload
+  const triggerFileSelectMode = (mode: 'auto' | 'stage' = 'auto') => {
+    selectModeRef.current = mode;
+    inputRef.current?.click();
+  };
+
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    uploadFiles(e.target.files);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (selectModeRef.current === 'auto') {
+      // Immediate upload
+      uploadFiles(files);
+    } else {
+      // Stage files for manual upload
+      stageFiles(files);
+    }
+
     if (e.target) e.target.value = '';
   };
 
@@ -92,12 +106,18 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
 
   const onDragLeave = () => setDragOver(false);
 
-  // Upload functionality
+  // Upload functionality with standardized blob storage
   const uploadFiles = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
     
+    // Standardized: Always require propertyId for blob storage uploads
     if (!propertyId) {
-      setLocalError('Property must be saved before uploading images');
+      if (allowTempImagesBeforeSave) {
+        // Fallback to staging locally if property not yet saved
+        stageFiles(fileList);
+        return;
+      }
+      setLocalError('Property must be saved before uploading images to blob storage');
       return;
     }
 
@@ -111,7 +131,8 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
     setUploading(true);
     setLocalError(null);
 
-    // Initialize upload items
+    // Initialize upload items with standardized tracking
+    // Stage then process immediately
     const newUploadItems: UploadItem[] = files.map(file => ({
       tempId: `${Date.now()}-${Math.random()}`,
       name: file.name,
@@ -120,71 +141,12 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
       file
     }));
 
-    setUploadItems(newUploadItems);
+    // Append to any existing staged items
+    setUploadItems(prev => [...prev, ...newUploadItems]);
 
     try {
-      const uploadResults: PropertyImage[] = [];
-
-      // Upload files one by one for better progress tracking
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const uploadItem = newUploadItems[i];
-
-        try {
-          // Update status to uploading
-          setUploadItems(prev => prev.map(item => 
-            item.tempId === uploadItem.tempId 
-              ? { ...item, status: 'uploading' as const, progress: 50 }
-              : item
-          ));
-
-          const formData = new FormData();
-          formData.append('property_id', String(propertyId));
-          formData.append('seller_id', sellerId || 'anonymous');
-          formData.append('images', file);
-
-          const response = await fetch('/api/properties/images/upload', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Upload failed');
-          }
-
-          const result = await response.json();
-          
-          // Update progress to 100% and status to done
-          setUploadItems(prev => prev.map(item => 
-            item.tempId === uploadItem.tempId 
-              ? { ...item, progress: 100, status: 'done' as const }
-              : item
-          ));
-
-          if (result.images && result.images.length > 0) {
-            uploadResults.push(...result.images);
-          }
-
-        } catch (error) {
-          // Update status to error
-          setUploadItems(prev => prev.map(item => 
-            item.tempId === uploadItem.tempId 
-              ? { 
-                  ...item, 
-                  status: 'error' as const, 
-                  error: error instanceof Error ? error.message : 'Upload failed'
-                }
-              : item
-          ));
-        }
-      }
-
-      // Reload all images to ensure consistency
-      if (uploadResults.length > 0) {
-        await loadAllPropertyImages();
-      }
-
+      // Start processing queue immediately
+      await processUploadQueue();
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
@@ -194,9 +156,110 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
     }
   };
 
+  // Stage files without starting upload (for manual flow)
+  const stageFiles = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    const remainingSlots = maxImages - images.length - uploadItems.length;
+    if (remainingSlots <= 0) {
+      setLocalError(`Maximum ${maxImages} images allowed`);
+      return;
+    }
+    const files = Array.from(fileList).slice(0, remainingSlots);
+    const newUploadItems: UploadItem[] = files.map(file => ({
+      tempId: `${Date.now()}-${Math.random()}`,
+      name: file.name,
+      progress: 0,
+      status: 'pending',
+      file
+    }));
+    setUploadItems(prev => [...prev, ...newUploadItems]);
+
+    // When property not yet saved, create temporary preview images immediately
+    if (!propertyId && allowTempImagesBeforeSave) {
+      const startingOrder = images.length;
+      const tempImages: PropertyImage[] = files.map((file, idx) => ({
+        id: -(Date.now() + idx),
+        property_id: 0,
+        image_url: URL.createObjectURL(file),
+        display_order: startingOrder + idx + 1,
+        is_cover: images.length === 0 && idx === 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as any));
+      onChange([...images, ...tempImages]);
+    }
+  };
+
+  // Process staged uploadItems sequentially
+  const processUploadQueue = async () => {
+    if (!propertyId) return;
+    setUploading(true);
+    const results: PropertyImage[] = [];
+    // Iterate over a snapshot to avoid state mutation during loop
+    for (const item of [...uploadItems]) {
+      if (!item.file || item.status !== 'pending') continue;
+      // mark uploading
+      setUploadItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, status: 'uploading', progress: 50 } : it));
+
+      try {
+        const formData = new FormData();
+        formData.append('property_id', String(propertyId));
+        formData.append('seller_id', sellerId || 'anonymous');
+        formData.append('images', item.file as File);
+
+        const response = await fetch('/api/properties/images/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Upload failed');
+        }
+
+        const resJson = await response.json();
+        setUploadItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, progress: 100, status: 'done' } : it));
+        if (resJson.images && resJson.images.length > 0) results.push(...resJson.images);
+      } catch (err: any) {
+        setUploadItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, status: 'error', error: err?.message || 'Upload failed' } : it));
+      }
+    }
+
+    if (results.length > 0) {
+      await loadAllPropertyImages();
+    }
+    setUploading(false);
+  };
+
+  // Expose imperative handle to parent components
+  useImperativeHandle(ref, () => ({
+    // Upload any staged files
+    uploadStaged: async () => {
+      await processUploadQueue();
+    },
+    // Open native file picker and immediately upload
+    openUploadDialog: () => {
+      triggerFileSelectMode('auto');
+    },
+    // Open native file picker but only stage (requires manual upload later)
+    openStageDialog: () => {
+      triggerFileSelectMode('stage');
+    },
+    // Delete currently selected images (no-op if none)
+    deleteSelected: () => {
+      deleteSelectedImages();
+    }
+  }));
+
   // Image operations
   const setCoverImage = async (imageId: number) => {
-    if (!propertyId) return;
+    if (!propertyId) {
+      if (allowTempImagesBeforeSave) {
+        const updated = images.map(img => ({ ...img, is_cover: img.id === imageId }));
+        onChange(updated);
+      }
+      return;
+    }
 
     try {
       const response = await fetch('/api/properties/images/update', {
@@ -373,18 +436,64 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
           {uploading ? (
             <>
               <div className={styles.uploadSpinner}></div>
-              <p>Uploading images...</p>
+              <p>Uploading to blob storage...</p>
+              <p className={styles.uploadHint}>Creating image IDs automatically</p>
             </>
           ) : (
             <>
               <div className={styles.uploadIcon}>📸</div>
               <p><strong>Drop images here</strong> or click to browse</p>
               <p className={styles.uploadHint}>
-                Up to {maxImages} images • Max 10MB each
+                Standardized blob storage • Automatic ID creation • Up to {maxImages} images • Max 10MB each
               </p>
             </>
           )}
         </div>
+      </div>
+
+      {/* Upload Controls: Select & Upload / Select to Stage / Upload Staged / Clear Staged */}
+      <div className={styles.uploadControls}>
+        <button
+          type="button"
+          className={styles.controlBtn}
+          onClick={() => (propertyId ? triggerFileSelectMode('auto') : triggerFileSelectMode('stage'))}
+          disabled={uploading || images.length >= maxImages}
+        >
+          {propertyId ? '📤 Select & Upload' : '📥 Add Images'}
+        </button>
+
+        {propertyId && (
+          <button
+            type="button"
+            className={styles.controlBtn}
+            onClick={() => triggerFileSelectMode('stage')}
+            disabled={uploading || images.length >= maxImages}
+          >
+            📥 Select to Stage
+          </button>
+        )}
+
+        {uploadItems.length > 0 && propertyId && (
+          <>
+            <button
+              type="button"
+              className={styles.controlBtn}
+              onClick={() => processUploadQueue()}
+              disabled={uploading || !propertyId}
+            >
+              ⬆️ Upload Staged ({uploadItems.length})
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.controlBtn} ${styles.clearBtn}`}
+              onClick={() => { setUploadItems([]); setLocalError(null); }}
+              disabled={uploading}
+            >
+              🧹 Clear Staged
+            </button>
+          </>
+        )}
       </div>
 
       {/* Error Message */}
@@ -403,7 +512,7 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
       )}
 
       {/* Upload Progress */}
-      {uploadItems.length > 0 && (
+  {uploadItems.length > 0 && propertyId && (
         <div className={styles.uploadProgress}>
           <h4 className={styles.progressTitle}>Upload Progress</h4>
           {uploadItems.map(item => (
@@ -436,7 +545,7 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
         <div className={styles.imageGrid}>
           <div className={styles.gridHeader}>
             <h4 className={styles.gridTitle}>
-              {images.length} image{images.length !== 1 ? 's' : ''} uploaded
+              📸 {images.length} image{images.length !== 1 ? 's' : ''} {propertyId ? 'in blob storage' : 'staged'}
             </h4>
             
             {allowBulkOperations && images.length > 1 && (
@@ -603,6 +712,6 @@ const PropertyImageEditor: React.FC<PropertyImageEditorProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default PropertyImageEditor;

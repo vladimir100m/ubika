@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import styles from '../../styles/Seller.module.css';
@@ -14,7 +14,6 @@ interface PropertyType {
   name: string;
   display_name: string;
 }
-
 interface PropertyStatus {
   id: number;
   name: string;
@@ -40,13 +39,47 @@ const SellerDashboard: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user;
-  const u = useMemo(() => 
-    user as (typeof user & { sub?: string; picture?: string | null; image?: string | null }),
-    [user]
-  );
+  const u = useMemo(() => user as (typeof user & { sub?: string; picture?: string | null; image?: string | null }), [user]);
   const isLoading = status === 'loading';
 
-  // Filter handlers - redirect to map page with filters
+  // Helper function to get the cover image for property display
+  const getCoverImageUrl = (property: Property): string => {
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) return coverImage.image_url;
+      const sortedImages = [...property.images].sort((a, b) => a.display_order - b.display_order);
+      return sortedImages[0].image_url;
+    }
+    if (property.image_url) return property.image_url;
+    const typeImages: Record<string, string> = {
+      house: '/properties/casa-moderna.jpg',
+      apartment: '/properties/apartamento-moderno.jpg',
+      villa: '/properties/villa-lujo.jpg',
+      penthouse: '/properties/penthouse-lujo.jpg',
+      cabin: '/properties/cabana-bosque.jpg',
+      loft: '/properties/loft-urbano.jpg',
+      duplex: '/properties/duplex-moderno.jpg'
+    };
+    const propertyType = property.type?.toLowerCase() || 'house';
+    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+  };
+
+  const getImageCount = (property: Property): number => {
+    if (property.images && property.images.length > 0) return property.images.length;
+    return property.image_url ? 1 : 0;
+  };
+
+  const getCoverImageInfo = (property: Property): string => {
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) return 'Cover image from uploads';
+      return 'First uploaded image';
+    }
+    if (property.image_url) return 'Legacy image';
+    return 'Sample image';
+  };
+
+  // Map filter integration (redirect to /map with selected filters)
   const handleFilterChange = (filters: FilterOptions) => {
     const query: any = {};
     if (filters.operation) query.operation = filters.operation;
@@ -57,78 +90,13 @@ const SellerDashboard: React.FC = () => {
     if (filters.homeType) query.propertyType = filters.homeType;
     if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
     if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
-    
-    router.push({
-      pathname: '/map',
-      query
-    });
+    router.push({ pathname: '/map', query });
   };
 
   const handleSearchLocationChange = (location: string) => {
     const query: any = {};
-    if (location && location.trim() !== '') {
-      query.zone = location;
-    }
-    router.push({
-      pathname: '/map',
-      query
-    });
-  };
-
-  // Helper function to get the cover image for property display
-  const getCoverImageUrl = (property: Property): string => {
-    // First check if property has uploaded images with a cover image
-    if (property.images && property.images.length > 0) {
-      const coverImage = property.images.find(img => img.is_cover);
-      if (coverImage) {
-        return coverImage.image_url;
-      }
-      // If no cover image is set, use the first uploaded image
-      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
-      return sortedImages[0].image_url;
-    }
-
-    // Fallback to single image_url if available
-    if (property.image_url) {
-      return property.image_url;
-    }
-
-    // Final fallback to sample images based on property type
-    const typeImages: { [key: string]: string } = {
-      'house': '/properties/casa-moderna.jpg',
-      'apartment': '/properties/apartamento-moderno.jpg',
-      'villa': '/properties/villa-lujo.jpg',
-      'penthouse': '/properties/penthouse-lujo.jpg',
-      'cabin': '/properties/cabana-bosque.jpg',
-      'loft': '/properties/loft-urbano.jpg',
-      'duplex': '/properties/duplex-moderno.jpg'
-    };
-
-    const propertyType = property.type?.toLowerCase() || 'house';
-    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
-  };
-
-  // Helper function to get image count for display
-  const getImageCount = (property: Property): number => {
-    if (property.images && property.images.length > 0) {
-      return property.images.length;
-    }
-    return property.image_url ? 1 : 0;
-  };
-
-  // Helper function to get cover image info for display
-  const getCoverImageInfo = (property: Property): string => {
-    if (property.images && property.images.length > 0) {
-      const coverImage = property.images.find(img => img.is_cover);
-      if (coverImage) {
-        return "Cover image from uploads";
-      }
-      return "First uploaded image";
-    }
-    if (property.image_url) {
-      return "Legacy image";
-    }
-    return "Sample image";
+    if (location && location.trim() !== '') query.zone = location;
+    router.push({ pathname: '/map', query });
   };
 
   const [activeTab, setActiveTab] = useState<'list' | 'add' | 'edit'>('list');
@@ -163,8 +131,12 @@ const SellerDashboard: React.FC = () => {
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
   // Updated state for API-based image management
+  // Images and propertyId for standardized blob storage flow
   const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
   const [currentPropertyId, setCurrentPropertyId] = useState<string | number | null>(null);
+  // Track if property is newly created (for image upload enablement)
+  const [propertyCreated, setPropertyCreated] = useState<boolean>(false);
+  const imageEditorRef = useRef<any>(null);
 
   // Load property images from API
   const loadPropertyImages = async (propertyId: string | number) => {
@@ -283,33 +255,32 @@ const SellerDashboard: React.FC = () => {
     }));
   };
 
+  // Standardized property submit: always create/update property first, then handle images
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setMessage(null);
 
     try {
-      // Determine if we're creating a new property or updating an existing one
       const isEditing = editingPropertyId !== null;
-      const url = isEditing 
-        ? `/api/properties/update?id=${editingPropertyId}` 
+      const url = isEditing
+        ? `/api/properties/update?id=${editingPropertyId}`
         : '/api/properties/create';
       const method = isEditing ? 'PUT' : 'POST';
 
-      // Prepare payload and strip large base64 image strings to avoid 413 (>1MB)
-      let payload = { ...formData } as any;
-      if (payload.image_url && typeof payload.image_url === 'string' && payload.image_url.startsWith('data:image')) {
-        const approxBytes = Math.ceil((payload.image_url.length * 3) / 4); // base64 size estimate
-        const ONE_MB = 1024 * 1024;
-        if (approxBytes > 750 * 1024) { // be conservative below 1MB limit
-          console.warn('Stripping large inline image from payload (size:', approxBytes, ')');
-          // Option 1: remove image so API keeps existing or assigns default
-          delete payload.image_url;
-          // Optionally set a placeholder if new property without image
-          if (!isEditing) {
-            payload.image_url = '/properties/casa-moderna.jpg';
-          }
-        }
+      // Standardized: Always remove image_url from payload - images handled separately via blob storage
+  let payload = { ...formData } as any;
+  // Ensure seller_id present
+  if (!payload.seller_id && u?.sub) payload.seller_id = u.sub;
+      delete payload.image_url; // Always remove - images use blob storage with separate IDs
+
+      // Front-end validation to avoid 400 from API
+      const requiredFields = ['title','description','price','address'];
+      const missing = requiredFields.filter(f => !String(payload[f] ?? '').trim());
+      if (missing.length) {
+        setSubmitting(false);
+        setMessage({ text: `Please complete: ${missing.join(', ')}`, type: 'error' });
+        return;
       }
 
       const response = await fetch(url, {
@@ -328,51 +299,43 @@ const SellerDashboard: React.FC = () => {
       const propertyData = await response.json();
       const propertyId = isEditing ? editingPropertyId : propertyData.id;
 
-      // If we just created a new property, update the current property ID for image uploads
-      if (!isEditing && propertyData.id) {
-        setCurrentPropertyId(propertyData.id);
+      // Standardized: Ensure property ID exists before any image operations
+      if (!propertyId) {
+        throw new Error('Failed to obtain property ID');
       }
 
-      // Update property features if any are selected
-      if (selectedFeatures.length > 0) {
-        const featuresResponse = await fetch('/api/properties/features/update', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            propertyId,
-            featureIds: selectedFeatures,
-            seller_id: u?.sub
-          }),
-        });
-
-        if (!featuresResponse.ok) {
-          const errorData = await featuresResponse.json();
-          console.error('Error updating property features:', errorData.error);
-          // Don't throw here as the property was created successfully
-          setMessage({
-            text: `Property ${isEditing ? 'updated' : 'created'} successfully, but there was an issue updating features.`,
-            type: 'error'
-          });
-          return;
+      // For new property: set propertyId and enable standardized blob storage image upload
+      if (!isEditing) {
+        setCurrentPropertyId(propertyId);
+        setPropertyCreated(true);
+        // Load any existing images (should be none for new property)
+        await loadPropertyImages(propertyId);
+        // If there are staged images in the editor, trigger upload
+        try {
+          await imageEditorRef.current?.uploadStaged?.();
+        } catch (err) {
+          console.error('Failed to upload staged images after property creation', err);
         }
       }
 
-      // Success - reset form and show message
-      resetForm();
-      setActiveTab('list'); // Switch to list view after creation/update
-      
-      setMessage({
-        text: `Property ${isEditing ? 'updated' : 'listed'} successfully!`,
-        type: 'success'
-      });
-      
-      // Refresh the properties list
-      fetchSellerProperties();
-      
-      // Switch to the list tab after successful submission
-      setActiveTab('list');
+      // Success handling
+      if (isEditing) {
+        resetForm();
+        setActiveTab('list');
+        setMessage({
+          text: `Property updated successfully!`,
+          type: 'success'
+        });
+        fetchSellerProperties();
+      } else {
+        setCurrentPropertyId(propertyId);
+        setPropertyCreated(true);
+        setMessage({
+          text: 'Property created with ID! You can now upload images using standardized blob storage with automatic image ID creation.',
+          type: 'success'
+        });
+        fetchSellerProperties();
+      }
     } catch (error) {
       console.error(`Error ${editingPropertyId ? 'updating' : 'creating'} property:`, error);
       setMessage({
@@ -402,12 +365,13 @@ const SellerDashboard: React.FC = () => {
       seller_id: u?.sub || '',
       zip_code: '',
       yearBuilt: undefined,
-      image_url: ''
+      image_url: '' // Reset - images handled via blob storage
     });
     setEditingPropertyId(null);
     setSelectedFeatures([]);
-    setPropertyImages([]);
-    setCurrentPropertyId(null);
+    setPropertyImages([]); // Reset blob storage images
+    setCurrentPropertyId(null); // Reset property ID for standardized flow
+    setPropertyCreated(false); // Reset creation flag
   };
 
   const fetchPropertyFeatures = async (propertyId: number) => {
@@ -428,7 +392,7 @@ const SellerDashboard: React.FC = () => {
   };
 
   const handleEditProperty = (property: Property) => {
-    // Populate the form with the property data
+    // Standardized: Populate the form with the property data
     setFormData({
       title: property.title,
       description: property.description,
@@ -449,8 +413,10 @@ const SellerDashboard: React.FC = () => {
       seller_id: u?.sub || ''
     });
     
-    // Load property images from API
+    // Standardized: Set property ID for image management
     setCurrentPropertyId(property.id);
+    
+    // Load existing images from blob storage with their IDs
     loadPropertyImages(property.id);
     
     // Set the editing property ID
@@ -573,13 +539,13 @@ const SellerDashboard: React.FC = () => {
               setActiveTab('add');
             }}
           >
-            Add New Property
+            ➕ Add New Property
           </button>
           {activeTab === 'edit' && (
             <button 
               className={`${standardStyles.tabButton} ${activeTab === 'edit' ? standardStyles.tabButtonActive : ''}`}
             >
-              Edit Property
+              ✏️ Edit Property (ID: {editingPropertyId})
             </button>
           )}
         </div>
@@ -699,12 +665,15 @@ const SellerDashboard: React.FC = () => {
                 <span className={styles.formIcon}>
                   {activeTab === 'edit' ? '✏️' : '🏠'}
                 </span>
-                {activeTab === 'edit' ? 'Edit Property' : 'List a New Property'}
+                {activeTab === 'edit' 
+                  ? `Edit Property (ID: ${editingPropertyId})` 
+                  : 'List a New Property - Standardized Flow'
+                }
               </h2>
               <p className={styles.formDescription}>
                 {activeTab === 'edit' 
-                  ? 'Update your property information and manage its visibility' 
-                  : 'Fill out the details below to list your property and reach potential buyers or renters'
+                  ? 'Update your property information and manage blob storage images with existing IDs' 
+                  : 'Fill out the details below to create a property with automatic ID generation, then upload images to standardized blob storage'
                 }
               </p>
             </div>
@@ -746,6 +715,28 @@ const SellerDashboard: React.FC = () => {
                     placeholder="Describe your property in detail - highlight unique features, nearby amenities, and what makes it special"
                     className={styles.formTextarea}
                   />
+                </div>
+
+                {/* Price Field (moved into Basic Information for early visibility) */}
+                <div className={styles.formGroup}>
+                  <label htmlFor="price" className={styles.formLabel}>Price (USD)*</label>
+                  <input
+                    type="text"
+                    id="price"
+                    name="price"
+                    value={formData.price ?? ''}
+                    onChange={(e) => {
+                      // Allow only digits (strip other characters) while keeping as string
+                      const raw = e.target.value;
+                      const cleaned = raw.replace(/[^0-9]/g, '');
+                      e.target.value = cleaned;
+                      handleInputChange(e);
+                    }}
+                    required
+                    placeholder="e.g., 350000"
+                    className={styles.formInput}
+                  />
+                  <small style={{ display: 'block', marginTop: 4, fontSize: 12, color: '#666' }}>Enter numbers only, no commas or symbols.</small>
                 </div>
               </div>
 
@@ -1132,37 +1123,126 @@ const SellerDashboard: React.FC = () => {
               </div>
               </div>
 
-              {/* Property Images Section */}
+              {/* Property Images Section (now also available during Add New Property with temporary staging) */}
+              {true && (
               <div className={styles.formSection}>
                 <h3 className={styles.sectionTitle}>
                   <span className={styles.sectionIcon}>📷</span>
                   Property Images
+                  {(currentPropertyId || activeTab === 'add') && (
+                    <span style={{marginLeft:'auto', display:'flex', gap:8}}>
+                      {activeTab === 'add' && !currentPropertyId && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            // Minimal validation before auto-create
+                            const required = ['title','description','price','address'];
+                            const missing = required.filter(k => !(formData as any)[k]);
+                            if (missing.length) {
+                              setMessage({ text: `Please fill: ${missing.join(', ')}`, type: 'error' });
+                              return;
+                            }
+                            if (!formData.seller_id && u?.sub) {
+                              setFormData(prev => ({ ...prev, seller_id: u.sub! }));
+                            }
+                            // Create property silently
+                            try {
+                              setSubmitting(true);
+                              const response = await fetch('/api/properties/create', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  ...formData,
+                                  seller_id: u?.sub,
+                                  image_url: undefined
+                                })
+                              });
+                              if (!response.ok) {
+                                const errData = await response.json().catch(()=>({}));
+                                throw new Error(errData.error || 'Failed to create property before upload');
+                              }
+                              const created = await response.json();
+                              setCurrentPropertyId(created.id);
+                              setMessage({ text: 'Property saved. You can now upload images.', type: 'success' });
+                              // Upload any staged images
+                              await imageEditorRef.current?.uploadStaged?.();
+                              // Open dialog to add more
+                              imageEditorRef.current?.openUploadDialog?.();
+                            } catch (err:any) {
+                              setMessage({ text: err.message || 'Error creating property', type: 'error' });
+                            } finally {
+                              setSubmitting(false);
+                            }
+                          }}
+                          className={styles.quickActionBtn}
+                          title="Save property and start uploading"
+                        >
+                          💾 Save & Upload
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => (currentPropertyId ? imageEditorRef.current?.openUploadDialog?.() : imageEditorRef.current?.openStageDialog?.())}
+                        className={styles.quickActionBtn}
+                        title={currentPropertyId ? 'Select images and upload immediately' : 'Add images (temporary until you save)'}
+                      >
+                        {currentPropertyId ? '📤 Upload' : '📥 Add'}
+                      </button>
+                      {currentPropertyId && (
+                        <button
+                          type="button"
+                          onClick={() => imageEditorRef.current?.openStageDialog?.()}
+                          className={styles.quickActionBtn}
+                          title="Select images to stage (won't upload until you click Upload Staged)"
+                        >
+                          📥 Stage
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => imageEditorRef.current?.deleteSelected?.()}
+                        className={styles.quickActionBtn}
+                        title="Delete all currently selected images"
+                      >
+                        🗑️ Delete Selected
+                      </button>
+                    </span>
+                  )}
                 </h3>
                 <p className={styles.sectionDescription}>
-                  Upload high-quality images to showcase your property
+                  {currentPropertyId ? 'Upload high-quality images to showcase your property' : 'Add images now. They will upload automatically once the property is created.'}
                 </p>
 
-                <PropertyImageEditor
-                  propertyId={currentPropertyId || undefined}
-                  sellerId={u?.sub || u?.email || 'anonymous'}
-                  images={propertyImages}
-                  onChange={(images: PropertyImage[]) => {
-                    setPropertyImages(images);
-                    // Update form data with cover image URL for backward compatibility
-                    const coverImage = images.find(img => img.is_cover);
-                    if (coverImage) {
-                      setFormData(prev => ({ ...prev, image_url: coverImage.image_url }));
-                    }
-                  }}
-                  maxImages={15}
-                  allowBulkOperations={true}
-                  showImagePreview={true}
-                />
+                {/* Standardized: Only render image upload if property exists with valid ID */}
+        {currentPropertyId || activeTab === 'add' ? (
+                  <PropertyImageEditor
+                    ref={imageEditorRef}
+          propertyId={currentPropertyId || undefined}
+                    sellerId={u?.sub || u?.email || 'anonymous'}
+                    images={propertyImages}
+                    onChange={(images: PropertyImage[]) => {
+                      setPropertyImages(images);
+                      // Update form data with cover image URL for backward compatibility
+                      const coverImage = images.find(img => img.is_cover);
+                      if (coverImage) {
+                        setFormData(prev => ({ ...prev, image_url: coverImage.image_url }));
+                      }
+                    }}
+                    maxImages={15}
+                    allowBulkOperations={true}
+                    showImagePreview={true}
+          allowTempImagesBeforeSave={activeTab === 'add'}
+                  />
+                ) : (
+                  <div className={styles.imageUploadNotice}>
+                    <span>💾 Save property details first to enable standardized blob storage image upload with automatic ID creation.</span>
+                  </div>
+                )}
                 
-                {propertyImages.length > 0 && (
+        {propertyImages.length > 0 && (
                   <div className={styles.imageStats}>
-                    <span className={styles.statsIcon}>📊</span>
-                    <span>{propertyImages.length} image{propertyImages.length !== 1 ? 's' : ''} uploaded</span>
+                    <span className={styles.statsIcon}>�</span>
+          <span>{propertyImages.length} image{propertyImages.length !== 1 ? 's' : ''} {currentPropertyId ? 'in blob storage' : 'staged'}</span>
                     {propertyImages.find(img => img.is_cover) && (
                       <span className={styles.coverInfo}>
                         • Cover: {propertyImages.find(img => img.is_cover)?.image_url.split('/').pop()}
@@ -1171,6 +1251,7 @@ const SellerDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
 
               {/* Property Features Section */}
               <div className={styles.formSection}>
@@ -1259,7 +1340,7 @@ const SellerDashboard: React.FC = () => {
                   <span className={styles.buttonIcon}>
                     {submitting ? '⏳' : activeTab === 'edit' ? '✏️' : '🏠'}
                   </span>
-                  {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'List Property'}
+                  {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'Create Property & Enable Image Upload'}
                 </button>
               </div>
             </form>

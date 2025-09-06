@@ -173,7 +173,13 @@
 }
 
 .grid2 {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 769px) {
+  .grid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .grid3 {

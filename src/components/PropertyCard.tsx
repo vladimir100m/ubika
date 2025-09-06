@@ -110,52 +110,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     <div className={HOME_CARD_CLASS} onClick={handleCardClick}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
-        {/* On mobile, always show only the cover image. On desktop, show grid if >1 image. */}
-        <picture>
-          <source
-            media="(max-width: 768px)"
-            srcSet={imageError ? '/properties/casa-moderna.jpg' : coverImage}
-          />
-          {thumbnails.length === 1 ? (
-            <img
-              src={imageError ? '/properties/casa-moderna.jpg' : coverImage}
-              alt={property.title || `Property in ${property.city}`}
-              className={styles.propertyImage}
-              onError={() => setImageError(true)}
-              loading="lazy"
-            />
-          ) : (
-            <div className={styles.gridThree}>
-              <img
-                src={imageError ? '/properties/casa-moderna.jpg' : thumbnails[0]}
-                alt={property.title || `Property in ${property.city}`}
-                className={styles.halfCover}
-                onError={() => setImageError(true)}
-                loading="lazy"
-              />
-              <div className={styles.rightStack}>
-                {thumbnails[1] && (
-                  <img
-                    src={imageError ? '/properties/casa-moderna.jpg' : thumbnails[1]}
-                    alt={property.title || `Property in ${property.city}`}
-                    className={styles.quarterImage}
-                    onError={() => setImageError(true)}
-                    loading="lazy"
-                  />
-                )}
-                {thumbnails[2] && (
-                  <img
-                    src={imageError ? '/properties/casa-moderna.jpg' : thumbnails[2]}
-                    alt={property.title || `Property in ${property.city}`}
-                    className={styles.quarterImage}
-                    onError={() => setImageError(true)}
-                    loading="lazy"
-                  />
-                )}
-              </div>
-            </div>
-          )}
-        </picture>
+        {/* Always show only the cover image for a simpler home view */}
+        <img
+          src={imageError ? '/properties/casa-moderna.jpg' : coverImage}
+          alt={property.title || `Property in ${property.city}`}
+          className={styles.propertyImage}
+          onError={() => setImageError(true)}
+          loading="lazy"
+        />
 
   {/* Favorite/save feature removed */}
 
