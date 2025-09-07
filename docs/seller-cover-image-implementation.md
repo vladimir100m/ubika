@@ -88,7 +88,7 @@ getCoverImageInfo(property: Property): string
 ### 4. Property with No Images ✅
 - **Seller View**: Shows appropriate sample image based on type
 - **Image Count**: Shows "0 photos"
-- **Fallback**: Type-based sample image (house → casa-moderna.jpg)
+- **Fallback**: Neutral placeholder logo when no uploaded or legacy image available (house → ubika-logo.png)
 
 ## File Structure Example
 

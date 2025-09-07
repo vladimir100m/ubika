@@ -48,7 +48,6 @@ const MapPage: React.FC = () => {
   
   // Sample additional images for the gallery
   const additionalImages = [
-    '/properties/casa-moderna.jpg',
     '/properties/casa-lago.jpg',
     '/properties/casa-campo.jpg',
     '/properties/villa-lujo.jpg',

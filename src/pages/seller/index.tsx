@@ -52,7 +52,7 @@ const SellerDashboard: React.FC = () => {
     }
     if (property.image_url) return property.image_url;
     const typeImages: Record<string, string> = {
-      house: '/properties/casa-moderna.jpg',
+      house: '/ubika-logo.png',
       apartment: '/properties/apartamento-moderno.jpg',
       villa: '/properties/villa-lujo.jpg',
       penthouse: '/properties/penthouse-lujo.jpg',
@@ -61,7 +61,7 @@ const SellerDashboard: React.FC = () => {
       duplex: '/properties/duplex-moderno.jpg'
     };
     const propertyType = property.type?.toLowerCase() || 'house';
-    return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+    return typeImages[propertyType] || '/ubika-logo.png';
   };
 
   const getImageCount = (property: Property): number => {
@@ -579,7 +579,7 @@ const SellerDashboard: React.FC = () => {
                         className={styles.propertyImage}
                         onError={(e) => {
                           // Fallback image if main image fails to load
-                          (e.target as HTMLImageElement).src = '/properties/casa-moderna.jpg';
+                          (e.target as HTMLImageElement).src = '/ubika-logo.png';
                         }}
                       />
                       <div className={styles.propertyPrice}>${property.price?.toLocaleString()}</div>
