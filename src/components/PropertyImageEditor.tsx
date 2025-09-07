@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect, DragEvent, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, DragEvent, forwardRef, useImperativeHandle } from 'react';
 import { PropertyImage } from '../types';
 import styles from '../styles/PropertyImageEditor.module.css';
 
@@ -10,7 +10,9 @@ interface PropertyImageEditorProps {
   maxImages?: number;
   allowBulkOperations?: boolean;
   showImagePreview?: boolean;
-  allowTempImagesBeforeSave?: boolean;
+  allowTempImagesBeforeSave?: boolean; // kept for backward compatibility (currently not staging temps)
+  onAutoCreateProperty?: () => Promise<number | string>; // (legacy) optional auto-create hook (not used when staging)
+  onPropertyCreated?: (id: number | string) => void; // notify parent of new id
 }
 
 interface UploadItem {
@@ -22,13 +24,27 @@ interface UploadItem {
   file?: File;
 }
 
-function PropertyImageEditor(props: PropertyImageEditorProps) {
-  const { propertyId, sellerId, images, onChange, maxImages = 15, allowBulkOperations = true, showImagePreview = true, allowTempImagesBeforeSave = false } = props;
+const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({ 
+  propertyId,
+  sellerId,
+  images,
+  onChange,
+  maxImages = 15,
+  allowBulkOperations = true,
+  showImagePreview = true,
+  allowTempImagesBeforeSave = false,
+  onAutoCreateProperty,
+  onPropertyCreated
+}, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const selectModeRef = useRef<'auto' | 'stage'>('auto');
   const [dragOver, setDragOver] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [creatingProperty, setCreatingProperty] = useState(false);
+  const stagedUploadedRef = useRef(false); // prevent double auto upload
+
+  // Keep internal copy of staged temp images (for preview before real upload)
+  const [tempImages, setTempImages] = useState<PropertyImage[]>([]);
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
   const [previewImage, setPreviewImage] = useState<PropertyImage | null>(null);
@@ -69,24 +85,8 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
   // File upload handlers
   const triggerFileSelect = () => inputRef.current?.click();
 
-  // Trigger file input with explicit mode: 'auto' => upload immediately, 'stage' => stage files for manual upload
-  const triggerFileSelectMode = (mode: 'auto' | 'stage' = 'auto') => {
-    selectModeRef.current = mode;
-    inputRef.current?.click();
-  };
-
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    if (selectModeRef.current === 'auto') {
-      // Immediate upload
-      uploadFiles(files);
-    } else {
-      // Stage files for manual upload
-      stageFiles(files);
-    }
-
+    uploadFiles(e.target.files);
     if (e.target) e.target.value = '';
   };
 
@@ -103,18 +103,45 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
 
   const onDragLeave = () => setDragOver(false);
 
-  // Upload functionality with standardized blob storage
+  // Upload functionality
   const uploadFiles = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
     
-    // Standardized: Always require propertyId for blob storage uploads
-    if (!propertyId) {
-      if (allowTempImagesBeforeSave) {
-        // Fallback to staging locally if property not yet saved
-        stageFiles(fileList);
+    // STAGING MODE: If property doesn't yet exist and allowed -> stage files, create temp previews, wait for property creation
+    if (!propertyId && allowTempImagesBeforeSave) {
+      const remainingSlots = maxImages - (images.length + tempImages.length);
+      if (remainingSlots <= 0) {
+        setLocalError(`Maximum ${maxImages} images allowed`);
         return;
       }
-      setLocalError('Property must be saved before uploading images to blob storage');
+      const files = Array.from(fileList).slice(0, remainingSlots);
+      const now = Date.now();
+      const newUploadItems = files.map((file, idx) => ({
+        tempId: `${now}-${Math.random()}`,
+        name: file.name,
+        progress: 0,
+        status: 'pending' as const,
+        file,
+      }));
+      setUploadItems(prev => [...prev, ...newUploadItems]);
+      // Create temporary preview images
+      const startOrder = images.length + tempImages.length;
+      const newTemp: PropertyImage[] = files.map((file, i) => ({
+        id: -(now + i),
+        property_id: 0,
+        image_url: URL.createObjectURL(file),
+        is_cover: (images.length + tempImages.length === 0) && i === 0,
+        display_order: startOrder + i + 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
+      setTempImages(prev => [...prev, ...newTemp]);
+      onChange([...images, ...tempImages, ...newTemp]);
+      return; // do not upload yet
+    }
+
+    if (!propertyId) {
+      setLocalError('Property must be saved before uploading images');
       return;
     }
 
@@ -128,8 +155,7 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
     setUploading(true);
     setLocalError(null);
 
-    // Initialize upload items with standardized tracking
-    // Stage then process immediately
+    // Initialize upload items
     const newUploadItems: UploadItem[] = files.map(file => ({
       tempId: `${Date.now()}-${Math.random()}`,
       name: file.name,
@@ -138,12 +164,71 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
       file
     }));
 
-    // Append to any existing staged items
-    setUploadItems(prev => [...prev, ...newUploadItems]);
+    setUploadItems(newUploadItems);
 
     try {
-      // Start processing queue immediately
-      await processUploadQueue();
+      const uploadResults: PropertyImage[] = [];
+
+      // Upload files one by one for better progress tracking
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadItem = newUploadItems[i];
+
+        try {
+          // Update status to uploading
+          setUploadItems(prev => prev.map(item => 
+            item.tempId === uploadItem.tempId 
+              ? { ...item, status: 'uploading' as const, progress: 50 }
+              : item
+          ));
+
+          const formData = new FormData();
+          formData.append('property_id', String(propertyId));
+          formData.append('seller_id', sellerId || 'anonymous');
+          formData.append('images', file);
+
+          const response = await fetch('/api/properties/images/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error || 'Upload failed');
+            }
+
+            const result = await response.json();
+            
+            // Update progress to 100% and status to done
+            setUploadItems(prev => prev.map(item => 
+              item.tempId === uploadItem.tempId 
+                ? { ...item, progress: 100, status: 'done' as const }
+                : item
+            ));
+
+            if (result.images && result.images.length > 0) {
+              uploadResults.push(...result.images);
+            }
+
+        } catch (error) {
+          // Update status to error
+          setUploadItems(prev => prev.map(item => 
+            item.tempId === uploadItem.tempId 
+              ? { 
+                  ...item, 
+                  status: 'error' as const, 
+                  error: error instanceof Error ? error.message : 'Upload failed'
+                }
+              : item
+          ));
+        }
+      }
+
+      // Reload all images to ensure consistency
+      if (uploadResults.length > 0) {
+        await loadAllPropertyImages();
+      }
+
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
@@ -153,91 +238,52 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
     }
   };
 
-  // Stage files without starting upload (for manual flow)
-  const stageFiles = (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0) return;
-    const remainingSlots = maxImages - images.length - uploadItems.length;
-    if (remainingSlots <= 0) {
-      setLocalError(`Maximum ${maxImages} images allowed`);
-      return;
-    }
-    const files = Array.from(fileList).slice(0, remainingSlots);
-    const newUploadItems: UploadItem[] = files.map(file => ({
-      tempId: `${Date.now()}-${Math.random()}`,
-      name: file.name,
-      progress: 0,
-      status: 'pending',
-      file
-    }));
-    setUploadItems(prev => [...prev, ...newUploadItems]);
-
-    // When property not yet saved, create temporary preview images immediately
-    if (!propertyId && allowTempImagesBeforeSave) {
-      const startingOrder = images.length;
-      const tempImages: PropertyImage[] = files.map((file, idx) => ({
-        id: -(Date.now() + idx),
-        property_id: 0,
-        image_url: URL.createObjectURL(file),
-        display_order: startingOrder + idx + 1,
-        is_cover: images.length === 0 && idx === 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as any));
-      onChange([...images, ...tempImages]);
-    }
-  };
-
-  // Process staged uploadItems sequentially
-  const processUploadQueue = async () => {
-    if (!propertyId) return;
-    setUploading(true);
-    const results: PropertyImage[] = [];
-    // Iterate over a snapshot to avoid state mutation during loop
-    for (const item of [...uploadItems]) {
-      if (!item.file || item.status !== 'pending') continue;
-      // mark uploading
-      setUploadItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, status: 'uploading', progress: 50 } : it));
-
-      try {
-        const formData = new FormData();
-        formData.append('property_id', String(propertyId));
-        formData.append('seller_id', sellerId || 'anonymous');
-        formData.append('images', item.file as File);
-
-        const response = await fetch('/api/properties/images/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Upload failed');
+  // Imperative handle to allow parent to trigger staged upload after property creation
+  useImperativeHandle(ref, () => ({
+    uploadStaged: async () => {
+      if (!propertyId) return;
+      const staged = uploadItems.filter(i => i.status === 'pending' && i.file);
+      if (staged.length === 0) return;
+      setUploading(true);
+      for (const item of staged) {
+        try {
+          setUploadItems(prev => prev.map(u => u.tempId === item.tempId ? { ...u, status: 'uploading', progress: 50 } : u));
+          const formData = new FormData();
+          formData.append('property_id', String(propertyId));
+          formData.append('seller_id', sellerId || 'anonymous');
+          formData.append('images', item.file as File);
+          const response = await fetch('/api/properties/images/upload', { method: 'POST', body: formData });
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Upload failed');
+          }
+          await response.json();
+          setUploadItems(prev => prev.map(u => u.tempId === item.tempId ? { ...u, status: 'done', progress: 100 } : u));
+        } catch (e: any) {
+          setUploadItems(prev => prev.map(u => u.tempId === item.tempId ? { ...u, status: 'error', error: e?.message || 'Upload failed' } : u));
         }
-
-        const resJson = await response.json();
-        setUploadItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, progress: 100, status: 'done' } : it));
-        if (resJson.images && resJson.images.length > 0) results.push(...resJson.images);
-      } catch (err: any) {
-        setUploadItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, status: 'error', error: err?.message || 'Upload failed' } : it));
       }
-    }
-
-    if (results.length > 0) {
+      // Reload real images & clear temps
       await loadAllPropertyImages();
+      setTempImages([]);
+      setUploading(false);
+      setTimeout(() => setUploadItems([]), 3000);
     }
-    setUploading(false);
-  };
+  }));
 
+  // Auto-upload staged files once propertyId becomes available
+  useEffect(() => {
+    if (propertyId && allowTempImagesBeforeSave && uploadItems.some(i => i.status === 'pending') && !stagedUploadedRef.current) {
+      stagedUploadedRef.current = true;
+      (async () => {
+        try { await (ref as any)?.current?.uploadStaged?.(); } catch(e) { /* ignore */ }
+      })();
+    }
+  }, [propertyId, allowTempImagesBeforeSave, uploadItems]);
 
   // Image operations
   const setCoverImage = async (imageId: number) => {
-    if (!propertyId) {
-      if (allowTempImagesBeforeSave) {
-        const updated = images.map(img => ({ ...img, is_cover: img.id === imageId }));
-        onChange(updated);
-      }
-      return;
-    }
+    if (!propertyId) return;
 
     try {
       const response = await fetch('/api/properties/images/update', {
@@ -369,7 +415,7 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
         const response = await fetch('/api/properties/images/update', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+            body: JSON.stringify({
             images: updatedImages.map(img => ({
               imageId: img.id,
               display_order: img.display_order
@@ -391,40 +437,260 @@ function PropertyImageEditor(props: PropertyImageEditorProps) {
   };
 
   return (
-    <div className={styles.dropZone}
-      onDrop={onDrop}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onClick={triggerFileSelect}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={onFileChange}
-        className={styles.hiddenInput}
-        disabled={uploading || images.length >= maxImages}
-      />
-      <div className={styles.dropZoneContent}>
-        {uploading ? (
-          <div>
-            <div className={styles.uploadSpinner}></div>
-            <p>Uploading to blob storage...</p>
-            <p className={styles.uploadHint}>Creating image IDs automatically</p>
-          </div>
-        ) : (
-          <div>
-            <div className={styles.uploadIcon}>📸</div>
-            <p><strong>Drop images here</strong> or click to browse</p>
-            <p className={styles.uploadHint}>
-              Standardized blob storage • Automatic ID creation • Up to {maxImages} images • Max 10MB each
-            </p>
-          </div>
-        )}
+    <div className={styles.container}>
+      {/* Upload Zone */}
+      <div
+        className={`${styles.dropZone} ${dragOver ? styles.dragOver : ''} ${uploading ? styles.uploading : ''}`}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onClick={triggerFileSelect}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={onFileChange}
+          className={styles.hiddenInput}
+          disabled={uploading || images.length >= maxImages}
+        />
+        
+        <div className={styles.dropZoneContent}>
+          {uploading ? (
+            <>
+              <div className={styles.uploadSpinner}></div>
+              <p>Uploading images...</p>
+              {creatingProperty && <p>Creating property...</p>}
+            </>
+          ) : (
+            <>
+              <div className={styles.uploadIcon}>📸</div>
+              <p><strong>Drop images here</strong> or click to browse</p>
+              <p className={styles.uploadHint}>
+                Up to {maxImages} images • Max 10MB each
+              </p>
+              {!propertyId && allowTempImagesBeforeSave && (
+                <p className={styles.uploadHint}>Images are staged and will upload after saving the property.</p>
+              )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Error Message */}
+      {localError && (
+        <div className={styles.errorMessage}>
+          <span className={styles.errorIcon}>⚠️</span>
+          {localError}
+          <button 
+            className={styles.errorClose}
+            onClick={() => setLocalError(null)}
+            aria-label="Close error"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Upload Progress */}
+  {uploadItems.length > 0 && (
+        <div className={styles.uploadProgress}>
+          <h4 className={styles.progressTitle}>Upload Progress</h4>
+          {uploadItems.map(item => (
+            <div key={item.tempId} className={styles.progressItem}>
+              <div className={styles.progressInfo}>
+                <span className={styles.fileName}>{item.name}</span>
+                <span className={styles.progressStatus}>
+      {item.status === 'error' && <span className={styles.statusError}>❌ {item.error}</span>}
+      {item.status === 'done' && <span className={styles.statusSuccess}>✅ Done</span>}
+      {item.status === 'uploading' && <span>{item.progress}%</span>}
+      {item.status === 'pending' && !propertyId && allowTempImagesBeforeSave && <span>Staged</span>}
+      {item.status === 'pending' && propertyId && <span>Queued</span>}
+                </span>
+              </div>
+              <div className={styles.progressBar}>
+                <div 
+                  className={`${styles.progressFill} ${item.status === 'error' ? styles.progressError : ''}`}
+                  style={{ width: `${item.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Image Grid */}
+      {images.length > 0 && (
+        <div className={styles.imageGrid}>
+          <div className={styles.gridHeader}>
+            <h4 className={styles.gridTitle}>
+              {images.length} image{images.length !== 1 ? 's' : ''} uploaded
+            </h4>
+            
+            {allowBulkOperations && images.length > 1 && (
+              <div className={styles.bulkActions}>
+                <button
+                  type="button"
+                  className={styles.bulkBtn}
+                  onClick={selectedImages.size === images.length ? deselectAllImages : selectAllImages}
+                >
+                  {selectedImages.size === images.length ? 'Deselect All' : 'Select All'}
+                </button>
+                
+                {selectedImages.size > 0 && (
+                  <button
+                    type="button"
+                    className={`${styles.bulkBtn} ${styles.deleteBtn}`}
+                    onClick={deleteSelectedImages}
+                  >
+                    Delete Selected ({selectedImages.size})
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.thumbGrid}>
+            {sortedImages.map((image, idx) => (
+              <div key={image.id} className={styles.imageItem}>
+                {allowBulkOperations && (
+                  <input
+                    type="checkbox"
+                    className={styles.imageCheckbox}
+                    checked={selectedImages.has(image.id)}
+                    onChange={() => toggleImageSelection(image.id)}
+                  />
+                )}
+                
+                <div 
+                  className={styles.imageWrapper}
+                  onClick={() => openPreview(image)}
+                >
+                  <img
+                    src={image.image_url}
+                    alt={`Property image ${idx + 1}`}
+                    className={styles.thumbImg}
+                    loading="lazy"
+                  />
+                  
+                  {image.is_cover && (
+                    <div className={styles.coverBadge}>Cover</div>
+                  )}
+                  
+                  <div className={styles.imageOverlay}>
+                    <button
+                      type="button"
+                      className={styles.previewBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openPreview(image);
+                      }}
+                    >
+                      👁️
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.imageActions}>
+                  <button
+                    type="button"
+                    className={`${styles.actionBtn} ${image.is_cover ? styles.coverBtn : ''}`}
+                    onClick={() => setCoverImage(image.id)}
+                    title={image.is_cover ? 'Cover Image' : 'Set as Cover'}
+                  >
+                    ⭐
+                  </button>
+                  
+                  {idx > 0 && (
+                    <button
+                      type="button"
+                      className={styles.actionBtn}
+                      onClick={() => moveImage(image.id, 'left')}
+                      title="Move Left"
+                    >
+                      ←
+                    </button>
+                  )}
+                  
+                  {idx < images.length - 1 && (
+                    <button
+                      type="button"
+                      className={styles.actionBtn}
+                      onClick={() => moveImage(image.id, 'right')}
+                      title="Move Right"
+                    >
+                      →
+                    </button>
+                  )}
+                  
+                  <button
+                    type="button"
+                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                    onClick={() => deleteImage(image.id)}
+                    title="Delete Image"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showPreview && previewImage && (
+        <div className={styles.previewModal} onClick={closePreview}>
+          <div className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={styles.previewClose}
+              onClick={closePreview}
+              aria-label="Close preview"
+            >
+              ×
+            </button>
+            
+            <img
+              src={previewImage.image_url}
+              alt="Property image preview"
+              className={styles.previewImage}
+            />
+            
+            <div className={styles.previewInfo}>
+              <h3>Image Details</h3>
+              <p><strong>Order:</strong> {previewImage.display_order}</p>
+              <p><strong>Cover Image:</strong> {previewImage.is_cover ? 'Yes' : 'No'}</p>
+              <p><strong>Uploaded:</strong> {new Date(previewImage.created_at).toLocaleDateString()}</p>
+              <div className={styles.previewActions}>
+                <button
+                  className={`${styles.previewActionBtn} ${previewImage.is_cover ? styles.coverBtn : ''}`}
+                  onClick={() => {
+                    setCoverImage(previewImage.id);
+                    closePreview();
+                  }}
+                >
+                  {previewImage.is_cover ? '⭐ Cover Image' : 'Set as Cover'}
+                </button>
+                
+                <button
+                  className={`${styles.previewActionBtn} ${styles.deleteBtn}`}
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this image?')) {
+                      deleteImage(previewImage.id);
+                      closePreview();
+                    }
+                  }}
+                >
+                  🗑️ Delete Image
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+});
 
 export default PropertyImageEditor;
