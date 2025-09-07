@@ -1126,6 +1126,7 @@ const SellerDashboard: React.FC = () => {
         {currentPropertyId || activeTab === 'add' ? (
           <div className={styles.container}>
             <PropertyImageEditor
+              ref={imageEditorRef}
               propertyId={currentPropertyId || undefined}
               sellerId={u?.sub || u?.email || 'anonymous'}
               images={propertyImages}
@@ -1141,6 +1142,47 @@ const SellerDashboard: React.FC = () => {
               allowBulkOperations={true}
               showImagePreview={true}
               allowTempImagesBeforeSave={activeTab === 'add'}
+              onAutoCreateProperty={async () => {
+                // Build minimal payload from current form data (fallbacks if missing)
+                const payload: any = {
+                  title: formData.title || 'Untitled Property',
+                  description: formData.description || 'Auto-created placeholder description',
+                  price: formData.price || '0',
+                  address: formData.address || 'Pending address',
+                  city: formData.city || '',
+                  state: formData.state || '',
+                  country: formData.country || '',
+                  zip_code: formData.zip_code || '',
+                  type: formData.type || 'house',
+                  rooms: formData.rooms || 0,
+                  bathrooms: formData.bathrooms || 0,
+                  squareMeters: formData.squareMeters || 0,
+                  status: formData.status || 'available',
+                  yearBuilt: formData.yearBuilt || null,
+                  seller_id: formData.seller_id || u?.sub || u?.email || 'anonymous',
+                  operation_status_id: formData.operation_status_id || 1
+                };
+                // API requires squareMeters number & required fields; ensure numeric types
+                if (typeof payload.squareMeters !== 'number') payload.squareMeters = parseInt(String(payload.squareMeters), 10) || 0;
+                const res = await fetch('/api/properties/create', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                  const err = await res.json().catch(() => ({}));
+                  throw new Error(err.error || 'Failed to auto-create property');
+                }
+                const created = await res.json();
+                const newId = created.id;
+                setCurrentPropertyId(newId);
+                setPropertyCreated(true);
+                return newId;
+              }}
+              onPropertyCreated={(id) => {
+                // Optionally fetch images (should be none yet)
+                loadPropertyImages(id);
+              }}
             />
           </div>
         ) : (
