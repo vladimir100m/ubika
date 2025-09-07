@@ -1,6 +1,6 @@
 import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
-import React, {useState, useEffect, useRef, RefObject} from 'react';
+import React, {useState, useEffect, useRef, RefObject, useCallback, useMemo} from 'react';
 import {useRouter} from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
@@ -18,7 +18,7 @@ interface Neighborhood {
 }
 
 // Infer a simple emoji/icon fallback when API feature lacks explicit icon
-function inferIconFromCategory(category?: string) {
+function inferIconFromCategory(category?: string): string {
   if(!category) return '•';
   const key = category.toLowerCase();
   if (key.includes('kitchen')) return '🍳';
@@ -30,117 +30,56 @@ function inferIconFromCategory(category?: string) {
   return '•';
 }
 
+// Helper to sort images by cover and display order
+// Accept full image objects for sorting
+type PropertyImage = { is_cover?: boolean; display_order?: number; image_url: string };
+const sortPropertyImages = (images: PropertyImage[]): PropertyImage[] => {
+  return [...images].sort((a, b) => {
+    if (a.is_cover && !b.is_cover) return -1;
+    if (!a.is_cover && b.is_cover) return 1;
+    return (a.display_order ?? 0) - (b.display_order ?? 0);
+  });
+};
+
 // Get the cover image for property display
 const getCoverImage = (property: Property): string => {
-  // First check if property has uploaded images with a cover image
   if (property.images && property.images.length > 0) {
-    const coverImage = property.images.find(img => img.is_cover);
-    if (coverImage) {
-      return coverImage.image_url;
-    }
-    // If no cover image is set, use the first uploaded image
-    const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+    const sortedImages = sortPropertyImages(property.images);
     return sortedImages[0].image_url;
   }
-
-  // Fallback to single image_url if available
   if (property.image_url) {
     return property.image_url;
   }
-
-  // Final fallback to sample images based on property type
   const typeImages: { [key: string]: string } = {
-  'house': '/ubika-logo.png',
-  'apartment': '/ubika-logo.png',
-  'villa': '/ubika-logo.png',
-  'penthouse': '/ubika-logo.png',
-  'cabin': '/ubika-logo.png',
-  'loft': '/ubika-logo.png',
-  'duplex': '/ubika-logo.png'
+    house: '/ubika-logo.png',
+    apartment: '/ubika-logo.png',
+    villa: '/ubika-logo.png',
+    penthouse: '/ubika-logo.png',
+    cabin: '/ubika-logo.png',
+    loft: '/ubika-logo.png',
+    duplex: '/ubika-logo.png',
   };
-
   const propertyType = property.type?.toLowerCase() || 'house';
   return typeImages[propertyType] || '/ubika-logo.png';
 };
 
-// Function to generate additional property images based on property type
+// Function to enforce mandatory upload of at least three images
 const generatePropertyImages = (property: Property): string[] => {
-  const baseImages = [
-    '/properties/casa-lago.jpg',
-    '/properties/casa-campo.jpg',
-    '/properties/villa-lujo.jpg',
-    '/properties/cabana-playa.jpg',
-    '/properties/casa-playa.jpg',
-    '/properties/casa-colonial.jpg'
-  ];
-
-  // Type-specific images
-  const typeImages: { [key: string]: string[] } = {
-    'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
-    'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
-  'casa': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-  'house': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-    'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
-    'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
-    'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-    'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-    'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg']
-  };
-
-  const propertyType = property.type?.toLowerCase() || 'house';
-  const relevantImages = typeImages[propertyType] || baseImages;
-  
-  // Return 3-4 additional images plus the main image
-  return relevantImages.slice(0, 3);
+  if (property.images && property.images.length >= 3) {
+    // Return sorted uploaded images
+    return sortPropertyImages(property.images).map(img => img.image_url).slice(0, 3);
+  }
+  // If less than 3 images, return empty array to enforce mandatory upload
+  return [];
 };
 
 // Function to get all property images for gallery
 const getPropertyImages = (property: Property): string[] => {
-  // First check if property has uploaded images
-  if (property.images && property.images.length > 0) {
-    return property.images
-      .sort((a, b) => {
-        // Sort by is_cover first, then by display_order
-        if (a.is_cover && !b.is_cover) return -1;
-        if (!a.is_cover && b.is_cover) return 1;
-        return a.display_order - b.display_order;
-      })
-      .map(img => img.image_url);
+  if (property.images && property.images.length >= 3) {
+    return sortPropertyImages(property.images).map(img => img.image_url);
   }
-
-  // Fallback to generating sample images
-  return generatePropertyImages(property).length ? generatePropertyImages(property) : ['/ubika-logo.png'];
-};
-
-// Function to generate additional property images based on property type (legacy)
-const generatePropertyImagesLegacy = (property: Property) => {
-  const baseImages = [
-    '/properties/casa-lago.jpg',
-    '/properties/casa-campo.jpg',
-    '/properties/villa-lujo.jpg',
-    '/properties/cabana-playa.jpg',
-    '/properties/casa-playa.jpg',
-    '/properties/casa-colonial.jpg'
-  ];
-
-  // Type-specific images
-  const typeImages: { [key: string]: string[] } = {
-    'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
-    'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
-  'casa': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-  'house': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-    'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
-    'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
-    'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-    'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-    'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg']
-  };
-
-  const propertyType = property.type?.toLowerCase() || 'house';
-  const relevantImages = typeImages[propertyType] || baseImages;
-  
-  // Return 3-4 additional images plus the main image
-  return relevantImages.slice(0, 3);
+  // If less than 3 images, return empty array to enforce mandatory upload
+  return [];
 };
   
 
@@ -184,27 +123,28 @@ export default function PropertyPopup({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use actual property images uploaded by the user
         const propertyImages = getPropertyImages(selectedProperty);
-        // Remove the first image since it's used as the cover image
-        const additionalPropertyImages = propertyImages.slice(1);
-        setAdditionalImages(additionalPropertyImages);
-
-        // Fetch neighborhood data - try to match by city first
+        setAdditionalImages(propertyImages.slice(1));
         if (selectedProperty.city) {
           const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(selectedProperty.city)}`);
           if (neighborhoodResponse.ok) {
             const neighborhoods = await neighborhoodResponse.json();
             if (neighborhoods.length > 0) {
               setNeighborhoodData(neighborhoods[0]);
+            } else {
+              setNeighborhoodData(null);
             }
+          } else {
+            setNeighborhoodData(null);
           }
+        } else {
+          setNeighborhoodData(null);
         }
       } catch (error) {
-        console.error('Error fetching property data:', error);
+        setNeighborhoodData(null);
+        // Optionally show a toast or UI feedback for error
       }
     };
-
     fetchData();
   }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
 
@@ -307,10 +247,8 @@ export default function PropertyPopup({
     };
   }, []);
 
-  const handleTabChange = (tabName: string) => {
+  const handleTabChange = useCallback((tabName: string) => {
     setActiveTab(tabName);
-    
-    // Scroll to the appropriate section when tab is clicked
     switch(tabName) {
       case 'overview':
         overviewRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -324,7 +262,7 @@ export default function PropertyPopup({
       default:
         break;
     }
-  };
+  }, []);
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
@@ -373,19 +311,18 @@ export default function PropertyPopup({
   // Favorite/save handlers removed
 
   // Handler for gallery navigation
-  const handleImageChange = (direction: 'next' | 'prev') => {
-    if (selectedProperty) {
-      setImageLoading(true);
-      const allImages = getPropertyImages(selectedProperty);
-      const totalImages = allImages.length;
-      
+  const handleImageChange = useCallback((direction: 'next' | 'prev') => {
+    setImageLoading(true);
+    const allImages = getPropertyImages(selectedProperty);
+    const totalImages = allImages.length;
+    setCurrentImageIndex(prev => {
       if (direction === 'next') {
-        setCurrentImageIndex((prev) => (prev + 1) % totalImages);
+        return (prev + 1) % totalImages;
       } else {
-        setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
+        return (prev - 1 + totalImages) % totalImages;
       }
-    }
-  };
+    });
+  }, [selectedProperty]);
 
   // Get operation status badge info
   const getOperationStatusBadge = () => {
@@ -428,24 +365,23 @@ export default function PropertyPopup({
   };
 
   // Get dynamic grid layout based on number of images (max 3)
-  const getGridLayout = () => {
+  const gridLayout = useMemo(() => {
     const allImages = getPropertyImages(selectedProperty);
-    const imageCount = Math.min(allImages.length, 3); // Max 3 images in grid
-    
+    const imageCount = Math.min(allImages.length, 3);
     switch (imageCount) {
       case 1:
         return {
           gridTemplateColumns: '1fr',
           gridTemplateRows: '1fr',
           images: allImages.slice(0, 1),
-          showViewAllButton: allImages.length > 1
+          showViewAllButton: allImages.length > 1,
         };
       case 2:
         return {
           gridTemplateColumns: '2fr 1fr',
           gridTemplateRows: '1fr',
           images: allImages.slice(0, 2),
-          showViewAllButton: allImages.length > 2
+          showViewAllButton: allImages.length > 2,
         };
       case 3:
       default:
@@ -453,34 +389,33 @@ export default function PropertyPopup({
           gridTemplateColumns: '2fr 1fr',
           gridTemplateRows: '1fr 1fr',
           images: allImages.slice(0, 3),
-          showViewAllButton: allImages.length > 3
+          showViewAllButton: allImages.length > 3,
         };
     }
-  };
+  }, [selectedProperty]);
 
   // Touch handlers for swipe navigation
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Touch handlers for swipe navigation
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return;
-    
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
-
     if (isLeftSwipe) {
       handleImageChange('next');
     } else if (isRightSwipe) {
       handleImageChange('prev');
     }
-  };
+  }, [touchStart, touchEnd, handleImageChange]);
   
   return (
     <>
@@ -489,7 +424,7 @@ export default function PropertyPopup({
             <div style={{position:'absolute', top:12, right:12, display:'flex', gap:'10px', zIndex:60}}>
               <button 
                 onClick={(e)=>{e.stopPropagation(); onClose();}}
-                aria-label="Close"
+                aria-label="Close property popup"
                 style={{
                   background:'rgba(255,255,255,0.9)',
                   border:'1px solid rgba(0,0,0,0.1)',
@@ -504,7 +439,7 @@ export default function PropertyPopup({
               {/* Favorite/save button removed */}
               <button 
                 onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
-                aria-label="Share property"
+                aria-label="Share property details"
                 style={{
                   background:'rgba(255,255,255,0.9)',
                   border:'1px solid rgba(0,0,0,0.1)',
@@ -530,8 +465,8 @@ export default function PropertyPopup({
                 className={galleryStyles.styledGallery}
                 style={{ 
                   display: 'grid',
-                  gridTemplateColumns: getGridLayout().gridTemplateColumns,
-                  gridTemplateRows: getGridLayout().gridTemplateRows,
+                  gridTemplateColumns: gridLayout.gridTemplateColumns,
+                  gridTemplateRows: gridLayout.gridTemplateRows,
                   gap: '8px',
                   height: '100%',
                   width: '100%',
@@ -540,9 +475,9 @@ export default function PropertyPopup({
                   backgroundColor: '#f7f7f7'
                 }}
               >
-                {getGridLayout().images.map((image, index) => {
+                {gridLayout.images.map((image: string, index: number) => {
                   const isMainImage = index === 0;
-                  const imageCount = getGridLayout().images.length;
+                  const imageCount = gridLayout.images.length;
                   
                   // Determine grid position based on layout
                   let gridColumn, gridRow;
@@ -609,7 +544,7 @@ export default function PropertyPopup({
                       )}
                       
                       {/* Show "+X more" overlay on the last visible image if there are more photos */}
-                      {index === getGridLayout().images.length - 1 && getPropertyImages(selectedProperty).length > 3 && (
+                      {index === gridLayout.images.length - 1 && getPropertyImages(selectedProperty).length > 3 && (
                         <div style={{
                           position: 'absolute',
                           top: 0,
@@ -632,7 +567,7 @@ export default function PropertyPopup({
                 })}
                 
                 {/* "View all photos" button - only show if there are more images than displayed */}
-                {getGridLayout().showViewAllButton && (
+                {gridLayout.showViewAllButton && (
                   <div style={{ 
                     position: 'absolute', 
                     bottom: '16px', 
