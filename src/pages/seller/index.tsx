@@ -661,15 +661,11 @@ const SellerDashboard: React.FC = () => {
                   {activeTab === 'edit' ? '✏️' : '🏠'}
                 </span>
                 {activeTab === 'edit' 
-                  ? `Edit Property (ID: ${editingPropertyId})` 
+                  ? 'Edit Property'
                   : 'List a New Property'
                 }
               </h2>
-              {activeTab === 'edit' && (
-                <p className={styles.formDescription}>
-                  Update your property information and manage blob storage images with existing IDs
-                </p>
-              )}
+                {/* Removed Seller_formDescription__osdpU paragraph from edit menu */}
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -679,9 +675,7 @@ const SellerDashboard: React.FC = () => {
                   <span className={styles.sectionIcon}>📝</span>
                   Basic Information
                 </h3>
-                <p className={styles.sectionDescription}>
-                  Start with the essential details about your property
-                </p>
+                {/* Removed Seller_sectionDescription__szU_L paragraph from Basic Information section */}
 
                 <div className={styles.formGroup}>
                   <label htmlFor="title" className={styles.formLabel}>Property Title*</label>
