@@ -103,14 +103,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 zip_code, type, room as rooms, bathrooms,
                 square_meters as "squareMeters",
                 CASE 
-                  WHEN type = 'house' THEN '/properties/casa-moderna.jpg'
+                  WHEN type = 'house' THEN '/ubika-logo.png'
                   WHEN type = 'apartment' THEN '/properties/apartamento-moderno.jpg'
                   WHEN type = 'cabin' THEN '/properties/cabana-bosque.jpg'
                   WHEN type = 'villa' THEN '/properties/villa-lujo.jpg'
                   WHEN type = 'penthouse' THEN '/properties/penthouse-lujo.jpg'
                   WHEN type = 'loft' THEN '/properties/loft-urbano.jpg'
                   WHEN type = 'duplex' THEN '/properties/duplex-moderno.jpg'
-                  ELSE '/properties/casa-moderna.jpg'
+                  ELSE '/ubika-logo.png'
                   END as image_url,
                     -- Do not assign a static sample image here; uploaded blob images will be used
                     NULL

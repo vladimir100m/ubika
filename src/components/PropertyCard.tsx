@@ -112,7 +112,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       <div className={styles.imageContainer}>
         {/* Always show only the cover image for a simpler home view */}
         <img
-          src={imageError ? '/properties/casa-moderna.jpg' : coverImage}
+          src={imageError ? '/ubika-logo.png' : coverImage}
           alt={property.title || `Property in ${property.city}`}
           className={styles.propertyImage}
           onError={() => setImageError(true)}

@@ -60,13 +60,12 @@ const getCoverImage = (property: Property): string => {
   };
 
   const propertyType = property.type?.toLowerCase() || 'house';
-  return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+  return typeImages[propertyType] || '/ubika-logo.png';
 };
 
 // Function to generate additional property images based on property type
 const generatePropertyImages = (property: Property): string[] => {
   const baseImages = [
-    '/properties/casa-moderna.jpg',
     '/properties/casa-lago.jpg',
     '/properties/casa-campo.jpg',
     '/properties/villa-lujo.jpg',
@@ -79,8 +78,8 @@ const generatePropertyImages = (property: Property): string[] => {
   const typeImages: { [key: string]: string[] } = {
     'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
     'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
-    'casa': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-    'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+  'casa': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+  'house': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
     'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
     'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
     'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
@@ -116,7 +115,6 @@ const getPropertyImages = (property: Property): string[] => {
 // Function to generate additional property images based on property type (legacy)
 const generatePropertyImagesLegacy = (property: Property) => {
   const baseImages = [
-    '/properties/casa-moderna.jpg',
     '/properties/casa-lago.jpg',
     '/properties/casa-campo.jpg',
     '/properties/villa-lujo.jpg',
@@ -129,8 +127,8 @@ const generatePropertyImagesLegacy = (property: Property) => {
   const typeImages: { [key: string]: string[] } = {
     'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
     'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
-    'casa': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-    'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+  'casa': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+  'house': ['/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
     'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
     'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
     'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
