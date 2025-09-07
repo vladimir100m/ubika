@@ -3,20 +3,20 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
 import layoutStyles from '../styles/Layout.module.css';
+import standardStyles from '../styles/StandardComponents.module.css';
 import galleryStyles from '../styles/StyledGallery.module.css'; // Import as CSS module
 import mobileStyles from '../styles/Mobile.module.css';
 import { SearchFilters } from '../components/SearchBar';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
-import Footer from '../components/Footer';
+import { StandardLayout } from '../components';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../types'; // Import Property and Geocode types
 import useMediaQuery from '../utils/useMediaQuery';
 import PropertyPopup from 'components/PropertyPopup';
 import PropertyCard from 'components/PropertyCard';
-import Header from 'components/Header';
 import { useSession } from 'next-auth/react';
-import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import { FilterOptions } from '../components/MapFilters';
 
 const MapPage: React.FC = () => {
@@ -31,7 +31,7 @@ const MapPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
+  // Saved property IDs removed
   const [showFloatingGallery, setShowFloatingGallery] = useState(false);
   
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -62,31 +62,7 @@ const MapPage: React.FC = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
 
   // Function to toggle favorite status using database API
-  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    if (!user) {
-      // Redirect to login if user is not authenticated
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      await toggleSaveProperty(propertyId, !isCurrentlySaved);
-      
-      // Update local state
-      setSavedPropertyIds(prevSavedIds => {
-        const newSavedIds = new Set(prevSavedIds);
-        if (isCurrentlySaved) {
-          newSavedIds.delete(propertyId);
-        } else {
-          newSavedIds.add(propertyId);
-        }
-        return newSavedIds;
-      });
-    } catch (error) {
-      console.error('Error toggling favorite status:', error);
-    }
-  };
+  // Favorite toggle handler removed
 
   useEffect(() => {
     // Fetch properties from the database
@@ -146,40 +122,7 @@ const MapPage: React.FC = () => {
     fetchProperties();
   }, [router.query]);
 
-  useEffect(() => {
-    const loadSavedStatus = async () => {
-      if (!user) {
-        setSavedPropertyIds(new Set());
-        return;
-      }
-
-      try {
-        const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-        const savedIds = new Set<number>();
-        if (savedStatus && typeof savedStatus === 'object') {
-          Object.entries(savedStatus).forEach(([id, val]) => {
-            if (val) savedIds.add(Number(id));
-          });
-        }
-        setSavedPropertyIds(savedIds);
-      } catch (error) {
-        console.error('Error loading saved properties status:', error);
-        
-        // Check if it's an auth error
-        if (error instanceof Error && error.message.includes('Unauthorized')) {
-          // Just set empty set - no need to redirect as this is a background load
-          console.log('User not authenticated for saved properties check');
-        }
-        
-        setSavedPropertyIds(new Set());
-      }
-    };
-
-    // Only load saved status after user loading is complete and we have properties
-    if (!isLoading && properties.length > 0) {
-      loadSavedStatus();
-    }
-  }, [properties, isLoading])
+  // Saved status effect removed
 
   useEffect(() => {
     if (properties.length > 0) {
@@ -191,9 +134,13 @@ const MapPage: React.FC = () => {
         .filter((property) => property.geocode)
         .map((property) => ({ id: property.id, ...property.geocode! })); // Added non-null assertion for geocode
       setMarkers(propertyMarkers);
+    } else {
+      // Clear markers when no properties
+      setMarkers([]);
     }
   }, [properties]);
 
+  // Initialize map - separate from properties to ensure map always loads
   useEffect(() => {
     const loader = new Loader({
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -202,26 +149,35 @@ const MapPage: React.FC = () => {
     });
 
     loader.load().then(() => {
-      if (mapRef.current) {
+      if (mapRef.current && !mapInstance.current) {
         mapInstance.current = new google.maps.Map(mapRef.current, {
           center: mapCenter,
           zoom: 12,
         });
-
-        // Add markers to the map for all properties
-        properties.forEach((property) => {
-          if (property.latitude && property.longitude) {
-            const marker = new google.maps.Marker({
-              position: { lat: property.latitude, lng: property.longitude },
-              map: mapInstance.current,
-              title: property.address,
-            });
-            markersRef.current.push(marker);
-          }
-        });
       }
     });
-  }, [properties, mapCenter]);
+  }, [mapCenter]);
+
+  // Add/update markers when properties change
+  useEffect(() => {
+    if (mapInstance.current) {
+      // Clear existing markers before adding new ones
+      markersRef.current.forEach(marker => marker.setMap(null));
+      markersRef.current = [];
+
+      // Add markers for current properties
+      properties.forEach((property) => {
+        if (property.latitude && property.longitude) {
+          const marker = new google.maps.Marker({
+            position: { lat: property.latitude, lng: property.longitude },
+            map: mapInstance.current,
+            title: property.address,
+          });
+          markersRef.current.push(marker);
+        }
+      });
+    }
+  }, [properties]);
 
   useEffect(() => {
     if (mapInstance.current && markers.length > 0) {
@@ -496,50 +452,60 @@ const MapPage: React.FC = () => {
     });
   };
 
+  // Convert router query to FilterOptions format for initial filters
+  const getInitialFilters = (): Partial<FilterOptions> => {
+    const query = router.query;
+    return {
+      operation: (query.operation as string) || '',
+      priceMin: (query.minPrice as string) || '',
+      priceMax: (query.maxPrice as string) || '',
+      beds: (query.bedrooms as string) || '',
+      baths: (query.bathrooms as string) || '',
+      homeType: (query.propertyType as string) || '',
+      moreFilters: {
+        minArea: (query.minArea as string) || '',
+        maxArea: (query.maxArea as string) || '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: []
+      }
+    };
+  };
+
   return (
-    <div className={layoutStyles.pageContainer}>
-      <Header 
-        showMapFilters={true}
-        onFilterChange={handleFilterChange}
-        onSearchLocationChange={handleSearchLocationChange}
-        searchLocation={router.query.zone as string || ''}
-        initialFilters={{
-          operation: router.query.operation as string || '',
-          priceMin: router.query.minPrice as string || '',
-          priceMax: router.query.maxPrice as string || '',
-          beds: router.query.bedrooms as string || '',
-          baths: router.query.bathrooms as string || '',
-          homeType: router.query.propertyType as string || '',
-          moreFilters: {
-            minArea: router.query.minArea as string || '',
-            maxArea: router.query.maxArea as string || '',
-            yearBuiltMin: '',
-            yearBuiltMax: '',
-            keywords: []
-          }
-        }}
-      />
-      
-      <div className={layoutStyles.pageContent}>
-        {/* Map Section - Fixed height at top */}
+    <StandardLayout 
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation={(router.query.zone as string) || ''}
+      initialFilters={getInitialFilters()}
+    >
+      <div className={standardStyles.pageContainer}>
+        {/* Map Section - Always show the map */}
         <div className={styles.mapSection}>
-            {loading ? (
-              <LoadingState message="Loading map..." />
-            ) : error ? (
-              <ErrorState 
-                message={error}
-                onRetry={() => router.reload()}
-              />
-            ) : (
-              <div className={styles.mapContainer}>
-                <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+          <div className={styles.mapContainer}>
+            <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+            {loading && (
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                background: 'white',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                fontSize: '12px',
+                color: '#666'
+              }}>
+                Loading properties...
               </div>
             )}
           </div>
+        </div>
           
           {/* Properties Section - Standardized Structure */}
           <PropertySection 
-            title={loading ? 'Loading Properties...' : `${properties.length} Properties Found`}
+            title={loading ? 'Loading Properties...' : 'Properties'}
             subtitle="Browse listings on the map"
           >
             {/* Results Info and Sort Controls */}
@@ -566,8 +532,6 @@ const MapPage: React.FC = () => {
                   <PropertyCard
                     key={property.id}
                     property={property}
-                    isFavorite={savedPropertyIds.has(property.id)}
-                    onFavoriteToggle={() => handleFavoriteToggle(property.id)}
                     onClick={() => handlePropertyClick(property)}
                   />
                 ))}
@@ -577,14 +541,13 @@ const MapPage: React.FC = () => {
             {/* Empty State */}
             {!loading && !error && properties.length === 0 && (
               <EmptyState 
+                message="No properties found in this area with the current filters. Try adjusting your search criteria or explore the map to discover properties in nearby areas."
                 showClearFilters={true}
                 onClearFilters={() => router.push('/map')}
               />
             )}
           </PropertySection>
           
-          {/* Footer */}
-          <Footer />
       </div>
       
       {/* Property detail floating window - Zillow style */}
@@ -688,7 +651,7 @@ const MapPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </StandardLayout>
   );
 };
 

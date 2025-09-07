@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Property } from '../types';
 import styles from '../styles/PropertyDetailCard.module.css';
 
@@ -31,6 +31,20 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
   const [loadingFeatures, setLoadingFeatures] = useState(true);
+
+  // Favorite/save feature removed
+  // Collapsible state
+  const [openSections, setOpenSections] = useState<{[key:string]: boolean}>({
+    description: true,
+    info: true,
+    features: true,
+    neighborhood: true,
+    contact: true
+  });
+
+  const toggleSection = (key: string) => {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,25 +93,43 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
     });
   };
 
+  // Get the cover image for the property detail display
+  const getCoverImage = (property: Property): string => {
+    // First check if property has uploaded images with a cover image
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) {
+        return coverImage.image_url;
+      }
+      // If no cover image is set, use the first uploaded image
+      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+      return sortedImages[0].image_url;
+    }
+
+    // Fallback to single image_url if available
+    if (property.image_url) {
+      return property.image_url;
+    }
+
+  // Final fallback: neutral placeholder
+  return '/ubika-logo.png';
+  };
+
   const getPropertyImages = (property: Property): string[] => {
-    const baseImages = [
-      '/properties/casa-moderna.jpg',
-      '/properties/apartamento-moderno.jpg',
-      '/properties/villa-lujo.jpg'
-    ];
+    // First check if property has uploaded images
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          // Sort by is_cover first, then by display_order
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
+    }
 
-    const typeImages: { [key: string]: string[] } = {
-      'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg', '/properties/casa-lago.jpg'],
-      'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/departamento-familiar.jpg'],
-      'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg', '/properties/casa-playa.jpg'],
-      'penthouse': ['/properties/penthouse-lujo.jpg', '/properties/loft-urbano.jpg'],
-      'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-      'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg'],
-      'duplex': ['/properties/duplex-moderno.jpg', '/properties/casa-moderna.jpg']
-    };
-
-    const propertyType = property.type?.toLowerCase() || 'house';
-    return typeImages[propertyType] || baseImages;
+  // Fallback to neutral placeholder images array
+  return ['/ubika-logo.png'];
   };
 
   const images = getPropertyImages(property);
@@ -106,6 +138,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
     <div className={styles.propertyDetailCard}>
       {/* Header Section */}
       <div className={styles.header}>
+  {/* Favorite/save feature removed */}
         <div className={styles.priceSection}>
           <div className={styles.price}>
             {formatPrice(property.price)}
@@ -169,15 +202,28 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Description */}
       {property.description && (
         <div className={styles.section}>
-          <h2 className={styles.propertyTitle}>About This Property</h2>
-          <p className={styles.description}>{property.description}</p>
+          <div className={`${styles.collapsibleHeader}`} onClick={() => toggleSection('description')}>
+            <h2 className={styles.propertyTitle}>About This Property</h2>
+            <button className={styles.collapseToggleBtn} aria-expanded={openSections.description} aria-controls="section-description">
+              {openSections.description ? 'Hide' : 'Show'}
+              <span aria-hidden="true">{openSections.description ? '▴' : '▾'}</span>
+            </button>
+          </div>
+          <div id="section-description" className={!openSections.description ? styles.collapsedContent : styles.sectionBodyFade}>
+            <p className={styles.description}>{property.description}</p>
+          </div>
         </div>
       )}
 
       {/* Property Information */}
       <div className={styles.section}>
-  <h2 className={styles.propertyTitle}>Property Information</h2>
-        <div className={styles.propertyInfo}>
+        <div className={styles.collapsibleHeader} onClick={() => toggleSection('info')}>
+          <h2 className={styles.propertyTitle}>Property Information</h2>
+          <button className={styles.collapseToggleBtn} aria-expanded={openSections.info} aria-controls="section-info">
+            {openSections.info ? 'Hide' : 'Show'} <span aria-hidden="true">{openSections.info ? '▴' : '▾'}</span>
+          </button>
+        </div>
+        <div id="section-info" className={`${!openSections.info ? styles.collapsedContent : styles.sectionBodyFade} ${styles.propertyInfo}`}>
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Property ID</span>
@@ -252,20 +298,29 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Property Features */}
       {loadingFeatures ? (
         <div className={styles.section}>
-          <h2 className={styles.propertyTitle}>Property Features</h2>
+          <div className={styles.collapsibleHeader}>
+            <h2 className={styles.propertyTitle}>Property Features</h2>
+          </div>
           <div className={styles.loadingFeatures}>Loading features...</div>
         </div>
       ) : propertyFeatures.length > 0 ? (
         <div className={styles.section}>
-          <h2 className={styles.propertyTitle}>Property Features</h2>
-          <div className={styles.featuresGrid}>
-            {propertyFeatures.map((feature) => (
-              <div key={feature.id} className={styles.featureItem}>
-                <span className={styles.featureIcon}>{feature.icon}</span>
-                <span className={styles.featureName}>{feature.name}</span>
-                <span className={styles.featureCategory}>({feature.category})</span>
-              </div>
-            ))}
+          <div className={styles.collapsibleHeader} onClick={() => toggleSection('features')}>
+            <h2 className={styles.propertyTitle}>Property Features</h2>
+            <button className={styles.collapseToggleBtn} aria-expanded={openSections.features} aria-controls="section-features">
+              {openSections.features ? 'Hide' : 'Show'} <span aria-hidden="true">{openSections.features ? '▴' : '▾'}</span>
+            </button>
+          </div>
+          <div id="section-features" className={!openSections.features ? styles.collapsedContent : styles.sectionBodyFade}>
+            <div className={styles.featuresGrid}>
+              {propertyFeatures.map((feature) => (
+                <div key={feature.id} className={styles.featureItem}>
+                  <span className={styles.featureIcon}>{feature.icon}</span>
+                  <span className={styles.featureName}>{feature.name}</span>
+                  <span className={styles.featureCategory}>({feature.category})</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : null}
@@ -273,31 +328,34 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Neighborhood Information */}
       {neighborhoodData && (
         <div className={styles.section}>
-          <h2 className={styles.propertyTitle}>Neighborhood: {neighborhoodData.name}</h2>
-          <div className={styles.neighborhoodInfo}>
-            <p className={styles.neighborhoodDescription}>
-              {neighborhoodData.description}
-            </p>
-            
-            <div className={styles.neighborhoodDetails}>
-              <div className={styles.neighborhoodItem}>
-                <h4>🚇 Subway Access</h4>
-                <p>{neighborhoodData.subway_access}</p>
-              </div>
-              
-              <div className={styles.neighborhoodItem}>
-                <h4>🍽️ Dining Options</h4>
-                <p>{neighborhoodData.dining_options}</p>
-              </div>
-              
-              <div className={styles.neighborhoodItem}>
-                <h4>🛍️ Shopping</h4>
-                <p>{neighborhoodData.shopping_access}</p>
-              </div>
-              
-              <div className={styles.neighborhoodItem}>
-                <h4>🛣️ Highway Access</h4>
-                <p>{neighborhoodData.highway_access}</p>
+          <div className={styles.collapsibleHeader} onClick={() => toggleSection('neighborhood')}>
+            <h2 className={styles.propertyTitle}>Neighborhood: {neighborhoodData.name}</h2>
+            <button className={styles.collapseToggleBtn} aria-expanded={openSections.neighborhood} aria-controls="section-neighborhood">
+              {openSections.neighborhood ? 'Hide' : 'Show'} <span aria-hidden="true">{openSections.neighborhood ? '▴' : '▾'}</span>
+            </button>
+          </div>
+          <div id="section-neighborhood" className={!openSections.neighborhood ? styles.collapsedContent : styles.sectionBodyFade}>
+            <div className={styles.neighborhoodInfo}>
+              <p className={styles.neighborhoodDescription}>
+                {neighborhoodData.description}
+              </p>
+              <div className={styles.neighborhoodDetails}>
+                <div className={styles.neighborhoodItem}>
+                  <h4>🚇 Subway Access</h4>
+                  <p>{neighborhoodData.subway_access}</p>
+                </div>
+                <div className={styles.neighborhoodItem}>
+                  <h4>🍽️ Dining Options</h4>
+                  <p>{neighborhoodData.dining_options}</p>
+                </div>
+                <div className={styles.neighborhoodItem}>
+                  <h4>🛍️ Shopping</h4>
+                  <p>{neighborhoodData.shopping_access}</p>
+                </div>
+                <div className={styles.neighborhoodItem}>
+                  <h4>🛣️ Highway Access</h4>
+                  <p>{neighborhoodData.highway_access}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -307,40 +365,41 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Contact Section */}
       {showContact && (
         <div className={styles.section}>
-          <h2 className={styles.propertyTitle}>Contact Information</h2>
-          <div className={styles.contactSection}>
-            <div className={styles.contactButtons}>
-              <button className={styles.primaryButton}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                Call Agent
-              </button>
-              
-              <button className={styles.secondaryButton}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                Send Message
-              </button>
-              
-              <button className={styles.secondaryButton}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                </svg>
-                Save Property
-              </button>
-            </div>
-            
-            <div className={styles.contactInfo}>
-              <p><strong>Ubika Real Estate</strong></p>
-              <p>📧 info@ubika.com</p>
-              <p>📞 +1 (555) 123-4567</p>
+          <div className={styles.collapsibleHeader} onClick={() => toggleSection('contact')}>
+            <h2 className={styles.propertyTitle}>Contact Information</h2>
+            <button className={styles.collapseToggleBtn} aria-expanded={openSections.contact} aria-controls="section-contact">
+              {openSections.contact ? 'Hide' : 'Show'} <span aria-hidden="true">{openSections.contact ? '▴' : '▾'}</span>
+            </button>
+          </div>
+          <div id="section-contact" className={!openSections.contact ? styles.collapsedContent : styles.sectionBodyFade}>
+            <div className={styles.contactSection}>
+              <div className={styles.contactButtons}>
+                <button className={styles.primaryButton}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  Call Agent
+                </button>
+                <button className={styles.secondaryButton}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  Message
+                </button>
+              </div>
+              <div className={styles.contactInfo}>
+                <p><strong>Ubika Real Estate</strong></p>
+                <p>📧 info@ubika.com</p>
+                <p>📞 +1 (555) 123-4567</p>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Mobile Sticky Action Bar */}
+  {/* Mobile action bar favorite feature removed */}
     </div>
   );
 };

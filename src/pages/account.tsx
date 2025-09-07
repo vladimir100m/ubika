@@ -1,245 +1,285 @@
-import React from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import Header from '../components/Header';
-import styles from '../styles/Home.module.css';
-import layoutStyles from '../styles/Layout.module.css';
+import { StandardLayout } from '../components';
+import standardStyles from '../styles/StandardComponents.module.css';
+import { FilterOptions } from '../components/MapFilters';
 
-const AccountSettings: React.FC = () => {
+export default function Account() {
   const { data: session, status } = useSession();
-  const user = session?.user;
-  // Extend NextAuth user with optional fields from providers like Auth0/Google
-  const u = user as (typeof user & { picture?: string | null; sub?: string; email_verified?: boolean; updated_at?: string | number | Date });
-  const isLoading = status === 'loading';
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('profile');
 
-  if (isLoading) return <div>Loading...</div>;
-  // Note: useSession doesn't expose an error field; handle auth states via `status`.
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
-  if (!user) {
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session) {
+      router.push('/auth/signin');
+      return;
+    }
+    setIsLoading(false);
+  }, [session, status, router]);
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
+  if (isLoading) {
     return (
-      <div className={layoutStyles.pageContainer}>
-  <Header />
-        <div className={layoutStyles.pageContent}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-            }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '16px' }}>
-                Sign in to access your account settings
-              </h2>
-              <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-                Manage your profile, preferences, and account information.
-              </p>
-              <button
-                onClick={() => signIn('google')}
-                style={{
-                  display: 'inline-block',
-                  padding: '12px 24px',
-                  backgroundColor: '#0073e6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '16px',
-                  cursor: 'pointer'
-                }}
-              >
-                Sign In with Google
-              </button>
-            </div>
-          </div>
+      <StandardLayout title="Loading..." subtitle="">
+        <div className={standardStyles.loadingContainer}>
+          <div className={standardStyles.loadingSpinner}></div>
+          <p>Loading your account...</p>
         </div>
-      </div>
+      </StandardLayout>
     );
   }
 
   return (
-    <div className={layoutStyles.pageContainer}>
-  <Header />
-      <div className={layoutStyles.pageContent}>
-      
-      {/* Page Header */}
-      <div style={{ 
-        backgroundColor: '#f8f9fa',
-        borderBottom: '1px solid #e9ecef',
-        padding: '20px 0'
-      }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
-          padding: '0 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
+    <StandardLayout 
+      title="Account Settings" 
+      subtitle="Manage your profile and preferences"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
+      <div className={standardStyles.pageContainer}>
+        {/* Navigation Tabs */}
+        <div className={standardStyles.tabNavigation}>
           <button
-            onClick={() => router.back()}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '8px',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className={`${standardStyles.tabButton} ${activeTab === 'profile' ? standardStyles.tabButtonActive : ''}`}
+            onClick={() => setActiveTab('profile')}
           >
-            ←
+            Profile
           </button>
-          <div>
-            <h1 style={{ 
-              fontSize: '28px', 
-              fontWeight: '600', 
-              margin: '0',
-              color: '#2d3748'
-            }}>
-              Account Settings
-            </h1>
-            <p style={{ 
-              margin: '4px 0 0 0', 
-              color: '#718096',
-              fontSize: '16px'
-            }}>
-              Manage your profile and account preferences
-            </p>
-          </div>
+          <button
+            className={`${standardStyles.tabButton} ${activeTab === 'preferences' ? standardStyles.tabButtonActive : ''}`}
+            onClick={() => setActiveTab('preferences')}
+          >
+            Preferences
+          </button>
+          <button
+            className={`${standardStyles.tabButton} ${activeTab === 'security' ? standardStyles.tabButtonActive : ''}`}
+            onClick={() => setActiveTab('security')}
+          >
+            Security
+          </button>
         </div>
-      </div>
 
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-          <div style={{ 
-            backgroundColor: 'white', 
-            borderRadius: '8px', 
-            padding: '32px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
-              {((u?.picture || u?.image) as string | undefined) && (
-                <img 
-                  src={(u?.picture || u?.image) as string} 
-                  alt="Profile" 
-                  style={{ 
-                    width: '80px',
-                    height: '80px', 
-                    borderRadius: '50%',
-                    objectFit: 'cover'
-                  }}
-                />
-              )}
-              <div>
-                <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '8px' }}>
-                  {user.name}
-                </h2>
-                <p style={{ color: '#666', fontSize: '16px' }}>
-                  {user.email}
-                </p>
-              </div>
-            </div>
-            
-            <div style={{ borderTop: '1px solid #e9e9e9', paddingTop: '24px' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
-                Account Information
-              </h3>
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className={standardStyles.tabContent}>
+            <div className={standardStyles.card}>
+              <h3 className={standardStyles.cardTitle}>Profile Information</h3>
               
-              <div style={{ display: 'grid', gap: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontWeight: '500' }}>Name:</span>
-                  <span>{user.name}</span>
+              <div className={standardStyles.profileSection}>
+                <div className={standardStyles.profileAvatar}>
+                  <img 
+                    src={session?.user?.image || '/default-avatar.png'} 
+                    alt="Profile"
+                    className={standardStyles.avatarImage}
+                  />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontWeight: '500' }}>Email:</span>
-                  <span>{user.email}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontWeight: '500' }}>Email Verified:</span>
-                  <span style={{ color: u?.email_verified ? '#10b981' : '#ef4444' }}>
-                    {u?.email_verified ? '✓ Verified' : '✗ Not Verified'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontWeight: '500' }}>Member Since:</span>
-                  <span>{u?.updated_at ? new Date(u.updated_at).toLocaleDateString() : '—'}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontWeight: '500' }}>Last Updated:</span>
-                  <span>{u?.updated_at ? new Date(u.updated_at).toLocaleDateString() : '—'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Account Actions */}
-            <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e9e9e9' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
-                Account Actions
-              </h3>
-              
-              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <button 
-                  onClick={() => router.push('/saved-properties')}
-                  style={{ 
-                    backgroundColor: '#0073e6', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '6px', 
-                    padding: '12px 24px', 
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#005bb5'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0073e6'}
-                >
-                  View Saved Properties
-                </button>
                 
-                <button 
-                  onClick={() => window.location.href = '/api/auth/signout'}
-                  style={{ 
-                    backgroundColor: '#dc2626', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '6px', 
-                    padding: '12px 24px', 
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-
-            {/* Privacy & Security Section */}
-            <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e9e9e9' }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
-                Privacy & Security
-              </h3>
-              
-              <div style={{ backgroundColor: '#f8f9fa', padding: '16px', borderRadius: '8px' }}>
-                <p style={{ margin: '0', color: '#6b7280', fontSize: '14px' }}>
-                  Your account is secured through Auth0. To modify your personal information, 
-                  update your password, or manage two-factor authentication, please visit your 
-                  Auth0 profile settings.
-                </p>
+                <div className={standardStyles.profileInfo}>
+                  <div className={standardStyles.formGroup}>
+                    <label className={standardStyles.label}>Name</label>
+                    <input 
+                      type="text" 
+                      className={standardStyles.input}
+                      value={session?.user?.name || ''}
+                      readOnly
+                    />
+                  </div>
+                  
+                  <div className={standardStyles.formGroup}>
+                    <label className={standardStyles.label}>Email</label>
+                    <input 
+                      type="email" 
+                      className={standardStyles.input}
+                      value={session?.user?.email || ''}
+                      readOnly
+                    />
+                  </div>
+                  
+                  <div className={standardStyles.formGroup}>
+                    <label className={standardStyles.label}>Member Since</label>
+                    <input 
+                      type="text" 
+                      className={standardStyles.input}
+                      value={new Date().toLocaleDateString()}
+                      readOnly
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+        )}
 
-export default AccountSettings;
+        {/* Preferences Tab */}
+        {activeTab === 'preferences' && (
+          <div className={standardStyles.tabContent}>
+            <div className={standardStyles.card}>
+              <h3 className={standardStyles.cardTitle}>Notification Preferences</h3>
+              
+              <div className={standardStyles.formGroup}>
+                <label className={standardStyles.checkboxContainer}>
+                  <input type="checkbox" className={standardStyles.checkbox} defaultChecked />
+                  <span className={standardStyles.checkboxLabel}>Email notifications for new properties</span>
+                </label>
+              </div>
+              
+              <div className={standardStyles.formGroup}>
+                <label className={standardStyles.checkboxContainer}>
+                  <input type="checkbox" className={standardStyles.checkbox} defaultChecked />
+                  <span className={standardStyles.checkboxLabel}>Price change alerts</span>
+                </label>
+              </div>
+              
+              <div className={standardStyles.formGroup}>
+                <label className={standardStyles.checkboxContainer}>
+                  <input type="checkbox" className={standardStyles.checkbox} />
+                  <span className={standardStyles.checkboxLabel}>Weekly market reports</span>
+                </label>
+              </div>
+            </div>
+
+            <div className={standardStyles.card}>
+              <h3 className={standardStyles.cardTitle}>Display Preferences</h3>
+              
+              <div className={standardStyles.formGroup}>
+                <label className={standardStyles.label}>Currency</label>
+                <select className={standardStyles.select}>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </div>
+              
+              <div className={standardStyles.formGroup}>
+                <label className={standardStyles.label}>Language</label>
+                <select className={standardStyles.select}>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Security Tab */}
+        {activeTab === 'security' && (
+          <div className={standardStyles.tabContent}>
+            <div className={standardStyles.card}>
+              <h3 className={standardStyles.cardTitle}>Account Security</h3>
+              
+              <div className={standardStyles.securitySection}>
+                <div className={standardStyles.securityItem}>
+                  <div className={standardStyles.securityInfo}>
+                    <h4>Two-Factor Authentication</h4>
+                    <p className={standardStyles.securityDescription}>
+                      Add an extra layer of security to your account
+                    </p>
+                  </div>
+                  <button className={standardStyles.buttonSecondary}>
+                    Enable 2FA
+                  </button>
+                </div>
+                
+                <div className={standardStyles.securityItem}>
+                  <div className={standardStyles.securityInfo}>
+                    <h4>Login Activity</h4>
+                    <p className={standardStyles.securityDescription}>
+                      View recent login activity and manage active sessions
+                    </p>
+                  </div>
+                  <button className={standardStyles.buttonSecondary}>
+                    View Activity
+                  </button>
+                </div>
+                
+                <div className={standardStyles.securityItem}>
+                  <div className={standardStyles.securityInfo}>
+                    <h4>Data Export</h4>
+                    <p className={standardStyles.securityDescription}>
+                      Download a copy of your data
+                    </p>
+                  </div>
+                  <button className={standardStyles.buttonSecondary}>
+                    Export Data
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className={standardStyles.card}>
+              <h3 className={standardStyles.cardTitle}>Danger Zone</h3>
+              
+              <div className={standardStyles.dangerZone}>
+                <div className={standardStyles.dangerItem}>
+                  <div className={standardStyles.dangerInfo}>
+                    <h4>Sign Out</h4>
+                    <p className={standardStyles.dangerDescription}>
+                      Sign out of your current session
+                    </p>
+                  </div>
+                  <button 
+                    className={standardStyles.buttonDanger}
+                    onClick={handleSignOut}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+                
+                <div className={standardStyles.dangerItem}>
+                  <div className={standardStyles.dangerInfo}>
+                    <h4>Delete Account</h4>
+                    <p className={standardStyles.dangerDescription}>
+                      Permanently delete your account and all data
+                    </p>
+                  </div>
+                  <button className={standardStyles.buttonDanger}>
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </StandardLayout>
+  );
+}

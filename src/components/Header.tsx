@@ -28,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({
   const user = session?.user;
   const isLoading = status === 'loading';
   const [isFiltersPopupOpen, setIsFiltersPopupOpen] = useState(false);
+  const [isAccountPopupOpen, setIsAccountPopupOpen] = useState(false);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -39,10 +40,28 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleAuthAction = () => {
     if (user) {
-      router.push('/account');
+      setIsAccountPopupOpen(!isAccountPopupOpen);
     } else {
       signIn('google');
     }
+  };
+
+  const toggleAccountDropdown = () => {
+    setIsAccountPopupOpen(!isAccountPopupOpen);
+  };
+
+  const closeAccountDropdown = () => {
+    setIsAccountPopupOpen(false);
+  };
+
+  const handleAccountMenuClick = (path: string) => {
+    setIsAccountPopupOpen(false);
+    router.push(path);
+  };
+
+  const handleSignOut = () => {
+    setIsAccountPopupOpen(false);
+    signOut();
   };
 
   const toggleFiltersPopup = () => {
@@ -53,6 +72,10 @@ const Header: React.FC<HeaderProps> = ({
     setIsFiltersPopupOpen(false);
   };
 
+  const closeAccountPopup = () => {
+    setIsAccountPopupOpen(false);
+  };
+
   // Close popup when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -60,16 +83,22 @@ const Header: React.FC<HeaderProps> = ({
       if (isFiltersPopupOpen && !target.closest(`.${styles.filtersPopup}`) && !target.closest(`.${styles.filtersButton}`)) {
         closeFiltersPopup();
       }
+      if (isAccountPopupOpen && 
+          !target.closest(`.${styles.accountPopup}`) && 
+          !target.closest(`.${styles.accountButton}`) &&
+          !target.closest(`.${styles.mobilePill}`)) {
+        closeAccountPopup();
+      }
     };
 
-    if (isFiltersPopupOpen) {
+    if (isFiltersPopupOpen || isAccountPopupOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isFiltersPopupOpen]);
+  }, [isFiltersPopupOpen, isAccountPopupOpen]);
 
   return (
     <header className={styles.header}>
@@ -99,32 +128,8 @@ const Header: React.FC<HeaderProps> = ({
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className={styles.desktopNavigation} role="navigation" aria-label="Main navigation">
-            <div className={styles.navLinks}>
-              <button
-                className={styles.navButton}
-                onClick={() => handleNavigation('/map?operation=rent')}
-                aria-label="Search rental properties"
-              >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🏠</span>
-                Rent
-              </button>
-              <button
-                className={styles.navButton}
-                onClick={() => handleNavigation('/map?operation=buy')}
-                aria-label="Search properties for sale"
-              >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🏡</span>
-                Buy
-              </button>
-              <button
-                className={styles.navButton}
-                onClick={() => handleNavigation('/seller')}
-                aria-label="Sell your property"
-              >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">💼</span>
-                Sell
-              </button>
-            </div>
+            {/* Navigation Links - currently empty (Sell moved into Me menu) */}
+            <div className={styles.navLinks}></div>
             
             {/* Right Section - Filters and Auth */}
             <div className={styles.rightSection}>
@@ -142,13 +147,13 @@ const Header: React.FC<HeaderProps> = ({
               {!isLoading && (
                 <button 
                   onClick={handleAuthAction}
-                  className={styles.navButton}
-                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
+                  className={`${styles.navButton} ${styles.accountButton}`}
+                  aria-label={user ? 'Me menu' : 'Sign in with Google'}
                 >
                   <span className={styles.navButtonIcon} role="img" aria-hidden="true">
                     {user ? '👤' : '🔑'}
                   </span>
-                  {user ? 'Account' : 'Login'}
+                  {user ? 'Me' : 'Login'}
                 </button>
               )}
             </div>
@@ -159,36 +164,7 @@ const Header: React.FC<HeaderProps> = ({
         {isMobile && (
           <div className={styles.mobileNavContainer}>
             <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
-              <button
-                className={styles.mobilePill}
-                onClick={() => handleNavigation('/map?operation=rent')}
-                aria-label="Search rental properties"
-              >
-                Rent
-              </button>
-              <button
-                className={styles.mobilePill}
-                onClick={() => handleNavigation('/map?operation=buy')}
-                aria-label="Search properties for sale"
-              >
-                Buy
-              </button>
-              <button
-                className={styles.mobilePill}
-                onClick={() => handleNavigation('/seller')}
-                aria-label="Sell your property"
-              >
-                Sell
-              </button>
-              {!isLoading && (
-                <button
-                  className={styles.mobilePill}
-                  onClick={handleAuthAction}
-                  aria-label={user ? 'Go to account' : 'Sign in with Google'}
-                >
-                  {user ? 'Account' : 'Login'}
-                </button>
-              )}
+              {/* Order: Filters, Account/Login (Sell moved into Me menu) */}
               {showMapFilters && onFilterChange && (
                 <button
                   className={`${styles.mobilePill} ${isFiltersPopupOpen ? styles.active : ''}`}
@@ -196,6 +172,15 @@ const Header: React.FC<HeaderProps> = ({
                   aria-label="Open filters"
                 >
                   🔍 Filters
+                </button>
+              )}
+              {!isLoading && (
+                <button
+                  className={styles.mobilePill}
+                  onClick={handleAuthAction}
+                  aria-label={user ? 'Me menu' : 'Sign in with Google'}
+                >
+                  {user ? 'Me' : 'Login'}
                 </button>
               )}
             </div>
@@ -229,6 +214,47 @@ const Header: React.FC<HeaderProps> = ({
                 inHeader={false}
                 onClosePopup={() => setIsFiltersPopupOpen(false)}
               />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Account Popup Modal */}
+      {isAccountPopupOpen && user && (
+        <>
+          <div className={styles.accountOverlay} onClick={closeAccountPopup}></div>
+          <div className={styles.accountPopup}>
+            <div className={styles.accountPopupHeader}>
+              <h3>Account Menu</h3>
+              <button 
+                className={styles.closePopupButton}
+                onClick={closeAccountPopup}
+                aria-label="Close account menu"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.accountPopupContent}>
+              <button 
+                className={styles.accountPopupItem}
+                onClick={() => handleAccountMenuClick('/seller')}
+              >
+                <span className={styles.accountPopupIcon}>💼</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Sell</div>
+                  <div className={styles.accountPopupSubtitle}>List your property</div>
+                </div>
+              </button>
+              <button 
+                className={styles.accountPopupItem}
+                onClick={handleSignOut}
+              >
+                <span className={styles.accountPopupIcon}>🚪</span>
+                <div className={styles.accountPopupText}>
+                  <div className={styles.accountPopupTitle}>Sign Out</div>
+                  <div className={styles.accountPopupSubtitle}>Sign out of your account</div>
+                </div>
+              </button>
             </div>
           </div>
         </>

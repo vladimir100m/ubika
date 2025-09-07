@@ -67,7 +67,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     addFieldIfExists('type');
     addFieldIfExists('rooms', 'room');
     addFieldIfExists('bathrooms');
-    addFieldIfExists('squareMeters', 'area');
+    if (propertyData.squareMeters !== undefined) {
+      const sqVal = parseInt(String(propertyData.squareMeters), 10);
+      if (!isNaN(sqVal)) {
+        updateFields.push(`square_meters = $${paramCounter}`);
+        queryParams.push(sqVal);
+        paramCounter++;
+      }
+    }
     // Note: image_url column doesn't exist in database, skipping
     addFieldIfExists('status');
     addFieldIfExists('operation_status_id');
@@ -88,12 +95,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     // Build and execute the update query
-    const updateQuery = `
+  const updateQuery = `
       UPDATE properties 
       SET ${updateFields.join(', ')} 
       WHERE id = $${paramCounter} AND seller_id = $${paramCounter + 1}
       RETURNING id, title, description, price, address, city, state, country, 
-                zip_code, type, room as rooms, bathrooms, area as squareMeters, 
+                zip_code, type, room as rooms, bathrooms,
+                square_meters as "squareMeters",
                 CASE 
                   WHEN type = 'house' THEN '/properties/casa-moderna.jpg'
                   WHEN type = 'apartment' THEN '/properties/apartamento-moderno.jpg'
@@ -103,7 +111,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                   WHEN type = 'loft' THEN '/properties/loft-urbano.jpg'
                   WHEN type = 'duplex' THEN '/properties/duplex-moderno.jpg'
                   ELSE '/properties/casa-moderna.jpg'
-                END as image_url,
+                  END as image_url,
+                    -- Do not assign a static sample image here; uploaded blob images will be used
+                    NULL
                 status, created_at, updated_at, year_built as yearBuilt, 
                 seller_id
     `;

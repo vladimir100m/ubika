@@ -1,42 +1,185 @@
+.clearButton:active {
+  background: linear-gradient(90deg, #f857a6 0%, #ff5858 100%);
+  box-shadow: 0 2px 10px 2px rgba(248, 87, 166, 0.22);
+  transform: scale(0.96);
+  filter: brightness(0.95);
+}
+.applyButton:active {
+  background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+  box-shadow: 0 2px 12px 2px rgba(67, 206, 162, 0.22);
+  transform: scale(0.96);
+  filter: brightness(0.95);
+}
 /* MapFilters.module.css */
+/* STANDARDIZATION NOTE (2025-08-24):
+  Updated to align with global design tokens defined in globals.css.
+  Replaced hard-coded blues (#006aff/#0056cc/#004499) with brand primary vars
+  ( --primary-color / --primary-hover ) used across Account & Standard components.
+  Also unified duplicate .applyButton/.clearButton declarations and focus states.
+*/
 
-.filtersContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
-  max-width: 100%;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  position: relative;
+
+/* === Custom Action Buttons === */
+.clearButton {
+  flex: 1;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #f857a6 0%, #ff5858 100%);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(248, 87, 166, 0.13);
+  letter-spacing: 0.5px;
+  outline: none;
 }
-
-.popupFilters {
-  flex-direction: column;
-  align-items: stretch;
-  padding: 0;
+.clearButton:hover, .clearButton:focus {
+  background: linear-gradient(90deg, #ff5858 0%, #f857a6 100%);
+  box-shadow: 0 6px 18px rgba(248, 87, 166, 0.18);
+  transform: translateY(-2px) scale(1.03);
+}
+.applyButton {
+  flex: 2;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 1.5px solid #2563eb;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.18s, transform 0.15s, background 0.18s, border-color 0.18s, color 0.18s;
+  box-shadow: 0 2px 10px rgba(59,130,246,0.13);
+  letter-spacing: 0.5px;
+  outline: none;
+}
+.applyButton:hover, .applyButton:focus {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  border-color: #2563eb;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(59,130,246,0.18);
+  transform: translateY(-2px) scale(1.04);
+}
+.applyButton:active {
+  filter: brightness(0.97);
+  transform: scale(0.98);
+}
+.applyButton:disabled, .applyButton[aria-disabled="true"] {
+  background: #e0e7ef;
+  color: #b0b8c9;
+  cursor: not-allowed;
   box-shadow: none;
-  border-radius: 0;
-  gap: 0;
+  filter: grayscale(0.2);
 }
 
-.headerFilters {
-  flex-direction: row;
-  flex-wrap: wrap;
+/* Enhanced Search Bar */
+.searchHeaderRow {
+  display: flex;
+
+  /* ========================= Search Section ========================= */
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.searchSection {
-  padding: 20px;
-  border-bottom: 1px solid #e5e5e5;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+.searchBarWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 6px 6px 6px 44px;
+  transition: box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s cubic-bezier(0.4,0,0.2,1);
+
+  /* ========================= Search Bar ========================= */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.searchBarWrapper:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 14px rgba(59,130,246,0.18), 0 0 0 3px rgba(59,130,246,0.10);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  font-size: 20px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.clearSearchButton {
+  background: rgba(15, 23, 42, 0.05);
+  border: none;
+  color: #64748b;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  margin-left: 4px;
+}
+
+.clearSearchButton:hover {
+  background: rgba(15, 23, 42, 0.1);
+  color: #475569;
+  transform: scale(1.05);
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  transform: scale(0.95);
+}
+
+.submitSearchButton {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  margin-left: 8px;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.18);
+}
+
+.submitSearchButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(59,130,246,0.22);
+  filter: brightness(0.97);
+}
+
+.submitSearchButton:active {
+  transform: scale(0.98);
+}
+
+.searchStatus {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary-color);
+  animation: pulse 1.2s infinite ease-in-out;
+  margin-top: 10px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
 
 .sectionTitle {
   font-size: 16px;
   font-weight: 600;
+
+  /* ========================= Section Titles & Indicators ========================= */
   color: #2a2a33;
   margin: 0 0 12px 0;
   display: flex;
@@ -45,29 +188,35 @@
 }
 
 .activeIndicator {
-  font-size: 12px;
-  font-weight: 500;
-  color: #006aff;
-  background: rgba(0, 106, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-left: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .searchInput {
+
+  /* ========================= Inputs & Chips ========================= */
   width: 100%;
-  padding: 14px 16px;
+  padding: 14px 2px 14px 0;
   font-size: 16px;
-  border: 2px solid #e1e5e9;
-  border-radius: 12px;
-  background-color: white;
+  border: none;
+  background: transparent;
   transition: all 0.2s ease;
+  color: var(--text-primary);
 }
+.searchInput::placeholder { color: var(--text-secondary); }
+.searchInput:focus { outline: none; }
 
 .searchInput:focus {
   outline: none;
-  border-color: #006aff;
-  box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.15);
 }
 
 .expandedFilters {
@@ -79,9 +228,9 @@
 
 /* Quick Filters Section */
 .quickFilters {
-  padding: 20px;
-  border-bottom: 1px solid #e5e5e5;
-  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+  padding: 22px 24px 16px 24px;
+  border-bottom: 1.5px solid var(--border-light);
+  background: linear-gradient(135deg, #f9fbfc 0%, #fff 100%);
 }
 
 .chipGroup {
@@ -95,46 +244,54 @@
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #4a5568;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 25px;
+  color: var(--text-secondary);
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
   white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .filterChip:hover {
-  border-color: #006aff;
-  background: #f0f7ff;
-  transform: translateY(-1px);
+  border-color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
+  /* ========================= Filter Sections & Grids ========================= */
+
 .chipSelected {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
-  box-shadow: 0 4px 8px rgba(0, 106, 255, 0.3);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: #fff;
+  border-color: var(--primary-hover);
+  box-shadow: 0 6px 16px -2px rgba(255,56,92,0.45);
 }
 
 /* Filter Sections */
 .filterSection {
-  padding: 20px;
-  border-bottom: 1px solid #f1f3f4;
+  padding: 22px 24px 18px 24px;
+  border-bottom: 1.5px solid var(--border-light);
+  background: linear-gradient(180deg, #fff 0%, #fcfcfd 100%);
 }
 
 .filterSection:last-child {
+
+  /* ========================= Price & Number Inputs ========================= */
   border-bottom: none;
 }
 
 .twoColumnSection {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  border-bottom: 1px solid #f1f3f4;
+  gap: 28px;
+  padding: 18px 24px 10px 24px;
+  border-bottom: 1.5px solid var(--border-light);
+  background: linear-gradient(180deg, #fff 0%, #fdfdfd 100%);
 }
 
 /* Price Container */
@@ -166,19 +323,20 @@
 }
 
 .priceInput, .numberInput {
-  padding: 12px 14px;
-  font-size: 15px;
-  border: 2px solid #e1e5e9;
-  border-radius: 8px;
-  background: white;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #ffffff;
   transition: all 0.2s ease;
   min-width: 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .priceInput:focus, .numberInput:focus {
   outline: none;
-  border-color: #006aff;
-  box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 56, 92, 0.35);
 }
 
 .rangeDivider {
@@ -196,58 +354,72 @@
 }
 
 .presetBtn {
-  padding: 8px 14px;
-  font-size: 13px;
+
+  /* ========================= Button Grids & Options ========================= */
+  padding: 7px 12px;
+  font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
+  color: var(--text-secondary);
+  background: #f4f5f6;
+  border: 1px solid #e2e4e8;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .presetBtn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: #eceff1;
+  border-color: #cfd6dc;
 }
 
 .presetActive {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: #fff;
+  border-color: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(255,56,92,0.4);
 }
 
 /* Button Grids */
 .buttonGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+
+  /* ========================= Property Type Grid ========================= */
   gap: 8px;
 }
 
+/* Modern, simple filter button */
 .optionBtn {
-  padding: 12px 8px;
-  font-size: 14px;
+  padding: 10px 6px;
+  font-size: 13px;
   font-weight: 500;
-  color: #374151;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  color: var(--text-primary);
+  background: #fff;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.18s, transform 0.15s, background 0.18s, border-color 0.18s, color 0.18s;
   text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  outline: none;
 }
 
-.optionBtn:hover {
-  border-color: #006aff;
-  background: #f0f7ff;
+.optionBtn:hover, .optionBtn:focus {
+  border-color: #2563eb;
+  background: #e0e7ef;
+  color: #2563eb;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.10);
+  transform: translateY(-2px) scale(1.04);
 }
 
 .optionSelected {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 6px 18px rgba(59,130,246,0.13);
+  transform: scale(1.07);
+  filter: brightness(1.08);
 }
 
 /* Property Type Grid */
@@ -261,106 +433,102 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 12px;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  padding: 14px 10px;
+
+  /* ========================= Advanced Section Buttons ========================= */
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .propertyTypeBtn:hover {
-  border-color: #006aff;
-  background: #f0f7ff;
+  border-color: var(--primary-color);
+  background: rgba(255, 56, 92, 0.06);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
 }
 
 .propertyTypeSelected {
-  background: #006aff;
-  color: white;
-  border-color: #0056cc;
-  box-shadow: 0 4px 12px rgba(0, 106, 255, 0.3);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: #fff;
+  border-color: var(--primary-hover);
+  box-shadow: 0 8px 18px rgba(255, 56, 92, 0.5);
 }
 
 .propertyIcon {
-  font-size: 24px;
+  font-size: 22px;
   margin-bottom: 6px;
 }
 
 .propertyLabel {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.55px;
+  color: var(--text-secondary);
 }
 
 /* Advanced Section */
-.advancedSection {
-  background: #f8f9fa;
-  border-top: 2px solid #e9ecef;
-}
-
-.inputLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Action Buttons */
-.actionButtons {
-  display: flex;
-  gap: 12px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border-top: 1px solid #e9ecef;
-}
-
 .clearButton {
+
+  /* ========================= Dropdowns ========================= */
   flex: 1;
-  padding: 14px 20px;
-  font-size: 14px;
+  padding: 12px 18px;
+  font-size: 13px;
   font-weight: 600;
-  color: #6c757d;
-  background: white;
-  border: 2px solid #dee2e6;
-  border-radius: 10px;
+  color: var(--text-secondary);
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
-
 .clearButton:hover {
-  background: #f8f9fa;
-  border-color: #adb5bd;
-  color: #495057;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
-
 .applyButton {
   flex: 2;
-  padding: 14px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #006aff 0%, #0056cc 100%);
-  border: none;
-  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 1.5px solid #2563eb;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 106, 255, 0.3);
+  transition: box-shadow 0.18s, transform 0.15s, background 0.18s, border-color 0.18s, color 0.18s;
+  box-shadow: 0 2px 10px rgba(59,130,246,0.13);
+  letter-spacing: 0.5px;
+  outline: none;
 }
-
-.applyButton:hover {
-  background: linear-gradient(135deg, #0056cc 0%, #004499 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 106, 255, 0.4);
+.applyButton:hover, .applyButton:focus {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  border-color: #2563eb;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(59,130,246,0.18);
+  transform: translateY(-2px) scale(1.04);
 }
-
-/* Legacy styles for backward compatibility */
+.applyButton:active {
+  filter: brightness(0.97);
+  transform: scale(0.98);
+}
+.applyButton:disabled, .applyButton[aria-disabled="true"] {
+  background: #e0e7ef;
+  color: #b0b8c9;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: grayscale(0.2);
+}
+/* Legacy styles for backward compatibility (trimmed) */
 .filterGroup {
   position: relative;
   min-width: max-content;
@@ -386,14 +554,16 @@
 }
 
 .dropdownButton:hover, .singleDropdownButton:hover {
-  border-color: #006aff;
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  background-color: rgba(255,56,92,0.08);
 }
 
+
+  /* ========================= Responsive ========================= */
 .dropdownButton.active, .singleDropdownButton.active {
-  border-color: #006aff;
-  box-shadow: 0 0 0 1px #006aff;
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+  background-color: rgba(255,56,92,0.12);
 }
 
 .hasFilter {
@@ -408,7 +578,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #006aff;
+  background-color: var(--primary-color);
 }
 
 .dropdown, .singleDropdown, .allFiltersDropdown {
@@ -416,12 +586,14 @@
   top: calc(100% + 4px);
   left: 0;
   min-width: 240px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  padding: 16px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 12px 40px -4px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+  padding: 18px;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.25s cubic-bezier(0.4,0,0.2,1);
+  border: 1.5px solid var(--border-light);
+  backdrop-filter: blur(10px);
 }
 
 .allFiltersDropdown {
@@ -433,6 +605,8 @@
   overflow-y: auto;
 }
 
+
+  /* ========================= Animations ========================= */
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .twoColumnSection {
@@ -443,6 +617,8 @@
   .propertyTypeGrid {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  /* ========================= Misc/Integration ========================= */
   
   .chipGroup {
     flex-direction: column;
@@ -526,21 +702,27 @@
   background: #0056cc;
 }
 
+
+/* Unified, modern remove boundary button */
 .removeBoundaryButton {
   margin-top: 8px;
   padding: 8px 16px;
-  font-size: 12px;
-  color: #dc3545;
-  background: transparent;
-  border: 1px solid #dc3545;
-  border-radius: 6px;
+  font-size: 13px;
+  color: #2563eb;
+  background: #fff;
+  border: 1.5px solid #2563eb;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.18s, transform 0.15s, background 0.18s, color 0.18s, border-color 0.18s;
+  box-shadow: 0 1px 4px rgba(59,130,246,0.10);
+  outline: none;
 }
-
-.removeBoundaryButton:hover {
-  background: #dc3545;
-  color: white;
+.removeBoundaryButton:hover, .removeBoundaryButton:focus {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.13);
+  transform: translateY(-2px) scale(1.04);
 }
 
 .filterGroup {
@@ -548,35 +730,6 @@
   min-width: max-content;
 }
 
-.dropdownButton {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #2a2a33;
-  background-color: white;
-  border: 1px solid #d1d1d5;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  min-width: 100px;
-  height: 40px;
-}
-
-.dropdownButton:hover {
-  border-color: #006aff;
-  background-color: #f5f8ff;
-}
-
-.dropdownButton.active {
-  border-color: #006aff;
-  box-shadow: 0 0 0 1px #006aff;
-  background-color: #f5f8ff;
-}
 
 .hasFilter {
   position: relative;
@@ -593,29 +746,6 @@
   background-color: #006aff;
 }
 
-.chevron {
-  font-size: 10px;
-  margin-left: 4px;
-}
-
-.dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  min-width: 240px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  padding: 16px;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-}
-
-.moreFiltersDropdown {
-  right: 0;
-  left: auto;
-  min-width: 300px;
-}
 
 @keyframes fadeIn {
   from {
@@ -628,300 +758,25 @@
   }
 }
 
-.radioLabel, .checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.radioLabel input, .checkboxLabel input {
-  cursor: pointer;
-}
-
-.rangeFilter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.rangeInput {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #d1d1d5;
-  border-radius: 4px;
-  font-size: 14px;
-  position: relative;
-  background-color: #f9f9f9;
-  transition: all 0.2s ease;
-}
-
-.rangeInput:focus {
-  border-color: #006aff;
-  outline: none;
-  background-color: #fff;
-  box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.2);
-}
-
-.rangeSeparator {
-  color: #666;
-  font-size: 14px;
-}
-
-.bedsAndBaths, .homeTypes {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.bedsFilter, .bathsFilter {
-  margin-bottom: 12px;
-}
-
-.bedsFilter h4, .bathsFilter h4, .moreFiltersSection h4 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #2a2a33;
-}
-
-.btnGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.btnGroup button {
-  padding: 6px 12px;
-  font-size: 14px;
-  border: 1px solid #d1d1d5;
-  border-radius: 4px;
-  background-color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btnGroup button:hover {
-  border-color: #006aff;
-}
-
-.btnGroup button.selected {
-  background-color: #006aff;
-  color: white;
-  border-color: #006aff;
-}
-
-.presetRanges {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.presetRanges button {
-  padding: 8px;
-  font-size: 14px;
-  text-align: left;
-  border: none;
-  background: none;
-  color: #006aff;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.presetRanges button:hover {
-  color: #0056cc;
-  text-decoration: underline;
-}
-
-.moreFiltersSection {
-  margin-bottom: 16px;
-}
-
-.applyButton {
-  width: 100%;
-  padding: 10px 16px;
-  background-color: #006aff;
-  color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  margin-top: 8px;
-}
-
-.applyButton:hover {
-  background-color: #0056cc;
-}
-
-.mapFiltersWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background-color: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  position: relative;
-}
-
-.searchSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.searchForm {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.searchInputWrapper {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  border: 2px solid #d1d1d5;
-  border-radius: 8px;
-  background-color: white;
-  transition: border-color 0.2s ease;
-}
-
-.searchInputWrapper:focus-within {
-  border-color: #006aff;
-  box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.2);
-}
-
-.searchIcon {
-  position: absolute;
-  left: 12px;
-  color: #666;
-  pointer-events: none;
-}
-
-.searchInput {
-  flex: 1;
-  padding: 12px 16px 12px 40px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  outline: none;
-  background: transparent;
-}
+/* Legacy unused classes removed */
 
 .searchButton {
-  padding: 12px 20px;
-  background-color: #006aff;
-  color: white;
-  border: none;
-  border-radius: 0 6px 6px 0;
+  padding: 14px 20px;
+  font-size: 14px;
   font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.25,0.46,0.45,0.94);
+  white-space: nowrap;
 }
-
 .searchButton:hover {
-  background-color: #0056cc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,56,92,0.3);
 }
-
-.searchActions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.propertyCount {
-  font-size: 16px;
-  font-weight: 600;
-  color: #2a2a33;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.removeBoundaryButton {
-  padding: 8px 16px;
-  background-color: #f5f5f5;
-  color: #2a2a33;
-  border: 1px solid #d1d1d5;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.removeBoundaryButton:hover {
-  background-color: #e8e8e8;
-  border-color: #b8b8b8;
-}
-
-.saveSearchButton {
-  padding: 8px 16px;
-  background-color: #006aff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.saveSearchButton:hover {
-  background-color: #0056cc;
-}
-
-.searchBar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.searchForm {
-  flex: 1;
-  display: flex;
-}
-
-.searchInput {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #d1d1d5;
-  border-radius: 6px 0 0 6px;
-  font-size: 14px;
-  outline: none;
-}
-
-.searchInput:focus {
-  border-color: #006aff;
-}
-
-.searchButton {
-  padding: 10px 16px;
-  background-color: #006aff;
-  color: white;
-  border: none;
-  border-radius: 0 6px 6px 0;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.searchButton:hover {
-  background-color: #0056cc;
-}
+/* Removed duplicate legacy searchInput/searchButton block */
 
 .removeBoundaryButton {
   padding: 8px 12px;
@@ -943,33 +798,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   font-size: 20px;
-  background-color: white;
-  border: 2px solid #d1d1d5;
+  background: #ffffff;
+  border: 1px solid rgba(255,255,255,0.4);
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .singleDropdownButton:hover {
-  border-color: #006aff;
-  background-color: #f5f8ff;
-  transform: scale(1.05);
+  border-color: var(--primary-color);
+  background: rgba(255,56,92,0.12);
+  transform: scale(1.07);
 }
 
 .singleDropdownButton.active {
-  border-color: #006aff;
-  box-shadow: 0 0 0 2px rgba(0, 106, 255, 0.2);
-  background-color: #f5f8ff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.3);
+  background: rgba(255,56,92,0.16);
 }
 
 .singleDropdownButton.hasFilter {
-  border-color: #006aff;
-  background-color: #006aff;
-  color: white;
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: #fff;
 }
 
 .singleDropdown {
@@ -1012,47 +868,18 @@
 
 .actionButtons {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1.5px solid var(--border-light);
+  background: linear-gradient(90deg, #f7faff 60%, #e0e7ef 100%);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  box-shadow: 0 2px 12px 0 rgba(59,130,246,0.06);
+  transition: background 0.18s, box-shadow 0.18s;
 }
 
-.clearButton {
-  flex: 1;
-  padding: 12px 16px;
-  background-color: transparent;
-  border: 1px solid #d1d1d5;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clearButton:hover {
-  border-color: #999;
-  color: #333;
-}
-
-.applyButton {
-  flex: 2;
-  padding: 12px 16px;
-  background-color: #006aff;
-  border: 1px solid #006aff;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.applyButton:hover {
-  background-color: #0056cc;
-  border-color: #0056cc;
-}
+/* (Duplicate applyButton definitions removed) */
 
 /* Header Integration Styles */
 .filtersContainer.headerFilters {

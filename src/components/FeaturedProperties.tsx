@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import PropertyCard from './PropertyCard';
 import { Property } from '../types';
-import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import styles from '../styles/Home.module.css';
 
 interface FeaturedPropertiesProps {
@@ -19,7 +19,7 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
   const { data: session } = useSession();
   const user = session?.user;
   const [properties, setProperties] = useState<Property[]>([]);
-  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
+  // Saved property IDs removed
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,44 +59,9 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
     fetchProperties();
   }, [limit, operation]);
 
-  useEffect(() => {
-    const fetchSavedStatus = async () => {
-      if (user && properties.length > 0) {
-        try {
-          const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-          setSavedPropertyIds(new Set(Object.keys(savedStatus).map(id => parseInt(id)).filter(id => savedStatus[id])));
-        } catch (error) {
-          console.error('Error fetching saved status:', error);
-        }
-      }
-    };
+  // Saved status effect removed
 
-    fetchSavedStatus();
-  }, [user, properties]);
-
-  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    if (!user) {
-      return; // Don't redirect here, just disable the functionality
-    }
-
-    try {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      await toggleSaveProperty(propertyId, !isCurrentlySaved);
-      
-      // Update local state
-      setSavedPropertyIds(prevSavedIds => {
-        const newSavedIds = new Set(prevSavedIds);
-        if (isCurrentlySaved) {
-          newSavedIds.delete(propertyId);
-        } else {
-          newSavedIds.add(propertyId);
-        }
-        return newSavedIds;
-      });
-    } catch (error) {
-      console.error('Error toggling favorite status:', error);
-    }
-  };
+  // Favorite toggle removed
 
   if (loading) {
     return (
@@ -136,8 +101,6 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
             <PropertyCard
               key={property.id}
               property={property}
-              isFavorite={savedPropertyIds.has(property.id)}
-              onFavoriteToggle={() => handleFavoriteToggle(property.id)}
             />
           ))}
         </div>

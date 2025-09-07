@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Banner from '../components/Banner';
 import PropertyCard from '../components/PropertyCard';
-import Footer from '../components/Footer';
+import PropertyPopup from '../components/PropertyPopup';
+import StandardLayout from '../components/StandardLayout';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
-import styles from '../styles/Home.module.css';
-import layoutStyles from '../styles/Layout.module.css';
+import standardStyles from '../styles/StandardComponents.module.css';
 import { Property } from '../types'; // Import Property type
-import Header from '../components/Header';
-import { checkSavedStatus, toggleSaveProperty } from '../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import { FilterOptions } from '../components/MapFilters';
 
 const Home: React.FC = () => {
@@ -18,7 +17,8 @@ const Home: React.FC = () => {
   const user = session?.user;
   const isLoading = status === 'loading';
   const [properties, setProperties] = useState<Property[]>([]); // Typed state
-  const [savedPropertyIds, setSavedPropertyIds] = useState<Set<number>>(new Set());
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const popupMapRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,78 +65,19 @@ const Home: React.FC = () => {
   }, [router.query, user, isLoading]);
 
   // TODO: a veces se llama dos veces, unificar con un use effect general
-  useEffect(() => {
-    // Load saved properties status if user is authenticated
-    const loadSavedStatus = async () => {
-      // Skip if no user or in development without proper database
-      if (!user) {
-        setSavedPropertyIds(new Set());
-        return;
-      }
-
-      try {
-        const savedStatus = await checkSavedStatus(properties.map(p => p.id));
-        // `checkSavedStatus` returns an object map { [propertyId]: boolean }
-        const savedIds = new Set<number>();
-        if (savedStatus && typeof savedStatus === 'object') {
-          Object.entries(savedStatus).forEach(([id, val]) => {
-            if (val) savedIds.add(Number(id));
-          });
-        }
-        setSavedPropertyIds(savedIds);
-      } catch (error) {
-        // Silently handle errors in development to avoid console spam
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Saved properties API not available in development');
-        } else {
-          console.error('Error loading saved properties status:', error);
-        }
-        
-        setSavedPropertyIds(new Set());
-      }
-    };
-
-    
-    // Only load saved status after user loading is complete and we have properties
-    if (!isLoading && properties.length > 0) {
-      loadSavedStatus();
-    }
-  }, [isLoading, properties, user ]);
+  // Saved status effect removed
 
   // Function to handle property card click
-  const handlePropertyClick = (propertyId: number) => {
-    router.push({
-      pathname: '/map',
-      query: { selectedPropertyId: propertyId }
-    });
+  const handlePropertyClick = (property: Property) => {
+    setSelectedProperty(property);
   };
 
-  // Function to toggle favorite status using database API
-  const handleFavoriteToggle = async (propertyId: number, newStatus?: boolean) => {
-    if (!user) {
-      // Redirect to login if user is not authenticated
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      const isCurrentlySaved = newStatus !== undefined ? !newStatus : savedPropertyIds.has(propertyId);
-      await toggleSaveProperty(propertyId, !isCurrentlySaved);
-      
-      // Update local state
-      setSavedPropertyIds(prevSavedIds => {
-        const newSavedIds = new Set(prevSavedIds);
-        if (isCurrentlySaved) {
-          newSavedIds.delete(propertyId);
-        } else {
-          newSavedIds.add(propertyId);
-        }
-        return newSavedIds;
-      });
-    } catch (error) {
-      console.error('Error toggling favorite status:', error);
-    }
+  const handleClosePropertyDetail = () => {
+    setSelectedProperty(null);
   };
+
+  // Function to handle save status changes using enhanced database API
+  // Save status handler removed
 
   // Function to handle filter changes
   const handleFilterChange = (filters: FilterOptions) => {
@@ -175,86 +116,114 @@ const Home: React.FC = () => {
     });
   };
 
+  // Get page title based on operation type
+  const getPageTitle = () => {
+    const operation = router.query.operation as string;
+    switch (operation) {
+      case 'rent': return 'Properties for Rent';
+      case 'sell': return 'Properties for Sale';
+      default: return 'Featured Properties';
+    }
+  };
+
+  const getPageSubtitle = () => {
+    const operation = router.query.operation as string;
+    switch (operation) {
+      case 'rent': return 'Find your perfect rental property in Argentina';
+      case 'sell': return 'Discover the best properties for sale in Argentina';
+      default: return 'Discover the best properties in Argentina';
+    }
+  };
+
+  // Convert router query to FilterOptions format for initial filters
+  const getInitialFilters = (): Partial<FilterOptions> => {
+    const query = router.query;
+    return {
+      operation: (query.operation as string) || '',
+      priceMin: (query.minPrice as string) || '',
+      priceMax: (query.maxPrice as string) || '',
+      beds: (query.bedrooms as string) || '',
+      baths: (query.bathrooms as string) || '',
+      homeType: (query.propertyType as string) || '',
+      moreFilters: {
+        minArea: (query.minArea as string) || '',
+        maxArea: (query.maxArea as string) || '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: []
+      }
+    };
+  };
+
   return (
-    <div className={layoutStyles.pageContainer}>
-      <Header 
-        showMapFilters={true}
-        onFilterChange={handleFilterChange}
-        onSearchLocationChange={handleSearchLocationChange}
-        searchLocation={router.query.zone as string || ''}
-        initialFilters={{
-          operation: router.query.operation as string || '',
-          priceMin: router.query.minPrice as string || '',
-          priceMax: router.query.maxPrice as string || '',
-          beds: router.query.bedrooms as string || '',
-          baths: router.query.bathrooms as string || '',
-          homeType: router.query.propertyType as string || '',
-          moreFilters: {
-            minArea: router.query.minArea as string || '',
-            maxArea: router.query.maxArea as string || '',
-            yearBuiltMin: '',
-            yearBuiltMax: '',
-            keywords: []
-          }
-        }}
-      />
+    <StandardLayout 
+      showFooter={false}
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation={(router.query.zone as string) || ''}
+      initialFilters={getInitialFilters()}
+    >
       
-      <div className={layoutStyles.pageContent}>
-        {/* Hero Section */}
-        <div className={styles.heroSection}>
-          <Banner />
-        </div>
-
-        {/* Properties Section - Standardized Structure */}
-        <PropertySection 
-          title="Featured Properties" 
-          subtitle="Discover the best properties in Argentina"
-        >
-          {/* Results Summary */}
-          <ResultsInfo 
-            count={properties.length}
-            loading={loading}
-          />
-          
-          {/* Loading State */}
-          {loading && <LoadingState />}
-          
-          {/* Error State */}
-          {error && (
-            <ErrorState 
-              message={error}
-              onRetry={() => router.reload()}
-            />
-          )}
-          
-          {/* Properties Grid */}
-          {!loading && !error && properties.length > 0 && (
-            <div className={styles.propertyGrid}>
-              {properties.slice(0, 6).map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  isFavorite={savedPropertyIds.has(property.id)}
-                  onFavoriteToggle={() => handleFavoriteToggle(property.id)}
-                  onClick={() => handlePropertyClick(property.id)}
-                />
-              ))}
-            </div>
-          )}
-          
-          {/* Empty State */}
-          {!loading && !error && properties.length === 0 && (
-            <EmptyState 
-              showClearFilters={true}
-              onClearFilters={() => router.push('/')}
-            />
-          )}
-        </PropertySection>
-
-        {/* Footer */}
-        <Footer />
+      {/* Hero Section */}
+      <div className={standardStyles.section}>
+        <Banner />
       </div>
-    </div>
+
+      {/* Properties Section */}
+      <PropertySection 
+        title={getPageTitle()} 
+        subtitle={getPageSubtitle()}
+      >
+        {/* Results Summary */}
+        <ResultsInfo 
+          count={properties.length}
+          loading={loading}
+        />
+        
+        {/* Loading State */}
+        {loading && <LoadingState />}
+        
+        {/* Error State */}
+        {error && (
+          <ErrorState 
+            message={error}
+            onRetry={() => router.reload()}
+          />
+        )}
+        
+        {/* Properties Grid */}
+        {!loading && !error && properties.length > 0 && (
+          <div className={`${standardStyles.grid} ${standardStyles.grid2}`}>
+            {properties.slice(0, 6).map((property) => (
+              <div key={property.id} className={standardStyles.propertyCard}>
+                <PropertyCard
+                  property={property}
+                  onClick={() => handlePropertyClick(property)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Empty State */}
+        {!loading && !error && properties.length === 0 && (
+          <EmptyState 
+            showClearFilters={true}
+            onClearFilters={() => router.push('/')}
+          />
+        )}
+      </PropertySection>
+
+      {/* Property detail popup overlay */}
+      {selectedProperty && (
+        <PropertyPopup
+          mapRef={popupMapRef}
+          selectedProperty={selectedProperty}
+          onClose={handleClosePropertyDetail}
+        />
+      )}
+    </StandardLayout>
   );
 };
 

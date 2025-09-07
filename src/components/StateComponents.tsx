@@ -1,5 +1,21 @@
 import React from 'react';
-import styles from '../styles/Home.module.css';
+import standardStyles from '../styles/StandardComponents.module.css';
+
+// Add keyframes for spinner animation
+const spinnerStyle = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inject the spinner styles
+if (typeof document !== 'undefined' && !document.getElementById('spinner-styles')) {
+  const style = document.createElement('style');
+  style.id = 'spinner-styles';
+  style.textContent = spinnerStyle;
+  document.head.appendChild(style);
+}
 
 interface LoadingStateProps {
   message?: string;
@@ -8,9 +24,24 @@ interface LoadingStateProps {
 export const LoadingState: React.FC<LoadingStateProps> = ({ 
   message = 'Loading properties...' 
 }) => (
-  <div className={styles.loadingContainer}>
-    <div className={styles.loadingSpinner}></div>
-    <p>{message}</p>
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 20px',
+    color: '#666'
+  }}>
+    <div style={{
+      width: '40px',
+      height: '40px',
+      border: '3px solid #f3f3f3',
+      borderTop: '3px solid #0070f3',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      marginBottom: '16px'
+    }}></div>
+    <p style={{ margin: 0, fontSize: '14px' }}>{message}</p>
   </div>
 );
 
@@ -25,11 +56,22 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   onRetry,
   retryText = 'Try Again'
 }) => (
-  <div className={styles.errorContainer}>
-    <p className={styles.errorMessage}>{message}</p>
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 20px',
+    textAlign: 'center'
+  }}>
+    <p style={{
+      color: '#e53e3e',
+      fontSize: '16px',
+      marginBottom: '16px'
+    }}>{message}</p>
     {onRetry && (
       <button 
-        className={styles.retryButton}
+        className={standardStyles.buttonSecondary}
         onClick={onRetry}
       >
         {retryText}
@@ -51,11 +93,22 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onClearFilters,
   clearFiltersText = 'Clear Filters'
 }) => (
-  <div className={styles.emptyState}>
-    <p>{message}</p>
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 20px',
+    textAlign: 'center'
+  }}>
+    <p style={{
+      color: '#666',
+      fontSize: '16px',
+      marginBottom: '20px'
+    }}>{message}</p>
     {showClearFilters && onClearFilters && (
       <button 
-        className={styles.clearFiltersButton}
+        className={standardStyles.buttonPrimary}
         onClick={onClearFilters}
       >
         {clearFiltersText}
@@ -84,14 +137,21 @@ export const ResultsInfo: React.FC<ResultsInfoProps> = ({
   currentSort = 'price-asc',
   onSortChange
 }) => (
-  <div className={styles.resultsInfo}>
-    <span className={styles.resultsCount}>
-      {loading ? 'Loading...' : `${count} properties found`}
-    </span>
-    {onSortChange && (
-      <div className={styles.sortControls}>
+  onSortChange ? (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      padding: '16px 0',
+      borderBottom: '1px solid #e5e5e5'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
         <select 
-          className={styles.sortSelect}
+          className={standardStyles.select}
           value={currentSort}
           onChange={(e) => onSortChange(e.target.value)}
         >
@@ -102,12 +162,12 @@ export const ResultsInfo: React.FC<ResultsInfoProps> = ({
           ))}
         </select>
       </div>
-    )}
-  </div>
+    </div>
+  ) : null
 );
 
 interface PropertySectionProps {
-  title: string;
+  title?: string;
   subtitle?: string;
   children: React.ReactNode;
   className?: string;
@@ -119,11 +179,9 @@ export const PropertySection: React.FC<PropertySectionProps> = ({
   children,
   className = ''
 }) => (
-  <section className={`${styles.propertySection} ${className}`}>
-    <div className={styles.propertyHeader}>
-      <h2 className={styles.propertyTitle}>{title}</h2>
-      {subtitle && <p className={styles.propertySubtitle}>{subtitle}</p>}
-    </div>
+  <section style={{
+    padding: '20px 0'
+  }} className={className}>
     {children}
   </section>
 );

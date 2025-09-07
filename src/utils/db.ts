@@ -56,6 +56,9 @@ export const query = async (text: string, params?: any[]): Promise<any> => {
   }
 };
 
+// (Legacy helpers for square_meters detection removed after schema unification)
+
+
 // Function to close the pool (useful for cleanup)
 export const closePool = async (): Promise<void> => {
   if (pool) await pool.end();

@@ -5,14 +5,7 @@ import {useRouter} from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
-import { toggleSaveProperty } from '../utils/savedPropertiesApi';
-
-interface PropertyFeature {
-  id: number;
-  name: string;
-  category: string;
-  icon: string;
-}
+// Favorite/save feature removed
 
 interface Neighborhood {
   id: number;
@@ -24,8 +17,104 @@ interface Neighborhood {
   highway_access: string;
 }
 
+// Infer a simple emoji/icon fallback when API feature lacks explicit icon
+function inferIconFromCategory(category?: string) {
+  if(!category) return '•';
+  const key = category.toLowerCase();
+  if (key.includes('kitchen')) return '🍳';
+  if (key.includes('outdoor') || key.includes('garden') || key.includes('patio')) return '🌳';
+  if (key.includes('security')) return '🔒';
+  if (key.includes('parking') || key.includes('garage')) return '🚗';
+  if (key.includes('climate') || key.includes('heating') || key.includes('cooling')) return '🌡️';
+  if (key.includes('internet') || key.includes('tech')) return '📶';
+  return '•';
+}
+
+// Get the cover image for property display
+const getCoverImage = (property: Property): string => {
+  // First check if property has uploaded images with a cover image
+  if (property.images && property.images.length > 0) {
+    const coverImage = property.images.find(img => img.is_cover);
+    if (coverImage) {
+      return coverImage.image_url;
+    }
+    // If no cover image is set, use the first uploaded image
+    const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+    return sortedImages[0].image_url;
+  }
+
+  // Fallback to single image_url if available
+  if (property.image_url) {
+    return property.image_url;
+  }
+
+  // Final fallback to sample images based on property type
+  const typeImages: { [key: string]: string } = {
+  'house': '/ubika-logo.png',
+  'apartment': '/ubika-logo.png',
+  'villa': '/ubika-logo.png',
+  'penthouse': '/ubika-logo.png',
+  'cabin': '/ubika-logo.png',
+  'loft': '/ubika-logo.png',
+  'duplex': '/ubika-logo.png'
+  };
+
+  const propertyType = property.type?.toLowerCase() || 'house';
+  return typeImages[propertyType] || '/properties/casa-moderna.jpg';
+};
+
 // Function to generate additional property images based on property type
-const generatePropertyImages = (property: Property) => {
+const generatePropertyImages = (property: Property): string[] => {
+  const baseImages = [
+    '/properties/casa-moderna.jpg',
+    '/properties/casa-lago.jpg',
+    '/properties/casa-campo.jpg',
+    '/properties/villa-lujo.jpg',
+    '/properties/cabana-playa.jpg',
+    '/properties/casa-playa.jpg',
+    '/properties/casa-colonial.jpg'
+  ];
+
+  // Type-specific images
+  const typeImages: { [key: string]: string[] } = {
+    'apartamento': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/penthouse-lujo.jpg'],
+    'casa': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
+    'duplex': ['/properties/duplex-moderno.jpg', '/properties/departamento-familiar.jpg'],
+    'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg'],
+    'cabana': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
+    'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg']
+  };
+
+  const propertyType = property.type?.toLowerCase() || 'house';
+  const relevantImages = typeImages[propertyType] || baseImages;
+  
+  // Return 3-4 additional images plus the main image
+  return relevantImages.slice(0, 3);
+};
+
+// Function to get all property images for gallery
+const getPropertyImages = (property: Property): string[] => {
+  // First check if property has uploaded images
+  if (property.images && property.images.length > 0) {
+    return property.images
+      .sort((a, b) => {
+        // Sort by is_cover first, then by display_order
+        if (a.is_cover && !b.is_cover) return -1;
+        if (!a.is_cover && b.is_cover) return 1;
+        return a.display_order - b.display_order;
+      })
+      .map(img => img.image_url);
+  }
+
+  // Fallback to generating sample images
+  return generatePropertyImages(property).length ? generatePropertyImages(property) : ['/ubika-logo.png'];
+};
+
+// Function to generate additional property images based on property type (legacy)
+const generatePropertyImagesLegacy = (property: Property) => {
   const baseImages = [
     '/properties/casa-moderna.jpg',
     '/properties/casa-lago.jpg',
@@ -60,26 +149,33 @@ const generatePropertyImages = (property: Property) => {
 export default function PropertyPopup({ 
   selectedProperty, 
   onClose, 
-  mapRef,
-  onFavoriteToggle
+  mapRef
 }: { 
-  selectedProperty: Property & { isFavorite?: boolean }; 
+  selectedProperty: Property; 
   onClose: () => void; 
-  mapRef: RefObject<HTMLDivElement | null>;
-  onFavoriteToggle?: (propertyId: number, newStatus: boolean) => void;
+  mapRef: RefObject<HTMLDivElement>;
 }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user;
   const isLoading = status === 'loading';
-  const isFavorite = selectedProperty.isFavorite || false;
+  // Favorite/save flags removed
   const [activeTab, setActiveTab] = useState('overview');
+  const [descExpanded, setDescExpanded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
-  const [propertyFeatures, setPropertyFeatures] = useState<PropertyFeature[]>([]);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
-  const [loadingFeatures, setLoadingFeatures] = useState(true);
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
+  const [showCarousel, setShowCarousel] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: 'I\'m interested in this property'
+  });
   
   // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
@@ -90,16 +186,11 @@ export default function PropertyPopup({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Generate additional images based on property type
-        const generatedImages = generatePropertyImages(selectedProperty);
-        setAdditionalImages(generatedImages);
-
-        // Fetch features specifically assigned to this property
-        const featuresResponse = await fetch(`/api/properties/features?propertyId=${selectedProperty.id}`);
-        if (featuresResponse.ok) {
-          const features = await featuresResponse.json();
-          setPropertyFeatures(features);
-        }
+        // Use actual property images uploaded by the user
+        const propertyImages = getPropertyImages(selectedProperty);
+        // Remove the first image since it's used as the cover image
+        const additionalPropertyImages = propertyImages.slice(1);
+        setAdditionalImages(additionalPropertyImages);
 
         // Fetch neighborhood data - try to match by city first
         if (selectedProperty.city) {
@@ -113,13 +204,79 @@ export default function PropertyPopup({
         }
       } catch (error) {
         console.error('Error fetching property data:', error);
-      } finally {
-        setLoadingFeatures(false);
       }
     };
 
     fetchData();
   }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
+
+  // Keyboard navigation for carousel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!showCarousel) return;
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          handleImageChange('prev');
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          handleImageChange('next');
+          break;
+        case 'Escape':
+          event.preventDefault();
+          setShowCarousel(false);
+          break;
+      }
+    };
+
+    if (showCarousel) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Prevent body scroll when carousel is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showCarousel]);
+
+  // Close popup when navigating to different routes (header menu clicks)
+  useEffect(() => {
+    const handleRouteChange = () => {
+      // Check if component is still mounted before calling onClose
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    const handleHashChange = () => {
+      // Check if component is still mounted before calling onClose
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    // Listen for route changes and hash changes
+    router.events.on('routeChangeStart', handleRouteChange);
+    router.events.on('hashChangeStart', handleHashChange);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+      router.events.off('hashChangeStart', handleHashChange);
+    };
+  }, [router.events, onClose]);
+
+  // Reset state when component unmounts
+  useEffect(() => {
+    return () => {
+      setMapInitialized(false);
+      setShowContactForm(false);
+      setShowCarousel(false);
+    };
+  }, []);
 
   // Setup intersection observer to update active tab based on scroll position
   useEffect(() => {
@@ -135,7 +292,7 @@ export default function PropertyPopup({
           const id = entry.target.id;
           if (id === 'overview-section') setActiveTab('overview');
           else if (id === 'details-section') setActiveTab('details');
-          else if (id === 'map-section') setActiveTab('map');
+          else if (id === 'location-section') setActiveTab('map');
         }
       });
     }, options);
@@ -179,6 +336,7 @@ export default function PropertyPopup({
       const loader = new Loader({
         apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
         version: 'weekly',
+        libraries: ['places'],
       });
       
       loader.load().then(() => {
@@ -214,36 +372,13 @@ export default function PropertyPopup({
   }, [mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
-  const handleSaveProperty = async () => {
-    if (!user) {
-      // If user is not authenticated, redirect to login
-      window.location.href = '/api/auth/login';
-      return;
-    }
-
-    if (isSaving) return; // Prevent multiple clicks
-    
-    setIsSaving(true);
-    try {
-      const newStatus = !isFavorite;
-      await toggleSaveProperty(selectedProperty.id, isFavorite);
-      
-      // Call parent callback to update UI
-      if (onFavoriteToggle) {
-        onFavoriteToggle(selectedProperty.id, newStatus);
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      alert('Failed to update favorite status. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  }
+  // Favorite/save handlers removed
 
   // Handler for gallery navigation
   const handleImageChange = (direction: 'next' | 'prev') => {
     if (selectedProperty) {
-      const allImages = [selectedProperty.image_url, ...additionalImages];
+      setImageLoading(true);
+      const allImages = getPropertyImages(selectedProperty);
       const totalImages = allImages.length;
       
       if (direction === 'next') {
@@ -272,54 +407,133 @@ export default function PropertyPopup({
   // Handler for clicking on specific images in the grid
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
-    // Optional: You could open a full-screen gallery modal here
+    setShowCarousel(true);
+  };
+
+  // Handle contact form actions
+  const handleCloseContactForm = () => {
+    setShowContactForm(false);
+    // Reset form data
+    setContactFormData({
+      name: '',
+      phone: '',
+      email: '',
+      message: 'I\'m interested in this property'
+    });
+  };
+
+  const handleContactFormChange = (field: string, value: string) => {
+    setContactFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Get dynamic grid layout based on number of images (max 3)
+  const getGridLayout = () => {
+    const allImages = getPropertyImages(selectedProperty);
+    const imageCount = Math.min(allImages.length, 3); // Max 3 images in grid
+    
+    switch (imageCount) {
+      case 1:
+        return {
+          gridTemplateColumns: '1fr',
+          gridTemplateRows: '1fr',
+          images: allImages.slice(0, 1),
+          showViewAllButton: allImages.length > 1
+        };
+      case 2:
+        return {
+          gridTemplateColumns: '2fr 1fr',
+          gridTemplateRows: '1fr',
+          images: allImages.slice(0, 2),
+          showViewAllButton: allImages.length > 2
+        };
+      case 3:
+      default:
+        return {
+          gridTemplateColumns: '2fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          images: allImages.slice(0, 3),
+          showViewAllButton: allImages.length > 3
+        };
+    }
+  };
+
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleImageChange('next');
+    } else if (isRightSwipe) {
+      handleImageChange('prev');
+    }
   };
   
   return (
+    <>
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeButton} onClick={onClose}>×</button>
-            
-            {/* Favorite button - Zillow style */}
-            <button 
-              className={`${galleryStyles.favoriteButton} ${isFavorite ? galleryStyles.favoriteActive : ''}`} 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSaveProperty();
-              }}
-              disabled={isSaving}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              style={{
-                top: '15px',
-                right: '60px',
-                zIndex: 50,
-                width: '46px',
-                height: '46px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-              }}
-            >
-              {isSaving ? (
-                <div style={{ fontSize: '18px' }}>⏳</div>
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
-                  <path 
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                    stroke={isFavorite ? "transparent" : "currentColor"}
-                    strokeWidth="2"
-                    fill={isFavorite ? "#e4002b" : "transparent"}
-                  />
+            <div style={{position:'absolute', top:12, right:12, display:'flex', gap:'10px', zIndex:60}}>
+              <button 
+                onClick={(e)=>{e.stopPropagation(); onClose();}}
+                aria-label="Close"
+                style={{
+                  background:'rgba(255,255,255,0.9)',
+                  border:'1px solid rgba(0,0,0,0.1)',
+                  backdropFilter:'blur(4px)',
+                  width:44, height:44, borderRadius:12,
+                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)'
+                }}
+              >
+                <span style={{fontSize:22,lineHeight:1}}>×</span>
+              </button>
+              {/* Favorite/save button removed */}
+              <button 
+                onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
+                aria-label="Share property"
+                style={{
+                  background:'rgba(255,255,255,0.9)',
+                  border:'1px solid rgba(0,0,0,0.1)',
+                  backdropFilter:'blur(4px)',
+                  width:44, height:44, borderRadius:12,
+                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.59 13.51l6.83 3.98" />
+                  <path d="M15.41 6.51L8.59 10.49" />
                 </svg>
-              )}
-            </button>
+              </button>
+            </div>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
-              {/* 5-Photo Grid Layout */}
+              {/* Dynamic Photo Grid Layout (1-3 images) */}
               <div 
                 className={galleryStyles.styledGallery}
                 style={{ 
                   display: 'grid',
-                  gridTemplateColumns: '2fr 1fr',
-                  gridTemplateRows: '1fr 1fr',
+                  gridTemplateColumns: getGridLayout().gridTemplateColumns,
+                  gridTemplateRows: getGridLayout().gridTemplateRows,
                   gap: '8px',
                   height: '100%',
                   width: '100%',
@@ -328,138 +542,143 @@ export default function PropertyPopup({
                   backgroundColor: '#f7f7f7'
                 }}
               >
-                {/* Main large image (takes 2/4 of space) */}
-                {selectedProperty && (
-                  <div 
-                    style={{
-                      gridColumn: '1',
-                      gridRow: '1 / span 2',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      overflow: 'hidden'
-                    }}
-                    onClick={() => handleImageClick(0)}
-                  >
-                    <img 
-                      src={selectedProperty.image_url} 
-                      alt="Main property image" 
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease'
+                {getGridLayout().images.map((image, index) => {
+                  const isMainImage = index === 0;
+                  const imageCount = getGridLayout().images.length;
+                  
+                  // Determine grid position based on layout
+                  let gridColumn, gridRow;
+                  if (imageCount === 1) {
+                    gridColumn = '1';
+                    gridRow = '1';
+                  } else if (imageCount === 2) {
+                    gridColumn = index === 0 ? '1' : '2';
+                    gridRow = '1';
+                  } else { // 3 images
+                    if (index === 0) {
+                      gridColumn = '1';
+                      gridRow = '1 / span 2';
+                    } else {
+                      gridColumn = '2';
+                      gridRow = index === 1 ? '1' : '2';
+                    }
+                  }
+                  
+                  return (
+                    <div 
+                      key={index}
+                      style={{
+                        gridColumn,
+                        gridRow,
+                        position: 'relative',
+                        cursor: 'pointer',
+                        overflow: 'hidden'
                       }}
-                    />
-                    {/* Image counter overlay */}
-                    <div style={{ 
-                      position: 'absolute', 
-                      bottom: '16px', 
-                      left: '16px', 
-                      zIndex: 5,
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      color: 'white',
-                      borderRadius: '4px',
-                      padding: '4px 10px',
-                      fontSize: '14px'
-                    }}>
-                      1 of {additionalImages.length + 1}
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <img 
+                        src={image} 
+                        alt={`Property image ${index + 1}`} 
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      />
+                      
+                      {/* Image counter overlay on main image */}
+                      {isMainImage && (
+                        <div style={{ 
+                          position: 'absolute', 
+                          bottom: '16px', 
+                          left: '16px', 
+                          zIndex: 5,
+                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                          color: 'white',
+                          borderRadius: '4px',
+                          padding: '4px 10px',
+                          fontSize: '14px'
+                        }}>
+                          1 of {getPropertyImages(selectedProperty).length}
+                        </div>
+                      )}
+                      
+                      {/* Show "+X more" overlay on the last visible image if there are more photos */}
+                      {index === getGridLayout().images.length - 1 && getPropertyImages(selectedProperty).length > 3 && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '18px',
+                          fontWeight: 'bold'
+                        }}>
+                          +{getPropertyImages(selectedProperty).length - 3} more
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+                
+                {/* "View all photos" button - only show if there are more images than displayed */}
+                {getGridLayout().showViewAllButton && (
+                  <div style={{ 
+                    position: 'absolute', 
+                    bottom: '16px', 
+                    right: '16px', 
+                    zIndex: 5
+                  }}>
+                    <button 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                        color: '#2a2a33',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(0);
+                        setShowCarousel(true);
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                        <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {getPropertyImages(selectedProperty).length} Photos
+                    </button>
                   </div>
                 )}
-                
-                {/* Four smaller images (each takes 1/4 of space) */}
-                {additionalImages.slice(0, 4).map((image, index) => (
-                  <div 
-                    key={index}
-                    style={{
-                      gridColumn: '2',
-                      gridRow: index < 2 ? '1' : '2',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      overflow: 'hidden'
-                    }}
-                    onClick={() => handleImageClick(index + 1)}
-                  >
-                    <img 
-                      src={image} 
-                      alt={`Property image ${index + 2}`} 
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease'
-                      }}
-                    />
-                    {/* Show "+X more" overlay on the last image if there are more photos */}
-                    {index === 3 && additionalImages.length > 4 && (
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '18px',
-                        fontWeight: 'bold'
-                      }}>
-                        +{additionalImages.length - 3} more
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {/* "View all photos" button */}
-                <div style={{ 
-                  position: 'absolute', 
-                  bottom: '16px', 
-                  right: '16px', 
-                  zIndex: 5
-                }}>
-                  <button 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '8px', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                      color: '#2a2a33',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '8px 16px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Here you could open a full-screen gallery
-                      console.log('View all photos clicked');
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-                      <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {additionalImages.length + 1} Photos
-                  </button>
-                </div>
               </div>
             </div>
             <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 {/* Property Basic Info - Zillow style */}
-                <div className={styles.propertyDetailInfo} style={{ 
-                  padding: '24px', 
-                  borderBottom: '1px solid #e9e9e9',
-                  backgroundColor: 'white'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '8px' }}>
                     <div>
                       <span style={{ 
                         backgroundColor: getOperationStatusBadge().backgroundColor, 
@@ -479,32 +698,6 @@ export default function PropertyPopup({
                         lineHeight: '1.2'
                       }}>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h1>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button style={{ 
-                        backgroundColor: '#1277e1', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '4px', 
-                        padding: '10px 16px', 
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}>
-                        Contact Agent
-                      </button>
-                      <button style={{ 
-                        backgroundColor: 'white', 
-                        color: '#2a2a33', 
-                        border: '1px solid #a7a6ab', 
-                        borderRadius: '4px', 
-                        padding: '10px 16px', 
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}>
-                        Share
-                      </button>
-                    </div>
                   </div>
                   <h2 style={{ 
                     fontSize: '16px',
@@ -513,33 +706,14 @@ export default function PropertyPopup({
                     margin: '0 0 4px 0' 
                   }}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
                   
-                  {/* Property Stats - Zillow style */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '24px', 
-                    margin: '16px 0',
-                    fontSize: '16px',
-                    color: '#2a2a33'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.rooms}</span>
-                      <span>beds</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.bathrooms}</span>
-                      <span>baths</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.squareMeters}</span>
-                      <span>sqft</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontWeight: '600', marginRight: '4px' }}>{selectedProperty.type || 'House'}</span>
-                    </div>
+                  {/* Property Stats */}
+                  <div className={styles.propertyStatsRow}>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.rooms}</strong><span>beds</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.squareMeters}</strong><span>m²</span></div>
+                    <div className={styles.propertyStat}><strong>{selectedProperty.type || 'House'}</strong></div>
                     {selectedProperty.yearBuilt && (
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ fontWeight: '600', marginRight: '4px' }}>Built {selectedProperty.yearBuilt}</span>
-                      </div>
+                      <div className={styles.propertyStat}><strong>{selectedProperty.yearBuilt}</strong><span>built</span></div>
                     )}
                   </div>
                 </div>
@@ -604,148 +778,18 @@ export default function PropertyPopup({
                 {/* All content sections displayed one after another */}
                 <div style={{ backgroundColor: 'white' }}>
                   {/* Overview section */}
-                  <div ref={overviewRef} id="overview-section" style={{ padding: '24px', marginBottom: '40px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-                      {/* Left column */}
-                      <div>
-                        {/* Description Section */}
-                        <div style={{ marginBottom: '32px' }}>
-                          <h3 style={{ 
-                            fontSize: '20px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Overview</h3>
-                          <p style={{ 
-                            fontSize: '16px', 
-                            lineHeight: '1.5', 
-                            color: '#2a2a33',
-                            whiteSpace: 'pre-line'
-                          }}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square feet of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
-                        </div>
-                        
-                        {/* Features Section */}
-                        <div style={{ marginBottom: '32px' }}>
-                          <h3 style={{ 
-                            fontSize: '20px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Home Features</h3>
-                          <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                            gap: '16px'
-                          }}>
-                            {loadingFeatures ? (
-                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
-                            ) : propertyFeatures.length > 0 ? (
-                              propertyFeatures.map((feature) => (
-                                <div key={feature.id} style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: '8px'
-                                }}>
-                                  <span style={{ 
-                                    color: '#1277e1', 
-                                    fontSize: '20px',
-                                    lineHeight: 1
-                                  }}>{feature.icon || '•'}</span>
-                                  <span>{feature.name}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <div style={{ color: '#666', fontSize: '14px' }}>No features assigned to this property</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Right column - Zillow style */}
-                      <div>
-                        {/* Contact form - Zillow style */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px',
-                          marginBottom: '24px'
-                        }}>
-                          <h3 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            textAlign: 'center'
-                          }}>Contact an agent about this home</h3>
-                          
-                          <div style={{ marginBottom: '12px' }}>
-                            <input 
-                              type="text" 
-                              placeholder="Your Name" 
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }} 
-                            />
-                          </div>
-                          <div style={{ marginBottom: '12px' }}>
-                            <input 
-                              type="text" 
-                              placeholder="Phone" 
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }} 
-                            />
-                          </div>
-                          <div style={{ marginBottom: '12px' }}>
-                            <input 
-                              type="email" 
-                              placeholder="Email" 
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px'
-                              }} 
-                            />
-                          </div>
-                          <div style={{ marginBottom: '16px' }}>
-                            <textarea 
-                              placeholder="I'm interested in this property" 
-                              rows={4}
-                              style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                border: '1px solid #ddd', 
-                                borderRadius: '4px',
-                                fontSize: '14px', 
-                                resize: 'none'
-                              }} 
-                            />
-                          </div>
-                          <button 
-                            style={{ 
-                              width: '100%',
-                              backgroundColor: '#1277e1', 
-                              color: 'white', 
-                              border: 'none', 
-                              borderRadius: '4px', 
-                              padding: '12px', 
-                              fontWeight: '600',
-                              fontSize: '14px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Contact Agent
-                          </button>
+                  <div ref={overviewRef} id="overview-section" className={styles.overviewSection}>
+                    <div className={styles.overviewGrid}>
+                      <div className={styles.overviewMain}>
+                        <div className={styles.descBlock}>
+                          <h3 className={styles.sectionHeading}>Overview</h3>
+                          <p className={`${styles.descText} ${!descExpanded ? styles.descClamp : ''}`}>{selectedProperty.description || `This beautiful ${selectedProperty.type || 'property'} features ${selectedProperty.rooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.squareMeters} square meters of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
+                          {(!descExpanded && (selectedProperty.description?.length || 0) > 320) && (
+                            <button className={styles.readMoreBtn} onClick={() => setDescExpanded(true)}>Read more</button>
+                          )}
+                          {descExpanded && (
+                            <button className={styles.readMoreBtn} onClick={() => setDescExpanded(false)}>Show less</button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -754,12 +798,21 @@ export default function PropertyPopup({
                   {/* Facts and features section */}
                   <div ref={detailsRef} id="details-section" style={{ padding: '24px', marginBottom: '40px' }}>
                     <div style={{ marginBottom: '32px' }}>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '16px',
-                        color: '#2a2a33'
-                      }}>Facts and features</h3>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginBottom: '16px'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          margin: '0',
+                          color: '#2a2a33'
+                        }}>Facts and features</h3>
+                        
+                        {/* Favorite/save controls removed */}
+                      </div>
                       
                       <div style={{ 
                         display: 'grid', 
@@ -827,37 +880,6 @@ export default function PropertyPopup({
                               <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
                             </div>
                           </div>
-                          
-                          <div>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Heating and cooling</div>
-                            
-                            {loadingFeatures ? (
-                              <div style={{ color: '#666', fontSize: '14px' }}>Loading features...</div>
-                            ) : (
-                              propertyFeatures
-                                .filter(feature => feature.category === 'climate')
-                                .slice(0, 3)
-                                .map((feature) => (
-                                  <div key={feature.id} style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '8px',
-                                    marginBottom: '4px',
-                                    fontSize: '14px'
-                                  }}>
-                                    <span style={{ 
-                                      color: '#1277e1', 
-                                      fontSize: '16px'
-                                    }}>{feature.icon || '•'}</span>
-                                    <span>{feature.name}</span>
-                                  </div>
-                                ))
-                            )}
-                          </div>
                         </div>
                         
                         {/* Property details */}
@@ -907,7 +929,7 @@ export default function PropertyPopup({
                               justifyContent: 'space-between', 
                               fontSize: '14px'
                             }}>
-                              <span>Square feet</span>
+                              <span>Square meters</span>
                               <span>{selectedProperty.squareMeters}</span>
                             </div>
                           </div>
@@ -1008,20 +1030,49 @@ export default function PropertyPopup({
                     </div>
                   </div>
                   
-                  {/* Location section */}
-                  <div ref={mapLocationRef} id="map-section" style={{ marginBottom: '40px' }}>
-                    {/* Google Maps integration - show property location */}
-                    <div style={{ width: '100%', height: '500px', position: 'relative' }}>
-                      <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
-                    </div>
-                    
-                    <div style={{ padding: '24px' }}>
-                      <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '16px',
-                        color: '#2a2a33'
-                      }}>Neighborhood</h3>
+                  {/* Location Section */}
+                  <div ref={mapLocationRef} id="location-section" style={{ 
+                    marginBottom: '40px',
+                    padding: '24px',
+                    borderTop: '1px solid #e9e9e9'
+                  }}>
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                      <h2 style={{ 
+                        fontSize: '28px', 
+                        fontWeight: '700', 
+                        marginBottom: '32px',
+                        color: '#2a2a33',
+                        textAlign: 'center'
+                      }}>Location</h2>
+                      
+                      {/* Map Subsection */}
+                      <div style={{ marginBottom: '32px' }}>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Map</h3>
+                        <div style={{ 
+                          width: '100%', 
+                          height: '400px', 
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          position: 'relative'
+                        }}>
+                          <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+                        </div>
+                      </div>
+                      
+                      {/* Neighborhood Subsection */}
+                      <div>
+                        <h3 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: '600', 
+                          marginBottom: '16px',
+                          color: '#2a2a33'
+                        }}>Neighborhood</h3>
                       <p style={{ 
                         fontSize: '16px', 
                         lineHeight: '1.5', 
@@ -1138,9 +1189,489 @@ export default function PropertyPopup({
                       </div>
                     </div>
                   </div>
+                  </div>
+
+                  {/* Contact Agent Section - Moved to the end */}
+                  <div style={{ 
+                    padding: '24px', 
+                    backgroundColor: '#f8f9fa',
+                    borderTop: '1px solid #e9e9e9'
+                  }}>
+                    <div style={{ 
+                      maxWidth: '600px', 
+                      margin: '0 auto', 
+                      textAlign: 'center' 
+                    }}>
+                      {!showContactForm ? (
+                        // Initial state - just show the contact button
+                        <div style={{ 
+                          opacity: showContactForm ? 0 : 1,
+                          transition: 'opacity 0.3s ease'
+                        }}>
+                          <h3 style={{ 
+                            fontSize: '24px', 
+                            fontWeight: '600', 
+                            marginBottom: '16px',
+                            color: '#2a2a33'
+                          }}>Contact an agent about this home</h3>
+                          <p style={{ 
+                            fontSize: '16px', 
+                            color: '#666', 
+                            marginBottom: '24px',
+                            lineHeight: '1.5'
+                          }}>
+                            Get more information about this property, schedule a viewing, or ask any questions you may have.
+                          </p>
+                          <button 
+                            onClick={() => setShowContactForm(true)}
+                            style={{
+                              padding: '16px 32px',
+                              backgroundColor: '#1277e1',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '8px',
+                              fontSize: '18px',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 4px 12px rgba(18, 119, 225, 0.3)'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.backgroundColor = '#0f6bc7';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 6px 16px rgba(18, 119, 225, 0.4)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = '#1277e1';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(18, 119, 225, 0.3)';
+                            }}
+                          >
+                            Contact Agent
+                          </button>
+                        </div>
+                      ) : (
+                        // Contact form state
+                        <div style={{ 
+                          opacity: showContactForm ? 1 : 0,
+                          transition: 'opacity 0.3s ease',
+                          backgroundColor: 'white',
+                          padding: '32px',
+                          borderRadius: '12px',
+                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+                          textAlign: 'left'
+                        }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginBottom: '24px'
+                          }}>
+                            <h3 style={{ 
+                              fontSize: '20px', 
+                              fontWeight: '600', 
+                              margin: '0',
+                              color: '#2a2a33'
+                            }}>Contact an agent</h3>
+                            <button
+                              onClick={handleCloseContactForm}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                fontSize: '24px',
+                                cursor: 'pointer',
+                                color: '#666',
+                                padding: '0',
+                                lineHeight: '1',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.2s ease'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              aria-label="Close contact form"
+                            >
+                              ×
+                            </button>
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                            gap: '16px',
+                            marginBottom: '16px'
+                          }}>
+                            <div>
+                              <input 
+                                type="text" 
+                                placeholder="Your Name" 
+                                value={contactFormData.name}
+                                onChange={(e) => handleContactFormChange('name', e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: '2px solid #e9e9e9',
+                                  borderRadius: '8px',
+                                  fontSize: '16px',
+                                  transition: 'border-color 0.2s ease',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                                onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                              />
+                            </div>
+                            <div>
+                              <input 
+                                type="text" 
+                                placeholder="Phone" 
+                                value={contactFormData.phone}
+                                onChange={(e) => handleContactFormChange('phone', e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: '2px solid #e9e9e9',
+                                  borderRadius: '8px',
+                                  fontSize: '16px',
+                                  transition: 'border-color 0.2s ease',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                                onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div style={{ marginBottom: '24px' }}>
+                            <input 
+                              type="email" 
+                              placeholder="Email" 
+                              value={contactFormData.email}
+                              onChange={(e) => handleContactFormChange('email', e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '2px solid #e9e9e9',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                transition: 'border-color 0.2s ease',
+                                boxSizing: 'border-box',
+                                marginBottom: '16px'
+                              }}
+                              onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                              onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                            />
+                            <textarea 
+                              rows={4} 
+                              placeholder="I'm interested in this property" 
+                              value={contactFormData.message}
+                              onChange={(e) => handleContactFormChange('message', e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '2px solid #e9e9e9',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                transition: 'border-color 0.2s ease',
+                                boxSizing: 'border-box',
+                                resize: 'vertical',
+                                minHeight: '100px'
+                              }}
+                              onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
+                              onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
+                            />
+                          </div>
+                          
+                          <div style={{ 
+                            display: 'flex', 
+                            gap: '12px',
+                            justifyContent: 'flex-end'
+                          }}>
+                            <button 
+                              onClick={handleCloseContactForm}
+                              style={{
+                                padding: '12px 24px',
+                                backgroundColor: '#f5f5f5',
+                                color: '#666',
+                                border: '2px solid #e9e9e9',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#e9e9e9';
+                                e.currentTarget.style.borderColor = '#ddd';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f5f5f5';
+                                e.currentTarget.style.borderColor = '#e9e9e9';
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              style={{
+                                padding: '12px 24px',
+                                backgroundColor: '#1277e1',
+                                color: 'white',
+                                border: '2px solid #1277e1',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#0f6bc7';
+                                e.currentTarget.style.borderColor = '#0f6bc7';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#1277e1';
+                                e.currentTarget.style.borderColor = '#1277e1';
+                              }}
+                            >
+                              Send Message
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>);
+        </div>
+
+        {/* Full-Screen Image Carousel Modal */}
+        {showCarousel && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.95)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={() => setShowCarousel(false)}
+          >
+            {/* Close Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowCarousel(false);
+              }}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(255, 255, 255, 0.9)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '50px',
+                height: '50px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '24px',
+                color: '#333',
+                zIndex: 10001
+              }}
+            >
+              ×
+            </button>
+
+            {/* Image Counter */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                background: 'rgba(0, 0, 0, 0.7)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '16px',
+                zIndex: 10001
+              }}
+            >
+              {currentImageIndex + 1} of {getPropertyImages(selectedProperty).length}
+            </div>
+
+            {/* Navigation Arrows */}
+            {getPropertyImages(selectedProperty).length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageChange('prev');
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '60px',
+                    height: '60px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '24px',
+                    color: '#333',
+                    zIndex: 10001
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageChange('next');
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '60px',
+                    height: '60px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '24px',
+                    color: '#333',
+                    zIndex: 10001
+                  }}
+                >
+                  ›
+                </button>
+              </>
+            )}
+
+            {/* Main Image */}
+            <div
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <img
+                src={getPropertyImages(selectedProperty)[currentImageIndex]}
+                alt={`Property image ${currentImageIndex + 1}`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                  opacity: imageLoading ? 0.7 : 1,
+                  transition: 'opacity 0.3s ease'
+                }}
+                onLoad={() => setImageLoading(false)}
+                onLoadStart={() => setImageLoading(true)}
+              />
+              
+              {/* Loading spinner */}
+              {imageLoading && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    color: 'white',
+                    fontSize: '20px'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      border: '4px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '4px solid white',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Thumbnail Strip */}
+            {getPropertyImages(selectedProperty).length > 1 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '20px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: '8px',
+                  maxWidth: '90vw',
+                  overflowX: 'auto',
+                  padding: '10px',
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  borderRadius: '12px'
+                }}
+              >
+                {getPropertyImages(selectedProperty).map((image, index) => (
+                  <div
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(index);
+                    }}
+                    style={{
+                      width: '60px',
+                      height: '40px',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      border: currentImageIndex === index ? '2px solid white' : '2px solid transparent',
+                      opacity: currentImageIndex === index ? 1 : 0.7,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <img
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+    </>
+  );
 }

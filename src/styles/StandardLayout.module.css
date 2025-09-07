@@ -1,0 +1,288 @@
+/* StandardLayout.module.css - Modern layout styles inspired by Airbnb/Zillow */
+
+.pageContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.mainContent {
+  flex: 1;
+  padding-top: 80px; /* Modern header height */
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fullWidthContainer {
+  width: 100%;
+  padding: 0;
+}
+
+.pageHeader {
+  background-color: white;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 40px 0;
+  margin-bottom: 0;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #222222;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: #717171;
+  margin: 8px 0 0 0;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.pageContent {
+  padding: 32px 0;
+  min-height: 500px;
+}
+
+/* Responsive Design - Modern Breakpoints */
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+    padding: 0 40px;
+  }
+  
+  .pageTitle {
+    font-size: 2.5rem;
+  }
+  
+  .pageContent {
+    padding: 48px 0;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .container {
+    max-width: 1200px;
+    padding: 0 32px;
+  }
+  
+  .pageContent {
+    padding: 40px 0;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mainContent {
+    padding-top: 72px;
+  }
+  
+  .container {
+    padding: 0 24px;
+  }
+  
+  .pageHeader {
+    padding: 32px 0;
+  }
+  
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 0.95rem;
+  }
+  
+  .pageContent {
+    padding: 32px 0;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .mainContent {
+    padding-top: 64px;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .pageHeader {
+    padding: 24px 0;
+  }
+  
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+  
+  .pageSubtitle {
+    font-size: 0.875rem;
+  }
+  
+  .pageContent {
+    padding: 20px 0;
+  }
+}
+
+/* Content spacing utilities */
+.section {
+  margin-bottom: 48px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2a2a33;
+  margin-bottom: 16px;
+}
+
+.sectionContent {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+/* Grid layouts */
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+.grid2 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 769px) {
+  .grid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.grid3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.grid4 {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .grid2,
+  .grid3,
+  .grid4 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .section {
+    margin-bottom: 32px;
+  }
+  
+  .sectionContent {
+    padding: 16px;
+  }
+}
+
+/* Button styles */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.buttonPrimary {
+  background-color: #1277e1;
+  color: white;
+  border-color: #1277e1;
+}
+
+.buttonPrimary:hover {
+  background-color: #0f6bc7;
+  border-color: #0f6bc7;
+  transform: translateY(-1px);
+}
+
+.buttonSecondary {
+  background-color: white;
+  color: #2a2a33;
+  border-color: #e9ecef;
+}
+
+.buttonSecondary:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+.buttonOutline {
+  background-color: transparent;
+  color: #1277e1;
+  border-color: #1277e1;
+}
+
+.buttonOutline:hover {
+  background-color: #1277e1;
+  color: white;
+}
+
+/* Loading and state styles */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: #6b7280;
+}

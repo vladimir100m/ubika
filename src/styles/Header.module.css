@@ -5,12 +5,13 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 1200; /* above property detail overlay */
   background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
   color: white;
   box-shadow: 0 2px 12px rgba(0, 112, 243, 0.15);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  --header-height: 64px;
 }
 
 .headerContainer {
@@ -20,7 +21,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
-  height: 64px;
+  height: var(--header-height, 64px);
   box-sizing: border-box;
 }
 
@@ -51,19 +52,21 @@
   color: white;
 }
 
-/* Desktop Navigation */
+/* Desktop Navigation - Enhanced layout for proper order */
 .desktopNavigation {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-left: 32px;
+  margin-left: 24px;
+  gap: 16px;
 }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .navButton {
@@ -80,6 +83,8 @@
   transition: all 0.2s ease;
   text-decoration: none;
   backdrop-filter: blur(10px);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .navButton:hover {
@@ -101,8 +106,8 @@
 .rightSection {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-left: auto;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .filtersContainer {
@@ -152,26 +157,38 @@
   backdrop-filter: blur(4px);
 }
 
-/* Popup Modal */
+/* Popup Modal - Enhanced for all screen sizes */
 .filtersPopup {
   position: fixed;
   top: 80px;
   right: 20px;
-  width: 400px;
+  width: 420px;
   max-width: calc(100vw - 40px);
   max-height: calc(100vh - 120px);
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+              0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 1px rgba(0, 0, 0, 0.05);
   z-index: 1002;
   overflow: hidden;
-  animation: popupSlideIn 0.3s ease-out;
+  animation: popupSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Enhanced focus management */
+  outline: none;
+}
+
+.filtersPopup:focus-within {
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+              0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 @keyframes popupSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-30px) scale(0.92);
   }
   to {
     opacity: 1;
@@ -183,41 +200,90 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .filtersPopupHeader h3 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+  /* Ensure text doesn't wrap on small screens */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .closePopupButton {
-  background: none;
+  background: rgba(15, 23, 42, 0.05);
   border: none;
   font-size: 1.25rem;
-  color: #6b7280;
+  color: #64748b;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  /* Enhanced keyboard accessibility */
+  outline: none;
+  flex-shrink: 0;
 }
 
 .closePopupButton:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: rgba(15, 23, 42, 0.1);
+  color: #475569;
+  transform: scale(1.05);
+}
+
+.closePopupButton:focus {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.closePopupButton:active {
+  transform: scale(0.95);
 }
 
 .filtersPopupContent {
-  padding: 20px;
+  padding: 24px;
   max-height: calc(100vh - 220px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  /* Ensure content doesn't jump on small screens */
+  min-height: 200px;
 }
 
-/* Mobile Navigation */
+.filtersPopupContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filtersPopupContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filtersPopupContent::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.filtersPopupContent::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Navigation - Enhanced for better order and interaction */
 .mobileNavContainer {
   flex: 1;
   margin-left: 12px;
@@ -232,6 +298,9 @@
   -ms-overflow-style: none;
   padding: 2px 0;
   align-items: center;
+  scroll-behavior: smooth;
+  /* Ensure proper spacing for ordered elements */
+  justify-content: flex-start;
 }
 
 .mobileNavScroll::-webkit-scrollbar {
@@ -251,6 +320,11 @@
   flex-shrink: 0;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
+  /* Enhanced touch target */
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobilePill:hover {
@@ -299,10 +373,10 @@
   }
 }
 
-/* Medium Desktop */
+/* Medium Desktop - Enhanced layout */
 @media (min-width: 992px) and (max-width: 1199px) {
   .headerContainer {
-    padding: 0 32px;
+    padding: 0 28px;
     height: 66px;
   }
   
@@ -310,16 +384,29 @@
     font-size: 1.25rem;
   }
   
+  .desktopNavigation {
+    margin-left: 22px;
+    gap: 14px;
+  }
+  
+  .navLinks {
+    gap: 7px;
+  }
+  
   .navButton {
-    padding: 9px 18px;
+    padding: 9px 17px;
     font-size: 0.95rem;
+  }
+  
+  .rightSection {
+    gap: 11px;
   }
 }
 
-/* Small Desktop / Large Tablet */
+/* Small Desktop / Large Tablet - Enhanced layout */
 @media (min-width: 769px) and (max-width: 991px) {
   .headerContainer {
-    padding: 0 24px;
+    padding: 0 20px;
     height: 64px;
   }
   
@@ -327,9 +414,22 @@
     font-size: 1.2rem;
   }
   
+  .desktopNavigation {
+    margin-left: 20px;
+    gap: 12px;
+  }
+  
+  .navLinks {
+    gap: 6px;
+  }
+  
   .navButton {
-    padding: 8px 16px;
-    font-size: 0.9rem;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .rightSection {
+    gap: 10px;
   }
   
   .desktopNavigation {
@@ -371,24 +471,49 @@
   }
   
   .mobileFiltersContainer {
-    transform: scale(0.85);
+    transform: scale(0.9);
   }
   
-  /* Mobile popup adjustments */
+  /* Enhanced mobile popup adjustments */
   .filtersPopup {
     top: 70px;
-    right: 10px;
-    left: 10px;
+    right: 16px;
+    left: 16px;
     width: auto;
     max-width: none;
+    border-radius: 14px;
+    max-height: calc(100vh - 100px);
+  }
+  .accountPopup {
+    top: 70px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+    border-radius: 14px;
+    max-height: calc(100vh - 100px);
   }
   
   .filtersPopupHeader {
-    padding: 16px;
+    padding: 20px 20px 16px 20px;
+  }
+  
+  .filtersPopupHeader h3 {
+    font-size: 1.25rem;
+  }
+  
+  .closePopupButton {
+    width: 32px;
+    height: 32px;
+    font-size: 1.125rem;
   }
   
   .filtersPopupContent {
-    padding: 16px;
+    padding: 20px;
+    max-height: calc(100vh - 180px);
+  }
+  .accountPopupContent {
+    padding: 20px; /* standardized */
     max-height: calc(100vh - 180px);
   }
 }
@@ -418,23 +543,47 @@
     font-size: 12px;
   }
   
-  /* Mobile popup adjustments for small screens */
+  .mobileFiltersContainer {
+    transform: scale(0.85);
+  }
+  
+  /* Enhanced mobile popup adjustments for medium screens */
   .filtersPopup {
     top: 65px;
-    right: 5px;
-    left: 5px;
+    right: 12px;
+    left: 12px;
+    border-radius: 12px;
+    max-height: calc(100vh - 90px);
+  }
+  .accountPopup {
+    top: 65px;
+    right: 12px;
+    left: 12px;
+    border-radius: 12px;
+    max-height: calc(100vh - 90px);
   }
   
   .filtersPopupHeader {
-    padding: 12px;
+    padding: 18px 18px 14px 18px;
   }
   
   .filtersPopupHeader h3 {
-    font-size: 1.1rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+  
+  .closePopupButton {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
   }
   
   .filtersPopupContent {
-    padding: 12px;
+    padding: 18px;
+    max-height: calc(100vh - 160px);
+  }
+  .accountPopupContent {
+    padding: 18px; /* standardized */
     max-height: calc(100vh - 160px);
   }
 }
@@ -462,27 +611,72 @@
   }
   
   .mobileFiltersContainer {
-    transform: scale(0.7);
+    transform: scale(0.75);
   }
   
-  /* Extra small popup adjustments */
+  /* Enhanced extra small popup adjustments */
   .filtersPopup {
     top: 60px;
-    right: 5px;
-    left: 5px;
+    right: 8px;
+    left: 8px;
+    border-radius: 10px;
+    max-height: calc(100vh - 80px);
+  }
+  
+  .accountPopup {
+    top: 60px;
+    right: 8px;
+    left: 8px;
+    border-radius: 10px;
+    max-height: calc(100vh - 80px);
   }
   
   .filtersPopupHeader {
-    padding: 10px;
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .accountPopupHeader {
+    padding: 16px 16px 12px 16px;
   }
   
   .filtersPopupHeader h3 {
     font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .accountPopupHeader h3 {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .closePopupButton {
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
   }
   
   .filtersPopupContent {
-    padding: 10px;
+    padding: 16px;
     max-height: calc(100vh - 140px);
+  }
+  
+  .accountPopupContent {
+  padding: 16px; /* standardized */
+    max-height: calc(100vh - 140px);
+  }
+  
+  .accountPopupItem {
+    padding: 12px 10px;
+    gap: 12px;
+    border-radius: 8px;
+  }
+  
+  .accountPopupTitle {
+    font-size: 14px;
+  }
+  
+  .accountPopupSubtitle {
+    font-size: 11px;
   }
 }
 
@@ -496,6 +690,104 @@
 @media (max-width: 768px) {
   .desktopNavigation {
     display: none;
+  }
+}
+
+/* Tablet Landscape - Enhanced filters popup */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .filtersPopup {
+    width: 380px;
+    top: 75px;
+    right: 16px;
+  }
+  
+  .accountPopup {
+  width: 380px; /* standardized */
+    top: 75px;
+    right: 16px;
+  }
+  
+  .filtersPopupHeader {
+    padding: 22px 22px 18px 22px;
+  }
+  
+  .accountPopupHeader {
+    padding: 22px 22px 18px 22px;
+  }
+  
+  .filtersPopupContent {
+    padding: 22px;
+  }
+  
+  .accountPopupContent {
+  padding: 22px; /* standardized */
+  }
+}
+
+/* Large Desktop - Enhanced positioning */
+@media (min-width: 1200px) {
+  .filtersPopup {
+    width: 440px;
+    top: 85px;
+    right: 24px;
+  }
+  
+  .accountPopup {
+  width: 440px; /* standardized */
+    top: 85px;
+    right: 24px;
+  }
+  
+  .filtersPopupHeader {
+    padding: 26px 26px 22px 26px;
+  }
+  
+  .accountPopupHeader {
+    padding: 26px 26px 22px 26px;
+  }
+  
+  .filtersPopupHeader h3 {
+    font-size: 1.5rem;
+  }
+  
+  .accountPopupHeader h3 {
+    font-size: 1.5rem;
+  }
+  
+  .closePopupButton {
+    width: 40px;
+    height: 40px;
+    font-size: 1.375rem;
+  }
+  
+  .filtersPopupContent {
+    padding: 26px;
+  }
+  
+  .accountPopupContent {
+  padding: 26px; /* standardized */
+  }
+  
+  .accountPopupItem {
+    padding: 18px;
+    gap: 18px;
+    border-radius: 14px;
+  }
+  
+  .accountPopupTitle {
+    font-size: 17px;
+  }
+  
+  .accountPopupSubtitle {
+    font-size: 14px;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1600px) {
+  .filtersPopup {
+    width: 480px;
+    right: 32px;
   }
 }
 
@@ -547,3 +839,157 @@
     border-bottom: 1px solid black;
   }
 }
+
+/* Deprecated account dropdown styles removed (now using popup modal) */
+
+/* Account Popup Modal Styles */
+.accountOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  backdrop-filter: blur(4px);
+}
+
+.accountPopup {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 420px; /* standardized to match filtersPopup */
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 120px);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+              0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 1px rgba(0, 0, 0, 0.05);
+  z-index: 1002;
+  overflow: hidden;
+  animation: popupSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+.accountPopup:focus-within {
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 
+              0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.accountPopupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.accountPopupHeader h3 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountPopupContent {
+  padding: 24px; /* standardized to match filtersPopupContent */
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  /* Match filters min-height for consistent empty state & layout */
+  min-height: 200px;
+}
+
+.accountPopupContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.accountPopupContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accountPopupContent::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.accountPopupContent::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.accountPopupItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+.accountPopupItem:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: translateY(-1px);
+}
+
+.accountPopupItem:focus {
+  background-color: rgba(59, 130, 246, 0.1);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.accountPopupItem:active {
+  transform: translateY(0);
+}
+
+.accountPopupIcon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.accountPopupText {
+  flex: 1;
+}
+
+.accountPopupTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.accountPopupSubtitle {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.accountPopupDivider {
+  margin: 8px 0;
+  border: none;
+  height: 1px;
+  background-color: #e2e8f0;
+}
+
+/* Deprecated mobile account dropdown styles removed */

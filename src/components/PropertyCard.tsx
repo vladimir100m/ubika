@@ -3,56 +3,79 @@ import { useRouter } from 'next/router';
 import { Property } from '../types';
 import styles from '../styles/PropertyCard.module.css';
 
+// Use the same class as the home card for the main container
+const HOME_CARD_CLASS = 'PropertyCard_propertyCard__1R75R';
+
 interface PropertyCardProps {
   property: Property;
-  isFavorite?: boolean;
-  onFavoriteToggle?: (propertyId: number) => void;
   showFullDetails?: boolean;
   onClick?: () => void;
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
-  isFavorite = false,
-  onFavoriteToggle,
   showFullDetails = false,
   onClick
 }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
-  // Generate multiple images based on property type
-  const getPropertyImages = (property: Property): string[] => {
-    const baseImages = [
-      '/properties/casa-moderna.jpg',
-      '/properties/apartamento-moderno.jpg',
-      '/properties/villa-lujo.jpg'
-    ];
-
-    const typeImages: { [key: string]: string[] } = {
-      'house': ['/properties/casa-moderna.jpg', '/properties/casa-campo.jpg', '/properties/casa-colonial.jpg'],
-      'apartment': ['/properties/apartamento-moderno.jpg', '/properties/apartamento-ciudad.jpg', '/properties/departamento-familiar.jpg'],
-      'villa': ['/properties/villa-lujo.jpg', '/properties/casa-lago.jpg', '/properties/casa-playa.jpg'],
-      'penthouse': ['/properties/penthouse-lujo.jpg', '/properties/loft-urbano.jpg'],
-      'cabin': ['/properties/cabana-bosque.jpg', '/properties/cabana-montana.jpg', '/properties/cabana-playa.jpg'],
-      'loft': ['/properties/loft-urbano.jpg', '/properties/penthouse-lujo.jpg'],
-      'duplex': ['/properties/duplex-moderno.jpg', '/properties/casa-moderna.jpg']
-    };
-
-    const propertyType = property.type?.toLowerCase() || 'house';
-    return typeImages[propertyType] || baseImages;
-  };
-
-  const images = getPropertyImages(property);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const handleImageNavigation = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
-    } else {
-      setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+  // Get the cover image for the property card main display
+  const getCoverImage = (property: Property): string => {
+    // First check if property has uploaded images with a cover image
+    if (property.images && property.images.length > 0) {
+      const coverImage = property.images.find(img => img.is_cover);
+      if (coverImage) {
+        return coverImage.image_url;
+      }
+      // If no cover image is set, use the first uploaded image
+      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+      return sortedImages[0].image_url;
     }
+
+    // Fallback to single image_url if available
+    if (property.image_url) {
+      return property.image_url;
+    }
+
+  // Final fallback: neutral placeholder (prefer not to show a type-based sample image)
+  return '/ubika-logo.png';
   };
+
+  // Get property images for gallery navigation (if multiple images exist)
+  const getPropertyImages = (property: Property): string[] => {
+    // First check if property has uploaded images
+    if (property.images && property.images.length > 0) {
+      // Sort images (cover first, then display order) and limit to 3 for the card grid
+      return property.images
+        .sort((a, b) => {
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .slice(0, 3)
+        .map(img => img.image_url);
+    }
+
+  // Fallback to a single neutral placeholder image when no uploaded images exist
+  return ['/ubika-logo.png'];
+  };
+  // All images (full set) for navigation
+  const getAllPropertyImages = (property: Property): string[] => {
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
+    }
+    return property.image_url ? [property.image_url] : ['/ubika-logo.png'];
+  };
+
+  const thumbnails = getPropertyImages(property); // max 3
+  const coverImage = getCoverImage(property);
 
   const handleCardClick = () => {
     if (onClick) {
@@ -62,12 +85,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     }
   };
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onFavoriteToggle) {
-      onFavoriteToggle(property.id);
-    }
-  };
+  // Favorite/save feature removed
 
   const formatPrice = (price: string) => {
     // Remove any existing formatting and add proper formatting
@@ -89,64 +107,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   return (
-    <div className={styles.propertyCard} onClick={handleCardClick}>
+    <div className={HOME_CARD_CLASS} onClick={handleCardClick}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
+        {/* Always show only the cover image for a simpler home view */}
         <img
-          src={imageError ? '/properties/casa-moderna.jpg' : images[currentImageIndex]}
+          src={imageError ? '/properties/casa-moderna.jpg' : coverImage}
           alt={property.title || `Property in ${property.city}`}
           className={styles.propertyImage}
           onError={() => setImageError(true)}
+          loading="lazy"
         />
-        
-        {/* Image Navigation */}
-        {images.length > 1 && (
-          <>
-            <button
-              className={`${styles.imageNav} ${styles.prevBtn}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImageNavigation('prev');
-              }}
-              aria-label="Previous image"
-            >
-              ‹
-            </button>
-            <button
-              className={`${styles.imageNav} ${styles.nextBtn}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImageNavigation('next');
-              }}
-              aria-label="Next image"
-            >
-              ›
-            </button>
-          </>
-        )}
 
-        {/* Image Counter */}
-        {images.length > 1 && (
-          <div className={styles.imageCounter}>
-            {currentImageIndex + 1} / {images.length}
-          </div>
-        )}
-
-        {/* Favorite Button */}
-        <button
-          className={`${styles.favoriteBtn} ${isFavorite ? styles.favoriteActive : ''}`}
-          onClick={handleFavoriteClick}
-          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              fill={isFavorite ? "#e74c3c" : "none"}
-              stroke={isFavorite ? "#e74c3c" : "#fff"}
-              strokeWidth="2"
-            />
-          </svg>
-        </button>
+  {/* Favorite/save feature removed */}
 
         {/* Status Badge */}
         {property.operation_status_display && (

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Head from 'next/head';
-import Header from '../../components/Header';
+import { StandardLayout } from '../../components';
 import PropertyGallery from '../../components/PropertyGallery';
 import PropertyDetailCard from '../../components/PropertyDetailCard';
 import { Property } from '../../types';
-import { toggleSaveProperty } from '../../utils/savedPropertiesApi';
+// Favorite/save feature removed
 import styles from '../../styles/PropertyDetail.module.css';
+import { FilterOptions } from '../../components/MapFilters';
 
 const PropertyDetail: React.FC = () => {
   const router = useRouter();
@@ -18,8 +19,36 @@ const PropertyDetail: React.FC = () => {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [saving, setSaving] = useState(false);
+  // Favorite/save state removed
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
   // Fetch property data
   useEffect(() => {
@@ -28,14 +57,13 @@ const PropertyDetail: React.FC = () => {
     const fetchProperty = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/properties?id=${id}`);
+        const response = await fetch(`/api/properties/${id}`);
         
         if (!response.ok) {
           throw new Error('Property not found');
         }
 
-        const data = await response.json();
-        const propertyData = Array.isArray(data) ? data[0] : data;
+        const propertyData = await response.json();
         
         if (!propertyData) {
           throw new Error('Property not found');
@@ -43,14 +71,7 @@ const PropertyDetail: React.FC = () => {
 
         setProperty(propertyData);
 
-        // Check if property is saved
-        if (user) {
-          const savedResponse = await fetch(`/api/properties/saved-status?propertyId=${id}`);
-          if (savedResponse.ok) {
-            const savedData = await savedResponse.json();
-            setIsFavorite(savedData.isSaved);
-          }
-        }
+  // Favorite/save status check removed
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load property');
       } finally {
@@ -61,24 +82,7 @@ const PropertyDetail: React.FC = () => {
     fetchProperty();
   }, [id, user]);
 
-  const handleSaveProperty = async () => {
-    if (!user || !property) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    if (saving) return;
-
-    setSaving(true);
-    try {
-      await toggleSaveProperty(property.id, isFavorite);
-      setIsFavorite(!isFavorite);
-    } catch (error) {
-      console.error('Error saving property:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Save handler removed
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -104,47 +108,87 @@ const PropertyDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className={styles.container}>
-        <Header />
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>Loading property details...</p>
+      <StandardLayout 
+        title="Property Details" 
+        subtitle="Loading property information..."
+        showMapFilters={true}
+        onFilterChange={handleFilterChange}
+        onSearchLocationChange={handleSearchLocationChange}
+        searchLocation=""
+        initialFilters={{}}
+      >
+        <div className={styles.container}>
+          <div className={styles.loading}>
+            <div className={styles.spinner}></div>
+            <p>Loading property details...</p>
+          </div>
         </div>
-      </div>
+      </StandardLayout>
     );
   }
 
   if (error || !property) {
     return (
-      <div className={styles.container}>
-        <Header />
-        <div className={styles.error}>
-          <h1>Property Not Found</h1>
-          <p>{error || 'The property you are looking for does not exist.'}</p>
-          <button onClick={() => router.push('/')} className={styles.backButton}>
-            Back to Home
-          </button>
+      <StandardLayout 
+        title="Property Not Found" 
+        subtitle="The property you are looking for does not exist"
+        showMapFilters={true}
+        onFilterChange={handleFilterChange}
+        onSearchLocationChange={handleSearchLocationChange}
+        searchLocation=""
+        initialFilters={{}}
+      >
+        <div className={styles.container}>
+          <div className={styles.error}>
+            <h1>Property Not Found</h1>
+            <p>{error || 'The property you are looking for does not exist.'}</p>
+            <button onClick={() => router.push('/')} className={styles.backButton}>
+              Back to Home
+            </button>
+          </div>
         </div>
-      </div>
+      </StandardLayout>
     );
   }
 
-  const images = property.image_url ? [property.image_url] : [];
+  // Get all property images or fallback to single image
+  const getPropertyImages = (property: Property): string[] => {
+    // First check if property has uploaded images
+    if (property.images && property.images.length > 0) {
+      return property.images
+        .sort((a, b) => {
+          // Sort by is_cover first, then by display_order
+          if (a.is_cover && !b.is_cover) return -1;
+          if (!a.is_cover && b.is_cover) return 1;
+          return a.display_order - b.display_order;
+        })
+        .map(img => img.image_url);
+    }
+    
+  // Fallback to single image_url or neutral placeholder
+  return property.image_url ? [property.image_url] : ['/ubika-logo.png'];
+  };
+
+  const images = getPropertyImages(property);
+  const coverImage = property.images?.find(img => img.is_cover)?.image_url || property.image_url || images[0];
   const formattedAddress = `${property.address}${property.city ? `, ${property.city}` : ''}${property.state ? `, ${property.state}` : ''}`;
 
   return (
-    <>
+    <StandardLayout 
+      title={property.title} 
+      subtitle={`${property.type || 'Property'} in ${property.city || property.address}`}
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
       <Head>
-        <title>{property.title || `Property in ${property.city}`} | Ubika</title>
-        <meta name="description" content={property.description} />
-        <meta property="og:title" content={property.title || `Property in ${property.city}`} />
-        <meta property="og:description" content={property.description} />
-        <meta property="og:image" content={property.image_url} />
-        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/property/${property.id}`} />
+        <title>{property.title} - Ubika</title>
+        <meta name="description" content={property.description || `${property.type} in ${property.city}`} />
       </Head>
 
       <div className={styles.container}>
-        <Header />
         
         <main className={styles.main}>
           {/* Property Images */}
@@ -153,16 +197,18 @@ const PropertyDetail: React.FC = () => {
               <PropertyGallery images={images} initialIndex={0} />
             ) : (
               <div className={styles.placeholderImage}>
-                <img src="/properties/casa-moderna.jpg" alt="Property" />
+                <img src="/ubika-logo.png" alt="Property" />
               </div>
             )}
           </section>
 
           {/* Property Detail Card - Shows all database information */}
-          <PropertyDetailCard property={property} />
+          <PropertyDetailCard 
+            property={property} 
+          />
         </main>
       </div>
-    </>
+    </StandardLayout>
   );
 };
 

@@ -3,6 +3,14 @@
 .galleryContainer {
   width: 100%;
   position: relative;
+  /* Enhanced Mac trackpad support */
+  touch-action: pan-x pan-y;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  /* Ensure smooth wheel events on Mac */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Loading state */
@@ -462,5 +470,139 @@
     padding: 4px 8px;
     top: 10px;
     left: 10px;
+  }
+}
+
+/* Enhanced cross-device scroll and interaction support */
+.galleryContainer {
+  /* Touch action for mobile devices */
+  touch-action: pan-x pan-y;
+  /* Better scroll behavior on all devices */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent text selection during touch interactions */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.lightbox {
+  /* Enhanced touch support for lightbox */
+  touch-action: manipulation;
+  /* Better backdrop filtering on supported devices */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.lightboxContent {
+  /* Optimized touch interactions */
+  touch-action: pan-x;
+  /* Hardware acceleration for smooth animations */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.lightboxImage {
+  /* Prevent image dragging on desktop */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  /* Better image rendering on high-DPI displays */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.thumbnailsRow {
+  /* Enhanced horizontal scroll for thumbnails */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  /* Better touch scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.thumbnailsRow::-webkit-scrollbar {
+  height: 4px;
+}
+
+.thumbnailsRow::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.thumbnailsRow::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+}
+
+.thumbnailsRow::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Device-specific optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile touch devices */
+  .navButton {
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 1.4rem;
+  }
+  
+  .lightboxClose {
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 2rem;
+  }
+  
+  .thumbnail {
+    min-width: 80px;
+    min-height: 60px;
+  }
+}
+
+@media (pointer: fine) {
+  /* Desktop devices with precise pointers */
+  .galleryContainer:focus {
+    outline: 2px solid #0074e4;
+    outline-offset: 2px;
+  }
+  
+  .navButton:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+}
+
+/* Mac-specific optimizations */
+@supports (-webkit-appearance: none) {
+  .galleryContainer {
+    /* Enhanced wheel event handling for Mac trackpad */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  .lightbox {
+    /* Better Mac trackpad momentum */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .lightboxContent {
+    /* Optimized for Mac trackpad gestures */
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Safari-specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .galleryContainer {
+    /* Force hardware acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 }

@@ -4,7 +4,8 @@ import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
 import useMediaQuery from '../utils/useMediaQuery';
 import { SearchFilters } from '../components/SearchBar';
-import Header from 'components/Header';
+import { StandardLayout } from '../components';
+import { FilterOptions } from '../components/MapFilters';
 
 interface SearchHistoryItem {
   id: number;
@@ -19,6 +20,35 @@ const RecentSearches: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filter handlers - redirect to map page with filters
+  const handleFilterChange = (filters: FilterOptions) => {
+    const query: any = {};
+    if (filters.operation) query.operation = filters.operation;
+    if (filters.priceMin) query.minPrice = filters.priceMin;
+    if (filters.priceMax) query.maxPrice = filters.priceMax;
+    if (filters.beds) query.bedrooms = filters.beds;
+    if (filters.baths) query.bathrooms = filters.baths;
+    if (filters.homeType) query.propertyType = filters.homeType;
+    if (filters.moreFilters.minArea) query.minArea = filters.moreFilters.minArea;
+    if (filters.moreFilters.maxArea) query.maxArea = filters.moreFilters.maxArea;
+    
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
+
+  const handleSearchLocationChange = (location: string) => {
+    const query: any = {};
+    if (location && location.trim() !== '') {
+      query.zone = location;
+    }
+    router.push({
+      pathname: '/map',
+      query
+    });
+  };
 
   // Get operation from query parameters, default to 'buy'
   const operation = router.query.operation
@@ -89,9 +119,15 @@ const RecentSearches: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-  <Header />
-
+    <StandardLayout 
+      title="Recent Searches" 
+      subtitle="Your search history"
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation=""
+      initialFilters={{}}
+    >
       <section className={styles.featuredProperties}>
         <div className={styles.searchHistoryHeader}>
           <h2>Your Recent Searches</h2>
@@ -202,7 +238,7 @@ const RecentSearches: React.FC = () => {
         )}
       </section>
       
-    </div>
+    </StandardLayout>
   );
 };
 
