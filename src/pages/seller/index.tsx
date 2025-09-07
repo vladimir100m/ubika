@@ -543,13 +543,6 @@ const SellerDashboard: React.FC = () => {
           >
             ➕ Add New Property
           </button>
-          {activeTab === 'edit' && (
-            <button 
-              className={`${standardStyles.tabButton} ${activeTab === 'edit' ? standardStyles.tabButtonActive : ''}`}
-            >
-              ✏️ Edit Property (ID: {editingPropertyId})
-            </button>
-          )}
         </div>
 
         {message && (
@@ -669,15 +662,14 @@ const SellerDashboard: React.FC = () => {
                 </span>
                 {activeTab === 'edit' 
                   ? `Edit Property (ID: ${editingPropertyId})` 
-                  : 'List a New Property - Standardized Flow'
+                  : 'List a New Property'
                 }
               </h2>
-              <p className={styles.formDescription}>
-                {activeTab === 'edit' 
-                  ? 'Update your property information and manage blob storage images with existing IDs' 
-                  : 'Fill out the details below to create a property with automatic ID generation, then upload images to standardized blob storage'
-                }
-              </p>
+              {activeTab === 'edit' && (
+                <p className={styles.formDescription}>
+                  Update your property information and manage blob storage images with existing IDs
+                </p>
+              )}
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -1131,85 +1123,6 @@ const SellerDashboard: React.FC = () => {
                 <h3 className={styles.sectionTitle}>
                   <span className={styles.sectionIcon}>📷</span>
                   Property Images
-                  {(currentPropertyId || activeTab === 'add') && (
-                    <span style={{marginLeft:'auto', display:'flex', gap:8}}>
-                      {activeTab === 'add' && !currentPropertyId && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            // Minimal validation before auto-create
-                            const required = ['title','description','price','address'];
-                            const missing = required.filter(k => !(formData as any)[k]);
-                            if (missing.length) {
-                              setMessage({ text: `Please fill: ${missing.join(', ')}`, type: 'error' });
-                              return;
-                            }
-                            if (!formData.seller_id && u?.sub) {
-                              setFormData(prev => ({ ...prev, seller_id: u.sub! }));
-                            }
-                            // Create property silently
-                            try {
-                              setSubmitting(true);
-                              const response = await fetch('/api/properties/create', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                  ...formData,
-                                  seller_id: u?.sub,
-                                  image_url: undefined
-                                })
-                              });
-                              if (!response.ok) {
-                                const errData = await response.json().catch(()=>({}));
-                                throw new Error(errData.error || 'Failed to create property before upload');
-                              }
-                              const created = await response.json();
-                              setCurrentPropertyId(created.id);
-                              setMessage({ text: 'Property saved. You can now upload images.', type: 'success' });
-                              // Upload any staged images
-                              await imageEditorRef.current?.uploadStaged?.();
-                              // Open dialog to add more
-                              imageEditorRef.current?.openUploadDialog?.();
-                            } catch (err:any) {
-                              setMessage({ text: err.message || 'Error creating property', type: 'error' });
-                            } finally {
-                              setSubmitting(false);
-                            }
-                          }}
-                          className={styles.quickActionBtn}
-                          title="Save property and start uploading"
-                        >
-                          💾 Save & Upload
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => (currentPropertyId ? imageEditorRef.current?.openUploadDialog?.() : imageEditorRef.current?.openStageDialog?.())}
-                        className={styles.quickActionBtn}
-                        title={currentPropertyId ? 'Select images and upload immediately' : 'Add images (temporary until you save)'}
-                      >
-                        {currentPropertyId ? '📤 Upload' : '📥 Add'}
-                      </button>
-                      {currentPropertyId && (
-                        <button
-                          type="button"
-                          onClick={() => imageEditorRef.current?.openStageDialog?.()}
-                          className={styles.quickActionBtn}
-                          title="Select images to stage (won't upload until you click Upload Staged)"
-                        >
-                          📥 Stage
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => imageEditorRef.current?.deleteSelected?.()}
-                        className={styles.quickActionBtn}
-                        title="Delete all currently selected images"
-                      >
-                        🗑️ Delete Selected
-                      </button>
-                    </span>
-                  )}
                 </h3>
                 <p className={styles.sectionDescription}>
                   {currentPropertyId ? 'Upload high-quality images to showcase your property' : 'Add images now. They will upload automatically once the property is created.'}
@@ -1217,41 +1130,32 @@ const SellerDashboard: React.FC = () => {
 
                 {/* Standardized: Only render image upload if property exists with valid ID */}
         {currentPropertyId || activeTab === 'add' ? (
-                  <PropertyImageEditor
-                    ref={imageEditorRef}
-          propertyId={currentPropertyId || undefined}
-                    sellerId={u?.sub || u?.email || 'anonymous'}
-                    images={propertyImages}
-                    onChange={(images: PropertyImage[]) => {
-                      setPropertyImages(images);
-                      // Update form data with cover image URL for backward compatibility
-                      const coverImage = images.find(img => img.is_cover);
-                      if (coverImage) {
-                        setFormData(prev => ({ ...prev, image_url: coverImage.image_url }));
-                      }
-                    }}
-                    maxImages={15}
-                    allowBulkOperations={true}
-                    showImagePreview={true}
-          allowTempImagesBeforeSave={activeTab === 'add'}
-                  />
-                ) : (
-                  <div className={styles.imageUploadNotice}>
-                    <span>💾 Save property details first to enable standardized blob storage image upload with automatic ID creation.</span>
-                  </div>
-                )}
+          <div className={styles.container}>
+            <PropertyImageEditor
+              propertyId={currentPropertyId || undefined}
+              sellerId={u?.sub || u?.email || 'anonymous'}
+              images={propertyImages}
+              onChange={(images: PropertyImage[]) => {
+                setPropertyImages(images);
+                // Update form data with cover image URL for backward compatibility
+                const coverImage = images.find(img => img.is_cover);
+                if (coverImage) {
+                  setFormData(prev => ({ ...prev, image_url: coverImage.image_url }));
+                }
+              }}
+              maxImages={15}
+              allowBulkOperations={true}
+              showImagePreview={true}
+              allowTempImagesBeforeSave={activeTab === 'add'}
+            />
+          </div>
+        ) : (
+          <div className={styles.imageUploadNotice}>
+            <span>💾 Save property details first to enable standardized blob storage image upload with automatic ID creation.</span>
+          </div>
+        )}
                 
-        {propertyImages.length > 0 && (
-                  <div className={styles.imageStats}>
-                    <span className={styles.statsIcon}>�</span>
-          <span>{propertyImages.length} image{propertyImages.length !== 1 ? 's' : ''} {currentPropertyId ? 'in blob storage' : 'staged'}</span>
-                    {propertyImages.find(img => img.is_cover) && (
-                      <span className={styles.coverInfo}>
-                        • Cover: {propertyImages.find(img => img.is_cover)?.image_url.split('/').pop()}
-                      </span>
-                    )}
-                  </div>
-                )}
+
               </div>
               )}
 
@@ -1342,7 +1246,7 @@ const SellerDashboard: React.FC = () => {
                   <span className={styles.buttonIcon}>
                     {submitting ? '⏳' : activeTab === 'edit' ? '✏️' : '🏠'}
                   </span>
-                  {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'Create Property & Enable Image Upload'}
+                    {submitting ? 'Submitting...' : activeTab === 'edit' ? 'Update Property' : 'Create Property'}
                 </button>
               </div>
             </form>

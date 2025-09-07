@@ -22,10 +22,7 @@ interface UploadItem {
   file?: File;
 }
 
-const PropertyImageEditor = React.forwardRef(function PropertyImageEditor(
-  props: PropertyImageEditorProps,
-  ref: React.Ref<any>
-) {
+function PropertyImageEditor(props: PropertyImageEditorProps) {
   const { propertyId, sellerId, images, onChange, maxImages = 15, allowBulkOperations = true, showImagePreview = true, allowTempImagesBeforeSave = false } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const selectModeRef = useRef<'auto' | 'stage'>('auto');
@@ -231,25 +228,6 @@ const PropertyImageEditor = React.forwardRef(function PropertyImageEditor(
     setUploading(false);
   };
 
-  // Expose imperative handle to parent components
-  useImperativeHandle(ref, () => ({
-    // Upload any staged files
-    uploadStaged: async () => {
-      await processUploadQueue();
-    },
-    // Open native file picker and immediately upload
-    openUploadDialog: () => {
-      triggerFileSelectMode('auto');
-    },
-    // Open native file picker but only stage (requires manual upload later)
-    openStageDialog: () => {
-      triggerFileSelectMode('stage');
-    },
-    // Delete currently selected images (no-op if none)
-    deleteSelected: () => {
-      deleteSelectedImages();
-    }
-  }));
 
   // Image operations
   const setCoverImage = async (imageId: number) => {
@@ -413,305 +391,40 @@ const PropertyImageEditor = React.forwardRef(function PropertyImageEditor(
   };
 
   return (
-    <div className={styles.container}>
-      {/* Upload Zone */}
-      <div
-        className={`${styles.dropZone} ${dragOver ? styles.dragOver : ''} ${uploading ? styles.uploading : ''}`}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onClick={triggerFileSelect}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={onFileChange}
-          className={styles.hiddenInput}
-          disabled={uploading || images.length >= maxImages}
-        />
-        
-        <div className={styles.dropZoneContent}>
-          {uploading ? (
-            <>
-              <div className={styles.uploadSpinner}></div>
-              <p>Uploading to blob storage...</p>
-              <p className={styles.uploadHint}>Creating image IDs automatically</p>
-            </>
-          ) : (
-            <>
-              <div className={styles.uploadIcon}>📸</div>
-              <p><strong>Drop images here</strong> or click to browse</p>
-              <p className={styles.uploadHint}>
-                Standardized blob storage • Automatic ID creation • Up to {maxImages} images • Max 10MB each
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Upload Controls: Select & Upload / Select to Stage / Upload Staged / Clear Staged */}
-      <div className={styles.uploadControls}>
-        <button
-          type="button"
-          className={styles.controlBtn}
-          onClick={() => (propertyId ? triggerFileSelectMode('auto') : triggerFileSelectMode('stage'))}
-          disabled={uploading || images.length >= maxImages}
-        >
-          {propertyId ? '📤 Select & Upload' : '📥 Add Images'}
-        </button>
-
-        {propertyId && (
-          <button
-            type="button"
-            className={styles.controlBtn}
-            onClick={() => triggerFileSelectMode('stage')}
-            disabled={uploading || images.length >= maxImages}
-          >
-            📥 Select to Stage
-          </button>
-        )}
-
-        {uploadItems.length > 0 && propertyId && (
-          <>
-            <button
-              type="button"
-              className={styles.controlBtn}
-              onClick={() => processUploadQueue()}
-              disabled={uploading || !propertyId}
-            >
-              ⬆️ Upload Staged ({uploadItems.length})
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.controlBtn} ${styles.clearBtn}`}
-              onClick={() => { setUploadItems([]); setLocalError(null); }}
-              disabled={uploading}
-            >
-              🧹 Clear Staged
-            </button>
-          </>
+    <div className={styles.dropZone}
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onClick={triggerFileSelect}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={onFileChange}
+        className={styles.hiddenInput}
+        disabled={uploading || images.length >= maxImages}
+      />
+      <div className={styles.dropZoneContent}>
+        {uploading ? (
+          <div>
+            <div className={styles.uploadSpinner}></div>
+            <p>Uploading to blob storage...</p>
+            <p className={styles.uploadHint}>Creating image IDs automatically</p>
+          </div>
+        ) : (
+          <div>
+            <div className={styles.uploadIcon}>📸</div>
+            <p><strong>Drop images here</strong> or click to browse</p>
+            <p className={styles.uploadHint}>
+              Standardized blob storage • Automatic ID creation • Up to {maxImages} images • Max 10MB each
+            </p>
+          </div>
         )}
       </div>
-
-      {/* Error Message */}
-      {localError && (
-        <div className={styles.errorMessage}>
-          <span className={styles.errorIcon}>⚠️</span>
-          {localError}
-          <button 
-            className={styles.errorClose}
-            onClick={() => setLocalError(null)}
-            aria-label="Close error"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* Upload Progress */}
-  {uploadItems.length > 0 && propertyId && (
-        <div className={styles.uploadProgress}>
-          <h4 className={styles.progressTitle}>Upload Progress</h4>
-          {uploadItems.map(item => (
-            <div key={item.tempId} className={styles.progressItem}>
-              <div className={styles.progressInfo}>
-                <span className={styles.fileName}>{item.name}</span>
-                <span className={styles.progressStatus}>
-                  {item.status === 'error' ? (
-                    <span className={styles.statusError}>❌ {item.error}</span>
-                  ) : item.status === 'done' ? (
-                    <span className={styles.statusSuccess}>✅ Done</span>
-                  ) : (
-                    <span>{item.progress}%</span>
-                  )}
-                </span>
-              </div>
-              <div className={styles.progressBar}>
-                <div 
-                  className={`${styles.progressFill} ${item.status === 'error' ? styles.progressError : ''}`}
-                  style={{ width: `${item.progress}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Image Grid */}
-      {images.length > 0 && (
-        <div className={styles.imageGrid}>
-          <div className={styles.gridHeader}>
-            <h4 className={styles.gridTitle}>
-              📸 {images.length} image{images.length !== 1 ? 's' : ''} {propertyId ? 'in blob storage' : 'staged'}
-            </h4>
-            
-            {allowBulkOperations && images.length > 1 && (
-              <div className={styles.bulkActions}>
-                <button
-                  type="button"
-                  className={styles.bulkBtn}
-                  onClick={selectedImages.size === images.length ? deselectAllImages : selectAllImages}
-                >
-                  {selectedImages.size === images.length ? 'Deselect All' : 'Select All'}
-                </button>
-                
-                {selectedImages.size > 0 && (
-                  <button
-                    type="button"
-                    className={`${styles.bulkBtn} ${styles.deleteBtn}`}
-                    onClick={deleteSelectedImages}
-                  >
-                    Delete Selected ({selectedImages.size})
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.thumbGrid}>
-            {sortedImages.map((image, idx) => (
-              <div key={image.id} className={styles.imageItem}>
-                {allowBulkOperations && (
-                  <input
-                    type="checkbox"
-                    className={styles.imageCheckbox}
-                    checked={selectedImages.has(image.id)}
-                    onChange={() => toggleImageSelection(image.id)}
-                  />
-                )}
-                
-                <div 
-                  className={styles.imageWrapper}
-                  onClick={() => openPreview(image)}
-                >
-                  <img
-                    src={image.image_url}
-                    alt={`Property image ${idx + 1}`}
-                    className={styles.thumbImg}
-                    loading="lazy"
-                  />
-                  
-                  {image.is_cover && (
-                    <div className={styles.coverBadge}>Cover</div>
-                  )}
-                  
-                  <div className={styles.imageOverlay}>
-                    <button
-                      type="button"
-                      className={styles.previewBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openPreview(image);
-                      }}
-                    >
-                      👁️
-                    </button>
-                  </div>
-                </div>
-
-                <div className={styles.imageActions}>
-                  <button
-                    type="button"
-                    className={`${styles.actionBtn} ${image.is_cover ? styles.coverBtn : ''}`}
-                    onClick={() => setCoverImage(image.id)}
-                    title={image.is_cover ? 'Cover Image' : 'Set as Cover'}
-                  >
-                    ⭐
-                  </button>
-                  
-                  {idx > 0 && (
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      onClick={() => moveImage(image.id, 'left')}
-                      title="Move Left"
-                    >
-                      ←
-                    </button>
-                  )}
-                  
-                  {idx < images.length - 1 && (
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      onClick={() => moveImage(image.id, 'right')}
-                      title="Move Right"
-                    >
-                      →
-                    </button>
-                  )}
-                  
-                  <button
-                    type="button"
-                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                    onClick={() => deleteImage(image.id)}
-                    title="Delete Image"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Image Preview Modal */}
-      {showPreview && previewImage && (
-        <div className={styles.previewModal} onClick={closePreview}>
-          <div className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
-            <button
-              className={styles.previewClose}
-              onClick={closePreview}
-              aria-label="Close preview"
-            >
-              ×
-            </button>
-            
-            <img
-              src={previewImage.image_url}
-              alt="Property image preview"
-              className={styles.previewImage}
-            />
-            
-            <div className={styles.previewInfo}>
-              <h3>Image Details</h3>
-              <p><strong>Order:</strong> {previewImage.display_order}</p>
-              <p><strong>Cover Image:</strong> {previewImage.is_cover ? 'Yes' : 'No'}</p>
-              <p><strong>Uploaded:</strong> {new Date(previewImage.created_at).toLocaleDateString()}</p>
-              
-              <div className={styles.previewActions}>
-                <button
-                  className={`${styles.previewActionBtn} ${previewImage.is_cover ? styles.coverBtn : ''}`}
-                  onClick={() => {
-                    setCoverImage(previewImage.id);
-                    closePreview();
-                  }}
-                >
-                  {previewImage.is_cover ? '⭐ Cover Image' : 'Set as Cover'}
-                </button>
-                
-                <button
-                  className={`${styles.previewActionBtn} ${styles.deleteBtn}`}
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this image?')) {
-                      deleteImage(previewImage.id);
-                      closePreview();
-                    }
-                  }}
-                >
-                  🗑️ Delete Image
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-});
+}
 
 export default PropertyImageEditor;
