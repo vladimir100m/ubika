@@ -5,6 +5,9 @@ import {useRouter} from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
+import { getCoverImage, getPropertyImages } from '../utils/propertyImages';
+import PropertyImageGrid from './PropertyImageGrid';
+import { formatNumberWithCommas } from '../utils/format';
 // Favorite/save feature removed
 
 interface Neighborhood {
@@ -30,57 +33,7 @@ function inferIconFromCategory(category?: string): string {
   return '•';
 }
 
-// Helper to sort images by cover and display order
-// Accept full image objects for sorting
-type PropertyImage = { is_cover?: boolean; display_order?: number; image_url: string };
-const sortPropertyImages = (images: PropertyImage[]): PropertyImage[] => {
-  return [...images].sort((a, b) => {
-    if (a.is_cover && !b.is_cover) return -1;
-    if (!a.is_cover && b.is_cover) return 1;
-    return (a.display_order ?? 0) - (b.display_order ?? 0);
-  });
-};
-
-// Get the cover image for property display
-const getCoverImage = (property: Property): string => {
-  if (property.images && property.images.length > 0) {
-    const sortedImages = sortPropertyImages(property.images);
-    return sortedImages[0].image_url;
-  }
-  if (property.image_url) {
-    return property.image_url;
-  }
-  const typeImages: { [key: string]: string } = {
-    house: '/ubika-logo.png',
-    apartment: '/ubika-logo.png',
-    villa: '/ubika-logo.png',
-    penthouse: '/ubika-logo.png',
-    cabin: '/ubika-logo.png',
-    loft: '/ubika-logo.png',
-    duplex: '/ubika-logo.png',
-  };
-  const propertyType = property.type?.toLowerCase() || 'house';
-  return typeImages[propertyType] || '/ubika-logo.png';
-};
-
-// Function to enforce mandatory upload of at least three images
-const generatePropertyImages = (property: Property): string[] => {
-  if (property.images && property.images.length >= 3) {
-    // Return sorted uploaded images
-    return sortPropertyImages(property.images).map(img => img.image_url).slice(0, 3);
-  }
-  // If less than 3 images, return empty array to enforce mandatory upload
-  return [];
-};
-
-// Function to get all property images for gallery
-const getPropertyImages = (property: Property): string[] => {
-  if (property.images && property.images.length >= 3) {
-    return sortPropertyImages(property.images).map(img => img.image_url);
-  }
-  // If less than 3 images, return empty array to enforce mandatory upload
-  return [];
-};
+// (Image helper functions removed in favor of shared utils in ../utils/propertyImages)
   
 
 export default function PropertyPopup({ 
@@ -460,152 +413,13 @@ export default function PropertyPopup({
             </div>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
-              {/* Dynamic Photo Grid Layout (1-3 images) */}
-              <div 
-                className={galleryStyles.styledGallery}
-                style={{ 
-                  display: 'grid',
-                  gridTemplateColumns: gridLayout.gridTemplateColumns,
-                  gridTemplateRows: gridLayout.gridTemplateRows,
-                  gap: '8px',
-                  height: '100%',
-                  width: '100%',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  backgroundColor: '#f7f7f7'
+              <PropertyImageGrid
+                property={selectedProperty}
+                onOpenCarousel={(startIndex) => {
+                  setCurrentImageIndex(startIndex);
+                  setShowCarousel(true);
                 }}
-              >
-                {gridLayout.images.map((image: string, index: number) => {
-                  const isMainImage = index === 0;
-                  const imageCount = gridLayout.images.length;
-                  
-                  // Determine grid position based on layout
-                  let gridColumn, gridRow;
-                  if (imageCount === 1) {
-                    gridColumn = '1';
-                    gridRow = '1';
-                  } else if (imageCount === 2) {
-                    gridColumn = index === 0 ? '1' : '2';
-                    gridRow = '1';
-                  } else { // 3 images
-                    if (index === 0) {
-                      gridColumn = '1';
-                      gridRow = '1 / span 2';
-                    } else {
-                      gridColumn = '2';
-                      gridRow = index === 1 ? '1' : '2';
-                    }
-                  }
-                  
-                  return (
-                    <div 
-                      key={index}
-                      style={{
-                        gridColumn,
-                        gridRow,
-                        position: 'relative',
-                        cursor: 'pointer',
-                        overflow: 'hidden'
-                      }}
-                      onClick={() => handleImageClick(index)}
-                    >
-                      <img 
-                        src={image} 
-                        alt={`Property image ${index + 1}`} 
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'cover',
-                          transition: 'transform 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }}
-                      />
-                      
-                      {/* Image counter overlay on main image */}
-                      {isMainImage && (
-                        <div style={{ 
-                          position: 'absolute', 
-                          bottom: '16px', 
-                          left: '16px', 
-                          zIndex: 5,
-                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                          color: 'white',
-                          borderRadius: '4px',
-                          padding: '4px 10px',
-                          fontSize: '14px'
-                        }}>
-                          1 of {getPropertyImages(selectedProperty).length}
-                        </div>
-                      )}
-                      
-                      {/* Show "+X more" overlay on the last visible image if there are more photos */}
-                      {index === gridLayout.images.length - 1 && getPropertyImages(selectedProperty).length > 3 && (
-                        <div style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '18px',
-                          fontWeight: 'bold'
-                        }}>
-                          +{getPropertyImages(selectedProperty).length - 3} more
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                
-                {/* "View all photos" button - only show if there are more images than displayed */}
-                {gridLayout.showViewAllButton && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    bottom: '16px', 
-                    right: '16px', 
-                    zIndex: 5
-                  }}>
-                    <button 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                        color: '#2a2a33',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '8px 16px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImageIndex(0);
-                        setShowCarousel(true);
-                      }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-                        <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      {getPropertyImages(selectedProperty).length} Photos
-                    </button>
-                  </div>
-                )}
-              </div>
+              />
             </div>
             <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -629,7 +443,7 @@ export default function PropertyPopup({
                         color: '#2a2a33', 
                         margin: '0 0 8px 0',
                         lineHeight: '1.2'
-                      }}>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h1>
+                      }}>${formatNumberWithCommas(selectedProperty.price)}</h1>
                     </div>
                   </div>
                   <h2 style={{ 
