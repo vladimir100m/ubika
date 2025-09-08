@@ -8,6 +8,7 @@ import { Property } from '../types';
 import { getCoverImage, getPropertyImages } from '../utils/propertyImages';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../utils/format';
+import PropertyDetailTabsNav from './PropertyDetailTabsNav';
 // Favorite/save feature removed
 
 interface Neighborhood {
@@ -465,62 +466,8 @@ export default function PropertyPopup({
                   </div>
                 </div>
                 
-                {/* Tabs Navigation - Sticky at the top */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderBottom: '1px solid #e9e9e9',
-                  position: 'sticky',
-                  top: '0',
-                  zIndex: 10
-                }}>
-                  <ul style={{ 
-                    display: 'flex', 
-                    listStyle: 'none', 
-                    margin: '0',
-                    padding: '0 24px',
-                    borderBottom: '1px solid #e9e9e9'
-                  }}>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'overview' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'overview' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'overview' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('overview')}
-                    >
-                      Overview
-                    </li>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'details' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'details' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'details' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('details')}
-                    >
-                      Facts and features
-                    </li>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'map' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'map' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'map' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('map')}
-                    >
-                      Location
-                    </li>
-                  </ul>
-                </div>
+                {/* Tabs Navigation */}
+                <PropertyDetailTabsNav active={activeTab} onChange={handleTabChange} />
                 
                 {/* All content sections displayed one after another */}
                 <div style={{ backgroundColor: 'white' }}>
