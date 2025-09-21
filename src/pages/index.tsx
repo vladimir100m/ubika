@@ -7,6 +7,7 @@ import PropertyPopup from '../components/PropertyPopup';
 import StandardLayout from '../components/StandardLayout';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../components/StateComponents';
 import standardStyles from '../styles/StandardComponents.module.css';
+import styles from '../styles/Home.module.css';
 import { Property } from '../types'; // Import Property type
 // Favorite/save feature removed
 import { FilterOptions } from '../components/MapFilters';
@@ -192,16 +193,15 @@ const Home: React.FC = () => {
           />
         )}
         
-        {/* Properties Grid */}
+        {/* Properties Grid - use same grid styles as map view */}
         {!loading && !error && properties.length > 0 && (
-          <div className={`${standardStyles.grid} ${standardStyles.grid2}`}>
+          <div className={styles.propertyGrid}>
             {properties.slice(0, 6).map((property) => (
-              <div key={property.id} className={standardStyles.propertyCard}>
-                <PropertyCard
-                  property={property}
-                  onClick={() => handlePropertyClick(property)}
-                />
-              </div>
+              <PropertyCard
+                key={property.id}
+                property={property}
+                onClick={() => handlePropertyClick(property)}
+              />
             ))}
           </div>
         )}
