@@ -60,7 +60,7 @@
 
 @media (max-width: 768px) {
   .onlyMobile {
-    display: block !important;
+    display: block;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -68,7 +68,7 @@
     z-index: 1100;
     background: transparent;
   }
-  .onlyDesktop { display: none !important; }
+  .onlyDesktop { display: none; }
 }
 
 /* Mobile Navigation Bar */

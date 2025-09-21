@@ -29,7 +29,7 @@ const StandardLayout: React.FC<StandardLayoutProps> = ({
   fullWidth = false,
   backgroundColor = '#ffffff',
   className = '',
-  showMapFilters = false,
+  showMapFilters = true,
   onFilterChange,
   onSearchLocationChange,
   searchLocation,

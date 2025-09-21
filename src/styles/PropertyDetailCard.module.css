@@ -28,8 +28,8 @@
 
 .topRightHeart :global(button) {
   /* Ensure consistent sizing */
-  width: 48px !important;
-  height: 48px !important;
+  width: 48px;
+  height: 48px;
 }
 
 .priceSection {

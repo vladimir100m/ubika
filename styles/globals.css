@@ -70,7 +70,4 @@ img {
 }
 
 /* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+/* animations centralized in src/styles/globals.css */

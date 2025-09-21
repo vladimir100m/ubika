@@ -90,11 +90,6 @@
   margin-bottom: 8px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 /* Error Message */
 .errorMessage {
   background: #fee2e2;
@@ -361,15 +356,15 @@
   border-color: #9ca3af;
 }
 
-.coverBtn {
-  background: #dcfce7 !important;
-  border-color: #10b981 !important;
-  color: #059669 !important;
+.actionBtn.coverBtn {
+  background: #dcfce7;
+  border-color: #10b981;
+  color: #059669;
 }
 
-.coverBtn:hover {
-  background: #bbf7d0 !important;
-  border-color: #059669 !important;
+.actionBtn.coverBtn:hover {
+  background: #bbf7d0;
+  border-color: #059669;
 }
 
 .actionBtn.deleteBtn {

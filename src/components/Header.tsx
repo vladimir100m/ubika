@@ -30,6 +30,21 @@ const Header: React.FC<HeaderProps> = ({
   const [isFiltersPopupOpen, setIsFiltersPopupOpen] = useState(false);
   const [isAccountPopupOpen, setIsAccountPopupOpen] = useState(false);
 
+  // Determine if there are any initial filters to show a small badge
+  const hasActiveFilters = Boolean(
+    initialFilters && (
+      initialFilters.operation ||
+      initialFilters.priceMin ||
+      initialFilters.priceMax ||
+      initialFilters.beds ||
+      initialFilters.baths ||
+      initialFilters.homeType ||
+      initialFilters.moreFilters?.minArea ||
+      initialFilters.moreFilters?.maxArea ||
+      (initialFilters.moreFilters?.keywords && initialFilters.moreFilters.keywords.length > 0)
+    )
+  );
+
   const handleNavigation = (path: string) => {
     router.push(path);
   };
@@ -133,14 +148,16 @@ const Header: React.FC<HeaderProps> = ({
             
             {/* Right Section - Filters and Auth */}
             <div className={styles.rightSection}>
-              {showMapFilters && onFilterChange && (
+              {onFilterChange && (
                 <button 
                   className={`${styles.filtersButton} ${isFiltersPopupOpen ? styles.active : ''}`}
                   onClick={toggleFiltersPopup}
                   aria-label="Open filters"
+                  aria-expanded={isFiltersPopupOpen}
                 >
                   <span className={styles.navButtonIcon} role="img" aria-hidden="true">🔍</span>
                   Filters
+                  {hasActiveFilters && <span className={styles.filtersBadge} aria-hidden="true">•</span>}
                 </button>
               )}
               
@@ -165,13 +182,15 @@ const Header: React.FC<HeaderProps> = ({
           <div className={styles.mobileNavContainer}>
             <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
               {/* Order: Filters, Account/Login (Sell moved into Me menu) */}
-              {showMapFilters && onFilterChange && (
+              {onFilterChange && (
                 <button
                   className={`${styles.mobilePill} ${isFiltersPopupOpen ? styles.active : ''}`}
                   onClick={toggleFiltersPopup}
                   aria-label="Open filters"
+                  aria-expanded={isFiltersPopupOpen}
                 >
                   🔍 Filters
+                  {hasActiveFilters && <span className={styles.filtersBadge} aria-hidden="true">•</span>}
                 </button>
               )}
               {!isLoading && (
@@ -189,7 +208,7 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       {/* Filters Popup Modal */}
-      {isFiltersPopupOpen && showMapFilters && onFilterChange && (
+      {isFiltersPopupOpen && onFilterChange && (
         <>
           <div className={styles.filtersOverlay} onClick={closeFiltersPopup}></div>
           <div className={styles.filtersPopup}>
@@ -211,7 +230,7 @@ const Header: React.FC<HeaderProps> = ({
                 onSearchLocationChange={onSearchLocationChange}
                 searchLocation={searchLocation}
                 initialFilters={initialFilters}
-                inHeader={false}
+                inHeader={true}
                 onClosePopup={() => setIsFiltersPopupOpen(false)}
               />
             </div>

@@ -18,6 +18,7 @@ import PropertyCard from 'components/PropertyCard';
 import { useSession } from 'next-auth/react';
 // Favorite/save feature removed
 import { FilterOptions } from '../components/MapFilters';
+import MapFilters from '../components/MapFilters';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -473,13 +474,14 @@ const MapPage: React.FC = () => {
 
   return (
     <StandardLayout 
-      showMapFilters={true}
+      showMapFilters={false}
       onFilterChange={handleFilterChange}
       onSearchLocationChange={handleSearchLocationChange}
       searchLocation={(router.query.zone as string) || ''}
       initialFilters={getInitialFilters()}
     >
       <div className={standardStyles.pageContainer}>
+        {/* Left column removed: filters are not shown on /map view */}
         {/* Map Section - Always show the map */}
         <div className={styles.mapSection}>
           <div className={styles.mapContainer}>

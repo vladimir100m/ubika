@@ -29,13 +29,19 @@ const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({
   imageLoading,
   setImageLoading
 }) => {
-  if (!isOpen) return null;
+  // Compute images and register hooks before any early returns so React hooks
+  // are called in the same order on every render (avoids internal React errors).
   const images = getPropertyImages(property);
   const hasMultiple = images.length > 1;
+
   React.useEffect(() => {
+    // only set loading when the carousel is open
+    if (!isOpen) return;
     // whenever index changes, mark loading true until onLoad fires
     setImageLoading(true);
-  }, [currentIndex, setImageLoading]);
+  }, [currentIndex, setImageLoading, isOpen]);
+
+  if (!isOpen) return null;
   return (
     <div
       style={{

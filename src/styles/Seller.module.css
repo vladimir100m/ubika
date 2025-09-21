@@ -363,11 +363,6 @@
   margin-bottom: 12px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 /* Form Actions */
 .formActions {
   display: flex;
@@ -691,10 +686,11 @@
   transform: translateY(-1px);
 }
 
-.featureSelected {
-  border-color: #1277e1 !important;
-  background: #f0f7ff !important;
-  box-shadow: 0 2px 8px rgba(18, 119, 225, 0.2) !important;
+.featureCard.featureSelected,
+.featureSelected.featureCard {
+  border-color: #1277e1;
+  background: #f0f7ff;
+  box-shadow: 0 2px 8px rgba(18, 119, 225, 0.2);
 }
 
 .featureCheckbox {

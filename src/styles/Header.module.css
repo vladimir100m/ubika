@@ -337,10 +337,11 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-.mobilePillActive {
-  background: white !important;
-  color: #0070f3 !important;
-  border-color: white !important;
+.mobilePill.mobilePillActive,
+.mobilePillActive.mobilePill {
+  background: white;
+  color: #0070f3;
+  border-color: white;
   font-weight: 600;
 }
 
