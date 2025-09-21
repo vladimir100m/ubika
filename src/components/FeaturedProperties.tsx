@@ -24,6 +24,7 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchProperties = async () => {
       setLoading(true);
       setError(null);
@@ -35,7 +36,7 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
           queryParams.append('operation', operation);
         }
 
-        const response = await fetch(`/api/properties?${queryParams.toString()}`);
+        const response = await fetch(`/api/properties?${queryParams.toString()}`, { signal: controller.signal });
         if (!response.ok) {
           throw new Error(`Error fetching properties: ${response.statusText}`);
         }
@@ -47,7 +48,11 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
           setError('Unable to load properties. Please try again later.');
           setProperties([]);
         }
-      } catch (error) {
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          // fetch aborted - ignore
+          return;
+        }
         console.error('Error fetching properties:', error);
         setError('Unable to load properties. Please try again later.');
         setProperties([]);
@@ -57,6 +62,7 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
     };
 
     fetchProperties();
+    return () => controller.abort();
   }, [limit, operation]);
 
   // Saved status effect removed

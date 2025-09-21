@@ -52,16 +52,16 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
 
   // Load images when propertyId changes to ensure all associated images are loaded
   useEffect(() => {
-    if (propertyId) {
-      loadAllPropertyImages();
-    }
+    if (!propertyId) return;
+    const controller = new AbortController();
+    loadAllPropertyImages(controller.signal as AbortSignal).catch(() => {});
+    return () => controller.abort();
   }, [propertyId]);
 
-  const loadAllPropertyImages = async () => {
+  const loadAllPropertyImages = async (signal?: AbortSignal) => {
     if (!propertyId) return;
-    
     try {
-      const response = await fetch(`/api/properties/images/${propertyId}`);
+      const response = await fetch(`/api/properties/images/${propertyId}`, signal ? { signal } : undefined as any);
       if (response.ok) {
         const result = await response.json();
         const loadedImages = result.images || [];
@@ -71,16 +71,34 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
           onChange(loadedImages);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
       console.error('Error loading property images:', error);
     }
   };
 
-  const sortedImages = images.sort((a, b) => {
+  const sortedImages = [...images].sort((a, b) => {
     if (a.is_cover && !b.is_cover) return -1;
     if (!a.is_cover && b.is_cover) return 1;
     return a.display_order - b.display_order;
   });
+
+  // Revoke object URLs created for temp previews when they are removed or on unmount
+  useEffect(() => {
+    // Capture current tempImages for cleanup when they are replaced or on unmount
+    const currentTemp = tempImages.slice();
+    return () => {
+      currentTemp.forEach(img => {
+        try {
+          if (img.image_url && img.image_url.startsWith('blob:')) {
+            URL.revokeObjectURL(img.image_url);
+          }
+        } catch (e) {
+          // ignore
+        }
+      });
+    };
+  }, [tempImages]);
 
   // File upload handlers
   const triggerFileSelect = () => inputRef.current?.click();

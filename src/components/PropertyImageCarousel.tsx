@@ -32,6 +32,10 @@ const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({
   if (!isOpen) return null;
   const images = getPropertyImages(property);
   const hasMultiple = images.length > 1;
+  React.useEffect(() => {
+    // whenever index changes, mark loading true until onLoad fires
+    setImageLoading(true);
+  }, [currentIndex, setImageLoading]);
   return (
     <div
       style={{
@@ -82,7 +86,6 @@ const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({
           alt={`Property image ${currentIndex + 1}`}
           style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.5)', opacity: imageLoading ? 0.7 : 1, transition: 'opacity 0.3s ease' }}
           onLoad={() => setImageLoading(false)}
-          onLoadStart={() => setImageLoading(true)}
         />
         {imageLoading && (
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', fontSize: 20 }}>

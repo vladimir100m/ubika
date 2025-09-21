@@ -12,7 +12,7 @@ const PropertyGallery: React.FC<PropertyGalleryProps> = ({ images, initialIndex 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState<boolean[]>([]);
-  const [isWheelScrolling, setIsWheelScrolling] = useState(false);
+  const isWheelScrollingRef = useRef(false);
   const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -41,32 +41,8 @@ const PropertyGallery: React.FC<PropertyGalleryProps> = ({ images, initialIndex 
     detectDevice();
     window.addEventListener('resize', detectDevice);
     
-    // Debug Mac trackpad events (temporary)
-    const debugWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) > 5 || Math.abs(e.deltaY) > 5) {
-        console.log('Mac trackpad debug:', {
-          deltaX: e.deltaX,
-          deltaY: e.deltaY,
-          deltaZ: e.deltaZ,
-          deltaMode: e.deltaMode,
-          ctrlKey: e.ctrlKey,
-          shiftKey: e.shiftKey,
-          altKey: e.altKey,
-          metaKey: e.metaKey,
-          wheelDelta: (e as any).wheelDelta,
-          wheelDeltaX: (e as any).wheelDeltaX,
-          wheelDeltaY: (e as any).wheelDeltaY,
-          target: e.target
-        });
-      }
-    };
-    
-    // Add debug listener temporarily
-    document.addEventListener('wheel', debugWheel, { passive: false });
-    
     return () => {
       window.removeEventListener('resize', detectDevice);
-      document.removeEventListener('wheel', debugWheel);
     };
   }, []);
   
@@ -158,11 +134,11 @@ const PropertyGallery: React.FC<PropertyGalleryProps> = ({ images, initialIndex 
     const currentThreshold = isMacTrackpad ? macTrackpadThreshold : generalThreshold;
 
     // Debounce wheel events to prevent rapid navigation - shorter for Mac trackpad
-    if (isWheelScrolling) return;
+  if (isWheelScrollingRef.current) return;
     
-    setIsWheelScrolling(true);
-    const debounceTime = isMacTrackpad ? 100 : 150;
-    setTimeout(() => setIsWheelScrolling(false), debounceTime);
+  isWheelScrollingRef.current = true;
+  const debounceTime = isMacTrackpad ? 100 : 150;
+  setTimeout(() => { isWheelScrollingRef.current = false; }, debounceTime);
 
     // Prevent default scrolling when in lightbox or when trackpad navigation occurs
     if (isLightboxOpen || (isTrackpad && (Math.abs(e.deltaX) > currentThreshold || Math.abs(e.deltaY) > currentThreshold))) {

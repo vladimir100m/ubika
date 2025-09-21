@@ -3,8 +3,12 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 1100px; /* allow wider search bars on desktop */
+  padding: 0 20px; /* ensure spacing from viewport edges */
   margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 20; /* ensure visible above hero/background images */
 }
 
 .simpleSearchBar {
@@ -16,6 +20,7 @@
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .simpleSearchBar:hover {

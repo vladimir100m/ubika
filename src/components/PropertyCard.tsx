@@ -5,8 +5,6 @@ import styles from '../styles/PropertyCard.module.css';
 import { getCoverImage, getPropertyImages, FALLBACK_IMAGE } from '../utils/propertyImages';
 import { formatPriceUSD, formatISODate } from '../utils/format';
 
-// Use the same class as the home card for the main container
-const HOME_CARD_CLASS = 'PropertyCard_propertyCard__1R75R';
 
 interface PropertyCardProps {
   property: Property;
@@ -39,8 +37,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const formatPrice = (price: string) => formatPriceUSD(price);
   const formatDate = (dateString: string) => formatISODate(dateString);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
-    <div className={HOME_CARD_CLASS} onClick={handleCardClick}>
+    <div className={styles.propertyCard} onClick={handleCardClick} role="button" tabIndex={0} onKeyDown={handleKeyDown} aria-label={property.title || `View property ${property.id}`}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
         {/* Always show only the cover image for a simpler home view */}

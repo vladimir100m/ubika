@@ -47,25 +47,27 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       setLoadingFeatures(true);
       try {
         // Fetch property features
-        const featuresResponse = await fetch(`/api/properties/features?propertyId=${property.id}`);
+        const featuresResponse = await fetch(`/api/properties/features?propertyId=${property.id}`, { signal: controller.signal });
         if (featuresResponse.ok) {
           const features = await featuresResponse.json();
           setPropertyFeatures(features);
         }
 
         // Fetch neighborhood data
-        const neighborhoodResponse = await fetch(`/api/neighborhoods?city=${encodeURIComponent(property.city)}&type=${encodeURIComponent(property.type)}`);
+        const neighborhoodResponse = await fetch(`/api/neighborhoods?city=${encodeURIComponent(property.city)}&type=${encodeURIComponent(property.type)}`, { signal: controller.signal });
         if (neighborhoodResponse.ok) {
           const neighborhoods = await neighborhoodResponse.json();
           if (neighborhoods.length > 0) {
             setNeighborhoodData(neighborhoods[0]);
           }
         }
-      } catch (error) {
+      } catch (error: any) {
+        if (error.name === 'AbortError') return;
         console.error('Error fetching property data:', error);
       } finally {
         setLoadingFeatures(false);
@@ -73,6 +75,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
     };
 
     fetchData();
+    return () => controller.abort();
   }, [property.id, property.city, property.type]);
 
   const formatPrice = (price: string) => {
@@ -102,7 +105,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
         return coverImage.image_url;
       }
       // If no cover image is set, use the first uploaded image
-      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
+      const sortedImages = [...property.images].sort((a, b) => a.display_order - b.display_order);
       return sortedImages[0].image_url;
     }
 
@@ -118,7 +121,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   const getPropertyImages = (property: Property): string[] => {
     // First check if property has uploaded images
     if (property.images && property.images.length > 0) {
-      return property.images
+      return [...property.images]
         .sort((a, b) => {
           // Sort by is_cover first, then by display_order
           if (a.is_cover && !b.is_cover) return -1;

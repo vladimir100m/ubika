@@ -43,7 +43,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(searchLocation);
   const [isSearching, setIsSearching] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Applied filters (what's currently active in the database)
   const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
@@ -159,7 +159,13 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current as ReturnType<typeof setTimeout>);
+        debounceRef.current = null;
+      }
+    };
   }, [searchValue]);
 
   const handleRemoveBoundary = () => {
