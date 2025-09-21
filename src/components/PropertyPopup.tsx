@@ -9,6 +9,7 @@ import { getCoverImage, getPropertyImages } from '../utils/propertyImages';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../utils/format';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
+import PropertyImageCarousel from './PropertyImageCarousel';
 // Favorite/save feature removed
 
 interface Neighborhood {
@@ -21,22 +22,6 @@ interface Neighborhood {
   highway_access: string;
 }
 
-// Infer a simple emoji/icon fallback when API feature lacks explicit icon
-function inferIconFromCategory(category?: string): string {
-  if(!category) return '•';
-  const key = category.toLowerCase();
-  if (key.includes('kitchen')) return '🍳';
-  if (key.includes('outdoor') || key.includes('garden') || key.includes('patio')) return '🌳';
-  if (key.includes('security')) return '🔒';
-  if (key.includes('parking') || key.includes('garage')) return '🚗';
-  if (key.includes('climate') || key.includes('heating') || key.includes('cooling')) return '🌡️';
-  if (key.includes('internet') || key.includes('tech')) return '📶';
-  return '•';
-}
-
-// (Image helper functions removed in favor of shared utils in ../utils/propertyImages)
-  
-
 export default function PropertyPopup({ 
   selectedProperty, 
   onClose, 
@@ -48,9 +33,7 @@ export default function PropertyPopup({
 }) {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const user = session?.user;
   const isLoading = status === 'loading';
-  // Favorite/save flags removed
   const [activeTab, setActiveTab] = useState('overview');
   const [descExpanded, setDescExpanded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -65,141 +48,12 @@ export default function PropertyPopup({
     name: '',
     phone: '',
     email: '',
-    message: 'I\'m interested in this property'
+    message: "I'm interested in this property"
   });
-  
-  // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
   const mapLocationRef = useRef<HTMLDivElement>(null);
-
-  // Fetch property features and neighborhood data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const propertyImages = getPropertyImages(selectedProperty);
-        setAdditionalImages(propertyImages.slice(1));
-        if (selectedProperty.city) {
-          const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(selectedProperty.city)}`);
-          if (neighborhoodResponse.ok) {
-            const neighborhoods = await neighborhoodResponse.json();
-            if (neighborhoods.length > 0) {
-              setNeighborhoodData(neighborhoods[0]);
-            } else {
-              setNeighborhoodData(null);
-            }
-          } else {
-            setNeighborhoodData(null);
-          }
-        } else {
-          setNeighborhoodData(null);
-        }
-      } catch (error) {
-        setNeighborhoodData(null);
-        // Optionally show a toast or UI feedback for error
-      }
-    };
-    fetchData();
-  }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
-
-  // Keyboard navigation for carousel
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!showCarousel) return;
-      
-      switch (event.key) {
-        case 'ArrowLeft':
-          event.preventDefault();
-          handleImageChange('prev');
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          handleImageChange('next');
-          break;
-        case 'Escape':
-          event.preventDefault();
-          setShowCarousel(false);
-          break;
-      }
-    };
-
-    if (showCarousel) {
-      document.addEventListener('keydown', handleKeyDown);
-      // Prevent body scroll when carousel is open
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [showCarousel]);
-
-  // Close popup when navigating to different routes (header menu clicks)
-  useEffect(() => {
-    const handleRouteChange = () => {
-      // Check if component is still mounted before calling onClose
-      if (onClose) {
-        onClose();
-      }
-    };
-
-    const handleHashChange = () => {
-      // Check if component is still mounted before calling onClose
-      if (onClose) {
-        onClose();
-      }
-    };
-
-    // Listen for route changes and hash changes
-    router.events.on('routeChangeStart', handleRouteChange);
-    router.events.on('hashChangeStart', handleHashChange);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
-      router.events.off('hashChangeStart', handleHashChange);
-    };
-  }, [router.events, onClose]);
-
-  // Reset state when component unmounts
-  useEffect(() => {
-    return () => {
-      setMapInitialized(false);
-      setShowContactForm(false);
-      setShowCarousel(false);
-    };
-  }, []);
-
-  // Setup intersection observer to update active tab based on scroll position
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '-80px 0px 0px 0px', // Consider the sticky header
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          if (id === 'overview-section') setActiveTab('overview');
-          else if (id === 'details-section') setActiveTab('details');
-          else if (id === 'location-section') setActiveTab('map');
-        }
-      });
-    }, options);
-
-    // Observe all section refs
-    if (overviewRef.current) observer.observe(overviewRef.current);
-    if (detailsRef.current) observer.observe(detailsRef.current);
-    if (mapLocationRef.current) observer.observe(mapLocationRef.current);
-
-    return () => {
-      if (overviewRef.current) observer.unobserve(overviewRef.current);
-      if (detailsRef.current) observer.unobserve(detailsRef.current);
-      if (mapLocationRef.current) observer.unobserve(mapLocationRef.current);
-    };
-  }, []);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleTabChange = useCallback((tabName: string) => {
     setActiveTab(tabName);
@@ -213,53 +67,8 @@ export default function PropertyPopup({
       case 'map':
         mapLocationRef.current?.scrollIntoView({ behavior: 'smooth' });
         break;
-      default:
-        break;
     }
   }, []);
-  
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Initialize Google Maps when the component loads
-  useEffect(() => {
-    if (!mapInitialized && mapRef && mapRef.current) {
-      const loader = new Loader({
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        version: 'weekly',
-        libraries: ['places'],
-      });
-      
-      loader.load().then(() => {
-        if (mapRef.current) {
-          const map = new google.maps.Map(mapRef.current, {
-            center: {
-              lat: selectedProperty.geocode?.lat || selectedProperty.latitude || 0,
-              lng: selectedProperty.geocode?.lng || selectedProperty.longitude || 0,
-            },
-            zoom: 15,
-            mapTypeControl: true,
-            streetViewControl: true,
-            fullscreenControl: true,
-          });
-          
-          // Add a marker for the property
-          new google.maps.Marker({
-            position: {
-              lat: selectedProperty.geocode?.lat || selectedProperty.latitude || 0,
-              lng: selectedProperty.geocode?.lng || selectedProperty.longitude || 0,
-            },
-            map,
-            title: selectedProperty.address,
-            animation: google.maps.Animation.DROP
-          });
-          
-          setMapInitialized(true);
-        }
-      }).catch(error => {
-        console.error("Error loading Google Maps:", error);
-      });
-    }
-  }, [mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
   // Favorite/save handlers removed
@@ -1141,231 +950,19 @@ export default function PropertyPopup({
           </div>
         </div>
 
-        {/* Full-Screen Image Carousel Modal */}
-        {showCarousel && (
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.95)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onClick={() => setShowCarousel(false)}
-          >
-            {/* Close Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowCarousel(false);
-              }}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'rgba(255, 255, 255, 0.9)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '50px',
-                height: '50px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '24px',
-                color: '#333',
-                zIndex: 10001
-              }}
-            >
-              ×
-            </button>
-
-            {/* Image Counter */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '20px',
-                left: '20px',
-                background: 'rgba(0, 0, 0, 0.7)',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '16px',
-                zIndex: 10001
-              }}
-            >
-              {currentImageIndex + 1} of {getPropertyImages(selectedProperty).length}
-            </div>
-
-            {/* Navigation Arrows */}
-            {getPropertyImages(selectedProperty).length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageChange('prev');
-                  }}
-                  style={{
-                    position: 'absolute',
-                    left: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '60px',
-                    height: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '24px',
-                    color: '#333',
-                    zIndex: 10001
-                  }}
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageChange('next');
-                  }}
-                  style={{
-                    position: 'absolute',
-                    right: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '60px',
-                    height: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '24px',
-                    color: '#333',
-                    zIndex: 10001
-                  }}
-                >
-                  ›
-                </button>
-              </>
-            )}
-
-            {/* Main Image */}
-            <div
-              style={{
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <img
-                src={getPropertyImages(selectedProperty)[currentImageIndex]}
-                alt={`Property image ${currentImageIndex + 1}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-                  opacity: imageLoading ? 0.7 : 1,
-                  transition: 'opacity 0.3s ease'
-                }}
-                onLoad={() => setImageLoading(false)}
-                onLoadStart={() => setImageLoading(true)}
-              />
-              
-              {/* Loading spinner */}
-              {imageLoading && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    color: 'white',
-                    fontSize: '20px'
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      border: '4px solid rgba(255, 255, 255, 0.3)',
-                      borderTop: '4px solid white',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Strip */}
-            {getPropertyImages(selectedProperty).length > 1 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '20px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: '8px',
-                  maxWidth: '90vw',
-                  overflowX: 'auto',
-                  padding: '10px',
-                  background: 'rgba(0, 0, 0, 0.7)',
-                  borderRadius: '12px'
-                }}
-              >
-                {getPropertyImages(selectedProperty).map((image, index) => (
-                  <div
-                    key={index}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentImageIndex(index);
-                    }}
-                    style={{
-                      width: '60px',
-                      height: '40px',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      border: currentImageIndex === index ? '2px solid white' : '2px solid transparent',
-                      opacity: currentImageIndex === index ? 1 : 0.7,
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <img
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <PropertyImageCarousel
+          property={selectedProperty}
+          isOpen={showCarousel}
+          currentIndex={currentImageIndex}
+          onRequestClose={() => setShowCarousel(false)}
+          onNavigate={handleImageChange}
+          onSelectIndex={(i) => setCurrentImageIndex(i)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          imageLoading={imageLoading}
+          setImageLoading={setImageLoading}
+        />
     </>
   );
 }

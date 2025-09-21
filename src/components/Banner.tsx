@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import styles from '../styles/Banner.module.css';
 import SimpleSearchBar from './SimpleSearchBar';
 import { useRouter } from 'next/router';
@@ -31,12 +32,19 @@ const Banner: React.FC = () => {
     };
 
     return (
-        <div className={styles.banner}>
-            <div className={styles.content}>
+        <header className={styles.Banner_banner__biC5I}>
+            <Image
+                src="/home_background.png"
+                alt="Skyline de la ciudad detrás del banner"
+                fill
+                priority
+                className={styles.Banner_bgImage}
+            />
+            <div className={styles.Banner_content__biC5I}>
                 <h1>Encuentra tu nuevo hogar</h1>
                 <SimpleSearchBar onSearch={handleSearch} />
             </div>
-        </div>
+        </header>
     );
 };
 

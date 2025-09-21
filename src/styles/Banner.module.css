@@ -1,10 +1,8 @@
 /* Updated styles for the enhanced Banner */
- .Banner_banner__biC5I {
+.Banner_banner__biC5I {
   position: relative;
-  background-image: url('/home_background.png');
-  background-size: cover;
-  background-position: center;
-  height: 100vh;
+  /* image is handled by next/image (absolute fill) */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -12,6 +10,8 @@
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   font-family: 'Inter', sans-serif;
+  background-color: #0b1220; /* fallback color */
+  overflow: hidden; /* ensure positioned image doesn't overflow */
 }
 
 @media (max-width: 768px) {
@@ -45,6 +45,22 @@
   z-index: 1;
 }
 
+/* Image helper class used with next/image (fill) */
+.Banner_bgImage{
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+
+/* overlay for contrast */
+.Banner_banner__biC5I::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11,18,32,0.15), rgba(11,18,32,0.5));
+  z-index: 0;
+}
+
 .Banner_content__biC5I h1 {
   font-size: 3.5rem;
   margin: 0;
@@ -71,16 +87,15 @@
   background-color: #005bb5;
 }
 
-.banner {
-  position: relative;
-  background-image: url('/home_background.png');
-  background-size: cover;
-  background-position: center;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+/* Accessibility: visible focus for keyboard users */
+.Banner_ctaButton__biC5I:focus-visible{
+  outline: 3px solid rgba(0,112,243,0.25);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Respect user reduced motion settings */
+@media (prefers-reduced-motion: reduce){
+  .Banner_ctaButton__biC5I{ transition: none !important; }
+  .Banner_banner__biC5I, .Banner_content__biC5I{ animation: none !important; }
 }
