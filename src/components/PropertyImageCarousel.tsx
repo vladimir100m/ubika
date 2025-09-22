@@ -1,6 +1,6 @@
 import React from 'react';
 import { Property } from '../types';
-import { getPropertyImages } from '../utils/propertyImages';
+import { getAllPropertyImages } from '../utils/propertyImages';
 
 interface PropertyImageCarouselProps {
   property: Property;
@@ -31,7 +31,7 @@ const PropertyImageCarousel: React.FC<PropertyImageCarouselProps> = ({
 }) => {
   // Compute images and register hooks before any early returns so React hooks
   // are called in the same order on every render (avoids internal React errors).
-  const images = getPropertyImages(property);
+  const images = getAllPropertyImages(property);
   const hasMultiple = images.length > 1;
 
   React.useEffect(() => {
