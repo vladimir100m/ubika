@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { query } from '../../utils/db';
+import loggerModule, { createRequestId, createLogger } from '../../utils/logger';
 import { resolveImageUrl } from '../../utils/blob';
 import { Property } from '../../types';
+import { cacheGet, cacheSet } from '../../utils/cache';
+import { createHash } from 'crypto';
 
 interface PropertyFilters {
   minPrice?: string;
@@ -16,6 +19,10 @@ interface PropertyFilters {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { error: string }>) => {
+  const reqId = createRequestId('req-');
+  const log = createLogger(reqId);
+  log.info('properties handler start', { method: req.method, url: req.url });
+
   try {
     // Extract filters from query parameters
     const filters: PropertyFilters = {
@@ -30,7 +37,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       maxArea: req.query.maxArea as string,
     };
 
-    // Build dynamic query with image support
+  // Build dynamic query with image support
     let queryText = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
@@ -108,18 +115,37 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       paramIndex++;
     }
 
-    // Add ordering
-    queryText += ` ORDER BY p.created_at DESC`;
+  // Add ordering
+  queryText += ` ORDER BY p.created_at DESC`;
 
-    console.log('Executing query:', queryText);
-    console.log('Query params:', queryParams);
+  log.debug('Built properties query', { queryText: queryText.replace(/\s+/g, ' ').trim(), queryParams });
+      // Try cache first
+    const defaultTtl = parseInt(process.env.PROPERTIES_CACHE_TTL || '60', 10); // seconds
+    const keyHash = createHash('sha1').update(queryText + JSON.stringify(queryParams)).digest('hex');
+    const cacheKey = `properties:${keyHash}`;
+    try {
+      const cached = await cacheGet<Property[]>(cacheKey);
+      if (cached) {
+        log.info('Cache hit', { cacheKey });
+        return res.status(200).json(cached);
+      }
+      log.debug('Cache miss', { cacheKey });
+    } catch (e) {
+      log.warn('Cache get failed, continuing to DB', e);
+    }
 
+    const qStart = Date.now();
     const result = await query(queryText, queryParams);
+    const qMs = Date.now() - qStart;
+    log.info('DB query executed', { durationMs: qMs });
+
     const properties = result.rows;
 
     // Fetch images for each property
     for (const property of properties) {
+      const imgLog = createLogger(`${reqId}-img-${property.id}`);
       try {
+        imgLog.debug('Fetching images for property');
         const imagesResult = await query(
           'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
           [property.id]
@@ -128,21 +154,33 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
         const imgs = imagesResult.rows;
         for (const img of imgs) {
           try {
+            const before = img.image_url;
             img.image_url = await resolveImageUrl(img.image_url);
+            imgLog.debug('Resolved image url', { before, after: img.image_url });
           } catch (e) {
-            // leave original if resolution fails
+            imgLog.warn('resolveImageUrl failed, leaving original', e);
           }
         }
         property.images = imgs;
+        imgLog.debug('Images fetched', { count: imgs.length });
       } catch (imageError) {
-        console.warn(`Failed to fetch images for property ${property.id}:`, imageError);
+        imgLog.error('Failed to fetch images for property', { propertyId: property.id, error: imageError });
         property.images = [];
       }
     }
 
+    // Populate cache with resolved images
+    try {
+      await cacheSet(cacheKey, properties, defaultTtl);
+      log.debug('Cache set', { cacheKey, ttl: defaultTtl });
+    } catch (e) {
+      log.warn('Cache set failed', e);
+    }
+
+    log.info('properties handler finished', { resultCount: properties.length });
     res.status(200).json(properties);
   } catch (error) {
-    console.error('Error fetching properties:', error);
+    log.error('Error fetching properties', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };

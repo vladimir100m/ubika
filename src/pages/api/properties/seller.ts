@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { query } from '../../../utils/db';
 import { resolveImageUrl } from '../../../utils/blob';
 import { Property } from '../../../types';
+import { cacheGet, cacheSet } from '../../../utils/cache';
+import { createHash } from 'crypto';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { error: string }>) => {
   const { seller_id } = req.query;
@@ -27,6 +29,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       WHERE p.seller_id = $1
       ORDER BY p.created_at DESC
     `;
+
+    const defaultTtl = parseInt(process.env.SELLER_PROPERTIES_CACHE_TTL || '60', 10);
+    const keyHash = createHash('sha1').update(sellerQuery + JSON.stringify([seller_id])).digest('hex');
+    const cacheKey = `seller-properties:${keyHash}`;
+    try {
+      const cached = await cacheGet<Property[]>(cacheKey);
+      if (cached) {
+        console.log('Cache hit:', cacheKey);
+        return res.status(200).json(cached);
+      }
+    } catch (e) {
+      console.warn('Cache get failed for seller properties', e);
+    }
 
     const result = await query(sellerQuery, [seller_id]);
     console.log(`Found ${result.rows.length} properties for seller ${seller_id}`);
@@ -64,7 +79,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
       }
     }
 
-    res.status(200).json(properties);
+  try { await cacheSet(cacheKey, properties, defaultTtl); } catch (e) { console.warn('Cache set failed for seller properties', e); }
+  res.status(200).json(properties);
   } catch (error) {
     console.error('Error fetching seller properties:', error);
     res.status(500).json({ error: 'Internal Server Error' });

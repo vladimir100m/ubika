@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { query } from '../../../utils/db';
 import { Property, PropertyFormData } from '../../../types';
+import loggerModule, { createRequestId, createLogger } from '../../../utils/logger';
 
 // This endpoint handles creation of new properties
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -8,6 +9,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  const reqId = createRequestId('req-');
+  const log = createLogger(reqId);
+  log.info('property create handler start', { method: req.method, url: req.url });
 
   try {
 
@@ -65,11 +70,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       now
     ];
     
+    log.debug('Inserting property', { title: propertyData.title, seller_id: propertyData.seller_id });
+    const qStart = Date.now();
     const result = await query(insertQuery, values);
-    
+    log.info('Property inserted', { durationMs: Date.now() - qStart, id: result.rows[0]?.id });
+
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error creating property:', error);
+    log.error('Error creating property', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
