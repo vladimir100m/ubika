@@ -5,7 +5,7 @@ import {useRouter} from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
-import { getCoverImage, getPropertyImages } from '../utils/propertyImages';
+import { getCoverImage, getAllPropertyImages } from '../utils/propertyImages';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../utils/format';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
@@ -76,7 +76,7 @@ export default function PropertyPopup({
   // Handler for gallery navigation
   const handleImageChange = useCallback((direction: 'next' | 'prev') => {
     setImageLoading(true);
-    const allImages = getPropertyImages(selectedProperty);
+    const allImages = getAllPropertyImages(selectedProperty);
     const totalImages = allImages.length;
     setCurrentImageIndex(prev => {
       if (direction === 'next') {
@@ -129,7 +129,7 @@ export default function PropertyPopup({
 
   // Get dynamic grid layout based on number of images (max 3)
   const gridLayout = useMemo(() => {
-    const allImages = getPropertyImages(selectedProperty);
+    const allImages = getAllPropertyImages(selectedProperty);
     const imageCount = Math.min(allImages.length, 3);
     switch (imageCount) {
       case 1:
