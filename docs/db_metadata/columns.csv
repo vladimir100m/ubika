@@ -1,0 +1,100 @@
+table_schema,table_name,column_name,ordinal_position,data_type,is_nullable,column_default
+neon_auth,users_sync,raw_json,1,jsonb,NO,
+neon_auth,users_sync,id,2,text,NO,
+neon_auth,users_sync,name,3,text,YES,
+neon_auth,users_sync,email,4,text,YES,
+neon_auth,users_sync,created_at,5,timestamp with time zone,YES,
+neon_auth,users_sync,updated_at,6,timestamp with time zone,YES,
+neon_auth,users_sync,deleted_at,7,timestamp with time zone,YES,
+public,media_types,id,1,integer,NO,nextval('media_types_id_seq'::regclass)
+public,media_types,name,2,text,NO,
+public,media_types,description,3,text,YES,
+public,media_types,allowed_extensions,4,ARRAY,YES,
+public,neighborhoods,id,1,integer,NO,nextval('neighborhoods_id_seq'::regclass)
+public,neighborhoods,name,2,character varying,NO,
+public,neighborhoods,city,3,character varying,NO,
+public,neighborhoods,state,4,character varying,YES,
+public,neighborhoods,country,5,character varying,NO,
+public,neighborhoods,description,6,text,YES,
+public,neighborhoods,subway_access,7,text,YES,
+public,neighborhoods,dining_options,8,text,YES,
+public,neighborhoods,schools_info,9,text,YES,
+public,neighborhoods,shopping_info,10,text,YES,
+public,neighborhoods,parks_recreation,11,text,YES,
+public,neighborhoods,safety_rating,12,integer,YES,
+public,neighborhoods,walkability_score,13,integer,YES,
+public,neighborhoods,created_at,14,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,neighborhoods,updated_at,15,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,properties,id,1,uuid,NO,gen_random_uuid()
+public,properties,title,2,text,NO,
+public,properties,description,3,text,NO,
+public,properties,price,4,numeric,NO,
+public,properties,address,5,text,NO,
+public,properties,city,6,text,YES,
+public,properties,state,7,text,YES,
+public,properties,country,8,text,YES,
+public,properties,zip_code,9,text,YES,
+public,properties,type,10,text,YES,
+public,properties,room,11,integer,YES,0
+public,properties,bathrooms,12,integer,YES,0
+public,properties,status,14,text,YES,'available'::text
+public,properties,year_built,15,integer,YES,
+public,properties,seller_id,16,text,YES,
+public,properties,operation_status_id,17,integer,YES,1
+public,properties,geocode,18,jsonb,YES,
+public,properties,latitude,19,numeric,YES,
+public,properties,longitude,20,numeric,YES,
+public,properties,created_at,21,timestamp without time zone,YES,now()
+public,properties,updated_at,22,timestamp without time zone,YES,now()
+public,properties,square_meters,23,integer,YES,1
+public,property_feature_assignments,id,1,integer,NO,nextval('property_feature_assignments_id_seq'::regclass)
+public,property_feature_assignments,property_id,2,uuid,YES,
+public,property_feature_assignments,feature_id,3,integer,YES,
+public,property_feature_assignments,created_at,4,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_features,id,1,integer,NO,nextval('property_features_id_seq'::regclass)
+public,property_features,name,2,character varying,NO,
+public,property_features,category,3,character varying,YES,'general'::character varying
+public,property_features,description,4,text,YES,
+public,property_features,icon,5,character varying,YES,
+public,property_features,created_at,6,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_features,updated_at,7,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_images,id,1,integer,NO,nextval('property_images_id_seq'::regclass)
+public,property_images,property_id,2,uuid,NO,
+public,property_images,image_url,3,character varying,NO,
+public,property_images,is_cover,4,boolean,YES,false
+public,property_images,display_order,5,integer,YES,1
+public,property_images,created_at,6,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_images,updated_at,7,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_media,id,1,uuid,NO,gen_random_uuid()
+public,property_media,property_id,2,uuid,YES,
+public,property_media,media_type,3,text,YES,
+public,property_media,url,4,text,NO,
+public,property_media,storage_key,5,text,NO,
+public,property_media,file_name,6,text,YES,
+public,property_media,file_size,7,integer,YES,
+public,property_media,mime_type,8,text,YES,
+public,property_media,is_primary,9,boolean,YES,false
+public,property_media,uploaded_at,10,timestamp without time zone,YES,now()
+public,property_operation_statuses,id,1,integer,NO,
+public,property_operation_statuses,name,2,character varying,NO,
+public,property_operation_statuses,display_name,3,character varying,NO,
+public,property_operation_statuses,description,4,text,YES,
+public,property_operation_statuses,created_at,5,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_statuses,id,1,integer,NO,nextval('property_statuses_id_seq'::regclass)
+public,property_statuses,name,2,character varying,NO,
+public,property_statuses,display_name,3,character varying,NO,
+public,property_statuses,description,4,text,YES,
+public,property_statuses,color,5,character varying,YES,'#000000'::character varying
+public,property_statuses,created_at,6,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,property_types,id,1,integer,NO,nextval('property_types_id_seq'::regclass)
+public,property_types,name,2,character varying,NO,
+public,property_types,display_name,3,character varying,NO,
+public,property_types,description,4,text,YES,
+public,property_types,created_at,5,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,user_saved_properties,id,1,integer,NO,nextval('user_saved_properties_id_seq'::regclass)
+public,user_saved_properties,user_id,2,character varying,NO,
+public,user_saved_properties,property_id,3,uuid,YES,
+public,user_saved_properties,saved_at,4,timestamp without time zone,YES,CURRENT_TIMESTAMP
+public,user_saved_properties,is_favorite,5,boolean,YES,false
+public,user_saved_properties,notes,6,text,YES,
+public,user_saved_properties,updated_at,7,timestamp without time zone,YES,CURRENT_TIMESTAMP

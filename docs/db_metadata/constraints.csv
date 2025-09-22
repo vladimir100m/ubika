@@ -1,0 +1,68 @@
+constraint_name,constraint_type,table_schema,table_name,column_name,foreign_table_schema,foreign_table_name,foreign_column_name
+16478_16479_2_not_null,CHECK,neon_auth,users_sync,,,,
+users_sync_pkey,PRIMARY KEY,neon_auth,users_sync,id,neon_auth,users_sync,id
+16478_16479_1_not_null,CHECK,neon_auth,users_sync,,,,
+media_types_pkey,PRIMARY KEY,public,media_types,id,public,media_types,id
+2200_57416_1_not_null,CHECK,public,media_types,,,,
+media_types_name_key,UNIQUE,public,media_types,name,public,media_types,name
+2200_57416_2_not_null,CHECK,public,media_types,,,,
+2200_24656_2_not_null,CHECK,public,neighborhoods,,,,
+neighborhoods_walkability_score_check,CHECK,public,neighborhoods,,public,neighborhoods,walkability_score
+neighborhoods_safety_rating_check,CHECK,public,neighborhoods,,public,neighborhoods,safety_rating
+neighborhoods_pkey,PRIMARY KEY,public,neighborhoods,id,public,neighborhoods,id
+2200_24656_5_not_null,CHECK,public,neighborhoods,,,,
+2200_24656_3_not_null,CHECK,public,neighborhoods,,,,
+2200_24656_1_not_null,CHECK,public,neighborhoods,,,,
+properties_new_pkey,PRIMARY KEY,public,properties,id,public,properties,id
+2200_57355_1_not_null,CHECK,public,properties,,,,
+2200_57355_2_not_null,CHECK,public,properties,,,,
+2200_57355_3_not_null,CHECK,public,properties,,,,
+2200_57355_4_not_null,CHECK,public,properties,,,,
+2200_57355_5_not_null,CHECK,public,properties,,,,
+property_feature_assignments_property_id_feature_id_key,UNIQUE,public,property_feature_assignments,property_id,public,property_feature_assignments,feature_id
+property_feature_assignments_property_id_feature_id_key,UNIQUE,public,property_feature_assignments,feature_id,public,property_feature_assignments,property_id
+property_feature_assignments_pkey,PRIMARY KEY,public,property_feature_assignments,id,public,property_feature_assignments,id
+property_feature_assignments_property_id_feature_id_key,UNIQUE,public,property_feature_assignments,property_id,public,property_feature_assignments,property_id
+property_feature_assignments_feature_id_fkey,FOREIGN KEY,public,property_feature_assignments,feature_id,public,property_features,id
+2200_24611_1_not_null,CHECK,public,property_feature_assignments,,,,
+property_feature_assignments_property_id_fkey,FOREIGN KEY,public,property_feature_assignments,property_id,public,properties,id
+property_feature_assignments_property_id_feature_id_key,UNIQUE,public,property_feature_assignments,feature_id,public,property_feature_assignments,feature_id
+2200_24577_2_not_null,CHECK,public,property_features,,,,
+property_features_name_key,UNIQUE,public,property_features,name,public,property_features,name
+property_features_pkey,PRIMARY KEY,public,property_features,id,public,property_features,id
+2200_24577_1_not_null,CHECK,public,property_features,,,,
+property_images_property_id_fkey,FOREIGN KEY,public,property_images,property_id,public,properties,id
+2200_106497_1_not_null,CHECK,public,property_images,,,,
+2200_106497_2_not_null,CHECK,public,property_images,,,,
+property_images_pkey,PRIMARY KEY,public,property_images,id,public,property_images,id
+2200_106497_3_not_null,CHECK,public,property_images,,,,
+property_media_media_type_check,CHECK,public,property_media,,public,property_media,media_type
+property_media_property_id_fkey,FOREIGN KEY,public,property_media,property_id,public,properties,id
+2200_57370_1_not_null,CHECK,public,property_media,,,,
+2200_57370_4_not_null,CHECK,public,property_media,,,,
+2200_57370_5_not_null,CHECK,public,property_media,,,,
+property_media_pkey,PRIMARY KEY,public,property_media,id,public,property_media,id
+2200_32768_2_not_null,CHECK,public,property_operation_statuses,,,,
+2200_32768_1_not_null,CHECK,public,property_operation_statuses,,,,
+property_operation_statuses_pkey,PRIMARY KEY,public,property_operation_statuses,id,public,property_operation_statuses,id
+property_operation_statuses_name_key,UNIQUE,public,property_operation_statuses,name,public,property_operation_statuses,name
+2200_32768_3_not_null,CHECK,public,property_operation_statuses,,,,
+property_statuses_name_key,UNIQUE,public,property_statuses,name,public,property_statuses,name
+property_statuses_pkey,PRIMARY KEY,public,property_statuses,id,public,property_statuses,id
+2200_24643_3_not_null,CHECK,public,property_statuses,,,,
+2200_24643_2_not_null,CHECK,public,property_statuses,,,,
+2200_24643_1_not_null,CHECK,public,property_statuses,,,,
+property_types_name_key,UNIQUE,public,property_types,name,public,property_types,name
+property_types_pkey,PRIMARY KEY,public,property_types,id,public,property_types,id
+2200_24631_2_not_null,CHECK,public,property_types,,,,
+2200_24631_1_not_null,CHECK,public,property_types,,,,
+2200_24631_3_not_null,CHECK,public,property_types,,,,
+user_saved_properties_user_id_property_id_key,UNIQUE,public,user_saved_properties,property_id,public,user_saved_properties,property_id
+2200_24669_2_not_null,CHECK,public,user_saved_properties,,,,
+user_saved_properties_user_id_property_id_key,UNIQUE,public,user_saved_properties,user_id,public,user_saved_properties,property_id
+user_saved_properties_property_id_fkey,FOREIGN KEY,public,user_saved_properties,property_id,public,properties,id
+user_saved_properties_pkey,PRIMARY KEY,public,user_saved_properties,id,public,user_saved_properties,id
+2200_24669_1_not_null,CHECK,public,user_saved_properties,,,,
+check_user_id_not_empty,CHECK,public,user_saved_properties,,public,user_saved_properties,user_id
+user_saved_properties_user_id_property_id_key,UNIQUE,public,user_saved_properties,user_id,public,user_saved_properties,user_id
+user_saved_properties_user_id_property_id_key,UNIQUE,public,user_saved_properties,property_id,public,user_saved_properties,user_id

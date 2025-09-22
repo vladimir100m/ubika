@@ -1,1 +1,0 @@
-docker run --rm postgres:17 psql "postgres://neondb_owner:npg_k57ZTioHCGpd@ep-purple-union-a4hnrrtg.us-east-1.aws.neon.tech/neondb?sslmode=require" -c "SELECT * FROM properties LIMIT 5;"
