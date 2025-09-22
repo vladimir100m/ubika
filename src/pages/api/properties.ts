@@ -50,17 +50,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Property[] | { 
 
     // Apply filters
     if (filters.minPrice) {
-      // Remove currency symbols and convert to number for comparison
-      queryText += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) >= $${paramIndex}`;
+      // p.price is stored as numeric in the database; compare directly using a numeric param
+      queryText += ` AND p.price >= $${paramIndex}`;
       queryParams.push(parseFloat(filters.minPrice));
       paramIndex++;
     }
 
     if (filters.maxPrice) {
-      queryText += ` AND CAST(REPLACE(REPLACE(p.price, '$', ''), ',', '') AS NUMERIC) <= $${paramIndex}`;
+      queryText += ` AND p.price <= $${paramIndex}`;
       queryParams.push(parseFloat(filters.maxPrice));
       paramIndex++;
-      console.log(query, queryParams, filters);
     }
 
     if (filters.bedrooms) {
