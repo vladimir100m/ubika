@@ -5,6 +5,11 @@ import {useRouter} from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property } from '../types';
+import { getCoverImage, getAllPropertyImages } from '../utils/propertyImages';
+import PropertyImageGrid from './PropertyImageGrid';
+import { formatNumberWithCommas } from '../utils/format';
+import PropertyDetailTabsNav from './PropertyDetailTabsNav';
+import PropertyImageCarousel from './PropertyImageCarousel';
 // Favorite/save feature removed
 
 interface Neighborhood {
@@ -17,72 +22,6 @@ interface Neighborhood {
   highway_access: string;
 }
 
-// Infer a simple emoji/icon fallback when API feature lacks explicit icon
-function inferIconFromCategory(category?: string): string {
-  if(!category) return '•';
-  const key = category.toLowerCase();
-  if (key.includes('kitchen')) return '🍳';
-  if (key.includes('outdoor') || key.includes('garden') || key.includes('patio')) return '🌳';
-  if (key.includes('security')) return '🔒';
-  if (key.includes('parking') || key.includes('garage')) return '🚗';
-  if (key.includes('climate') || key.includes('heating') || key.includes('cooling')) return '🌡️';
-  if (key.includes('internet') || key.includes('tech')) return '📶';
-  return '•';
-}
-
-// Helper to sort images by cover and display order
-// Accept full image objects for sorting
-type PropertyImage = { is_cover?: boolean; display_order?: number; image_url: string };
-const sortPropertyImages = (images: PropertyImage[]): PropertyImage[] => {
-  return [...images].sort((a, b) => {
-    if (a.is_cover && !b.is_cover) return -1;
-    if (!a.is_cover && b.is_cover) return 1;
-    return (a.display_order ?? 0) - (b.display_order ?? 0);
-  });
-};
-
-// Get the cover image for property display
-const getCoverImage = (property: Property): string => {
-  if (property.images && property.images.length > 0) {
-    const sortedImages = sortPropertyImages(property.images);
-    return sortedImages[0].image_url;
-  }
-  if (property.image_url) {
-    return property.image_url;
-  }
-  const typeImages: { [key: string]: string } = {
-    house: '/ubika-logo.png',
-    apartment: '/ubika-logo.png',
-    villa: '/ubika-logo.png',
-    penthouse: '/ubika-logo.png',
-    cabin: '/ubika-logo.png',
-    loft: '/ubika-logo.png',
-    duplex: '/ubika-logo.png',
-  };
-  const propertyType = property.type?.toLowerCase() || 'house';
-  return typeImages[propertyType] || '/ubika-logo.png';
-};
-
-// Function to enforce mandatory upload of at least three images
-const generatePropertyImages = (property: Property): string[] => {
-  if (property.images && property.images.length >= 3) {
-    // Return sorted uploaded images
-    return sortPropertyImages(property.images).map(img => img.image_url).slice(0, 3);
-  }
-  // If less than 3 images, return empty array to enforce mandatory upload
-  return [];
-};
-
-// Function to get all property images for gallery
-const getPropertyImages = (property: Property): string[] => {
-  if (property.images && property.images.length >= 3) {
-    return sortPropertyImages(property.images).map(img => img.image_url);
-  }
-  // If less than 3 images, return empty array to enforce mandatory upload
-  return [];
-};
-  
-
 export default function PropertyPopup({ 
   selectedProperty, 
   onClose, 
@@ -94,9 +33,7 @@ export default function PropertyPopup({
 }) {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const user = session?.user;
   const isLoading = status === 'loading';
-  // Favorite/save flags removed
   const [activeTab, setActiveTab] = useState('overview');
   const [descExpanded, setDescExpanded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -111,141 +48,12 @@ export default function PropertyPopup({
     name: '',
     phone: '',
     email: '',
-    message: 'I\'m interested in this property'
+    message: "I'm interested in this property"
   });
-  
-  // References for each section for smooth scrolling
   const overviewRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
   const mapLocationRef = useRef<HTMLDivElement>(null);
-
-  // Fetch property features and neighborhood data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const propertyImages = getPropertyImages(selectedProperty);
-        setAdditionalImages(propertyImages.slice(1));
-        if (selectedProperty.city) {
-          const neighborhoodResponse = await fetch(`/api/neighborhoods?search=${encodeURIComponent(selectedProperty.city)}`);
-          if (neighborhoodResponse.ok) {
-            const neighborhoods = await neighborhoodResponse.json();
-            if (neighborhoods.length > 0) {
-              setNeighborhoodData(neighborhoods[0]);
-            } else {
-              setNeighborhoodData(null);
-            }
-          } else {
-            setNeighborhoodData(null);
-          }
-        } else {
-          setNeighborhoodData(null);
-        }
-      } catch (error) {
-        setNeighborhoodData(null);
-        // Optionally show a toast or UI feedback for error
-      }
-    };
-    fetchData();
-  }, [selectedProperty.id, selectedProperty.city, selectedProperty.type]);
-
-  // Keyboard navigation for carousel
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!showCarousel) return;
-      
-      switch (event.key) {
-        case 'ArrowLeft':
-          event.preventDefault();
-          handleImageChange('prev');
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          handleImageChange('next');
-          break;
-        case 'Escape':
-          event.preventDefault();
-          setShowCarousel(false);
-          break;
-      }
-    };
-
-    if (showCarousel) {
-      document.addEventListener('keydown', handleKeyDown);
-      // Prevent body scroll when carousel is open
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [showCarousel]);
-
-  // Close popup when navigating to different routes (header menu clicks)
-  useEffect(() => {
-    const handleRouteChange = () => {
-      // Check if component is still mounted before calling onClose
-      if (onClose) {
-        onClose();
-      }
-    };
-
-    const handleHashChange = () => {
-      // Check if component is still mounted before calling onClose
-      if (onClose) {
-        onClose();
-      }
-    };
-
-    // Listen for route changes and hash changes
-    router.events.on('routeChangeStart', handleRouteChange);
-    router.events.on('hashChangeStart', handleHashChange);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
-      router.events.off('hashChangeStart', handleHashChange);
-    };
-  }, [router.events, onClose]);
-
-  // Reset state when component unmounts
-  useEffect(() => {
-    return () => {
-      setMapInitialized(false);
-      setShowContactForm(false);
-      setShowCarousel(false);
-    };
-  }, []);
-
-  // Setup intersection observer to update active tab based on scroll position
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '-80px 0px 0px 0px', // Consider the sticky header
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          if (id === 'overview-section') setActiveTab('overview');
-          else if (id === 'details-section') setActiveTab('details');
-          else if (id === 'location-section') setActiveTab('map');
-        }
-      });
-    }, options);
-
-    // Observe all section refs
-    if (overviewRef.current) observer.observe(overviewRef.current);
-    if (detailsRef.current) observer.observe(detailsRef.current);
-    if (mapLocationRef.current) observer.observe(mapLocationRef.current);
-
-    return () => {
-      if (overviewRef.current) observer.unobserve(overviewRef.current);
-      if (detailsRef.current) observer.unobserve(detailsRef.current);
-      if (mapLocationRef.current) observer.unobserve(mapLocationRef.current);
-    };
-  }, []);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleTabChange = useCallback((tabName: string) => {
     setActiveTab(tabName);
@@ -259,53 +67,8 @@ export default function PropertyPopup({
       case 'map':
         mapLocationRef.current?.scrollIntoView({ behavior: 'smooth' });
         break;
-      default:
-        break;
     }
   }, []);
-  
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Initialize Google Maps when the component loads
-  useEffect(() => {
-    if (!mapInitialized && mapRef && mapRef.current) {
-      const loader = new Loader({
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        version: 'weekly',
-        libraries: ['places'],
-      });
-      
-      loader.load().then(() => {
-        if (mapRef.current) {
-          const map = new google.maps.Map(mapRef.current, {
-            center: {
-              lat: selectedProperty.geocode?.lat || selectedProperty.latitude || 0,
-              lng: selectedProperty.geocode?.lng || selectedProperty.longitude || 0,
-            },
-            zoom: 15,
-            mapTypeControl: true,
-            streetViewControl: true,
-            fullscreenControl: true,
-          });
-          
-          // Add a marker for the property
-          new google.maps.Marker({
-            position: {
-              lat: selectedProperty.geocode?.lat || selectedProperty.latitude || 0,
-              lng: selectedProperty.geocode?.lng || selectedProperty.longitude || 0,
-            },
-            map,
-            title: selectedProperty.address,
-            animation: google.maps.Animation.DROP
-          });
-          
-          setMapInitialized(true);
-        }
-      }).catch(error => {
-        console.error("Error loading Google Maps:", error);
-      });
-    }
-  }, [mapInitialized, mapRef, selectedProperty]);
   
   // Handler for saving/unsaving a property
   // Favorite/save handlers removed
@@ -313,7 +76,7 @@ export default function PropertyPopup({
   // Handler for gallery navigation
   const handleImageChange = useCallback((direction: 'next' | 'prev') => {
     setImageLoading(true);
-    const allImages = getPropertyImages(selectedProperty);
+    const allImages = getAllPropertyImages(selectedProperty);
     const totalImages = allImages.length;
     setCurrentImageIndex(prev => {
       if (direction === 'next') {
@@ -366,7 +129,7 @@ export default function PropertyPopup({
 
   // Get dynamic grid layout based on number of images (max 3)
   const gridLayout = useMemo(() => {
-    const allImages = getPropertyImages(selectedProperty);
+    const allImages = getAllPropertyImages(selectedProperty);
     const imageCount = Math.min(allImages.length, 3);
     switch (imageCount) {
       case 1:
@@ -460,152 +223,13 @@ export default function PropertyPopup({
             </div>
             
             <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
-              {/* Dynamic Photo Grid Layout (1-3 images) */}
-              <div 
-                className={galleryStyles.styledGallery}
-                style={{ 
-                  display: 'grid',
-                  gridTemplateColumns: gridLayout.gridTemplateColumns,
-                  gridTemplateRows: gridLayout.gridTemplateRows,
-                  gap: '8px',
-                  height: '100%',
-                  width: '100%',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  backgroundColor: '#f7f7f7'
+              <PropertyImageGrid
+                property={selectedProperty}
+                onOpenCarousel={(startIndex) => {
+                  setCurrentImageIndex(startIndex);
+                  setShowCarousel(true);
                 }}
-              >
-                {gridLayout.images.map((image: string, index: number) => {
-                  const isMainImage = index === 0;
-                  const imageCount = gridLayout.images.length;
-                  
-                  // Determine grid position based on layout
-                  let gridColumn, gridRow;
-                  if (imageCount === 1) {
-                    gridColumn = '1';
-                    gridRow = '1';
-                  } else if (imageCount === 2) {
-                    gridColumn = index === 0 ? '1' : '2';
-                    gridRow = '1';
-                  } else { // 3 images
-                    if (index === 0) {
-                      gridColumn = '1';
-                      gridRow = '1 / span 2';
-                    } else {
-                      gridColumn = '2';
-                      gridRow = index === 1 ? '1' : '2';
-                    }
-                  }
-                  
-                  return (
-                    <div 
-                      key={index}
-                      style={{
-                        gridColumn,
-                        gridRow,
-                        position: 'relative',
-                        cursor: 'pointer',
-                        overflow: 'hidden'
-                      }}
-                      onClick={() => handleImageClick(index)}
-                    >
-                      <img 
-                        src={image} 
-                        alt={`Property image ${index + 1}`} 
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'cover',
-                          transition: 'transform 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }}
-                      />
-                      
-                      {/* Image counter overlay on main image */}
-                      {isMainImage && (
-                        <div style={{ 
-                          position: 'absolute', 
-                          bottom: '16px', 
-                          left: '16px', 
-                          zIndex: 5,
-                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                          color: 'white',
-                          borderRadius: '4px',
-                          padding: '4px 10px',
-                          fontSize: '14px'
-                        }}>
-                          1 of {getPropertyImages(selectedProperty).length}
-                        </div>
-                      )}
-                      
-                      {/* Show "+X more" overlay on the last visible image if there are more photos */}
-                      {index === gridLayout.images.length - 1 && getPropertyImages(selectedProperty).length > 3 && (
-                        <div style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '18px',
-                          fontWeight: 'bold'
-                        }}>
-                          +{getPropertyImages(selectedProperty).length - 3} more
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                
-                {/* "View all photos" button - only show if there are more images than displayed */}
-                {gridLayout.showViewAllButton && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    bottom: '16px', 
-                    right: '16px', 
-                    zIndex: 5
-                  }}>
-                    <button 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                        color: '#2a2a33',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '8px 16px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImageIndex(0);
-                        setShowCarousel(true);
-                      }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-                        <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      {getPropertyImages(selectedProperty).length} Photos
-                    </button>
-                  </div>
-                )}
-              </div>
+              />
             </div>
             <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -629,7 +253,7 @@ export default function PropertyPopup({
                         color: '#2a2a33', 
                         margin: '0 0 8px 0',
                         lineHeight: '1.2'
-                      }}>${selectedProperty.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h1>
+                      }}>${formatNumberWithCommas(selectedProperty.price)}</h1>
                     </div>
                   </div>
                   <h2 style={{ 
@@ -651,62 +275,8 @@ export default function PropertyPopup({
                   </div>
                 </div>
                 
-                {/* Tabs Navigation - Sticky at the top */}
-                <div style={{ 
-                  backgroundColor: 'white', 
-                  borderBottom: '1px solid #e9e9e9',
-                  position: 'sticky',
-                  top: '0',
-                  zIndex: 10
-                }}>
-                  <ul style={{ 
-                    display: 'flex', 
-                    listStyle: 'none', 
-                    margin: '0',
-                    padding: '0 24px',
-                    borderBottom: '1px solid #e9e9e9'
-                  }}>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'overview' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'overview' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'overview' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('overview')}
-                    >
-                      Overview
-                    </li>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'details' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'details' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'details' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('details')}
-                    >
-                      Facts and features
-                    </li>
-                    <li 
-                      style={{ 
-                        padding: '16px 0', 
-                        marginRight: '32px',
-                        borderBottom: activeTab === 'map' ? '3px solid #1277e1' : '3px solid transparent',
-                        color: activeTab === 'map' ? '#1277e1' : '#2a2a33',
-                        fontWeight: activeTab === 'map' ? '700' : '400',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleTabChange('map')}
-                    >
-                      Location
-                    </li>
-                  </ul>
-                </div>
+                {/* Tabs Navigation */}
+                <PropertyDetailTabsNav active={activeTab} onChange={handleTabChange} />
                 
                 {/* All content sections displayed one after another */}
                 <div style={{ backgroundColor: 'white' }}>
@@ -1380,231 +950,19 @@ export default function PropertyPopup({
           </div>
         </div>
 
-        {/* Full-Screen Image Carousel Modal */}
-        {showCarousel && (
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.95)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onClick={() => setShowCarousel(false)}
-          >
-            {/* Close Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowCarousel(false);
-              }}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'rgba(255, 255, 255, 0.9)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '50px',
-                height: '50px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '24px',
-                color: '#333',
-                zIndex: 10001
-              }}
-            >
-              ×
-            </button>
-
-            {/* Image Counter */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '20px',
-                left: '20px',
-                background: 'rgba(0, 0, 0, 0.7)',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '16px',
-                zIndex: 10001
-              }}
-            >
-              {currentImageIndex + 1} of {getPropertyImages(selectedProperty).length}
-            </div>
-
-            {/* Navigation Arrows */}
-            {getPropertyImages(selectedProperty).length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageChange('prev');
-                  }}
-                  style={{
-                    position: 'absolute',
-                    left: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '60px',
-                    height: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '24px',
-                    color: '#333',
-                    zIndex: 10001
-                  }}
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageChange('next');
-                  }}
-                  style={{
-                    position: 'absolute',
-                    right: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '60px',
-                    height: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '24px',
-                    color: '#333',
-                    zIndex: 10001
-                  }}
-                >
-                  ›
-                </button>
-              </>
-            )}
-
-            {/* Main Image */}
-            <div
-              style={{
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <img
-                src={getPropertyImages(selectedProperty)[currentImageIndex]}
-                alt={`Property image ${currentImageIndex + 1}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-                  opacity: imageLoading ? 0.7 : 1,
-                  transition: 'opacity 0.3s ease'
-                }}
-                onLoad={() => setImageLoading(false)}
-                onLoadStart={() => setImageLoading(true)}
-              />
-              
-              {/* Loading spinner */}
-              {imageLoading && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    color: 'white',
-                    fontSize: '20px'
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      border: '4px solid rgba(255, 255, 255, 0.3)',
-                      borderTop: '4px solid white',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Strip */}
-            {getPropertyImages(selectedProperty).length > 1 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '20px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: '8px',
-                  maxWidth: '90vw',
-                  overflowX: 'auto',
-                  padding: '10px',
-                  background: 'rgba(0, 0, 0, 0.7)',
-                  borderRadius: '12px'
-                }}
-              >
-                {getPropertyImages(selectedProperty).map((image, index) => (
-                  <div
-                    key={index}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentImageIndex(index);
-                    }}
-                    style={{
-                      width: '60px',
-                      height: '40px',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      border: currentImageIndex === index ? '2px solid white' : '2px solid transparent',
-                      opacity: currentImageIndex === index ? 1 : 0.7,
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <img
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <PropertyImageCarousel
+          property={selectedProperty}
+          isOpen={showCarousel}
+          currentIndex={currentImageIndex}
+          onRequestClose={() => setShowCarousel(false)}
+          onNavigate={handleImageChange}
+          onSelectIndex={(i) => setCurrentImageIndex(i)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          imageLoading={imageLoading}
+          setImageLoading={setImageLoading}
+        />
     </>
   );
 }

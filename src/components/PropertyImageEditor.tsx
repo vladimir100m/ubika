@@ -46,22 +46,21 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
   // Keep internal copy of staged temp images (for preview before real upload)
   const [tempImages, setTempImages] = useState<PropertyImage[]>([]);
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
-  const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
   const [previewImage, setPreviewImage] = useState<PropertyImage | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   // Load images when propertyId changes to ensure all associated images are loaded
   useEffect(() => {
-    if (propertyId) {
-      loadAllPropertyImages();
-    }
+    if (!propertyId) return;
+    const controller = new AbortController();
+    loadAllPropertyImages(controller.signal as AbortSignal).catch(() => {});
+    return () => controller.abort();
   }, [propertyId]);
 
-  const loadAllPropertyImages = async () => {
+  const loadAllPropertyImages = async (signal?: AbortSignal) => {
     if (!propertyId) return;
-    
     try {
-      const response = await fetch(`/api/properties/images/${propertyId}`);
+      const response = await fetch(`/api/properties/images/${propertyId}`, signal ? { signal } : undefined as any);
       if (response.ok) {
         const result = await response.json();
         const loadedImages = result.images || [];
@@ -71,16 +70,34 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
           onChange(loadedImages);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
       console.error('Error loading property images:', error);
     }
   };
 
-  const sortedImages = images.sort((a, b) => {
+  const sortedImages = [...images].sort((a, b) => {
     if (a.is_cover && !b.is_cover) return -1;
     if (!a.is_cover && b.is_cover) return 1;
     return a.display_order - b.display_order;
   });
+
+  // Revoke object URLs created for temp previews when they are removed or on unmount
+  useEffect(() => {
+    // Capture current tempImages for cleanup when they are replaced or on unmount
+    const currentTemp = tempImages.slice();
+    return () => {
+      currentTemp.forEach(img => {
+        try {
+          if (img.image_url && img.image_url.startsWith('blob:')) {
+            URL.revokeObjectURL(img.image_url);
+          }
+        } catch (e) {
+          // ignore
+        }
+      });
+    };
+  }, [tempImages]);
 
   // File upload handlers
   const triggerFileSelect = () => inputRef.current?.click();
@@ -103,10 +120,29 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
 
   const onDragLeave = () => setDragOver(false);
 
+  // Allow keyboard activation of the drop zone (Enter/Space)
+  const onDropZoneKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      triggerFileSelect();
+    }
+  };
+
   // Upload functionality
   const uploadFiles = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
-    
+
+    // Client-side validation: only accept image files and enforce max size (10MB)
+    const filesArray = Array.from(fileList);
+    const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+    const allowedFiles = filesArray.filter(f => f.type?.startsWith('image/') && f.size <= MAX_BYTES);
+    const rejected = filesArray.length - allowedFiles.length;
+    if (rejected > 0) {
+      setLocalError('Some files were skipped: only image files under 10MB are accepted.');
+      // continue with allowedFiles if any
+      if (allowedFiles.length === 0) return;
+    }
+
     // STAGING MODE: If property doesn't yet exist and allowed -> stage files, create temp previews, wait for property creation
     if (!propertyId && allowTempImagesBeforeSave) {
       const remainingSlots = maxImages - (images.length + tempImages.length);
@@ -114,7 +150,7 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
         setLocalError(`Maximum ${maxImages} images allowed`);
         return;
       }
-      const files = Array.from(fileList).slice(0, remainingSlots);
+      const files = allowedFiles.slice(0, remainingSlots);
       const now = Date.now();
       const newUploadItems = files.map((file, idx) => ({
         tempId: `${now}-${Math.random()}`,
@@ -151,7 +187,7 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
       return;
     }
 
-    const files = Array.from(fileList).slice(0, remainingSlots);
+    const files = allowedFiles.slice(0, remainingSlots);
     setUploading(true);
     setLocalError(null);
 
@@ -324,55 +360,13 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
 
       // Reload all images to ensure consistency
       await loadAllPropertyImages();
-      
-      setSelectedImages(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(imageId);
-        return newSet;
-      });
 
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : 'Failed to delete image');
     }
   };
 
-  // Bulk operations
-  const selectAllImages = () => {
-    setSelectedImages(new Set(images.map(img => img.id)));
-  };
-
-  const deselectAllImages = () => {
-    setSelectedImages(new Set());
-  };
-
-  const deleteSelectedImages = async () => {
-    if (selectedImages.size === 0) return;
-
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete ${selectedImages.size} selected image${selectedImages.size > 1 ? 's' : ''}?`
-    );
-
-    if (!confirmDelete) return;
-
-    for (const imageId of Array.from(selectedImages)) {
-      await deleteImage(imageId);
-    }
-    
-    setSelectedImages(new Set());
-  };
-
-  // Image selection
-  const toggleImageSelection = (imageId: number) => {
-    setSelectedImages(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(imageId)) {
-        newSet.delete(imageId);
-      } else {
-        newSet.add(imageId);
-      }
-      return newSet;
-    });
-  };
+  // Bulk selection/deletion removed: deletion is only available via preview modal now
 
   // Image preview
   const openPreview = (image: PropertyImage) => {
@@ -387,54 +381,7 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
     setPreviewImage(null);
   };
 
-  // Reorder images
-  const moveImage = async (imageId: number, direction: 'left' | 'right') => {
-    const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
-    const currentIndex = sortedImages.findIndex(img => img.id === imageId);
-    
-    if (currentIndex === -1) return;
-    
-    const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= sortedImages.length) return;
-
-    // Swap positions
-    [sortedImages[currentIndex], sortedImages[newIndex]] = [sortedImages[newIndex], sortedImages[currentIndex]];
-    
-    // Update display_order
-    const updatedImages = sortedImages.map((img, idx) => ({
-      ...img,
-      display_order: idx + 1
-    }));
-
-    // Optimistic update
-    onChange(updatedImages);
-
-    // Persist to server if property exists
-    if (propertyId) {
-      try {
-        const response = await fetch('/api/properties/images/update', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-            images: updatedImages.map(img => ({
-              imageId: img.id,
-              display_order: img.display_order
-            }))
-          })
-        });
-
-        if (!response.ok) throw new Error('Failed to update image order');
-        
-        // Reload images to ensure consistency
-        await loadAllPropertyImages();
-        
-      } catch (error) {
-        setLocalError('Failed to save image order');
-        // Reload to revert optimistic update
-        await loadAllPropertyImages();
-      }
-    }
-  };
+  // Note: image reordering removed — moveImage no longer present
 
   return (
     <div className={styles.container}>
@@ -445,6 +392,10 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onClick={triggerFileSelect}
+        onKeyDown={onDropZoneKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label="Upload property images"
       >
         <input
           ref={inputRef}
@@ -530,23 +481,9 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
             
             {allowBulkOperations && images.length > 1 && (
               <div className={styles.bulkActions}>
-                <button
-                  type="button"
-                  className={styles.bulkBtn}
-                  onClick={selectedImages.size === images.length ? deselectAllImages : selectAllImages}
-                >
-                  {selectedImages.size === images.length ? 'Deselect All' : 'Select All'}
-                </button>
-                
-                {selectedImages.size > 0 && (
-                  <button
-                    type="button"
-                    className={`${styles.bulkBtn} ${styles.deleteBtn}`}
-                    onClick={deleteSelectedImages}
-                  >
-                    Delete Selected ({selectedImages.size})
-                  </button>
-                )}
+                <div className={styles.imageStats}>
+                  <span>To delete an image, open its preview and use the delete action.</span>
+                </div>
               </div>
             )}
           </div>
@@ -554,14 +491,6 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
           <div className={styles.thumbGrid}>
             {sortedImages.map((image, idx) => (
               <div key={image.id} className={styles.imageItem}>
-                {allowBulkOperations && (
-                  <input
-                    type="checkbox"
-                    className={styles.imageCheckbox}
-                    checked={selectedImages.has(image.id)}
-                    onChange={() => toggleImageSelection(image.id)}
-                  />
-                )}
                 
                 <div 
                   className={styles.imageWrapper}
@@ -598,39 +527,10 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
                     className={`${styles.actionBtn} ${image.is_cover ? styles.coverBtn : ''}`}
                     onClick={() => setCoverImage(image.id)}
                     title={image.is_cover ? 'Cover Image' : 'Set as Cover'}
+                    aria-pressed={image.is_cover}
+                    aria-label={image.is_cover ? 'Cover image' : 'Set as cover image'}
                   >
                     ⭐
-                  </button>
-                  
-                  {idx > 0 && (
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      onClick={() => moveImage(image.id, 'left')}
-                      title="Move Left"
-                    >
-                      ←
-                    </button>
-                  )}
-                  
-                  {idx < images.length - 1 && (
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      onClick={() => moveImage(image.id, 'right')}
-                      title="Move Right"
-                    >
-                      →
-                    </button>
-                  )}
-                  
-                  <button
-                    type="button"
-                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                    onClick={() => deleteImage(image.id)}
-                    title="Delete Image"
-                  >
-                    🗑️
                   </button>
                 </div>
               </div>

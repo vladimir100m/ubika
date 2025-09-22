@@ -28,7 +28,7 @@
 /* Defensive: hide any images beyond the first three inside the image container
    (covers unexpected markup variants so cards render no more than 3 visuals) */
 .imageContainer img:nth-of-type(n+4) {
-  display: none !important;
+  display: none;
 }
 
 .propertyImage {
@@ -172,27 +172,27 @@
 }
 
 /* Favorite Button - Enhanced positioning in top-right corner */
-.favoriteBtn {
+.propertyCard .favoriteBtn {
   position: absolute;
   top: 12px;
   right: 12px;
   z-index: 15; /* Higher z-index to ensure it's always on top */
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 50%;
   padding: 4px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(8px);
-  border: 3px solid #ff385c !important; /* Very visible red border for testing */
+  border: 3px solid #ff385c; /* Visible red border */
   transition: all 0.3s ease;
-  display: block !important;
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
+  display: block;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
-.favoriteBtn:hover {
-  background: rgba(255, 255, 255, 1) !important;
+.propertyCard .favoriteBtn:hover {
+  background: rgba(255, 255, 255, 1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   transform: scale(1.05);
 }

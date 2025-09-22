@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/router';
 import styles from '../styles/MapFilters.module.css';
 
 export interface FilterOptions {
@@ -40,10 +41,12 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   inHeader = false,
   onClosePopup
 }) => {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(searchLocation);
   const [isSearching, setIsSearching] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [hideSearchForm, setHideSearchForm] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Applied filters (what's currently active in the database)
   const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
@@ -159,7 +162,13 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current as ReturnType<typeof setTimeout>);
+        debounceRef.current = null;
+      }
+    };
   }, [searchValue]);
 
   const handleRemoveBoundary = () => {
@@ -202,6 +211,23 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     if (onClosePopup) {
       onClosePopup();
     }
+
+    // Navigate to /map with equivalent query params so the map view shows filtered results
+    const query: any = {};
+    if (tempFilters.operation) query.operation = tempFilters.operation;
+    if (tempFilters.priceMin) query.minPrice = tempFilters.priceMin;
+    if (tempFilters.priceMax) query.maxPrice = tempFilters.priceMax;
+    if (tempFilters.beds) query.bedrooms = tempFilters.beds;
+    if (tempFilters.baths) query.bathrooms = tempFilters.baths;
+    if (tempFilters.homeType) query.propertyType = tempFilters.homeType;
+    if (tempFilters.moreFilters.minArea) query.minArea = tempFilters.moreFilters.minArea;
+    if (tempFilters.moreFilters.maxArea) query.maxArea = tempFilters.moreFilters.maxArea;
+
+    // Use router.push to navigate; keep current path if already on /map
+    router.push({ pathname: '/map', query });
+
+    // Hide the inline search form element when filters are applied
+    setHideSearchForm(true);
   };
 
   // Check if there are active filters based on applied filters
@@ -218,33 +244,35 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   return (
   <div className={styles.searchSection}>
       {/* Search Bar Section (now at the top) */}
-      <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
-        <div className={styles.searchBarWrapper}>
-          <span className={styles.searchIcon} aria-hidden="true">🔍</span>
-          <input
-            type="text"
-            placeholder="Search city, neighborhood or address"
-            value={searchValue}
-            onChange={handleSearchChange}
-            className={styles.searchInput}
-            aria-label="Search location"
-            autoComplete="off"
-          />
-          {searchValue && (
-            <button
-              type="button"
-              className={styles.clearSearchButton}
-              onClick={handleClearSearch}
-              aria-label="Clear search"
-            >
-              ✕
+      {!hideSearchForm && (
+        <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
+          <div className={styles.searchBarWrapper}>
+            <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              placeholder="Search city, neighborhood or address"
+              value={searchValue}
+              onChange={handleSearchChange}
+              className={styles.searchInput}
+              aria-label="Search location"
+              autoComplete="off"
+            />
+            {searchValue && (
+              <button
+                type="button"
+                className={styles.clearSearchButton}
+                onClick={handleClearSearch}
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+            <button type="submit" className={styles.submitSearchButton} aria-label="Submit search">
+              Go
             </button>
-          )}
-          <button type="submit" className={styles.submitSearchButton} aria-label="Submit search">
-            Go
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
+      )}
       {isSearching && (
         <span className={styles.searchStatus} aria-live="polite">Searching…</span>
       )}

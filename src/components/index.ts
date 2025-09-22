@@ -9,4 +9,6 @@ export { default as StandardLayout } from './StandardLayout';
 export { default as Header } from './Header';
 export { default as Footer } from './Footer';
 export { default as PropertyImageEditor } from './PropertyImageEditor';
+export { default as PropertyImageGrid } from './PropertyImageGrid';
+export { default as PropertyDetailTabsNav } from './PropertyDetailTabsNav';
 export { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from './StateComponents';

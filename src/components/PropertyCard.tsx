@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Property } from '../types';
 import styles from '../styles/PropertyCard.module.css';
+import { getCoverImage, getPropertyImages, FALLBACK_IMAGE } from '../utils/propertyImages';
+import { formatPriceUSD, formatISODate } from '../utils/format';
 
-// Use the same class as the home card for the main container
-const HOME_CARD_CLASS = 'PropertyCard_propertyCard__1R75R';
 
 interface PropertyCardProps {
   property: Property;
@@ -20,60 +20,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
-  // Get the cover image for the property card main display
-  const getCoverImage = (property: Property): string => {
-    // First check if property has uploaded images with a cover image
-    if (property.images && property.images.length > 0) {
-      const coverImage = property.images.find(img => img.is_cover);
-      if (coverImage) {
-        return coverImage.image_url;
-      }
-      // If no cover image is set, use the first uploaded image
-      const sortedImages = property.images.sort((a, b) => a.display_order - b.display_order);
-      return sortedImages[0].image_url;
-    }
-
-    // Fallback to single image_url if available
-    if (property.image_url) {
-      return property.image_url;
-    }
-
-  // Final fallback: neutral placeholder (prefer not to show a type-based sample image)
-  return '/ubika-logo.png';
-  };
-
-  // Get property images for gallery navigation (if multiple images exist)
-  const getPropertyImages = (property: Property): string[] => {
-    // First check if property has uploaded images
-    if (property.images && property.images.length > 0) {
-      // Sort images (cover first, then display order) and limit to 3 for the card grid
-      return property.images
-        .sort((a, b) => {
-          if (a.is_cover && !b.is_cover) return -1;
-          if (!a.is_cover && b.is_cover) return 1;
-          return a.display_order - b.display_order;
-        })
-        .slice(0, 3)
-        .map(img => img.image_url);
-    }
-
-  // Fallback to a single neutral placeholder image when no uploaded images exist
-  return ['/ubika-logo.png'];
-  };
-  // All images (full set) for navigation
-  const getAllPropertyImages = (property: Property): string[] => {
-    if (property.images && property.images.length > 0) {
-      return property.images
-        .sort((a, b) => {
-          if (a.is_cover && !b.is_cover) return -1;
-          if (!a.is_cover && b.is_cover) return 1;
-          return a.display_order - b.display_order;
-        })
-        .map(img => img.image_url);
-    }
-    return property.image_url ? [property.image_url] : ['/ubika-logo.png'];
-  };
-
+  // Thumbnails currently unused in simplified card but kept for potential hover previews
   const thumbnails = getPropertyImages(property); // max 3
   const coverImage = getCoverImage(property);
 
@@ -87,32 +34,23 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
   // Favorite/save feature removed
 
-  const formatPrice = (price: string) => {
-    // Remove any existing formatting and add proper formatting
-    const numericPrice = price.replace(/[^\d]/g, '');
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(parseInt(numericPrice));
-  };
+  const formatPrice = (price: string) => formatPriceUSD(price);
+  const formatDate = (dateString: string) => formatISODate(dateString);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCardClick();
+    }
   };
 
   return (
-    <div className={HOME_CARD_CLASS} onClick={handleCardClick}>
+    <div className={styles.propertyCard} onClick={handleCardClick} role="button" tabIndex={0} onKeyDown={handleKeyDown} aria-label={property.title || `View property ${property.id}`}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
         {/* Always show only the cover image for a simpler home view */}
         <img
-          src={imageError ? '/ubika-logo.png' : coverImage}
+          src={imageError ? FALLBACK_IMAGE : coverImage}
           alt={property.title || `Property in ${property.city}`}
           className={styles.propertyImage}
           onError={() => setImageError(true)}

@@ -121,10 +121,11 @@
   transform: scale(0.96);
 }
 
-.mobilePillActive {
-  background: #fff !important;
-  color: #0070f3 !important;
-  border-color: #fff !important;
+.mobilePill.mobilePillActive,
+.mobilePillActive.mobilePill {
+  background: #fff;
+  color: #0070f3;
+  border-color: #fff;
 }
 
 /* Hide old mobile menu styles */
@@ -133,7 +134,7 @@
 .mobileMenuItem,
 .mobileMenuHeader,
 .mobileMenuSection {
-  display: none !important;
+  display: none;
 }
 
 /* Hamburger (hidden completely now) */
@@ -2182,11 +2183,6 @@
   margin-bottom: 20px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .errorMessage {
   color: #e53e3e;
   margin-bottom: 20px;
@@ -2373,11 +2369,6 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .errorContainer {

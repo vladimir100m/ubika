@@ -1,21 +1,7 @@
 import React from 'react';
 import standardStyles from '../styles/StandardComponents.module.css';
 
-// Add keyframes for spinner animation
-const spinnerStyle = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-// Inject the spinner styles
-if (typeof document !== 'undefined' && !document.getElementById('spinner-styles')) {
-  const style = document.createElement('style');
-  style.id = 'spinner-styles';
-  style.textContent = spinnerStyle;
-  document.head.appendChild(style);
-}
+// Spinner keyframes are centralized in global CSS; no injection needed.
 
 interface LoadingStateProps {
   message?: string;

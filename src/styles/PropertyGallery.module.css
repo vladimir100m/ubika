@@ -36,10 +36,6 @@
   animation: spin 1s ease-in-out infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 /* Responsive gallery layout */
 .imageGrid {
   display: grid;
@@ -49,10 +45,6 @@
   height: 500px;
   margin-bottom: 20px;
   border-radius: 8px;
-  overflow: hidden;
-}
-
-.primaryImage {
   grid-row: span 2;
   height: 100%;
   position: relative;

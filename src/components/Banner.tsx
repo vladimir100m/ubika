@@ -1,4 +1,6 @@
 import React from 'react';
+// Using a CSS background for the banner image to avoid forwarding image props
+// (like fetchPriority) to a native <img> element which causes React warnings.
 import styles from '../styles/Banner.module.css';
 import SimpleSearchBar from './SimpleSearchBar';
 import { useRouter } from 'next/router';
@@ -31,12 +33,19 @@ const Banner: React.FC = () => {
     };
 
     return (
-        <div className={styles.banner}>
-            <div className={styles.content}>
+        <header
+            className={styles.Banner_banner__biC5I}
+            style={{
+                backgroundImage: "url('/home_background.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            }}
+        >
+            <div className={styles.Banner_content__biC5I}>
                 <h1>Encuentra tu nuevo hogar</h1>
                 <SimpleSearchBar onSearch={handleSearch} />
             </div>
-        </div>
+        </header>
     );
 };
 
