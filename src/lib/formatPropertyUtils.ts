@@ -150,3 +150,13 @@ export function formatPropertyBedsBaths(beds: number | undefined | null, baths: 
 
   return [bedStr, bathStr].filter(Boolean).join(' • ') || 'Details TBD';
 }
+
+/**
+ * Format number with thousands separators (commas)
+ * Useful for inline price display without currency symbol
+ */
+export function formatNumberWithCommas(raw: string | number): string {
+  const numeric = typeof raw === 'number' ? raw : parseInt(raw.replace(/[^\d]/g, ''), 10);
+  if (isNaN(numeric)) return '0';
+  return numeric.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}

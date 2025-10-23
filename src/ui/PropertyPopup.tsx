@@ -7,7 +7,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Neighborhood } from '../types';
 import { getCoverImageRaw, getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
-import { formatNumberWithCommas } from '../lib/format';
+import { formatNumberWithCommas } from '../lib/formatPropertyUtils';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
 import PropertyImageCarousel from './PropertyImageCarousel';
 // Favorite/save feature removed
