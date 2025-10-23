@@ -120,63 +120,64 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className={styles.header}>
       <div className={styles.headerContainer}>
-        {/* Logo Section */}
-        <div 
-          className={styles.logoSection} 
-          onClick={handleLogoClick}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && handleLogoClick()}
-          aria-label="Ubika Home"
-        >
-          <img 
-            src="/ubika-logo.png" 
-            alt="Ubika Logo" 
-            width={isMobile ? 32 : isTablet ? 36 : 40} 
-            height={isMobile ? 32 : isTablet ? 36 : 40}
-            loading="eager"
-            className={styles.logoImage}
-          />
+        {/* Left group: logo + optional nav links */}
+        <div className={styles.leftGroup}>
+          <div 
+            className={styles.logoSection} 
+            onClick={handleLogoClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogoClick()}
+            aria-label="Ubika Home"
+          >
+            <img 
+              src="/ubika-logo.png" 
+              alt="Ubika Logo" 
+              width={isMobile ? 32 : isTablet ? 36 : 40} 
+              height={isMobile ? 32 : isTablet ? 36 : 40}
+              loading="eager"
+              className={styles.logoImage}
+            />
+            {!isMobile && (
+              <span className={styles.logoText}>Ubika</span>
+            )}
+          </div>
+
+          {/* Navigation Links (kept next to logo in the left group) */}
           {!isMobile && (
-            <span className={styles.logoText}>Ubika</span>
+            <div className={styles.navLinks} aria-hidden="true"></div>
           )}
         </div>
-        
-        {/* Desktop Navigation */}
+
+        {/* Right Section - Filters and Auth (always aligned to the right on desktop) */}
         {!isMobile && (
-          <nav className={styles.desktopNavigation} role="navigation" aria-label="Main navigation">
-            {/* Navigation Links - currently empty (Sell moved into Me menu) */}
-            <div className={styles.navLinks}></div>
-            
-            {/* Right Section - Filters and Auth */}
-            <div className={styles.rightSection}>
-              {onFilterChange && (
-                <button 
-                  className={`${styles.filtersButton} ${isFiltersPopupOpen ? styles.active : ''}`}
-                  onClick={toggleFiltersPopup}
-                  aria-label="Open filters"
-                  aria-expanded={isFiltersPopupOpen}
-                >
-                  <span className={styles.navButtonIcon} role="img" aria-hidden="true">🔍</span>
-                  Filters
-                  {hasActiveFilters && <span className={styles.filtersBadge} aria-hidden="true">•</span>}
-                </button>
-              )}
-              
-              {!isLoading && (
-                <button 
-                  onClick={handleAuthAction}
-                  className={`${styles.navButton} ${styles.accountButton}`}
-                  aria-label={user ? 'Me menu' : 'Sign in with Google'}
-                >
-                  <span className={styles.navButtonIcon} role="img" aria-hidden="true">
-                    {user ? '👤' : '🔑'}
-                  </span>
-                  {user ? 'Me' : 'Login'}
-                </button>
-              )}
-            </div>
-          </nav>
+          <div className={styles.rightSection}>
+            {onFilterChange && (
+              <button 
+                className={`${styles.filtersButton} ${isFiltersPopupOpen ? styles.active : ''}`}
+                onClick={toggleFiltersPopup}
+                aria-label="Open filters"
+                aria-expanded={isFiltersPopupOpen}
+              >
+                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🔍</span>
+                Filters
+                {hasActiveFilters && <span className={styles.filtersBadge} aria-hidden="true">•</span>}
+              </button>
+            )}
+
+            {!isLoading && (
+              <button 
+                onClick={handleAuthAction}
+                className={`${styles.navButton} ${styles.accountButton}`}
+                aria-label={user ? 'Me menu' : 'Sign in with Google'}
+              >
+                <span className={styles.navButtonIcon} role="img" aria-hidden="true">
+                  {user ? '👤' : '🔑'}
+                </span>
+                {user ? 'Me' : 'Login'}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Mobile Navigation */}

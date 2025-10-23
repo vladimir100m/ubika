@@ -83,8 +83,42 @@ const Home: React.FC = () => {
     router.push(`/?${newParams}`);
   };
 
+  const handleSearchLocationChange = (location: string) => {
+    const currentParams = new URLSearchParams(searchParams?.toString() ?? '');
+    if (location && location.trim() !== '') {
+      currentParams.set('zone', location);
+    } else {
+      currentParams.delete('zone');
+    }
+    router.push(`/?${currentParams.toString()}`);
+  };
+
+  const getInitialFilters = (): Partial<FilterOptions> => {
+    return {
+      operation: searchParams?.get('operation') || '',
+      priceMin: searchParams?.get('minPrice') || '',
+      priceMax: searchParams?.get('maxPrice') || '',
+      beds: searchParams?.get('bedrooms') || '',
+      baths: searchParams?.get('bathrooms') || '',
+      homeType: searchParams?.get('propertyType') || '',
+      moreFilters: {
+        minArea: searchParams?.get('minArea') || '',
+        maxArea: searchParams?.get('maxArea') || '',
+        yearBuiltMin: '',
+        yearBuiltMax: '',
+        keywords: []
+      }
+    };
+  };
+
   return (
-    <StandardLayout>
+    <StandardLayout
+      showMapFilters={true}
+      onFilterChange={handleFilterChange}
+      onSearchLocationChange={handleSearchLocationChange}
+      searchLocation={searchParams?.get('zone') || ''}
+      initialFilters={getInitialFilters()}
+    >
       <Banner onFilterChange={handleFilterChange} />
       <main className={standardStyles.main}>
         {loading ? (

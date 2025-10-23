@@ -25,6 +25,18 @@
   box-sizing: border-box;
 }
 
+/* Grouping to ensure left (logo + nav) and right (filters + auth) alignment */
+.leftGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
+.headerContainer {
+  justify-content: space-between;
+}
+
 /* Logo Section */
 .logoSection {
   display: flex;
