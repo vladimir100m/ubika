@@ -159,8 +159,7 @@ const Header: React.FC<HeaderProps> = ({
                 aria-label="Open filters"
                 aria-expanded={isFiltersPopupOpen}
               >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">🔍</span>
-                Filters
+                🔍
                 {hasActiveFilters && <span className={styles.filtersBadge} aria-hidden="true">•</span>}
               </button>
             )}
@@ -174,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({
                 {/* <span className={styles.navButtonIcon} role="img" aria-hidden="true">
                   {user ? '👤' : '🔑'}
                 </span> */}
-                {user ? 'Me' : 'Login'}
+                {user ? '👤' : '🔑'}
               </button>
             )}
           </div>
@@ -192,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({
                   aria-label="Open filters"
                   aria-expanded={isFiltersPopupOpen}
                 >
-                  🔍 Filters
+                  🔍
                   {hasActiveFilters && <span className={styles.filtersBadge} aria-hidden="true">•</span>}
                 </button>
               )}
@@ -202,7 +201,7 @@ const Header: React.FC<HeaderProps> = ({
                   onClick={handleAuthAction}
                   aria-label={user ? 'Me menu' : 'Sign in with Google'}
                 >
-                  {user ? 'Me' : 'Login'}
+                  {user ? '👤' : '🔑'}
                 </button>
               )}
             </div>
