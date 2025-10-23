@@ -54,6 +54,7 @@
 .addPropertyButton {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
   color: white;
@@ -305,7 +306,7 @@
 /* Statistics Section */
 .statsSection {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin-top: 40px;
   padding-top: 40px;
@@ -314,22 +315,31 @@
 
 .statCard {
   display: flex;
-  gap: 16px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  min-height: 120px;
+  justify-content: center;
 }
 
 .statCard:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #0070f3;
+  box-shadow: 0 8px 20px rgba(0, 112, 243, 0.15);
+  transform: translateY(-4px);
+  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
 }
 
 .statIcon {
   font-size: 2.5rem;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .statContent {
@@ -337,6 +347,9 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
 }
 
 .statLabel {
@@ -345,13 +358,14 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  margin: 0;
 }
 
 .statValue {
   font-size: 1.75rem;
   font-weight: 700;
   color: #1e293b;
+  line-height: 1.2;
 }
 
 /* Dashboard Styles */
@@ -418,6 +432,198 @@
 }
 
 /* Responsive Design */
+
+/* Large Desktop - 1200px and above */
+@media (min-width: 1200px) {
+  .sellerViewMain {
+    padding: 40px 20px;
+  }
+
+  .addPropertyButton {
+    padding: 12px 32px;
+    font-size: 1rem;
+  }
+}
+
+/* Tablet and Medium Devices - 768px to 1199px */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .sellerViewMain {
+    padding: 32px 18px;
+  }
+
+  .titleSection h1 {
+    font-size: 2rem;
+  }
+
+  .addPropertyButton {
+    padding: 11px 20px;
+    font-size: 0.95rem;
+  }
+
+  .buttonIcon {
+    font-size: 1.1rem;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 36px;
+    padding-top: 36px;
+  }
+
+  .statCard {
+    padding: 18px 14px;
+    gap: 10px;
+    min-height: 110px;
+  }
+
+  .statIcon {
+    font-size: 2.2rem;
+  }
+
+  .statLabel {
+    font-size: 0.8rem;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+}
+
+/* Small Devices - 480px to 767px */
+@media (min-width: 480px) and (max-width: 767px) {
+  .sellerViewMain {
+    padding: 24px 14px;
+    margin-top: 56px;
+  }
+
+  .sellerViewHeader {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 32px;
+  }
+
+  .titleSection h1 {
+    font-size: 1.75rem;
+  }
+
+  .addPropertyButton {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+
+  .buttonIcon {
+    font-size: 1.1rem;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 28px;
+  }
+
+  .statCard {
+    padding: 14px 10px;
+    gap: 8px;
+    min-height: 100px;
+  }
+
+  .statIcon {
+    font-size: 1.8rem;
+  }
+
+  .statLabel {
+    font-size: 0.75rem;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .propertyActionsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+/* Extra Small Devices - Below 480px */
+@media (max-width: 479px) {
+  .sellerViewMain {
+    padding: 16px 12px;
+    margin-top: 56px;
+  }
+
+  .sellerViewHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .titleSection h1 {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .addPropertyButton {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+  }
+
+  .buttonIcon {
+    font-size: 1rem;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .statCard {
+    padding: 12px 8px;
+    gap: 6px;
+    min-height: 90px;
+  }
+
+  .statIcon {
+    font-size: 1.5rem;
+  }
+
+  .statLabel {
+    font-size: 0.7rem;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+
+  .errorBanner {
+    flex-direction: column;
+  }
+
+  .emptyState {
+    padding: 60px 20px;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+  }
+
+  .actionButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 767px) {
   .sellerViewMain {
     padding: 24px 16px;
@@ -439,7 +645,27 @@
   }
 
   .statsSection {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 32px;
+  }
+
+  .statCard {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .statIcon {
+    font-size: 2rem;
+  }
+
+  .statLabel {
+    font-size: 0.8rem;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
   }
 
   .propertyActionsGrid {
@@ -471,6 +697,30 @@
 
   .emptyState {
     padding: 60px 20px;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+  }
+
+  .statCard {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .statIcon {
+    font-size: 1.75rem;
+  }
+
+  .statLabel {
+    font-size: 0.75rem;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
   }
 
   .actionButtons {
