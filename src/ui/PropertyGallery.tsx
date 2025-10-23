@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from '../styles/PropertyGallery.module.css';
 
-import { getAllPropertyImages } from '../lib/propertyImages';
+import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import { Property } from '../types';
 
 interface PropertyGalleryProps {
@@ -12,7 +12,7 @@ interface PropertyGalleryProps {
 }
 
 const PropertyGallery: React.FC<PropertyGalleryProps> = ({ property, initialIndex = 0 }) => {
-  const images = getAllPropertyImages(property);
+  const images = getAllPropertyImagesRaw(property);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);

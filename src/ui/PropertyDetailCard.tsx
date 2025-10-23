@@ -1,19 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Property } from '../types';
+import { Property, Neighborhood } from '../types';
 import styles from '../styles/PropertyDetailCard.module.css';
 import PropertyActions from './PropertyActions';
-
-interface Neighborhood {
-  id: number;
-  name: string;
-  description: string;
-  subway_access: string;
-  dining_options: string;
-  shopping_access: string;
-  highway_access: string;
-}
+import { getCoverImageRaw, getPropertyImagesRaw } from '../lib/propertyImageUtils';
+import { formatPropertyPriceCompact, formatPropertyDate, formatPropertySize } from '../lib/formatPropertyUtils';
+import useResolvedImage from '../lib/useResolvedImage';
+import { FALLBACK_IMAGE } from '../lib/propertyImageUtils';
 
 interface PropertyDetailCardProps {
   property: Property;
@@ -26,6 +20,11 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
 }) => {
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
   const [loadingNeighborhood, setLoadingNeighborhood] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
+  // Resolve cover image using the hook
+  const rawCover = getCoverImageRaw(property);
+  const coverImage = useResolvedImage(rawCover) || FALLBACK_IMAGE;
 
   useEffect(() => {
     const fetchNeighborhoodData = async () => {
@@ -51,59 +50,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
     }
   }, [property.city]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  // Get the cover image for the property detail display
-  const getCoverImage = (property: Property): string => {
-    // First check if property has uploaded images with a cover image
-    if (property.images && property.images.length > 0) {
-      const coverImage = property.images.find(img => img.is_cover);
-      if (coverImage) {
-        return coverImage.image_url;
-      }
-      // If no cover image is set, use the first uploaded image
-      const sortedImages = [...property.images].sort((a, b) => a.display_order - b.display_order);
-      return sortedImages[0].image_url;
-    }
-
-  // Final fallback: neutral placeholder (no single image_url field on Property)
-  return '/ubika-logo.png';
-  };
-
-  const getPropertyImages = (property: Property): string[] => {
-    // First check if property has uploaded images
-    if (property.images && property.images.length > 0) {
-      return [...property.images]
-        .sort((a, b) => {
-          // Sort by is_cover first, then by display_order
-          if (a.is_cover && !b.is_cover) return -1;
-          if (!a.is_cover && b.is_cover) return 1;
-          return a.display_order - b.display_order;
-        })
-        .map(img => img.image_url);
-    }
-
-  // Fallback to neutral placeholder images array
-  return ['/ubika-logo.png'];
-  };
-
-  const images = getPropertyImages(property);
+  const images = getPropertyImagesRaw(property);
 
   return (
     <div className={styles.propertyDetailCard}>
@@ -112,7 +59,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   {/* Favorite/save feature removed */}
         <div className={styles.priceSection}>
           <div className={styles.price}>
-            {formatPrice(property.price)}
+            {formatPropertyPriceCompact(property.price)}
             {property.operation_status_id === 2 && <span className={styles.period}>/month</span>}
           </div>
           {property.property_status && (
@@ -232,13 +179,13 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Listed Date</span>
-              <span className={styles.infoValue}>{formatDate(property.created_at)}</span>
+              <span className={styles.infoValue}>{formatPropertyDate(property.created_at)}</span>
             </div>
             
             {property.updated_at !== property.created_at && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>Last Updated</span>
-                <span className={styles.infoValue}>{formatDate(property.updated_at)}</span>
+                <span className={styles.infoValue}>{formatPropertyDate(property.updated_at)}</span>
               </div>
             )}
             

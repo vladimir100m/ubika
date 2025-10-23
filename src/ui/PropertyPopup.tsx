@@ -4,23 +4,13 @@ import React, {useState, useEffect, useRef, RefObject, useCallback, useMemo} fro
 import {useRouter} from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { Property } from '../types';
-import { getCoverImage, getAllPropertyImages } from '../lib/propertyImages';
+import { Property, Neighborhood } from '../types';
+import { getCoverImageRaw, getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../lib/format';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
 import PropertyImageCarousel from './PropertyImageCarousel';
 // Favorite/save feature removed
-
-interface Neighborhood {
-  id: number;
-  name: string;
-  description: string;
-  subway_access: string;
-  dining_options: string;
-  shopping_access: string;
-  highway_access: string;
-}
 
 export default function PropertyPopup({ 
   selectedProperty, 
@@ -76,7 +66,7 @@ export default function PropertyPopup({
   // Handler for gallery navigation
   const handleImageChange = useCallback((direction: 'next' | 'prev') => {
     setImageLoading(true);
-    const allImages = getAllPropertyImages(selectedProperty);
+    const allImages = getAllPropertyImagesRaw(selectedProperty);
     const totalImages = allImages.length;
     setCurrentImageIndex(prev => {
       if (direction === 'next') {
@@ -129,7 +119,7 @@ export default function PropertyPopup({
 
   // Get dynamic grid layout based on number of images (max 3)
   const gridLayout = useMemo(() => {
-    const allImages = getAllPropertyImages(selectedProperty);
+    const allImages = getAllPropertyImagesRaw(selectedProperty);
     const imageCount = Math.min(allImages.length, 3);
     switch (imageCount) {
       case 1:

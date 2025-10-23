@@ -33,6 +33,16 @@ export interface PropertyFeature {
   icon?: string;
 }
 
+export interface Neighborhood {
+  id: number;
+  name: string;
+  description: string;
+  subway_access: string;
+  dining_options: string;
+  shopping_access: string;
+  highway_access: string;
+}
+
 export interface PropertyImage {
   id: number;
   property_id: number;

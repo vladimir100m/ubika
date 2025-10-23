@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Property } from '../types';
 import styles from '../styles/PropertyCard.module.css';
-import { getCoverImage, getPropertyImages, FALLBACK_IMAGE } from '../lib/propertyImages';
+import { getCoverImageRaw, getPropertyImagesRaw, FALLBACK_IMAGE } from '../lib/propertyImageUtils';
 import useResolvedImage from '../lib/useResolvedImage';
-import { formatPriceUSD, formatISODate } from '../lib/format';
+import { formatPropertyPriceCompact, formatPropertyDate, formatPropertySize, formatPropertyBedsBaths } from '../lib/formatPropertyUtils';
 
 
 interface PropertyCardProps {
@@ -28,8 +28,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const [imageError, setImageError] = useState(false);
 
   // Thumbnails currently unused in simplified card but kept for potential hover previews
-  const thumbnails = getPropertyImages(property); // max 3
-  const rawCover = getCoverImage(property);
+  const thumbnails = getPropertyImagesRaw(property); // max 3
+  const rawCover = getCoverImageRaw(property);
   const coverImage = useResolvedImage(rawCover) || FALLBACK_IMAGE;
 
   const handleCardClick = () => {
@@ -41,9 +41,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   // Favorite/save feature removed
-
-  const formatPrice = (price: number) => formatPriceUSD(String(price));
-  const formatDate = (dateString: string) => formatISODate(dateString);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -79,7 +76,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       <div className={styles.content}>
         {/* Price */}
         <div className={styles.price}>
-          {formatPrice(property.price)}
+          {formatPropertyPriceCompact(property.price)}
         </div>
 
         {/* Title */}
@@ -147,13 +144,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
               <div className={styles.detailRow}>
                 <span className={styles.label}>Listed:</span>
-                <span className={styles.value}>{formatDate(property.created_at || '')}</span>
+                <span className={styles.value}>{formatPropertyDate(property.created_at)}</span>
               </div>
 
               {property.updated_at && property.updated_at !== property.created_at && (
                 <div className={styles.detailRow}>
                   <span className={styles.label}>Updated:</span>
-                  <span className={styles.value}>{formatDate(property.updated_at || '')}</span>
+                  <span className={styles.value}>{formatPropertyDate(property.updated_at)}</span>
                 </div>
               )}
             </div>

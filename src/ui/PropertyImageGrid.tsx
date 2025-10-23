@@ -4,7 +4,7 @@
 import React, { useMemo } from 'react';
 import { Property } from '../types';
 import galleryStyles from '../styles/StyledGallery.module.css';
-import { getAllPropertyImages } from '../lib/propertyImages';
+import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import useResolvedImage from '../lib/useResolvedImage';
 
 const ResolvedImg: React.FC<{ src: string; alt?: string }> = ({ src, alt }) => {
@@ -32,7 +32,7 @@ interface PropertyImageGridProps {
 const PropertyImageGrid: React.FC<PropertyImageGridProps> = ({ property, onOpenCarousel }) => {
   // Compute grid layout (mirrors previous inline logic in PropertyPopup)
   const gridLayout = useMemo(() => {
-  const allImages = getAllPropertyImages(property);
+  const allImages = getAllPropertyImagesRaw(property);
     const imageCount = Math.min(allImages.length, 3);
     switch (imageCount) {
       case 1:
@@ -60,7 +60,7 @@ const PropertyImageGrid: React.FC<PropertyImageGridProps> = ({ property, onOpenC
     }
   }, [property]);
 
-  const allPropertyImages = getAllPropertyImages(property);
+  const allPropertyImages = getAllPropertyImagesRaw(property);
 
   return (
     <div className={galleryStyles.styledGallery}
