@@ -93,4 +93,9 @@ export interface PropertyFormData {
   property_status_id: number;
   features: number[];
   images: PropertyImage[];
+  // Optional additional address/metadata fields used in forms
+  state?: string;
+  country?: string;
+  zip_code?: string;
+  seller_id?: string;
 }

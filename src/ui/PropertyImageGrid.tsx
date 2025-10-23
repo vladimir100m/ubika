@@ -1,3 +1,6 @@
+// 'use client' directive: this component uses hooks (useMemo and a custom hook) and must run on the client.
+"use client";
+
 import React, { useMemo } from 'react';
 import { Property } from '../types';
 import galleryStyles from '../styles/StyledGallery.module.css';

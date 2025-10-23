@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import styles from '../styles/MapFilters.module.css';
 
 export interface FilterOptions {
@@ -223,8 +225,10 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     if (tempFilters.moreFilters.minArea) query.minArea = tempFilters.moreFilters.minArea;
     if (tempFilters.moreFilters.maxArea) query.maxArea = tempFilters.moreFilters.maxArea;
 
-    // Use router.push to navigate; keep current path if already on /map
-    router.push({ pathname: '/map', query });
+  // Use router.push to navigate; build a query string since app-router push takes a URL
+  const queryKeys = Object.keys(query);
+  const queryString = queryKeys.length ? `?${new URLSearchParams(query).toString()}` : '';
+  router.push(`/map${queryString}`);
 
     // Hide the inline search form element when filters are applied
     setHideSearchForm(true);
