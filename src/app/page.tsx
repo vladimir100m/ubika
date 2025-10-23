@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Banner from '../ui/Banner';
-import PropertyCard from '../ui/PropertyCard';
+import PropertyCardGrid from '../ui/PropertyCardGrid';
 import PropertyPopup from '../ui/PropertyPopup';
 import StandardLayout from '../ui/StandardLayout';
 import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../ui/StateComponents';
@@ -12,7 +12,6 @@ import standardStyles from '../styles/StandardComponents.module.css';
 import styles from '../styles/Home.module.css';
 import { Property } from '../types'; // Import Property type
 import { FilterOptions } from '../ui/MapFilters';
-
 const Home: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -129,17 +128,12 @@ const Home: React.FC = () => {
           <>
             <ResultsInfo propertyCount={properties.length} />
             {properties.length > 0 ? (
-              <PropertySection>
-                {properties.map(property => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    onClick={() => handlePropertyClick(property)}
-                    isSaved={false} // Placeholder
-                    onSaveToggle={() => {}} // Placeholder
-                  />
-                ))}
-              </PropertySection>
+              <PropertyCardGrid
+                properties={properties}
+                onPropertyClick={handlePropertyClick}
+                isSaved={false}
+                onSaveToggle={() => {}}
+              />
             ) : (
               <EmptyState message="No properties match the current filters. Try adjusting your search." />
             )}

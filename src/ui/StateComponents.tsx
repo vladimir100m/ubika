@@ -142,3 +142,22 @@ export const PropertySection: React.FC<PropertySectionProps> = ({
     {children}
   </section>
 );
+
+interface PropertyGridProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const PropertyGrid: React.FC<PropertyGridProps> = ({
+  children,
+  className = ''
+}) => (
+  <div className={className} style={{
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '20px',
+    width: '100%'
+  }}>
+    {children}
+  </div>
+);

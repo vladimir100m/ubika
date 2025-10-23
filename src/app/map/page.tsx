@@ -5,14 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import styles from '../../styles/Home.module.css';
 import standardStyles from '../../styles/StandardComponents.module.css';
-import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../../ui/StateComponents';
+import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection, PropertyGrid } from '../../ui/StateComponents';
+import PropertyCardGrid from '../../ui/PropertyCardGrid';
 import { StandardLayout } from '../../ui';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Property, Geocode } from '../../types';
 import useMediaQuery from '../../lib/useMediaQuery';
 import PropertyPopup from '../../ui/PropertyPopup';
-import PropertyCard from '../../ui/PropertyCard';
 import { FilterOptions } from '../../ui/MapFilters';
 import MapFilters from '../../ui/MapFilters';
 
@@ -307,17 +307,12 @@ const MapPage: React.FC = () => {
             <>
               <ResultsInfo propertyCount={properties.length} />
               {properties.length > 0 ? (
-                <PropertySection>
-                  {properties.map(property => (
-                    <PropertyCard
-                      key={property.id}
-                      property={property}
-                      onClick={() => handlePropertyClick(property)}
-                      isSaved={false} // Placeholder
-                      onSaveToggle={() => {}} // Placeholder
-                    />
-                  ))}
-                </PropertySection>
+                <PropertyCardGrid
+                  properties={properties}
+                  onPropertyClick={handlePropertyClick}
+                  isSaved={false}
+                  onSaveToggle={() => {}}
+                />
               ) : (
                 <EmptyState message="No properties found for this area. Try a different location." />
               )}
