@@ -234,8 +234,6 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
               </div>
             </div>
           )}
-
-
         </div>
       </main>
 
