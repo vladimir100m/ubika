@@ -13,14 +13,16 @@ interface PropertyCardProps {
   property: Property;
   showFullDetails?: boolean;
   onClick?: () => void;
-  isSaved: boolean;
-  onSaveToggle: () => void;
+  isSaved?: boolean;
+  onSaveToggle?: () => void;
+  onEdit?: () => void;
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
   showFullDetails = false,
-  onClick
+  onClick,
+  onEdit
 }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
@@ -160,12 +162,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
         {/* Action Buttons */}
         <div className={styles.actions}>
-          <button className={styles.viewDetailsBtn}>
+          <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
             View Details
           </button>
-          <button className={styles.contactBtn}>
-            Contact Agent
-          </button>
+
+          {onEdit ? (
+            <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+              ✏️ Edit
+            </button>
+          ) : (
+            <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); /* noop or implement contact flow */ }}>
+              Contact Agent
+            </button>
+          )}
         </div>
       </div>
     </div>

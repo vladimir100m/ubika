@@ -154,3 +154,67 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  const reqId = createRequestId('req-');
+  const log = createLogger(reqId);
+  log.info('create property handler start', { method: req.method, url: req.url });
+
+  try {
+    const body = await req.json();
+
+    // Minimal required fields
+    const title = body.title || '';
+    const description = body.description || '';
+    const price = body.price || 0;
+    const address = body.address || '';
+    const city = body.city || '';
+    const seller_id = body.seller_id || null;
+
+    if (!title || !address || !seller_id) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const insertQuery = `
+      INSERT INTO properties (title, description, price, address, city, type, room, bathrooms, square_meters, seller_id, status, created_at, updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'available', NOW(), NOW())
+      RETURNING id
+    `;
+
+    const values = [
+      title,
+      description,
+      price,
+      address,
+      city,
+      body.property_type_id ? String(body.property_type_id) : body.type || null,
+      body.bedrooms || 0,
+      body.bathrooms || 0,
+      body.sq_meters || 0,
+      seller_id
+    ];
+
+    const result = await query(insertQuery, values);
+    const newId = result.rows[0].id;
+
+    // Return the full property via select used in GET (single property)
+    const propertyQuery = `
+      SELECT p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
+        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        p.geocode, p.seller_id, p.operation_status_id
+      FROM properties p WHERE p.id = $1`;
+
+    const propRes = await query(propertyQuery, [newId]);
+    const prop = propRes.rows[0];
+
+    // Attach empty images array
+    prop.images = [];
+
+    log.info('property created', { id: newId });
+    return NextResponse.json(prop);
+  } catch (error) {
+    log.error('Error creating property', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

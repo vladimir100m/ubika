@@ -257,16 +257,7 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
             <div className={styles.accountPopupContent}>
-              <button 
-                className={styles.accountPopupItem}
-                onClick={() => handleAccountMenuClick('/seller')}
-              >
-                <span className={styles.accountPopupIcon}>💼</span>
-                <div className={styles.accountPopupText}>
-                  <div className={styles.accountPopupTitle}>Sell</div>
-                  <div className={styles.accountPopupSubtitle}>List your property</div>
-                </div>
-              </button>
+              {/* Sell menu removed */}
               <button 
                 className={styles.accountPopupItem}
                 onClick={handleSignOut}
