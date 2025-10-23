@@ -11,4 +11,5 @@ export { default as Footer } from './Footer';
 export { default as PropertyImageEditor } from './PropertyImageEditor';
 export { default as PropertyImageGrid } from './PropertyImageGrid';
 export { default as PropertyDetailTabsNav } from './PropertyDetailTabsNav';
+export { default as SellerView } from './SellerView';
 export { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from './StateComponents';

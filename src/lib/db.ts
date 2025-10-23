@@ -131,7 +131,7 @@ export const getPropertyStatuses = async () => {
 };
 
 export const getPropertyFeatures = async () => {
-  const result = await query('SELECT * FROM features');
+  const result = await query('SELECT * FROM property_features');
   return result.rows;
 };
 

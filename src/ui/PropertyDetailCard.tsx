@@ -1,14 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { Property } from '../types';
 import styles from '../styles/PropertyDetailCard.module.css';
 import PropertyActions from './PropertyActions';
-
-interface PropertyFeature {
-  id: number;
-  name: string;
-  category: string;
-  icon: string;
-}
 
 interface Neighborhood {
   id: number;
@@ -25,35 +20,36 @@ interface PropertyDetailCardProps {
   showContact?: boolean;
 }
 
-async function getPropertyFeatures(propertyId: number): Promise<PropertyFeature[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const response = await fetch(`${baseUrl}/api/properties/features?propertyId=${propertyId}`, { cache: 'no-store' });
-  if (response.ok) {
-    return response.json();
-  }
-  return [];
-}
-
-async function getNeighborhoodData(city: string, type: string): Promise<Neighborhood | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const response = await fetch(`${baseUrl}/api/neighborhoods?city=${encodeURIComponent(city)}&type=${encodeURIComponent(type)}`, { cache: 'no-store' });
-  if (response.ok) {
-    const neighborhoods = await response.json();
-    if (neighborhoods.length > 0) {
-      return neighborhoods[0];
-    }
-  }
-  return null;
-}
-
-const PropertyDetailCard: React.FC<PropertyDetailCardProps> = async ({
+const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   property,
   showContact = true
 }) => {
-  const [propertyFeatures, neighborhoodData] = await Promise.all([
-    getPropertyFeatures(property.id),
-    getNeighborhoodData(property.city, property.property_type.display_name)
-  ]);
+  const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
+  const [loadingNeighborhood, setLoadingNeighborhood] = useState(true);
+
+  useEffect(() => {
+    const fetchNeighborhoodData = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const propertyType = property.property_type?.display_name || 'Unknown';
+        const response = await fetch(`${baseUrl}/api/neighborhoods?city=${encodeURIComponent(property.city)}&type=${encodeURIComponent(propertyType)}`, { cache: 'no-store' });
+        if (response.ok) {
+          const neighborhoods = await response.json();
+          if (neighborhoods.length > 0) {
+            setNeighborhoodData(neighborhoods[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching neighborhood data:', error);
+      } finally {
+        setLoadingNeighborhood(false);
+      }
+    };
+
+    if (property.city) {
+      fetchNeighborhoodData();
+    }
+  }, [property.city]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -119,13 +115,15 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = async ({
             {formatPrice(property.price)}
             {property.operation_status_id === 2 && <span className={styles.period}>/month</span>}
           </div>
-          <div className={`${styles.statusBadge} ${styles[property.property_status.display_name.toLowerCase() || '']}`}>
-            {property.property_status.display_name}
-          </div>
+          {property.property_status && (
+            <div className={`${styles.statusBadge} ${styles[property.property_status.display_name?.toLowerCase() || '']}`}>
+              {property.property_status.display_name}
+            </div>
+          )}
         </div>
         
         <h1 className={styles.title}>
-          {property.title || `${property.property_type.display_name} in ${property.city}`}
+          {property.title || `${property.property_type?.display_name || 'Property'} in ${property.city}`}
         </h1>
         
         <div className={styles.location}>
@@ -172,7 +170,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = async ({
           <div className={styles.detailItem}>
             <div className={styles.detailIcon}>🏠</div>
             <div>
-              <div className={styles.detailValue}>{property.property_type.display_name}</div>
+              <div className={styles.detailValue}>{property.property_type?.display_name || 'N/A'}</div>
               <div className={styles.detailLabel}>Property Type</div>
             </div>
           </div>
@@ -205,17 +203,17 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = async ({
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Property Type</span>
-              <span className={styles.infoValue}>{property.property_type.display_name}</span>
+              <span className={styles.infoValue}>{property.property_type?.display_name || 'N/A'}</span>
             </div>
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Status</span>
-              <span className={styles.infoValue}>{property.property_status.display_name}</span>
+              <span className={styles.infoValue}>{property.property_status?.display_name || 'N/A'}</span>
             </div>
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Operation</span>
-              <span className={styles.infoValue}>{property.property_status.display_name || 'For Sale'}</span>
+              <span className={styles.infoValue}>{property.property_status?.display_name || 'For Sale'}</span>
             </div>
             
             {property.year_built && (
@@ -269,14 +267,14 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = async ({
       </div>
 
       {/* Property Features */}
-      {propertyFeatures.length > 0 && (
+      {property.features && property.features.length > 0 && (
         <div className={styles.section}>
           <div className={styles.collapsibleHeader}>
             <h2 className={styles.propertyTitle}>Property Features</h2>
           </div>
           <div id="section-features" className={styles.sectionBodyFade}>
             <div className={styles.featuresGrid}>
-              {propertyFeatures.map((feature) => (
+              {property.features.map((feature) => (
                 <div key={feature.id} className={styles.featureItem}>
                   <span className={styles.featureIcon}>{feature.icon}</span>
                   <span className={styles.featureName}>{feature.name}</span>

@@ -57,7 +57,8 @@ const ImageManager: React.FC = () => {
   const loadSellerProperties = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/properties/seller');
+      const userId = (session?.user as any)?.sub || (session?.user as any)?.id;
+      const response = await fetch(`/api/properties/seller?seller_id=${userId}`);
       
       if (!response.ok) {
         throw new Error('Failed to load properties');
