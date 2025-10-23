@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/Home.module.css';
 import mobileStyles from '../styles/Mobile.module.css';
-import useMediaQuery from '../utils/useMediaQuery';
-import { SearchFilters } from '../components/SearchBar';
-import { StandardLayout } from '../components';
-import { FilterOptions } from '../components/MapFilters';
+import useMediaQuery from '../lib/useMediaQuery';
+import { SearchFilters } from '../ui/SearchBar';
+import { StandardLayout } from '../ui';
+import { FilterOptions } from '../ui/MapFilters';
 
 interface SearchHistoryItem {
   id: number;

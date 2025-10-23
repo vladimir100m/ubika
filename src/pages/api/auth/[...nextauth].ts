@@ -1,7 +1,7 @@
 import NextAuth, { type AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { cacheSet, cacheDel } from '../../../utils/cache';
-import { cacheSession, deleteCachedSession } from '../../../utils/sessionCache';
+import { cacheSet, cacheDel } from '../../../lib/cache';
+import { cacheSession, deleteCachedSession } from '../../../lib/sessionCache';
 
 // Export a shared authOptions object so other API routes can reliably access session state.
 export const authOptions: AuthOptions = {

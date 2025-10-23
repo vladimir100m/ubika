@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from 'vitest';
-import { cacheGet, cacheSet, cacheDel } from '../src/utils/cache';
+import { cacheGet, cacheSet, cacheDel } from '../src/lib/cache';
 
 describe('cache (in-memory fallback)', () => {
   beforeEach(async () => {

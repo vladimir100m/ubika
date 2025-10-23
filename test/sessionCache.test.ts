@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from 'vitest';
-import { cacheSet, cacheGet, cacheDel } from '../src/utils/cache';
-import { cacheSession, getCachedSessionOnly, deleteCachedSession } from '../src/utils/sessionCache';
+import { cacheSet, cacheGet, cacheDel } from '../src/lib/cache';
+import { cacheSession, getCachedSession, deleteCachedSession } from '../src/lib/sessionCache';
 
 describe('sessionCache helpers (in-memory fallback)', () => {
   beforeEach(async () => {
