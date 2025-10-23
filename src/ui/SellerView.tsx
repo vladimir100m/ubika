@@ -1,0 +1,264 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { Property } from '../types';
+import PropertyCardGrid from './PropertyCardGrid';
+import Header from './Header';
+import Footer from './Footer';
+import styles from '../styles/Seller.module.css';
+
+interface SellerViewProps {
+  initialProperties?: Property[];
+}
+
+const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
+  const [isLoading, setIsLoading] = useState(!initialProperties.length);
+  const [error, setError] = useState<string | null>(null);
+
+  // Redirect to home if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [status, router]);
+
+  // Fetch seller properties if not provided initially
+  useEffect(() => {
+    if (!initialProperties.length && (session?.user as any)?.sub) {
+      fetchSellerProperties();
+    }
+  }, [session, initialProperties.length]);
+
+  const fetchSellerProperties = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const sellerId = (session?.user as any)?.sub;
+      console.log('🔍 Fetching properties for seller_id:', sellerId);
+      
+      const response = await fetch(`/api/properties?seller=${sellerId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch properties');
+      }
+      
+      const data = await response.json();
+      console.log('📦 API Response:', data);
+      console.log('📦 Data length:', Array.isArray(data) ? data.length : (data.properties || []).length);
+      
+      setProperties(Array.isArray(data) ? data : data.properties || []);
+    } catch (err) {
+      console.error('Error fetching seller properties:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load properties');
+      setProperties([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePropertyClick = (property: Property) => {
+    router.push(`/property/${property.id}`);
+  };
+
+  const handleAddProperty = () => {
+    // Navigate to add property page
+    router.push('/seller/add-property');
+  };
+
+  const handleDeleteProperty = async (propertyId: number | string) => {
+    if (!confirm('Are you sure you want to delete this property?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/properties/${propertyId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete property');
+      }
+
+      // Remove from list
+      setProperties(properties.filter(p => p.id !== propertyId));
+    } catch (err) {
+      console.error('Error deleting property:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete property');
+    }
+  };
+
+  const handleEditProperty = (propertyId: number | string) => {
+    router.push(`/seller/edit/${propertyId}`);
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className={styles.loadingContainer}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <div className={styles.sellerViewContainer}>
+      <Header />
+      
+      <main className={styles.sellerViewMain}>
+        <div className={styles.sellerViewContent}>
+          {/* Header Section */}
+          <div className={styles.sellerViewHeader}>
+            <div className={styles.titleSection}>
+              <h1>🏪 Seller Dashboard</h1>
+              <p className={styles.subtitle}>Manage and monitor your property listings</p>
+            </div>
+            
+            <button 
+              onClick={handleAddProperty}
+              className={styles.addPropertyButton}
+              aria-label="Add new property"
+            >
+              <span className={styles.buttonIcon}>➕</span>
+              Add Property
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className={styles.errorBanner}>
+              <span className={styles.errorIcon}>⚠️</span>
+              <div className={styles.errorContent}>
+                <strong>Error</strong>
+                <p>{error}</p>
+              </div>
+              <button 
+                onClick={() => setError(null)}
+                className={styles.closeBanner}
+                aria-label="Close error message"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && (
+            <div className={styles.loadingState}>
+              <div className={styles.spinner}></div>
+              <p>Loading your properties...</p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && properties.length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>🏠</div>
+              <h2>No properties yet</h2>
+              <p>Start selling by adding your first property</p>
+              <button 
+                onClick={handleAddProperty}
+                className={styles.emptyStateButton}
+              >
+                Add Your First Property
+              </button>
+            </div>
+          )}
+
+          {/* Properties Grid */}
+          {!isLoading && properties.length > 0 && (
+            <div className={styles.propertiesSection}>
+              <div className={styles.sectionHeader}>
+                <h2>Your Properties ({properties.length})</h2>
+                <p className={styles.sectionSubtitle}>
+                  {properties.length} listing{properties.length !== 1 ? 's' : ''} active
+                </p>
+              </div>
+
+              {/* Property Cards Grid - Reusing PropertyCardGrid component */}
+              <div className={styles.propertyGridWrapper}>
+                <PropertyCardGrid
+                  properties={properties}
+                  onPropertyClick={handlePropertyClick}
+                  isCompact={false}
+                />
+              </div>
+
+              {/* Property Management Actions - shown as overlay cards */}
+              <div className={styles.propertyActionsGrid}>
+                {properties.map(property => (
+                  <div key={property.id} className={styles.propertyActions}>
+                    <div className={styles.actionButtons}>
+                      <button
+                        onClick={() => handleEditProperty(property.id)}
+                        className={styles.actionButton}
+                        title="Edit property"
+                        aria-label={`Edit ${property.title}`}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProperty(property.id)}
+                        className={`${styles.actionButton} ${styles.deleteButton}`}
+                        title="Delete property"
+                        aria-label={`Delete ${property.title}`}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Statistics Section */}
+          {!isLoading && properties.length > 0 && (
+            <div className={styles.statsSection}>
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>📊</div>
+                <div className={styles.statContent}>
+                  <div className={styles.statLabel}>Total Listings</div>
+                  <div className={styles.statValue}>{properties.length}</div>
+                </div>
+              </div>
+              
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>💰</div>
+                <div className={styles.statContent}>
+                  <div className={styles.statLabel}>Average Price</div>
+                  <div className={styles.statValue}>
+                    ${(
+                      properties.reduce((sum, p) => sum + (p.price || 0), 0) / properties.length
+                    ).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>🏘️</div>
+                <div className={styles.statContent}>
+                  <div className={styles.statLabel}>Active Markets</div>
+                  <div className={styles.statValue}>
+                    {new Set(properties.map(p => p.city)).size}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default SellerView;

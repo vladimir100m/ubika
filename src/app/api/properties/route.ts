@@ -25,6 +25,9 @@ export async function GET(req: NextRequest) {
 
   try {
     const searchParams = req.nextUrl.searchParams;
+    const seller_id = searchParams.get('seller') || undefined;
+    log.info('Properties filter parameters', { seller_id });
+    
     const filters: PropertyFilters = {
       minPrice: searchParams.get('minPrice') || undefined,
       maxPrice: searchParams.get('maxPrice') || undefined,
@@ -95,6 +98,14 @@ export async function GET(req: NextRequest) {
       queryText += ` AND (LOWER(p.city) LIKE LOWER($${paramIndex}) OR LOWER(p.state) LIKE LOWER($${paramIndex}) OR LOWER(p.address) LIKE LOWER($${paramIndex}))`;
       queryParams.push(`%${filters.zone}%`);
       paramIndex++;
+    }
+
+    // Filter by seller if provided (for seller dashboard)
+    if (seller_id) {
+      queryText += ` AND p.seller_id = $${paramIndex}`;
+      queryParams.push(seller_id);
+      paramIndex++;
+      log.info('Added seller filter', { seller_id, paramIndex: paramIndex - 1 });
     }
 
     if (filters.minArea) {

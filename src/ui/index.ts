@@ -9,6 +9,7 @@ export { default as PropertyDetailCard } from './PropertyDetailCard';
 export { default as StandardLayout } from './StandardLayout';
 export { default as Header } from './Header';
 export { default as Footer } from './Footer';
+export { default as SellerView } from './SellerView';
 export { default as PropertyImageEditor } from './PropertyImageEditor';
 export { default as PropertyImageGrid } from './PropertyImageGrid';
 export { default as PropertyDetailTabsNav } from './PropertyDetailTabsNav';
