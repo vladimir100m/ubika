@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Property } from '../types';
 import PropertyCardGrid from './PropertyCardGrid';
+import PropertyPopup from './PropertyPopup';
 import Header from './Header';
 import Footer from './Footer';
 import styles from '../styles/Seller.module.css';
@@ -15,10 +16,12 @@ interface SellerViewProps {
 
 const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
   const router = useRouter();
+  const popupMapRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
   const [properties, setProperties] = useState<Property[]>(initialProperties);
   const [isLoading, setIsLoading] = useState(!initialProperties.length);
   const [error, setError] = useState<string | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -62,7 +65,11 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
   };
 
   const handlePropertyClick = (property: Property) => {
-    router.push(`/property/${property.id}`);
+    setSelectedProperty(property);
+  };
+
+  const handleClosePropertyDetail = () => {
+    setSelectedProperty(null);
   };
 
   const handleAddProperty = () => {
@@ -172,53 +179,6 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
             </div>
           )}
 
-          {/* Properties Grid */}
-          {!isLoading && properties.length > 0 && (
-            <div className={styles.propertiesSection}>
-              <div className={styles.sectionHeader}>
-                <h2>Your Properties ({properties.length})</h2>
-                <p className={styles.sectionSubtitle}>
-                  {properties.length} listing{properties.length !== 1 ? 's' : ''} active
-                </p>
-              </div>
-
-              {/* Property Cards Grid - Reusing PropertyCardGrid component */}
-              <div className={styles.propertyGridWrapper}>
-                <PropertyCardGrid
-                  properties={properties}
-                  onPropertyClick={handlePropertyClick}
-                  isCompact={false}
-                />
-              </div>
-
-              {/* Property Management Actions - shown as overlay cards */}
-              <div className={styles.propertyActionsGrid}>
-                {properties.map(property => (
-                  <div key={property.id} className={styles.propertyActions}>
-                    <div className={styles.actionButtons}>
-                      <button
-                        onClick={() => handleEditProperty(property.id)}
-                        className={styles.actionButton}
-                        title="Edit property"
-                        aria-label={`Edit ${property.title}`}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProperty(property.id)}
-                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                        title="Delete property"
-                        aria-label={`Delete ${property.title}`}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Statistics Section */}
           {!isLoading && properties.length > 0 && (
             <div className={styles.statsSection}>
@@ -253,8 +213,39 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
               </div>
             </div>
           )}
+          
+          {/* Properties Grid */}
+          {!isLoading && properties.length > 0 && (
+            <div className={styles.propertiesSection}>
+              <div className={styles.sectionHeader}>
+                <h2>Your Properties ({properties.length})</h2>
+                <p className={styles.sectionSubtitle}>
+                  {properties.length} listing{properties.length !== 1 ? 's' : ''} active
+                </p>
+              </div>
+
+              {/* Property Cards Grid - Reusing PropertyCardGrid component */}
+              <div className={styles.propertyGridWrapper}>
+                <PropertyCardGrid
+                  properties={properties}
+                  onPropertyClick={handlePropertyClick}
+                  isCompact={false}
+                />
+              </div>
+            </div>
+          )}
+
+
         </div>
       </main>
+
+      {selectedProperty && (
+        <PropertyPopup
+          selectedProperty={selectedProperty}
+          onClose={handleClosePropertyDetail}
+          mapRef={popupMapRef}
+        />
+      )}
 
       <Footer />
     </div>
