@@ -115,7 +115,7 @@
   font-size: 1rem;
 }
 
-.rightSection {
+.headerRightSection {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -296,7 +296,7 @@
 }
 
 /* Mobile Navigation - Enhanced for better order and interaction */
-.mobileNavContainer {
+.headerMobileNav {
   flex: 1;
   margin-left: 12px;
   overflow: hidden;
@@ -411,7 +411,7 @@
     font-size: 0.95rem;
   }
   
-  .rightSection {
+  .headerRightSection {
     gap: 11px;
   }
 }
@@ -441,7 +441,7 @@
     font-size: 0.85rem;
   }
   
-  .rightSection {
+  .headerRightSection {
     gap: 10px;
   }
   
@@ -474,7 +474,7 @@
     display: none;
   }
   
-  .mobileNavContainer {
+  .headerMobileNav {
     display: flex;
   }
   
@@ -547,7 +547,7 @@
     margin-right: 8px;
   }
   
-  .mobileNavContainer {
+  .headerMobileNav {
     margin-left: 8px;
   }
   
@@ -695,7 +695,7 @@
 
 /* Hide elements appropriately */
 @media (min-width: 769px) {
-  .mobileNavContainer {
+  .headerMobileNav {
     display: none;
   }
 }

@@ -144,14 +144,14 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Navigation Links (kept next to logo in the left group) */}
-          {!isMobile && (
+          {/* {!isMobile && (
             <div className={styles.navLinks} aria-hidden="true"></div>
-          )}
+          )} */}
         </div>
 
         {/* Right Section - Filters and Auth (always aligned to the right on desktop) */}
         {!isMobile && (
-          <div className={styles.rightSection}>
+          <div className={styles.headerRightSection}>
             {onFilterChange && (
               <button 
                 className={`${styles.filtersButton} ${isFiltersPopupOpen ? styles.active : ''}`}
@@ -171,9 +171,9 @@ const Header: React.FC<HeaderProps> = ({
                 className={`${styles.navButton} ${styles.accountButton}`}
                 aria-label={user ? 'Me menu' : 'Sign in with Google'}
               >
-                <span className={styles.navButtonIcon} role="img" aria-hidden="true">
+                {/* <span className={styles.navButtonIcon} role="img" aria-hidden="true">
                   {user ? '👤' : '🔑'}
-                </span>
+                </span> */}
                 {user ? 'Me' : 'Login'}
               </button>
             )}
@@ -182,8 +182,8 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Navigation */}
         {isMobile && (
-          <div className={styles.mobileNavContainer}>
-            <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation">
+          <div className={styles.headerRightSection}>
+            {/* <div className={styles.mobileNavScroll} role="navigation" aria-label="Mobile navigation"> */}
               {/* Order: Filters, Account/Login (Sell moved into Me menu) */}
               {onFilterChange && (
                 <button
@@ -206,7 +206,7 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
             </div>
-          </div>
+          // </div>
         )}
       </div>
       
