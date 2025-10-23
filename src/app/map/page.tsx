@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import styles from '../../styles/Home.module.css';
 import standardStyles from '../../styles/StandardComponents.module.css';
-import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection, PropertyGrid } from '../../ui/StateComponents';
+import { LoadingState, ErrorState, EmptyState, ResultsInfo, PropertySection } from '../../ui/StateComponents';
 import PropertyCardGrid from '../../ui/PropertyCardGrid';
 import { StandardLayout } from '../../ui';
 import axios from 'axios';
