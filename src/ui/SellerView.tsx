@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Property } from '../types';
 import PropertyCardGrid from './PropertyCardGrid';
 import PropertyPopup from './PropertyPopup';
+import AddPropertyPopup from './AddPropertyPopup';
 import Header from './Header';
 import Footer from './Footer';
 import styles from '../styles/Seller.module.css';
@@ -22,6 +23,8 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
   const [isLoading, setIsLoading] = useState(!initialProperties.length);
   const [error, setError] = useState<string | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -73,8 +76,23 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
   };
 
   const handleAddProperty = () => {
-    // Navigate to add property page
-    router.push('/seller/add-property');
+    setEditingProperty(null);
+    setIsAddPropertyOpen(true);
+  };
+
+  const handleAddPropertyClose = () => {
+    setIsAddPropertyOpen(false);
+    setEditingProperty(null);
+  };
+
+  const handlePropertyCreated = (propertyId: string) => {
+    // Refresh the properties list
+    fetchSellerProperties();
+  };
+
+  const handlePropertyUpdated = (propertyId: string) => {
+    // Refresh the properties list
+    fetchSellerProperties();
   };
 
   const handleDeleteProperty = async (propertyId: number | string) => {
@@ -99,8 +117,9 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
     }
   };
 
-  const handleEditProperty = (propertyId: number | string) => {
-    router.push(`/seller/edit/${propertyId}`);
+  const handleEditPropertyClick = (property: Property) => {
+    setEditingProperty(property);
+    setIsAddPropertyOpen(true);
   };
 
   if (status === 'loading') {
@@ -230,6 +249,10 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
                   properties={properties}
                   onPropertyClick={handlePropertyClick}
                   isCompact={false}
+                  hideActions={false}
+                  showEditDelete={true}
+                  onEdit={handleEditPropertyClick}
+                  onDelete={(property) => handleDeleteProperty(property.id)}
                 />
               </div>
             </div>
@@ -244,6 +267,14 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
           mapRef={popupMapRef}
         />
       )}
+
+      <AddPropertyPopup
+        isOpen={isAddPropertyOpen}
+        onClose={handleAddPropertyClose}
+        onPropertyCreated={handlePropertyCreated}
+        editingProperty={editingProperty}
+        onPropertyUpdated={handlePropertyUpdated}
+      />
 
       <Footer />
     </div>

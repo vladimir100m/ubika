@@ -120,6 +120,12 @@ export async function GET(req: NextRequest) {
       paramIndex++;
     }
 
+    if (seller_id) {
+      queryText += ` AND p.seller_id = $${paramIndex}`;
+      queryParams.push(seller_id);
+      paramIndex++;
+    }
+
     queryText += ' ORDER BY p.created_at DESC';
 
     const cacheKey = `properties:${createHash('sha256').update(queryText + JSON.stringify(queryParams)).digest('hex')}`;

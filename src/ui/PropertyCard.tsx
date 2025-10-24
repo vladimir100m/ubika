@@ -16,13 +16,19 @@ interface PropertyCardProps {
   isSaved?: boolean;
   onSaveToggle?: () => void;
   onEdit?: () => void;
+  hideActions?: boolean;
+  onDelete?: () => void;
+  showEditDelete?: boolean;
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
   showFullDetails = false,
   onClick,
-  onEdit
+  onEdit,
+  hideActions = false,
+  onDelete,
+  showEditDelete = false
 }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
@@ -158,21 +164,36 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         )}
 
         {/* Action Buttons */}
-        <div className={styles.actions}>
-          <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
-            View Details
-          </button>
+        {!hideActions && (
+          <div className={styles.actions}>
+            {showEditDelete ? (
+              <>
+                <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onEdit && onEdit(); }}>
+                  ✏️ Edit
+                </button>
+                <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); onDelete && onDelete(); }}>
+                  🗑️ Delete
+                </button>
+              </>
+            ) : (
+              <>
+                <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+                  View Details
+                </button>
 
-          {onEdit ? (
-            <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-              ✏️ Edit
-            </button>
-          ) : (
-            <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); /* noop or implement contact flow */ }}>
-              Contact Agent
-            </button>
-          )}
-        </div>
+                {onEdit ? (
+                  <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+                    ✏️ Edit
+                  </button>
+                ) : (
+                  <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); /* noop or implement contact flow */ }}>
+                    Contact Agent
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

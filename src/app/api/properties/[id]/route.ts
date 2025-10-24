@@ -179,3 +179,45 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const reqId = createRequestId('req-');
+  const log = createLogger(reqId);
+  log.info('property delete handler start', { propertyId: params.id });
+
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: 'Invalid property ID' }, { status: 400 });
+  }
+
+  try {
+    // First, verify property exists
+    const checkQuery = 'SELECT id FROM properties WHERE id = $1';
+    const checkResult = await query(checkQuery, [id]);
+    
+    if (checkResult.rows.length === 0) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
+    // Get the property images to log deletion (blob deletion handled separately if needed)
+    const getImagesQuery = 'SELECT image_url FROM property_images WHERE property_id = $1';
+    const imagesResult = await query(getImagesQuery, [id]);
+    const imageCount = imagesResult.rows.length;
+    log.info('Found images to delete', { count: imageCount });
+
+    // Delete property images from database
+    const deleteImagesQuery = 'DELETE FROM property_images WHERE property_id = $1';
+    await query(deleteImagesQuery, [id]);
+    log.info('Deleted property images from database', { count: imageCount });
+
+    // Delete property itself
+    const deletePropertyQuery = 'DELETE FROM properties WHERE id = $1 RETURNING id';
+    const result = await query(deletePropertyQuery, [id]);
+
+    log.info('Property deleted successfully', { propertyId: id });
+    return NextResponse.json({ success: true, id });
+  } catch (error) {
+    log.error('Error deleting property', error);
+    return NextResponse.json({ error: 'Failed to delete property' }, { status: 500 });
+  }
+}

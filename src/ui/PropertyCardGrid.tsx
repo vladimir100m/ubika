@@ -9,6 +9,10 @@ interface PropertyCardGridProps {
   isSaved?: boolean;
   onSaveToggle?: (propertyId: number) => void;
   isCompact?: boolean;
+  hideActions?: boolean;
+  onEdit?: (property: Property) => void;
+  onDelete?: (property: Property) => void;
+  showEditDelete?: boolean;
 }
 
 /**
@@ -26,7 +30,11 @@ const PropertyCardGrid: React.FC<PropertyCardGridProps> = ({
   onPropertyClick,
   isSaved = false,
   onSaveToggle,
-  isCompact = false
+  isCompact = false,
+  hideActions = false,
+  onEdit,
+  onDelete,
+  showEditDelete = false
 }) => {
   return (
     <div className={styles.propertyListGrid} style={{
@@ -42,6 +50,10 @@ const PropertyCardGrid: React.FC<PropertyCardGridProps> = ({
           onClick={() => onPropertyClick?.(property)}
           isSaved={isSaved}
           onSaveToggle={() => onSaveToggle?.(property.id)}
+          hideActions={hideActions}
+          onEdit={() => onEdit?.(property)}
+          onDelete={() => onDelete?.(property)}
+          showEditDelete={showEditDelete}
         />
       ))}
     </div>
