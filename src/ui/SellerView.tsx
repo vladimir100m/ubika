@@ -48,7 +48,9 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
       const sellerId = (session?.user as any)?.sub;
       console.log('🔍 Fetching properties for seller_id:', sellerId);
       
-      const response = await fetch(`/api/properties?seller=${sellerId}`);
+      // Add cache buster to force fresh data
+      const cacheBuster = `_t=${Date.now()}`;
+      const response = await fetch(`/api/properties?seller=${sellerId}&${cacheBuster}`);
       if (!response.ok) {
         throw new Error('Failed to fetch properties');
       }
@@ -96,6 +98,15 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
   };
 
   const handleDeleteProperty = async (propertyId: number | string) => {
+    // Verify ownership - only allow deleting own properties
+    const currentSellerId = (session?.user as any)?.sub;
+    const propertyToDelete = properties.find(p => p.id === propertyId);
+    
+    if (!currentSellerId || !propertyToDelete || propertyToDelete.seller_id !== currentSellerId) {
+      setError('You can only delete your own properties');
+      return;
+    }
+
     if (!confirm('Are you sure you want to delete this property?')) {
       return;
     }
@@ -118,6 +129,14 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
   };
 
   const handleEditPropertyClick = (property: Property) => {
+    // Verify ownership - only allow editing own properties
+    const currentSellerId = (session?.user as any)?.sub;
+    
+    if (!currentSellerId || property.seller_id !== currentSellerId) {
+      setError('You can only edit your own properties');
+      return;
+    }
+    
     setEditingProperty(property);
     setIsAddPropertyOpen(true);
   };

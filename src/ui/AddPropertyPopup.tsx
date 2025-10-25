@@ -45,8 +45,13 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
   const [success, setSuccess] = useState(false);
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
-  const [imagePreview, setImagePreview] = useState<string[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [removedExistingImages, setRemovedExistingImages] = useState<string[]>([]);
+  const [existingImageIds, setExistingImageIds] = useState<number[]>([]);
+  const [coverImageId, setCoverImageId] = useState<number | null>(null);
+  const [coverImageIndex, setCoverImageIndex] = useState<number>(0);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,11 +92,20 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         
         // Populate existing images
         if (editingProperty.images && editingProperty.images.length > 0) {
-          const existingImageUrls = editingProperty.images
-            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-            .map(img => img.image_url || '');
-          setImagePreview(existingImageUrls);
+          const sortedImages = editingProperty.images
+            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+          const existingImageUrls = sortedImages.map(img => img.image_url || '');
+          const existingIds = sortedImages.map(img => img.id);
+          const coverImg = editingProperty.images.find(img => img.is_cover);
+          
           setExistingImages(existingImageUrls);
+          setExistingImageIds(existingIds);
+          
+          if (coverImg) {
+            setCoverImageId(coverImg.id);
+            const coverIndex = sortedImages.findIndex(img => img.id === coverImg.id);
+            setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
+          }
         }
       } else {
         // Reset form for new property
@@ -110,8 +124,11 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
           sq_meters: '',
         });
         setUploadedImages([]);
-        setImagePreview([]);
+        setNewImagePreviews([]);
         setExistingImages([]);
+        setExistingImageIds([]);
+        setCoverImageId(null);
+        setCoverImageIndex(0);
       }
       
       setError(null);
@@ -139,11 +156,11 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     const newFiles = files.slice(0, maxImages);
     setUploadedImages(prev => [...prev, ...newFiles]);
 
-    // Create previews
+    // Create previews for new images only
     newFiles.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(prev => [...prev, e.target?.result as string]);
+        setNewImagePreviews(prev => [...prev, e.target?.result as string]);
       };
       reader.readAsDataURL(file);
     });
@@ -155,7 +172,35 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
 
   const handleRemoveImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreview(prev => prev.filter((_, i) => i !== index));
+    setNewImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingImage = (index: number) => {
+    const imageUrlToRemove = existingImages[index];
+    const imageIdToRemove = existingImageIds[index];
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+    setExistingImageIds(prev => prev.filter((_, i) => i !== index));
+    setRemovedExistingImages(prev => [...prev, imageUrlToRemove]);
+    
+    // Reset cover image if it was the one being removed
+    if (coverImageId === imageIdToRemove) {
+      setCoverImageId(null);
+      setCoverImageIndex(0);
+    }
+  };
+
+  const handleSetCoverImage = (index: number) => {
+    const imageId = existingImageIds[index];
+    setCoverImageIndex(index);
+    setCoverImageId(imageId);
+  };
+
+  const handleOpenLightbox = (imageUrl: string) => {
+    setLightboxImage(imageUrl);
+  };
+
+  const handleCloseLightbox = () => {
+    setLightboxImage(null);
   };
 
   const uploadImages = async (propertyId: string) => {
@@ -230,6 +275,35 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     }
   };
 
+  const deleteRemovedImages = async () => {
+    if (removedExistingImages.length === 0) {
+      return;
+    }
+
+    try {
+      // Get property images to find their IDs
+      if (editingProperty?.images) {
+        for (const imageUrl of removedExistingImages) {
+          const imageRecord = editingProperty.images.find(img => img.image_url === imageUrl);
+          if (imageRecord) {
+            console.log(`🗑️ Deleting image ${imageRecord.id}`);
+            const deleteResponse = await fetch(`/api/properties/images/${imageRecord.id}`, {
+              method: 'DELETE',
+            });
+
+            if (!deleteResponse.ok) {
+              console.error(`❌ Failed to delete image ${imageRecord.id}`);
+            } else {
+              console.log(`✅ Image ${imageRecord.id} deleted successfully`);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error deleting images:', err);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -282,9 +356,36 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
       const property = await response.json();
       const propertyId = property.id || editingProperty?.id;
       
+      // Delete removed images if editing
+      if (isEditMode && removedExistingImages.length > 0) {
+        await deleteRemovedImages();
+      }
+      
       // Upload new images if any
       if (uploadedImages.length > 0) {
         await uploadImages(propertyId);
+      }
+
+      // Set cover image if one was selected
+      if (isEditMode && coverImageId) {
+        try {
+          const setCoverResponse = await fetch('/api/properties/images/set-cover', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              imageId: coverImageId,
+              propertyId: propertyId,
+            }),
+          });
+          
+          if (!setCoverResponse.ok) {
+            console.error('Failed to set cover image');
+          }
+        } catch (err) {
+          console.error('Error setting cover image:', err);
+        }
       }
 
       setSuccess(true);
@@ -305,8 +406,12 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         sq_meters: '',
       });
       setUploadedImages([]);
-      setImagePreview([]);
+      setNewImagePreviews([]);
       setExistingImages([]);
+      setExistingImageIds([]);
+      setRemovedExistingImages([]);
+      setCoverImageId(null);
+      setCoverImageIndex(0);
 
       // Call appropriate callback
       if (isEditMode && onPropertyUpdated) {
@@ -557,6 +662,62 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
           <div className={styles.formSection}>
             <h3>📷 Property Photos</h3>
             
+            {/* All Images Display - Show thumbnails of all images when editing */}
+            {isEditMode && (existingImages.length > 0 || newImagePreviews.length > 0) && (
+              <div className={styles.existingImagesContainer}>
+                <h4>All Images ({existingImages.length + newImagePreviews.length})</h4>
+                <div className={styles.imagePreviewGrid}>
+                  {/* Existing Images */}
+                  {existingImages.map((imageUrl, index) => (
+                    <div key={`existing-${index}`} className={styles.imagePreviewItem}>
+                      <img 
+                        src={imageUrl} 
+                        alt={`Existing ${index + 1}`}
+                        onClick={() => handleOpenLightbox(imageUrl)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.removeImageButton}
+                        onClick={() => handleRemoveExistingImage(index)}
+                        title="Remove image"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.setCoverButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSetCoverImage(index);
+                        }}
+                        title={coverImageId === existingImageIds[index] ? 'This is the cover image' : 'Set as cover image'}
+                      >
+                        {coverImageId === existingImageIds[index] ? '⭐' : '☆'}
+                      </button>
+                      {coverImageId === existingImageIds[index] && <div className={styles.coverBadge}>COVER</div>}
+                    </div>
+                  ))}
+                  
+                  {/* New Images */}
+                  {newImagePreviews.map((preview, index) => (
+                    <div key={`new-${index}`} className={styles.imagePreviewItem}>
+                      <img src={preview} alt={`New ${index + 1}`} />
+                      <button
+                        type="button"
+                        className={styles.removeImageButton}
+                        onClick={() => handleRemoveImage(index)}
+                        title="Remove image"
+                      >
+                        ✕
+                      </button>
+                      <div className={styles.newBadge}>NEW</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className={styles.imageUploadArea}>
               <input
                 ref={fileInputRef}
@@ -572,14 +733,14 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                 onClick={() => fileInputRef.current?.click()}
               >
                 <span>📁 Click to upload photos</span>
-                <small>Max 15 images ({uploadedImages.length}/15)</small>
+                <small>Max 15 images ({(existingImages.length + uploadedImages.length)}/15)</small>
               </button>
             </div>
 
-            {/* Image Preview Grid */}
-            {imagePreview.length > 0 && (
+            {/* Only show this for new properties */}
+            {!isEditMode && newImagePreviews.length > 0 && (
               <div className={styles.imagePreviewGrid}>
-                {imagePreview.map((preview, index) => (
+                {newImagePreviews.map((preview, index) => (
                   <div key={index} className={styles.imagePreviewItem}>
                     <img src={preview} alt={`Preview ${index + 1}`} />
                     <button
@@ -616,6 +777,22 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             </button>
           </div>
         </form>
+
+        {/* Image Lightbox */}
+        {lightboxImage && (
+          <div className={styles.lightboxOverlay} onClick={handleCloseLightbox}>
+            <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+              <button
+                className={styles.lightboxClose}
+                onClick={handleCloseLightbox}
+                aria-label="Close lightbox"
+              >
+                ✕
+              </button>
+              <img src={lightboxImage} alt="Full size preview" className={styles.lightboxImage} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 import { query } from '../../../../lib/db';
 import { resolveImageUrl } from '../../../../lib/blob';
 import { Property } from '../../../../types';
-import { cacheGet, cacheSet } from '../../../../lib/cache';
+import { cacheGet, cacheSet, cacheDel, cacheInvalidatePattern } from '../../../../lib/cache';
 import { createRequestId, createLogger } from '../../../../lib/logger';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -23,7 +25,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       const cached = await cacheGet<Property>(cacheKey);
       if (cached) {
         log.info('Cache hit', { cacheKey });
-        return NextResponse.json(cached);
+        const response = NextResponse.json(cached);
+        response.headers.set('Cache-Control', `private, max-age=${defaultTtl}`);
+        return response;
       }
       log.debug('Cache miss', { cacheKey });
     } catch (e) {
@@ -85,7 +89,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     log.info('property detail handler finished', { propertyId: property.id });
-    return NextResponse.json(property);
+    const response = NextResponse.json(property);
+    response.headers.set('Cache-Control', `private, max-age=${defaultTtl}`);
+    return response;
   } catch (error) {
     log.error('Error fetching property', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -103,7 +109,36 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
+    // Get session to verify user is authenticated
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      log.warn('Unauthorized update attempt - no session');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).sub || session.user.email;
+    log.info('Verifying ownership for user', { userId, propertyId: id });
+
+    // Verify property exists and belongs to the user
+    const ownershipCheck = await query(
+      'SELECT seller_id FROM properties WHERE id = $1',
+      [id]
+    );
+
+    if (ownershipCheck.rows.length === 0) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
+    const propertyOwner = ownershipCheck.rows[0];
+    if (propertyOwner.seller_id !== userId) {
+      log.warn('Unauthorized update attempt - user does not own property', { userId, propertyId: id, owner: propertyOwner.seller_id });
+      return NextResponse.json({ error: 'You can only edit your own properties' }, { status: 403 });
+    }
+
+    log.info('Ownership verified, proceeding with update', { propertyId: id });
+
     const body = await req.json();
+
 
     // Basic payload validation (keep minimal to avoid blocking)
     const allowedFields = ['title','description','price','address','city','state','country','zip_code','type','room','bathrooms','square_meters','lat','lng','status','operation_status_id','property_type_id','property_status_id','seller_id'];
@@ -172,6 +207,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       property.features = [];
     }
 
+    // Invalidate caches after successful update
+    try {
+      const cacheKey = `property:${id}`;
+      await cacheDel(cacheKey); // Invalidate this property's cache
+      await cacheDel(`properties:list`); // Invalidate base list cache
+      await cacheDel(`seller:${userId}:properties:list`); // Invalidate seller base cache
+      await cacheInvalidatePattern(`seller:${userId}:properties:list:*`); // Invalidate seller's property list caches
+      await cacheInvalidatePattern(`properties:list:*`); // Invalidate all property listings
+      log.info('Cache invalidated after property update', { propertyId: id, userId });
+    } catch (e) {
+      log.warn('Failed to invalidate cache after update', { error: e });
+      // Don't fail the update if cache invalidation fails
+    }
+
     log.info('property update handler finished', { propertyId: id });
     return NextResponse.json(property);
   } catch (error) {
@@ -191,13 +240,31 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   try {
-    // First, verify property exists
-    const checkQuery = 'SELECT id FROM properties WHERE id = $1';
+    // Get session to verify user is authenticated
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      log.warn('Unauthorized delete attempt - no session');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = (session.user as any).sub || session.user.email;
+    log.info('Verifying ownership for user', { userId, propertyId: id });
+
+    // First, verify property exists and belongs to the user
+    const checkQuery = 'SELECT id, seller_id FROM properties WHERE id = $1';
     const checkResult = await query(checkQuery, [id]);
     
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
+
+    const propertyData = checkResult.rows[0];
+    if (propertyData.seller_id !== userId) {
+      log.warn('Unauthorized delete attempt - user does not own property', { userId, propertyId: id, owner: propertyData.seller_id });
+      return NextResponse.json({ error: 'You can only delete your own properties' }, { status: 403 });
+    }
+
+    log.info('Ownership verified, proceeding with delete', { propertyId: id });
 
     // Get the property images to log deletion (blob deletion handled separately if needed)
     const getImagesQuery = 'SELECT image_url FROM property_images WHERE property_id = $1';
@@ -213,6 +280,20 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     // Delete property itself
     const deletePropertyQuery = 'DELETE FROM properties WHERE id = $1 RETURNING id';
     const result = await query(deletePropertyQuery, [id]);
+
+    // Invalidate caches after successful deletion
+    try {
+      const cacheKey = `property:${id}`;
+      await cacheDel(cacheKey); // Invalidate this property's cache
+      await cacheDel(`properties:list`); // Invalidate base list cache
+      await cacheDel(`seller:${userId}:properties:list`); // Invalidate seller base cache
+      await cacheInvalidatePattern(`seller:${userId}:properties:list:*`); // Invalidate seller's property list caches
+      await cacheInvalidatePattern(`properties:list:*`); // Invalidate all property listings
+      log.info('Cache invalidated after property deletion', { propertyId: id, userId });
+    } catch (e) {
+      log.warn('Failed to invalidate cache after deletion', { error: e });
+      // Don't fail the deletion if cache invalidation fails
+    }
 
     log.info('Property deleted successfully', { propertyId: id });
     return NextResponse.json({ success: true, id });

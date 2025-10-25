@@ -3,7 +3,7 @@ import { query } from '../../../lib/db';
 import { createRequestId, createLogger } from '../../../lib/logger';
 import { resolveImageUrl } from '../../../lib/blob';
 import { Property } from '../../../types';
-import { cacheGet, cacheSet } from '../../../lib/cache';
+import { cacheGet, cacheSet, cacheInvalidatePattern, cacheDel } from '../../../lib/cache';
 import { createHash } from 'crypto';
 
 interface PropertyFilters {
@@ -100,14 +100,6 @@ export async function GET(req: NextRequest) {
       paramIndex++;
     }
 
-    // Filter by seller if provided (for seller dashboard)
-    if (seller_id) {
-      queryText += ` AND p.seller_id = $${paramIndex}`;
-      queryParams.push(seller_id);
-      paramIndex++;
-      log.info('Added seller filter', { seller_id, paramIndex: paramIndex - 1 });
-    }
-
     if (filters.minArea) {
       queryText += ` AND p.square_meters >= $${paramIndex}`;
       queryParams.push(parseInt(filters.minArea, 10));
@@ -120,20 +112,31 @@ export async function GET(req: NextRequest) {
       paramIndex++;
     }
 
+    // Filter by seller if provided (for seller dashboard)
     if (seller_id) {
       queryText += ` AND p.seller_id = $${paramIndex}`;
       queryParams.push(seller_id);
       paramIndex++;
+      log.info('Added seller filter', { seller_id, paramIndex: paramIndex - 1 });
     }
 
     queryText += ' ORDER BY p.created_at DESC';
 
-    const cacheKey = `properties:${createHash('sha256').update(queryText + JSON.stringify(queryParams)).digest('hex')}`;
+    // Build cache key - include seller_id for better cache granularity
+    let cacheKeyBase = `properties:list`;
+    if (seller_id) {
+      cacheKeyBase = `seller:${seller_id}:properties:list`;
+    }
+    const cacheKey = `${cacheKeyBase}:${createHash('sha256').update(queryText + JSON.stringify(queryParams)).digest('hex')}`;
+    
+    log.info('Cache key generated', { cacheKey, seller_id, hasFilters: Object.values(filters).some(v => v) });
     const cachedData = await cacheGet(cacheKey);
 
     if (cachedData) {
-      log.info('Returning cached properties data');
-      return NextResponse.json(cachedData);
+      log.info('Returning cached properties data', { cacheKey, seller_id });
+      const response = NextResponse.json(cachedData);
+      response.headers.set('Cache-Control', 'private, max-age=300');
+      return response;
     }
 
     const { rows } = await query(queryText, queryParams);
@@ -164,7 +167,9 @@ export async function GET(req: NextRequest) {
 
     await cacheSet(cacheKey, propertiesWithImages, 300);
     log.info('Returning properties from DB');
-    return NextResponse.json(propertiesWithImages);
+    const response = NextResponse.json(propertiesWithImages);
+    response.headers.set('Cache-Control', 'private, max-age=300');
+    return response;
 
   } catch (error) {
     log.error('Error fetching properties', { error });
@@ -227,6 +232,20 @@ export async function POST(req: NextRequest) {
 
     // Attach empty images array
     prop.images = [];
+
+    // Invalidate cache when new property is created
+    try {
+      // Invalidate seller's specific property lists
+      await cacheInvalidatePattern(`seller:${seller_id}:properties:list:*`);
+      // Invalidate all public property listings
+      await cacheInvalidatePattern(`properties:list:*`);
+      // Also invalidate without pattern (just in case)
+      await cacheDel(`properties:list`);
+      await cacheDel(`seller:${seller_id}:properties:list`);
+      log.info('Cache invalidated after property creation', { propertyId: newId, sellerId: seller_id });
+    } catch (e) {
+      log.warn('Failed to invalidate cache after property creation', { error: e });
+    }
 
     log.info('property created', { id: newId });
     return NextResponse.json(prop);

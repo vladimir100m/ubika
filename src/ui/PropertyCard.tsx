@@ -32,11 +32,21 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Thumbnails currently unused in simplified card but kept for potential hover previews
-  const thumbnails = getPropertyImagesRaw(property); // max 3
+  // Get all images sorted by display order, with cover images first
+  const allImages = property.images ? 
+    [...property.images].sort((a, b) => {
+      if (a.is_cover !== b.is_cover) return a.is_cover ? -1 : 1;
+      return (a.display_order || 0) - (b.display_order || 0);
+    }) : [];
+  
   const rawCover = getCoverImageRaw(property);
   const coverImage = useResolvedImage(rawCover) || FALLBACK_IMAGE;
+  
+  // Use current image if available, otherwise use cover
+  const currentImage = allImages.length > 0 ? allImages[currentImageIndex]?.image_url : null;
+  const displayImage = useResolvedImage(currentImage) || coverImage;
 
   const handleCardClick = () => {
     if (onClick) {
@@ -44,6 +54,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     } else {
       router.push(`/property/${property.id}`);
     }
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex(prev => (prev === 0 ? allImages.length - 1 : prev - 1));
+    setImageError(false);
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex(prev => (prev === allImages.length - 1 ? 0 : prev + 1));
+    setImageError(false);
   };
 
   // Favorite/save feature removed
@@ -59,14 +81,39 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     <div className={styles.propertyCard} onClick={handleCardClick} role="button" tabIndex={0} onKeyDown={handleKeyDown} aria-label={property.title || `View property ${property.id}`}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
-        {/* Always show only the cover image for a simpler home view */}
+        {/* Display current image with navigation if multiple images exist */}
         <img
-          src={imageError ? FALLBACK_IMAGE : coverImage}
+          src={imageError ? FALLBACK_IMAGE : displayImage}
           alt={property.title || `Property in ${property.city}`}
           className={styles.propertyImage}
           onError={() => setImageError(true)}
           loading="lazy"
         />
+
+        {/* Image Navigation Controls */}
+        {allImages.length > 1 && (
+          <>
+            <button
+              className={`${styles.imageNavButton} ${styles.prevButton}`}
+              onClick={handlePrevImage}
+              title="Previous image"
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+            <button
+              className={`${styles.imageNavButton} ${styles.nextButton}`}
+              onClick={handleNextImage}
+              title="Next image"
+              aria-label="Next image"
+            >
+              ›
+            </button>
+            <div className={styles.imageIndicator}>
+              {currentImageIndex + 1}/{allImages.length}
+            </div>
+          </>
+        )}
 
   {/* Favorite/save feature removed */}
 
@@ -176,21 +223,9 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                 </button>
               </>
             ) : (
-              <>
-                <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
-                  View Details
-                </button>
-
-                {onEdit ? (
-                  <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-                    ✏️ Edit
-                  </button>
-                ) : (
-                  <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); /* noop or implement contact flow */ }}>
-                    Contact Agent
-                  </button>
-                )}
-              </>
+              <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+                🔍 View Details
+              </button>
             )}
           </div>
         )}

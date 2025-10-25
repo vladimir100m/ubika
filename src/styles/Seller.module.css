@@ -1160,6 +1160,32 @@
   box-shadow: 0 0 10px rgba(0, 112, 243, 0.3);
 }
 
+/* Existing and New Images Containers */
+.existingImagesContainer,
+.newImagesContainer {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.existingImagesContainer h4,
+.newImagesContainer h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.existingImagesContainer h4 {
+  color: #059669;
+}
+
+.newImagesContainer h4 {
+  color: #0070f3;
+}
+
 /* Responsive Image Grid */
 @media (max-width: 767px) {
   .imagePreviewGrid {
@@ -1296,6 +1322,109 @@
   text-align: center;
 }
 
+.newBadge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(to left, rgba(16, 185, 129, 0.9), transparent);
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Set Cover Button - Star Icon */
+.setCoverButton {
+  position: absolute;
+  bottom: 4px;
+  right: 32px;
+  background: rgba(255, 193, 7, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.imagePreviewItem:hover .setCoverButton {
+  opacity: 1;
+}
+
+.setCoverButton:hover {
+  background: rgba(255, 193, 7, 1);
+  transform: scale(1.1);
+}
+
+/* Lightbox Overlay */
+.lightboxOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+/* Lightbox Content */
+.lightboxContent {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Lightbox Close Button */
+.lightboxClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: all 0.2s ease;
+}
+
+.lightboxClose:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+/* Lightbox Image */
+.lightboxImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
 /* Responsive Image Upload */
 @media (max-width: 767px) {
   .imagePreviewGrid {
@@ -1304,6 +1433,16 @@
 
   .uploadButton {
     padding: 24px 16px;
+  }
+
+  .lightboxContent {
+    max-width: 95vw;
+    max-height: 85vh;
+    border-radius: 8px;
+  }
+
+  .lightboxImage {
+    border-radius: 8px;
   }
 }
 
