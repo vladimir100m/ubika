@@ -197,6 +197,7 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
       const blobResponse = await fetch('/api/blobs/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies/session
       });
 
       if (!blobResponse.ok) {
@@ -222,6 +223,7 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
           is_cover: images.length === 0, // First image is cover
           display_order: images.length,
         }),
+        credentials: 'include', // Include cookies/session
       });
 
       if (!registerResponse.ok) {
