@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { StandardLayout } from '../../components';
-import { FilterOptions } from '../../components/MapFilters';
+import { StandardLayout } from '../../ui';
+import { FilterOptions } from '../../ui/MapFilters';
 
 const SignIn: React.FC = () => {
   const [googleLoading, setGoogleLoading] = useState(false);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { StandardLayout } from '../components';
-import { FilterOptions } from '../components/MapFilters';
+import { StandardLayout } from '../ui';
+import { FilterOptions } from '../ui/MapFilters';
 import standardStyles from '../styles/StandardComponents.module.css';
 
 function Custom404() {

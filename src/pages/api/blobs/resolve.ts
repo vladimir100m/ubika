@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { resolveImageUrl } from '../../../utils/blob';
-import loggerModule, { createRequestId, createLogger } from '../../../utils/logger';
+import { resolveImageUrl } from '../../../lib/blob';
+import loggerModule, { createRequestId, createLogger } from '../../../lib/logger';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const reqId = createRequestId('req-');

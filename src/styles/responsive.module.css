@@ -1,0 +1,445 @@
+/* RESPONSIVE DESIGN SYSTEM - STANDARDIZED BREAKPOINTS & UTILITIES
+   
+   Device Breakpoints (mobile-first approach):
+   - XS (Extra Small): < 360px
+   - SM (Small):      360-479px
+   - MD (Medium):     480-767px
+   - LG (Large):      768-1023px
+   - XL (Extra Large):1024-1439px
+   - 2XL (2X Large): >= 1440px
+*/
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES FOR RESPONSIVE DESIGN
+============================================================================ */
+
+:root {
+  /* Breakpoint values (in pixels) */
+  --breakpoint-xs: 360px;
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1440px;
+
+  /* Header heights by breakpoint */
+  --header-height-xs: 52px;
+  --header-height-sm: 56px;
+  --header-height-md: 60px;
+  --header-height-lg: 64px;
+  --header-height-xl: 68px;
+
+  /* Content padding by breakpoint */
+  --content-padding-xs: 8px;
+  --content-padding-sm: 12px;
+  --content-padding-md: 16px;
+  --content-padding-lg: 24px;
+  --content-padding-xl: 32px;
+
+  /* Grid gaps */
+  --grid-gap-xs: 8px;
+  --grid-gap-sm: 12px;
+  --grid-gap-md: 16px;
+  --grid-gap-lg: 24px;
+  --grid-gap-xl: 32px;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Container max-widths */
+  --container-sm: 540px;
+  --container-md: 720px;
+  --container-lg: 960px;
+  --container-xl: 1140px;
+  --container-2xl: 1320px;
+  --container-fluid: 95%;
+}
+
+/* ============================================================================
+   STANDARDIZED RESPONSIVE UTILITIES
+============================================================================ */
+
+/* Container classes - use for main page containers */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding-left: var(--content-padding-md);
+  padding-right: var(--content-padding-md);
+}
+
+.container-sm {
+  max-width: var(--container-sm);
+}
+
+.container-md {
+  max-width: var(--container-md);
+}
+
+.container-lg {
+  max-width: var(--container-lg);
+}
+
+.container-xl {
+  max-width: var(--container-xl);
+}
+
+.container-2xl {
+  max-width: var(--container-2xl);
+}
+
+.container-fluid {
+  max-width: var(--container-fluid);
+}
+
+/* Responsive padding utilities */
+.px-xs { padding-left: var(--content-padding-xs); padding-right: var(--content-padding-xs); }
+.px-sm { padding-left: var(--content-padding-sm); padding-right: var(--content-padding-sm); }
+.px-md { padding-left: var(--content-padding-md); padding-right: var(--content-padding-md); }
+.px-lg { padding-left: var(--content-padding-lg); padding-right: var(--content-padding-lg); }
+.px-xl { padding-left: var(--content-padding-xl); padding-right: var(--content-padding-xl); }
+
+.py-xs { padding-top: var(--content-padding-xs); padding-bottom: var(--content-padding-xs); }
+.py-sm { padding-top: var(--content-padding-sm); padding-bottom: var(--content-padding-sm); }
+.py-md { padding-top: var(--content-padding-md); padding-bottom: var(--content-padding-md); }
+.py-lg { padding-top: var(--content-padding-lg); padding-bottom: var(--content-padding-lg); }
+.py-xl { padding-top: var(--content-padding-xl); padding-bottom: var(--content-padding-xl); }
+
+/* Responsive grid utilities */
+.grid-cols-1 { grid-template-columns: 1fr; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.gap-xs { gap: var(--grid-gap-xs); }
+.gap-sm { gap: var(--grid-gap-sm); }
+.gap-md { gap: var(--grid-gap-md); }
+.gap-lg { gap: var(--grid-gap-lg); }
+.gap-xl { gap: var(--grid-gap-xl); }
+
+/* Display utilities */
+.hidden-xs { display: none; }
+.hidden-sm { display: block; }
+.hidden-md { display: block; }
+.hidden-lg { display: block; }
+.hidden-xl { display: block; }
+
+.visible-xs { display: block; }
+.visible-sm { display: none; }
+.visible-md { display: none; }
+.visible-lg { display: none; }
+.visible-xl { display: none; }
+
+/* ============================================================================
+   RESPONSIVE TYPOGRAPHY
+============================================================================ */
+
+/* Font sizes scale by device */
+.text-xs { font-size: 0.75rem; line-height: 1rem; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-base { font-size: 1rem; line-height: 1.5rem; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.text-2xl { font-size: 1.5rem; line-height: 2rem; }
+.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+.text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+
+/* ============================================================================
+   DEVICE-SPECIFIC BREAKPOINT RULES
+============================================================================ */
+
+/* ---- XS: Extra Small Phones (< 360px) ---- */
+@media (max-width: 359px) {
+  :root {
+    font-size: 13px;
+  }
+
+  .container {
+    padding-left: var(--content-padding-xs);
+    padding-right: var(--content-padding-xs);
+  }
+
+  .hidden-xs { display: none !important; }
+  .visible-xs { display: block !important; }
+  .visible-sm,
+  .visible-md,
+  .visible-lg,
+  .visible-xl { display: none !important; }
+
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- SM: Small Phones (360px - 479px) ---- */
+@media (min-width: 360px) and (max-width: 479px) {
+  :root {
+    font-size: 14px;
+  }
+
+  .container {
+    padding-left: var(--content-padding-sm);
+    padding-right: var(--content-padding-sm);
+  }
+
+  .hidden-sm { display: none !important; }
+  .visible-sm { display: block !important; }
+  .visible-md,
+  .visible-lg,
+  .visible-xl { display: none !important; }
+
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- MD: Medium Phones/Tablets (480px - 767px) ---- */
+@media (min-width: 480px) and (max-width: 767px) {
+  :root {
+    font-size: 15px;
+  }
+
+  .container {
+    padding-left: var(--content-padding-md);
+    padding-right: var(--content-padding-md);
+  }
+
+  .hidden-md { display: none !important; }
+  .visible-md { display: block !important; }
+  .visible-lg,
+  .visible-xl { display: none !important; }
+
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- LG: Tablets (768px - 1023px) ---- */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    font-size: 15px;
+  }
+
+  .container {
+    max-width: var(--container-md);
+    padding-left: var(--content-padding-lg);
+    padding-right: var(--content-padding-lg);
+  }
+
+  .hidden-lg { display: none !important; }
+  .visible-lg { display: block !important; }
+  .visible-xl { display: none !important; }
+
+  .grid-cols-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---- XL: Small Desktops (1024px - 1439px) ---- */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  :root {
+    font-size: 16px;
+  }
+
+  .container {
+    max-width: var(--container-xl);
+    padding-left: var(--content-padding-xl);
+    padding-right: var(--content-padding-xl);
+  }
+
+  .hidden-xl { display: none !important; }
+  .visible-xl { display: block !important; }
+}
+
+/* ---- 2XL: Large Desktops (1440px+) ---- */
+@media (min-width: 1440px) {
+  :root {
+    font-size: 16px;
+  }
+
+  .container {
+    max-width: var(--container-2xl);
+    padding-left: var(--content-padding-xl);
+    padding-right: var(--content-padding-xl);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE PROPERTY GRID
+============================================================================ */
+
+.property-grid {
+  display: grid;
+  gap: var(--grid-gap-md);
+  padding: 0;
+}
+
+/* XS: 1 column */
+@media (max-width: 479px) {
+  .property-grid {
+    grid-template-columns: 1fr;
+    gap: var(--grid-gap-sm);
+  }
+}
+
+/* SM-MD: 1-2 columns based on size */
+@media (min-width: 480px) and (max-width: 767px) {
+  .property-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--grid-gap-md);
+  }
+}
+
+/* LG: 2-3 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .property-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--grid-gap-lg);
+  }
+}
+
+/* XL: 3-4 columns */
+@media (min-width: 1024px) {
+  .property-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--grid-gap-lg);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE IMAGES & MEDIA
+============================================================================ */
+
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 66.67%; /* 3:2 aspect ratio default */
+  overflow: hidden;
+}
+
+.image-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================================================
+   RESPONSIVE BUTTONS
+============================================================================ */
+
+.button-responsive {
+  padding: 12px 20px;
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .button-responsive {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    min-height: 40px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE FLEX LAYOUTS
+============================================================================ */
+
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--grid-gap-md);
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+    gap: var(--grid-gap-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .flex-responsive {
+    gap: var(--grid-gap-xl);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE SIDEBAR LAYOUT
+============================================================================ */
+
+.layout-with-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--grid-gap-md);
+}
+
+@media (min-width: 768px) {
+  .layout-with-sidebar {
+    flex-direction: row;
+    gap: var(--grid-gap-lg);
+  }
+
+  .layout-with-sidebar-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .layout-with-sidebar-side {
+    width: 280px;
+    flex-shrink: 0;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY & PERFORMANCE
+============================================================================ */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  body {
+    color-scheme: light dark;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  /* Define dark mode styles here if needed */
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}

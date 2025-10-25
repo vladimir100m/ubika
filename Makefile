@@ -22,13 +22,58 @@ YELLOW = \033[1;33m
 RED = \033[0;31m
 NC = \033[0m # No Color
 
-.PHONY: help up down status dump-neon load-dump sync clean setup-local
+.PHONY: help up down status dump-neon load-dump sync clean setup-local purge-data seed-data fix-catalogs recreate-catalogs reset-and-seed-catalogs
 
 # Default target
 help: ## Show this help message
 	@echo "$(GREEN)Ubika Database Management Commands$(NC)"
 	@echo "=================================="
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(YELLOW)%-20s$(NC) %s\n", $$1, $$2}'
+
+purge-data: ## Purge all data from the Neon database, keeping the schema
+	@echo "$(YELLOW)Purging all data from the Neon database...$(NC)"
+	@docker run --rm \
+		-v "$(PWD)/scripts:/scripts" \
+		postgres:17 \
+		psql "$(NEON_DB_URL)" -f /scripts/truncate_all_data.sql
+	@echo "$(GREEN)All data has been purged successfully.$(NC)"
+
+seed-data: ## Seed the database with initial catalog data
+	@echo "$(GREEN)Seeding the database with catalog data...$(NC)"
+	@docker run --rm \
+		-v "$(PWD)/scripts:/scripts" \
+		postgres:17 \
+		psql "$(NEON_DB_URL)" -f /scripts/seed_catalog_data.sql
+	@echo "$(GREEN)Database has been seeded successfully.$(NC)"
+
+fix-catalogs: ## Add SERIAL to ID columns in catalog tables
+	@echo "$(GREEN)Fixing catalog tables...$(NC)"
+	@docker run --rm \
+		-v "$(PWD)/scripts:/scripts" \
+		postgres:17 \
+		psql "$(NEON_DB_URL)" -f /scripts/add_serial_to_catalogs.sql
+	@echo "$(GREEN)Catalog tables have been fixed successfully.$(NC)"
+
+recreate-catalogs: ## Recreate catalog tables with SERIAL primary keys
+	@echo "$(GREEN)Recreating catalog tables...$(NC)"
+	@docker run --rm \
+		-v "$(PWD)/scripts:/scripts" \
+		postgres:17 \
+		psql "$(NEON_DB_URL)" -f /scripts/recreate_catalog_tables.sql
+	@echo "$(GREEN)Catalog tables have been recreated successfully.$(NC)"
+
+reset-and-seed-catalogs: ## Reset and seed the catalog tables in a single transaction
+	@echo "$(GREEN)Resetting and seeding catalog tables...$(NC)"
+	@docker run --rm \
+		-v "$(PWD)/scripts:/scripts" \
+		postgres:17 \
+		psql "$(NEON_DB_URL)" -f /scripts/reset_and_seed_catalogs.sql
+	@echo "$(GREEN)Catalog tables have been reset and seeded successfully.$(NC)"
+
+clear-cache: ## Clear the Redis cache
+	@echo "$(GREEN)Clearing the Redis cache...$(NC)"
+	@npm run clear-cache
+	@echo "$(GREEN)Cache has been cleared successfully.$(NC)"
 
 setup-local: ## Setup local environment (create backup directory, set permissions)
 	@echo "$(GREEN)Setting up local environment...$(NC)"

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { StandardLayout } from '../components';
+import { StandardLayout } from '../ui';
 import standardStyles from '../styles/StandardComponents.module.css';
-import { FilterOptions } from '../components/MapFilters';
+import { FilterOptions } from '../ui/MapFilters';
 
 export default function Account() {
   const { data: session, status } = useSession();

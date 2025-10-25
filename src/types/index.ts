@@ -13,53 +13,34 @@ export interface Geocode {
   lng: number;
 }
 
-export interface PropertyFormData {
-  title: string;
-  description: string;
-  price: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zip_code?: string;
-  type: string;
-  rooms: number;
-  bathrooms: number;
-  squareMeters: number;
-  status: string;
-  yearBuilt?: number;
-  image_url?: string;
-  seller_id: string;
-  operation_status_id?: number; // 1=Sale, 2=Rent, 3=Not Available
+export interface PropertyType {
+  id: number;
+  name: string;
+  display_name: string;
 }
 
-export interface Property {
+export interface PropertyStatus {
   id: number;
-  title: string;
+  name: string;
+  display_name: string;
+  color: string;
+}
+
+export interface PropertyFeature {
+  id: number;
+  name: string;
+  category?: string;
+  icon?: string;
+}
+
+export interface Neighborhood {
+  id: number;
+  name: string;
   description: string;
-  price: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zip_code?: string;
-  type: string;
-  rooms: number;
-  bathrooms: number;
-  squareMeters: number; // Corresponds to 'area' in some parts of the DB/scripts
-  image_url: string;
-  status: string;
-  created_at: string; // ISO date string
-  updated_at: string; // ISO date string
-  yearBuilt?: number;   // Corresponds to 'yearbuilt' in some parts of the DB/scripts
-  geocode?: Geocode;
-  latitude?: number;  // Often derived from geocode or a separate field
-  longitude?: number; // Often derived from geocode or a separate field
-  seller_id?: string; // ID of the seller who listed the property
-  operation_status_id?: number; // 1=Sale, 2=Rent, 3=Not Available
-  operation_status?: string; // Name of the operation status
-  operation_status_display?: string; // Display name of the operation status
-  images?: PropertyImage[]; // Multiple images support
+  subway_access: string;
+  dining_options: string;
+  shopping_access: string;
+  highway_access: string;
 }
 
 export interface PropertyImage {
@@ -78,4 +59,53 @@ export interface PropertyOperationStatus {
   display_name: string;
   description: string;
   created_at?: string;
+}
+
+export interface Property {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  address: string;
+  city: string;
+  bedrooms: number;
+  bathrooms: number;
+  sq_meters: number;
+  lat: number;
+  lng: number;
+  property_type: PropertyType;
+  property_status: PropertyStatus;
+  features: PropertyFeature[];
+  images: PropertyImage[];
+  state?: string;
+  country?: string;
+  zip_code?: string;
+  year_built?: number;
+  created_at?: string;
+  updated_at?: string;
+  seller_id?: string;
+  operation_status_id?: number;
+}
+
+export interface PropertyFormData {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  address: string;
+  city: string;
+  bedrooms: number;
+  bathrooms: number;
+  sq_meters: number;
+  lat: number;
+  lng: number;
+  property_type_id: number;
+  property_status_id: number;
+  features: number[];
+  images: PropertyImage[];
+  // Optional additional address/metadata fields used in forms
+  state?: string;
+  country?: string;
+  zip_code?: string;
+  seller_id?: string;
 }

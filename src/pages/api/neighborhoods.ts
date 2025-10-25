@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { query } from '../../utils/db';
-import { cacheGet, cacheSet } from '../../utils/cache';
+import { query } from '../../lib/db';
+import { cacheGet, cacheSet } from '../../lib/cache';
 import { createHash } from 'crypto';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {

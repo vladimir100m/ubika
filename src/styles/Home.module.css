@@ -272,33 +272,87 @@
   color: #333;
 }
 
-/* Modern Property Grid - Airbnb/Zillow Style */
+/* Modern Property Grid - Fixed columns with constant card size */
 .propertyGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: 24px;
   padding: 0;
+  max-width: 100%;
 }
 
-/* Responsive Property Grid */
-@media (max-width: 767px) {
+/* Responsive Property Grid - Fixed card sizes, varying columns */
+@media (max-width: 479px) {
+  /* XS-SM: 1 column */
   .propertyGrid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 480px) and (max-width: 767px) {
+  /* MD: 2 columns, 300px cards */
   .propertyGrid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 300px);
+    gap: 16px;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* LG: 2 columns, 320px cards */
+  .propertyGrid {
+    grid-template-columns: repeat(2, 320px);
     gap: 20px;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  /* XL: 3 columns, 330px cards */
+  .propertyGrid {
+    grid-template-columns: repeat(3, 330px);
+    gap: 24px;
+    justify-content: center;
   }
 }
 
 @media (min-width: 1440px) {
+  /* 2XL: 4 columns, 340px cards */
   .propertyGrid {
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(4, 340px);
     gap: 32px;
+    justify-content: center;
+  }
+}
+
+/* Property List Grid for Map View - Fills available space on iPad and larger */
+.propertyListGrid {
+  grid-template-columns: 1fr !important;
+  gap: 20px !important;
+}
+
+@media (min-width: 768px) {
+  /* iPad: 2 columns, flexible width */
+  .propertyListGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* iPad Pro and larger: 3 columns */
+  .propertyListGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 24px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  /* Desktop: 4 columns */
+  .propertyListGrid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 28px !important;
   }
 }
 
@@ -1044,8 +1098,40 @@
 
 .similarPropertiesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .similarPropertiesGrid {
+    grid-template-columns: repeat(2, 250px);
+    gap: 16px;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .similarPropertiesGrid {
+    grid-template-columns: repeat(2, 280px);
+    gap: 20px;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .similarPropertiesGrid {
+    grid-template-columns: repeat(3, 280px);
+    gap: 24px;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1440px) {
+  .similarPropertiesGrid {
+    grid-template-columns: repeat(4, 300px);
+    gap: 32px;
+    justify-content: center;
+  }
 }
 
 /* Map container styles */
@@ -1123,8 +1209,22 @@
 
 .detailsTable {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: 1fr;
   gap: 8px 24px;
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .detailsTable {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  .detailsTable {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px;
+  }
 }
 
 .detailsRow {
@@ -1221,8 +1321,36 @@
 
 .poiList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .poiList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .poiList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .poiList {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .poiList {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
 }
 
 .poiItem {
