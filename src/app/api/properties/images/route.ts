@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 import { query } from '../../../../lib/db';
 import { createRequestId, createLogger } from '../../../../lib/logger';
 import { cacheInvalidatePattern } from '../../../../lib/cache';
@@ -14,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Get session to verify user is authenticated
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session || !session.user) {
       log.warn('Unauthorized image registration attempt - no session');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
