@@ -260,6 +260,64 @@ export default function PropertyPopup({
                   </div>
                 </div>
                 
+                {/* What's Special Section - Zillow Style */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: '#ffffff',
+                  borderBottom: '1px solid #e9e9e9'
+                }}>
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    margin: '0 0 16px 0',
+                    color: '#2a2a33'
+                  }}>What's special</h3>
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                    gap: '12px'
+                  }}>
+                    {selectedProperty.features && selectedProperty.features.length > 0 
+                      ? selectedProperty.features.slice(0, 6).map((feature, idx) => (
+                          <div 
+                            key={idx}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              fontSize: '14px',
+                              color: '#2a2a33',
+                              fontWeight: '500'
+                            }}
+                          >
+                            <span style={{ 
+                              color: '#1277e1', 
+                              fontSize: '18px',
+                              fontWeight: 'bold'
+                            }}>✓</span>
+                            <span>{feature.name}</span>
+                          </div>
+                        ))
+                      : (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#2a2a33', fontWeight: '500' }}>
+                            <span style={{ color: '#1277e1', fontSize: '18px', fontWeight: 'bold' }}>✓</span>
+                            <span>Prime Location</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#2a2a33', fontWeight: '500' }}>
+                            <span style={{ color: '#1277e1', fontSize: '18px', fontWeight: 'bold' }}>✓</span>
+                            <span>Well Maintained</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#2a2a33', fontWeight: '500' }}>
+                            <span style={{ color: '#1277e1', fontSize: '18px', fontWeight: 'bold' }}>✓</span>
+                            <span>Modern Updates</span>
+                          </div>
+                        </>
+                      )
+                    }
+                  </div>
+                </div>
+
                 {/* Tabs Navigation */}
                 <PropertyDetailTabsNav active={activeTab} onChange={handleTabChange} />
                 
@@ -270,7 +328,7 @@ export default function PropertyPopup({
                     <div className={styles.overviewGrid}>
                       <div className={styles.overviewMain}>
                         <div className={styles.descBlock}>
-                          <h3 className={styles.sectionHeading}>Overview</h3>
+                          <h3 className={styles.sectionHeading}>About this home</h3>
                           <p className={`${styles.descText} ${!descExpanded ? styles.descClamp : ''}`}>{selectedProperty.description || `This beautiful ${selectedProperty.property_type?.display_name || 'property'} features ${selectedProperty.bedrooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.sq_meters} square meters of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
                           {(!descExpanded && (selectedProperty.description?.length || 0) > 320) && (
                             <button className={styles.readMoreBtn} onClick={() => setDescExpanded(true)}>Read more</button>
@@ -284,23 +342,23 @@ export default function PropertyPopup({
                   </div>
 
                   {/* Facts and features section */}
-                  <div ref={detailsRef} id="details-section" style={{ padding: '24px', marginBottom: '40px' }}>
+                  <div ref={detailsRef} id="details-section" style={{ 
+                    padding: '24px', 
+                    marginBottom: '0',
+                    borderTop: '1px solid #e9e9e9',
+                    backgroundColor: '#ffffff'
+                  }}>
                     <div style={{ marginBottom: '32px' }}>
+                      <h3 style={{ 
+                        fontSize: '20px', 
+                        fontWeight: '600', 
+                        margin: '0 0 24px 0',
+                        color: '#2a2a33'
+                      }}>Facts and features</h3>
+                      
                       <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: '16px'
-                        }}>
-                        <h3 style={{ 
-                          fontSize: '20px', 
-                          fontWeight: '600', 
-                          margin: '0',
-                          color: '#2a2a33'
-                        }}>Facts and features</h3>
-                      </div>                      <div style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                         gap: '24px'
                       }}>
                         {/* Interior details */}
@@ -516,33 +574,33 @@ export default function PropertyPopup({
                   
                   {/* Location Section */}
                   <div ref={mapLocationRef} id="location-section" style={{ 
-                    marginBottom: '40px',
+                    marginBottom: '0',
                     padding: '24px',
-                    borderTop: '1px solid #e9e9e9'
+                    borderTop: '1px solid #e9e9e9',
+                    backgroundColor: '#ffffff'
                   }}>
-                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                    <div>
                       <h2 style={{ 
-                        fontSize: '28px', 
-                        fontWeight: '700', 
-                        marginBottom: '32px',
-                        color: '#2a2a33',
-                        textAlign: 'center'
+                        fontSize: '20px', 
+                        fontWeight: '600', 
+                        marginBottom: '24px',
+                        color: '#2a2a33'
                       }}>Location</h2>
                       
                       {/* Map Subsection */}
                       <div style={{ marginBottom: '32px' }}>
                         <h3 style={{ 
-                          fontSize: '20px', 
+                          fontSize: '16px', 
                           fontWeight: '600', 
                           marginBottom: '16px',
                           color: '#2a2a33'
                         }}>Map</h3>
                         <div style={{ 
                           width: '100%', 
-                          height: '400px', 
+                          height: '350px', 
                           borderRadius: '8px',
                           overflow: 'hidden',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                           position: 'relative'
                         }}>
                           <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
@@ -552,35 +610,39 @@ export default function PropertyPopup({
                       {/* Neighborhood Subsection */}
                       <div>
                         <h3 style={{ 
-                          fontSize: '20px', 
+                          fontSize: '16px', 
                           fontWeight: '600', 
                           marginBottom: '16px',
                           color: '#2a2a33'
                         }}>Neighborhood</h3>
-                      <p style={{ 
-                        fontSize: '16px', 
-                        lineHeight: '1.5', 
-                        color: '#2a2a33',
-                        marginBottom: '24px'
-                      }}>
-                        This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
-                      </p>
+                        <p style={{ 
+                          fontSize: '14px', 
+                          lineHeight: '1.6', 
+                          color: '#666',
+                          marginBottom: '24px',
+                          margin: '0 0 24px 0'
+                        }}>
+                          This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
+                        </p>
                       
                       <div style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '20px'
                       }}>
                         <div style={{ 
                           border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          borderRadius: '8px',
+                          padding: '16px',
+                          backgroundColor: '#fafafa'
                         }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
+                            fontSize: '14px', 
                             fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
+                            marginBottom: '12px',
+                            color: '#2a2a33',
+                            borderBottom: 'none',
+                            paddingBottom: '0'
                           }}>Transportation</h4>
                           
                           <div style={{ 
@@ -624,14 +686,17 @@ export default function PropertyPopup({
                         
                         <div style={{ 
                           border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          borderRadius: '8px',
+                          padding: '16px',
+                          backgroundColor: '#fafafa'
                         }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
+                            fontSize: '14px', 
                             fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
+                            marginBottom: '12px',
+                            color: '#2a2a33',
+                            borderBottom: 'none',
+                            paddingBottom: '0'
                           }}>Restaurants & Shopping</h4>
                           
                           <div style={{ 
@@ -673,14 +738,14 @@ export default function PropertyPopup({
                       </div>
                     </div>
                   </div>
-                  </div>
+                </div>
 
-                  {/* Contact Agent Section - Moved to the end */}
-                  <div style={{ 
-                    padding: '24px', 
-                    backgroundColor: '#f8f9fa',
-                    borderTop: '1px solid #e9e9e9'
-                  }}>
+                {/* Contact Agent Section */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: '#f8f9fa',
+                  borderTop: '1px solid #e9e9e9'
+                }}>
                     <div style={{ 
                       maxWidth: '600px', 
                       margin: '0 auto', 
