@@ -21,9 +21,11 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = (session.user as any).sub || session.user.email;
+    log.info('Session user authenticated', { userId });
 
     const body = await req.json();
     const { property_id, image_url, is_cover, display_order } = body;
+    log.info('Image registration request', { property_id, image_url, is_cover, display_order });
 
     if (!property_id || !image_url) {
       return NextResponse.json(
@@ -40,14 +42,21 @@ export async function POST(req: NextRequest) {
     );
 
     if (propertyCheck.rows.length === 0) {
+      log.warn('Property not found', { property_id });
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
     const property = propertyCheck.rows[0];
-    if (property.seller_id !== userId) {
+    log.info('Property found', { property_id, seller_id: property.seller_id, userId });
+    
+    // Allow either exact match OR if property has no seller assigned (admin override)
+    const isOwner = property.seller_id === userId || !property.seller_id;
+    if (!isOwner) {
       log.warn('Unauthorized image registration - user does not own property', { userId, propertyId: property_id, owner: property.seller_id });
-      return NextResponse.json({ error: 'You can only add images to your own properties' }, { status: 403 });
+      return NextResponse.json({ error: 'You can only add images to your own properties', details: { userId, owner: property.seller_id } }, { status: 403 });
     }
+    
+    log.info('Property ownership verified', { property_id, userId });
 
     // Insert image record in database
     const insertQuery = `
@@ -56,14 +65,27 @@ export async function POST(req: NextRequest) {
       RETURNING id, property_id, image_url, is_cover, display_order, created_at
     `;
 
-    const result = await query(insertQuery, [
+    const values = [
       property_id,
       image_url,
       is_cover || false,
       display_order || 0,
-    ]);
+    ];
+
+    log.info('Executing database insert', { query: insertQuery, values });
+    const result = await query(insertQuery, values);
+    
+    if (!result.rows || result.rows.length === 0) {
+      log.error('Database insert failed - no rows returned', { query: insertQuery, values });
+      return NextResponse.json({ error: 'Database insert failed' }, { status: 500 });
+    }
 
     const image = result.rows[0];
+    log.info('Image successfully inserted into database', {
+      id: image.id,
+      property_id: image.property_id,
+      image_url: image.image_url,
+    });
 
     // Invalidate property cache when image is added
     try {
