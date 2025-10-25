@@ -10,7 +10,6 @@ import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../lib/formatPropertyUtils';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
 import PropertyImageCarousel from './PropertyImageCarousel';
-// Favorite/save feature removed
 
 export default function PropertyPopup({ 
   selectedProperty, 
@@ -60,9 +59,6 @@ export default function PropertyPopup({
     }
   }, []);
   
-  // Handler for saving/unsaving a property
-  // Favorite/save handlers removed
-
   // Handler for gallery navigation
   const handleImageChange = useCallback((direction: 'next' | 'prev') => {
     setImageLoading(true);
@@ -189,7 +185,6 @@ export default function PropertyPopup({
               >
                 <span style={{fontSize:22,lineHeight:1}}>×</span>
               </button>
-              {/* Favorite/save button removed */}
               <button 
                 onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
                 aria-label="Share property details"
@@ -296,18 +291,14 @@ export default function PropertyPopup({
                         justifyContent: 'space-between', 
                         alignItems: 'center',
                         marginBottom: '16px'
-                      }}>
+                        }}>
                         <h3 style={{ 
                           fontSize: '20px', 
                           fontWeight: '600', 
                           margin: '0',
                           color: '#2a2a33'
                         }}>Facts and features</h3>
-                        
-                        {/* Favorite/save controls removed */}
-                      </div>
-                      
-                      <div style={{ 
+                      </div>                      <div style={{ 
                         display: 'grid', 
                         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                         gap: '24px'

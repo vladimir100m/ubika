@@ -1,6 +1,5 @@
 import PropertyCard from './PropertyCard';
 import { Property } from '../types';
-// Favorite/save feature removed
 import styles from '../styles/Home.module.css';
 
 interface FeaturedPropertiesProps {
@@ -72,8 +71,6 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = async ({
             <PropertyCard
               key={property.id}
               property={property}
-              isSaved={false} // Placeholder
-              onSaveToggle={() => {}} // Placeholder
             />
           ))}
         </div>

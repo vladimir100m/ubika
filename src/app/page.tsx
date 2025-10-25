@@ -131,8 +131,6 @@ const Home: React.FC = () => {
               <PropertyCardGrid
                 properties={properties}
                 onPropertyClick={handlePropertyClick}
-                isSaved={false}
-                onSaveToggle={() => {}}
               />
             ) : (
               <EmptyState message="No properties match the current filters. Try adjusting your search." />

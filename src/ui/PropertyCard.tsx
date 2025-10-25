@@ -1,20 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Property } from '../types';
 import styles from '../styles/PropertyCard.module.css';
-import { getCoverImageRaw, getPropertyImagesRaw, FALLBACK_IMAGE } from '../lib/propertyImageUtils';
+import { getCoverImageRaw, FALLBACK_IMAGE } from '../lib/propertyImageUtils';
 import useResolvedImage from '../lib/useResolvedImage';
-import { formatPropertyPriceCompact, formatPropertyDate, formatPropertySize, formatPropertyBedsBaths } from '../lib/formatPropertyUtils';
+import { formatPropertyPriceCompact, formatPropertyDate } from '../lib/formatPropertyUtils';
 
 
 interface PropertyCardProps {
   property: Property;
   showFullDetails?: boolean;
   onClick?: () => void;
-  isSaved?: boolean;
-  onSaveToggle?: () => void;
   onEdit?: () => void;
   hideActions?: boolean;
   onDelete?: () => void;
@@ -34,12 +32,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Get all images sorted by display order, with cover images first
-  const allImages = property.images ? 
-    [...property.images].sort((a, b) => {
+  // Memoize sorted images to prevent recalculation on every render
+  const allImages = useMemo(() => {
+    if (!property.images) return [];
+    return [...property.images].sort((a, b) => {
       if (a.is_cover !== b.is_cover) return a.is_cover ? -1 : 1;
       return (a.display_order || 0) - (b.display_order || 0);
-    }) : [];
+    });
+  }, [property.images]);
   
   const rawCover = getCoverImageRaw(property);
   const coverImage = useResolvedImage(rawCover) || FALLBACK_IMAGE;
@@ -56,19 +56,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     }
   };
 
-  const handlePrevImage = (e: React.MouseEvent) => {
+  const handleImageNav = (direction: 'prev' | 'next', e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex(prev => (prev === 0 ? allImages.length - 1 : prev - 1));
+    setCurrentImageIndex(prev => 
+      direction === 'prev' 
+        ? prev === 0 ? allImages.length - 1 : prev - 1
+        : prev === allImages.length - 1 ? 0 : prev + 1
+    );
     setImageError(false);
   };
-
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex(prev => (prev === allImages.length - 1 ? 0 : prev + 1));
-    setImageError(false);
-  };
-
-  // Favorite/save feature removed
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -77,11 +73,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     }
   };
 
+  const handleActionClick = (callback?: () => void, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    callback?.();
+  };
+
   return (
     <div className={styles.propertyCard} onClick={handleCardClick} role="button" tabIndex={0} onKeyDown={handleKeyDown} aria-label={property.title || `View property ${property.id}`}>
       {/* Image Section */}
       <div className={styles.imageContainer}>
-        {/* Display current image with navigation if multiple images exist */}
         <img
           src={imageError ? FALLBACK_IMAGE : displayImage}
           alt={property.title || `Property in ${property.city}`}
@@ -95,7 +95,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <>
             <button
               className={`${styles.imageNavButton} ${styles.prevButton}`}
-              onClick={handlePrevImage}
+              onClick={(e) => handleImageNav('prev', e)}
               title="Previous image"
               aria-label="Previous image"
             >
@@ -103,7 +103,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             </button>
             <button
               className={`${styles.imageNavButton} ${styles.nextButton}`}
-              onClick={handleNextImage}
+              onClick={(e) => handleImageNav('next', e)}
               title="Next image"
               aria-label="Next image"
             >
@@ -114,8 +114,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             </div>
           </>
         )}
-
-  {/* Favorite/save feature removed */}
 
         {/* Status Badge */}
         {property.property_status && (
@@ -215,15 +213,24 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <div className={styles.actions}>
             {showEditDelete ? (
               <>
-                <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onEdit && onEdit(); }}>
+                <button 
+                  className={styles.viewDetailsBtn} 
+                  onClick={(e) => handleActionClick(onEdit, e)}
+                >
                   ✏️ Edit
                 </button>
-                <button className={styles.contactBtn} onClick={(e) => { e.stopPropagation(); onDelete && onDelete(); }}>
+                <button 
+                  className={styles.contactBtn} 
+                  onClick={(e) => handleActionClick(onDelete, e)}
+                >
                   🗑️ Delete
                 </button>
               </>
             ) : (
-              <button className={styles.viewDetailsBtn} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+              <button 
+                className={styles.viewDetailsBtn} 
+                onClick={(e) => handleActionClick(onClick, e)}
+              >
                 🔍 View Details
               </button>
             )}

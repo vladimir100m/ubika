@@ -310,8 +310,6 @@ const MapPage: React.FC = () => {
                 <PropertyCardGrid
                   properties={properties}
                   onPropertyClick={handlePropertyClick}
-                  isSaved={false}
-                  onSaveToggle={() => {}}
                 />
               ) : (
                 <EmptyState message="No properties found for this area. Try a different location." />
