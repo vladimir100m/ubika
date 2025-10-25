@@ -32,7 +32,7 @@ export const normalizeFilters = (filters: any): NormalizedFilters => {
 
 export const buildSemanticCacheKey = (sellerId?: string, filters?: NormalizedFilters): string => {
   const parts: string[] = [];
-  if (sellerId) parts.push(`seller:${sellerId}`);
+  if (sellerId) parts.push(`v1:seller:${sellerId}`);
   else parts.push('v1:properties');
   parts.push('list');
 
@@ -65,24 +65,43 @@ export const buildSemanticCacheKey = (sellerId?: string, filters?: NormalizedFil
 
 export const getAffectedCachePatterns = (property: any): string[] => {
   const patterns = new Set<string>();
-  patterns.add('properties:list:*');
+  
+  // Always clear the main properties list patterns (using CACHE_KEYS for consistency)
+  patterns.add(CACHE_KEYS.properties.listPattern());
+  patterns.add('v1:properties:*');
+  
+  // Clear all seller patterns (since property counts affect all seller views)
+  patterns.add('v1:seller:*');
 
   if (property?.city) {
     const city = String(property.city).toLowerCase().trim();
-    patterns.add(`properties:list:*zone=${city}*`);
-    patterns.add(`seller:*:list:*zone=${city}*`);
+    patterns.add(`*zone=${city}*`);
+    patterns.add(`*city=${city}*`);
   }
 
   if (property?.operation_status_id === 1) {
-    patterns.add('properties:list:*operation=sale*');
-    patterns.add('seller:*:list:*operation=sale*');
+    patterns.add('*operation=sale*');
+    patterns.add('*op=sale*');
   } else if (property?.operation_status_id === 2) {
-    patterns.add('properties:list:*operation=rent*');
-    patterns.add('seller:*:list:*operation=rent*');
+    patterns.add('*operation=rent*');
+    patterns.add('*op=rent*');
   }
 
-  if (property?.price) patterns.add('properties:list:*price*');
-  if (property?.rooms) patterns.add('properties:list:*bedrooms*');
+  if (property?.price) {
+    patterns.add('*price*');
+    patterns.add('*pmin*');
+    patterns.add('*pmax*');
+  }
+  
+  if (property?.rooms) {
+    patterns.add('*bedrooms*');
+    patterns.add('*beds*');
+  }
+  
+  if (property?.type) {
+    patterns.add(`*type=${property.type.toLowerCase()}*`);
+    patterns.add(`*propertyType=${property.type.toLowerCase()}*`);
+  }
 
   return Array.from(patterns);
 };

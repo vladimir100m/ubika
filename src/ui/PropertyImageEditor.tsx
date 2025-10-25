@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect, DragEvent, forwardRef, useImperativeHandle } from 'react';
 import { PropertyImage } from '../types';
 import styles from '../styles/PropertyImageEditor.module.css';
+import { fetchFreshProperty } from '../lib/frontendCacheUtils';
+import { emitImageUpdate } from '../lib/propertyUpdateEvents';
 
 interface PropertyImageEditorProps {
   propertyId?: number | string;
@@ -236,10 +238,31 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
       const newImage: PropertyImage = await registerResponse.json();
       console.log('✅ Image registered in database:', newImage);
       
+      // Update local state
       setImages(prev => [...prev, newImage]);
+      
+      // Trigger callback to parent component
       if (targetPropertyId) {
         onImagesUpdated(targetPropertyId);
       }
+      
+      // Auto-refresh property data to ensure fresh images list
+      if (targetPropertyId) {
+        try {
+          const freshProperty = await fetchFreshProperty(targetPropertyId);
+          if (freshProperty.images) {
+            setImages(freshProperty.images);
+            console.log('🔄 Refreshed images from server:', freshProperty.images.length);
+            
+            // Emit property update event to notify other components (like home page)
+            emitImageUpdate(targetPropertyId, freshProperty.images.length);
+          }
+        } catch (refreshError) {
+          console.warn('⚠️ Failed to refresh property data:', refreshError);
+          // Don't fail the upload, just log the warning
+        }
+      }
+      
       updateUploadStatus(item.tempId, 'done');
     } catch (error) {
       console.error('❌ Upload error:', error);

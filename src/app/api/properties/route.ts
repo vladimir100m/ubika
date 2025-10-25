@@ -297,8 +297,21 @@ export async function POST(req: NextRequest) {
     // Attach empty images array
     prop.images = [];
 
-    // Invalidate cache when new property is created - selective patterns
+    // Invalidate cache when new property is created - comprehensive patterns
     try {
+      // Always invalidate the main properties list patterns
+      await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
+      await cacheInvalidatePattern('v1:properties:*');
+      
+      // Invalidate seller-specific patterns
+      if (seller_id) {
+        await cacheInvalidatePattern(CACHE_KEYS.seller(seller_id).listPattern());
+      }
+      
+      // Invalidate property types cache as the count might change
+      await cacheInvalidatePattern('property-types:*');
+      
+      // Get and invalidate property-specific patterns (zone, operation, etc.)
       const affectedPatterns = getAffectedCachePatterns(prop);
       for (const p of affectedPatterns) {
         try {
@@ -308,14 +321,11 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Always invalidate seller-specific list patterns for safety
-      try {
-        await cacheInvalidatePattern(CACHE_KEYS.seller(seller_id).listPattern());
-      } catch (se) {
-        log.warn('Seller pattern invalidation failed', { seller_id, error: se });
-      }
-
-      log.info('Cache invalidated after property creation', { propertyId: newId, sellerId: seller_id, patternsInvalidated: affectedPatterns.length });
+      log.info('Cache invalidated after property creation', { 
+        propertyId: newId, 
+        sellerId: seller_id, 
+        patternsInvalidated: affectedPatterns.length + 3  // +3 for the base patterns
+      });
     } catch (e) {
       log.warn('Failed to invalidate cache after property creation', { error: e });
     }

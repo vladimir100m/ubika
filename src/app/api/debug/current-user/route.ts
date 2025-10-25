@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     if (!session) {
       return NextResponse.json(
@@ -23,8 +24,13 @@ export async function GET(req: NextRequest) {
         name: userName,
         email: userEmail,
         id: userId,
+        sub: (session.user as any)?.sub, // Show both for debugging
       },
-      instructions: `Use this ID to reassign properties: node scripts/reassign-properties.js user_602b1234567890abcdef1234 ${userId}`,
+      debug: {
+        hasSubId: !!(session.user as any)?.sub,
+        usingEmail: !!(session.user as any)?.sub === false,
+      },
+      instructions: `Use this ID to reassign properties: node scripts/reassign-properties.js test-seller-001 ${userId}`,
     });
   } catch (error) {
     return NextResponse.json(

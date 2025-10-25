@@ -15,6 +15,7 @@ import useMediaQuery from '../../lib/useMediaQuery';
 import PropertyPopup from '../../ui/PropertyPopup';
 import { FilterOptions } from '../../ui/MapFilters';
 import MapFilters from '../../ui/MapFilters';
+import { buildFreshApiUrl } from '../../lib/frontendCacheUtils';
 
 const MapPage: React.FC = () => {
   const router = useRouter();
@@ -41,9 +42,13 @@ const MapPage: React.FC = () => {
       setError(null);
       try {
         const queryParams = new URLSearchParams(searchParams?.toString() ?? '');
-        const apiUrl = `/api/properties?${queryParams.toString()}`;
+        // Add cache busting to ensure fresh data
+        const apiUrl = buildFreshApiUrl('/api/properties', { forceListRefresh: true });
+        const fullUrl = queryParams.toString() 
+          ? `${apiUrl}&${queryParams.toString()}`
+          : apiUrl;
         
-        const response = await axios.get<Property[]>(apiUrl);
+        const response = await axios.get<Property[]>(fullUrl);
         if (Array.isArray(response.data)) {
           setProperties(response.data);
           
