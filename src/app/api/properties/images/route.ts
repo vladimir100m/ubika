@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 import { query } from '../../../../lib/db';
 import { createRequestId, createLogger } from '../../../../lib/logger';
-import { cacheDel, cacheInvalidatePattern } from '../../../../lib/cache';
+import { cacheInvalidatePattern } from '../../../../lib/cache';
+import { getAffectedCachePatterns } from '../../../../lib/cacheOptimization';
+import { CACHE_KEYS } from '../../../../lib/cacheKeyBuilder';
 
 export async function POST(req: NextRequest) {
   const reqId = createRequestId('req-');
@@ -32,7 +34,8 @@ export async function POST(req: NextRequest) {
 
     // Verify property belongs to user
     const propertyCheck = await query(
-      'SELECT id, seller_id FROM properties WHERE id = $1',
+      `SELECT id, seller_id, city, operation_status_id, price, room as rooms
+       FROM properties WHERE id = $1`,
       [property_id]
     );
 
@@ -64,10 +67,24 @@ export async function POST(req: NextRequest) {
 
     // Invalidate property cache when image is added
     try {
-      const cacheKey = `property:${property_id}`;
-      await cacheDel(cacheKey);
-      await cacheInvalidatePattern(`properties:list:*`);
-      log.info('Cache invalidated after image registration', { propertyId: property_id });
+      const cacheKey = CACHE_KEYS.property(property_id);
+      // Invalidate global listings and seller-specific listings so the seller dashboard
+      // and public lists reflect the new image immediately.
+      await cacheInvalidatePattern(`${cacheKey}*`);
+      await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
+      await cacheInvalidatePattern(CACHE_KEYS.seller(property.seller_id).listPattern());
+
+      // Also perform targeted invalidation based on property attributes (zone, op, price, rooms)
+      try {
+        const affected = getAffectedCachePatterns(property);
+        for (const p of affected) {
+          await cacheInvalidatePattern(p);
+        }
+      } catch (ia) {
+        log.warn('Targeted invalidation failed', { error: ia });
+      }
+
+      log.info('Cache invalidated after image registration', { propertyId: property_id, sellerId: property.seller_id });
     } catch (e) {
       log.warn('Failed to invalidate cache after image registration', { error: e });
     }
@@ -78,7 +95,9 @@ export async function POST(req: NextRequest) {
       is_cover: image.is_cover,
     });
 
-    return NextResponse.json(image);
+    const response = NextResponse.json(image);
+    response.headers.set('X-Cache-Invalidated', 'true');
+    return response;
   } catch (error) {
     log.error('Error registering property image', { error });
     return NextResponse.json(

@@ -3,8 +3,10 @@ import { query } from '../../../lib/db';
 import { createRequestId, createLogger } from '../../../lib/logger';
 import { resolveImageUrl } from '../../../lib/blob';
 import { Property } from '../../../types';
-import { cacheGet, cacheSet, cacheInvalidatePattern, cacheDel } from '../../../lib/cache';
-import { createHash } from 'crypto';
+import { cacheGet, cacheSet, cacheInvalidatePattern } from '../../../lib/cache';
+import { normalizeFilters, buildSemanticCacheKey, getAffectedCachePatterns } from '../../../lib/cacheOptimization';
+import { cacheMetrics } from '../../../lib/cacheMetrics';
+import { CACHE_KEYS } from '../../../lib/cacheKeyBuilder';
 
 interface PropertyFilters {
   minPrice?: string;
@@ -122,21 +124,80 @@ export async function GET(req: NextRequest) {
 
     queryText += ' ORDER BY p.created_at DESC';
 
-    // Build cache key - include seller_id for better cache granularity
-    let cacheKeyBase = `properties:list`;
-    if (seller_id) {
-      cacheKeyBase = `seller:${seller_id}:properties:list`;
-    }
-    const cacheKey = `${cacheKeyBase}:${createHash('sha256').update(queryText + JSON.stringify(queryParams)).digest('hex')}`;
-    
-    log.info('Cache key generated', { cacheKey, seller_id, hasFilters: Object.values(filters).some(v => v) });
-    const cachedData = await cacheGet(cacheKey);
+    // Build semantic cache key - normalize filters for consistent keys
+    const normalizedFilters = normalizeFilters(filters);
+    const cacheKey = buildSemanticCacheKey(seller_id ?? undefined, normalizedFilters);
 
-    if (cachedData) {
-      log.info('Returning cached properties data', { cacheKey, seller_id });
-      const response = NextResponse.json(cachedData);
-      response.headers.set('Cache-Control', 'private, max-age=300');
-      return response;
+    log.info('Cache key generated', { cacheKey, seller_id, normalizedFilters });
+
+    const CACHE_MAX_AGE = parseInt(process.env.PROPERTIES_CACHE_MAX_AGE || '300', 10); // seconds
+    const CACHE_STALE_TTL = parseInt(process.env.PROPERTIES_CACHE_STALE_TTL || '600', 10); // seconds
+
+    const cachedWrapper = await cacheGet<{ payload: any; cachedAt: number }>(cacheKey);
+
+    // Background refresh helper
+    const refreshCacheInBackground = async () => {
+      try {
+        log.info('Background cache refresh started', { cacheKey });
+        const { rows: freshRows } = await query(queryText, queryParams);
+
+        const propertyIds = freshRows.map((p: Property) => p.id);
+        let images: any[] = [];
+        if (propertyIds.length > 0) {
+          const imageQuery = `
+        SELECT property_id, image_url, is_cover, display_order
+        FROM property_images
+        WHERE property_id = ANY($1)
+      `;
+          const { rows: imageRows } = await query(imageQuery, [propertyIds]);
+          images = imageRows;
+        }
+
+        const propertiesWithImages = await Promise.all(freshRows.map(async (p: Property) => {
+          const propertyImages = images.filter(img => img.property_id === p.id);
+          const resolvedImages = await Promise.all(propertyImages.map(async (img) => ({
+            ...img,
+            image_url: await resolveImageUrl(img.image_url)
+          })));
+          return {
+            ...p,
+            images: resolvedImages,
+          };
+        }));
+
+        await cacheSet(cacheKey, { payload: propertiesWithImages, cachedAt: Date.now() }, CACHE_STALE_TTL);
+        log.info('Background cache refresh completed', { cacheKey, refreshedRows: propertiesWithImages.length });
+      } catch (err) {
+        log.warn('Background cache refresh failed', { cacheKey, error: err });
+      }
+    };
+
+    if (cachedWrapper) {
+      const ageSec = (Date.now() - (cachedWrapper.cachedAt || 0)) / 1000;
+      // Fresh within max-age
+      if (ageSec <= CACHE_MAX_AGE) {
+        log.info('Returning fresh cached properties data', { cacheKey, ageSec });
+        const response = NextResponse.json(cachedWrapper.payload);
+        response.headers.set('Cache-Control', `private, max-age=${CACHE_MAX_AGE}, stale-while-revalidate=${CACHE_MAX_AGE}`);
+        response.headers.set('X-Cache-Status', 'HIT');
+        return response;
+      }
+
+      // Stale but within stale TTL - return cached immediately and refresh in background
+      if (ageSec > CACHE_MAX_AGE && ageSec <= CACHE_STALE_TTL) {
+        log.info('Returning STALE cached properties data and refreshing in background', { cacheKey, ageSec });
+        cacheMetrics.recordStale(ageSec);
+        // Trigger background refresh but don't await
+        void refreshCacheInBackground();
+        const response = NextResponse.json(cachedWrapper.payload);
+        response.headers.set('Cache-Control', `private, max-age=${CACHE_MAX_AGE}, stale-while-revalidate=${CACHE_STALE_TTL - CACHE_MAX_AGE}`);
+        response.headers.set('X-Cache-Status', 'STALE');
+        response.headers.set('X-Cache-Age', `${Math.round(ageSec)}s`);
+        return response;
+      }
+
+      // If cache exists but too old, fall through to fetch fresh data synchronously
+      log.info('Cached entry expired beyond stale TTL, fetching fresh data', { cacheKey, ageSec });
     }
 
     const { rows } = await query(queryText, queryParams);
@@ -165,10 +226,13 @@ export async function GET(req: NextRequest) {
       };
     }));
 
-    await cacheSet(cacheKey, propertiesWithImages, 300);
-    log.info('Returning properties from DB');
+  await cacheSet(cacheKey, { payload: propertiesWithImages, cachedAt: Date.now() }, CACHE_STALE_TTL);
+    log.info('Returning properties from DB and caching result', { cacheKey });
+    cacheMetrics.recordSet();
     const response = NextResponse.json(propertiesWithImages);
-    response.headers.set('Cache-Control', 'private, max-age=300');
+    response.headers.set('Cache-Control', `private, max-age=${CACHE_MAX_AGE}, stale-while-revalidate=${CACHE_STALE_TTL - CACHE_MAX_AGE}`);
+    response.headers.set('X-Cache-Status', 'MISS');
+    response.headers.set('X-Cache-Invalidated', 'true');
     return response;
 
   } catch (error) {
@@ -233,16 +297,25 @@ export async function POST(req: NextRequest) {
     // Attach empty images array
     prop.images = [];
 
-    // Invalidate cache when new property is created
+    // Invalidate cache when new property is created - selective patterns
     try {
-      // Invalidate seller's specific property lists
-      await cacheInvalidatePattern(`seller:${seller_id}:properties:list:*`);
-      // Invalidate all public property listings
-      await cacheInvalidatePattern(`properties:list:*`);
-      // Also invalidate without pattern (just in case)
-      await cacheDel(`properties:list`);
-      await cacheDel(`seller:${seller_id}:properties:list`);
-      log.info('Cache invalidated after property creation', { propertyId: newId, sellerId: seller_id });
+      const affectedPatterns = getAffectedCachePatterns(prop);
+      for (const p of affectedPatterns) {
+        try {
+          await cacheInvalidatePattern(p);
+        } catch (pe) {
+          log.warn('Pattern invalidation failed', { pattern: p, error: pe });
+        }
+      }
+
+      // Always invalidate seller-specific list patterns for safety
+      try {
+        await cacheInvalidatePattern(CACHE_KEYS.seller(seller_id).listPattern());
+      } catch (se) {
+        log.warn('Seller pattern invalidation failed', { seller_id, error: se });
+      }
+
+      log.info('Cache invalidated after property creation', { propertyId: newId, sellerId: seller_id, patternsInvalidated: affectedPatterns.length });
     } catch (e) {
       log.warn('Failed to invalidate cache after property creation', { error: e });
     }

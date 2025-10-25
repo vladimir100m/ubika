@@ -17,13 +17,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-  pageProps,
-}: {
-  children: React.ReactNode;
-  pageProps: any;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -32,7 +26,7 @@ export default function RootLayout({
         <script src="/sw-register.js" defer></script>
       </head>
       <body>
-        <Providers session={pageProps?.session}>
+        <Providers>
           {children}
         </Providers>
       </body>

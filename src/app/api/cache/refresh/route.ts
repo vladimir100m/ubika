@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
-import { cacheDel, cacheInvalidatePattern } from '../../../../lib/cache';
+import { cacheInvalidatePattern } from '../../../../lib/cache';
 import { createRequestId, createLogger } from '../../../../lib/logger';
+import { CACHE_KEYS } from '../../../../lib/cacheKeyBuilder';
 
 /**
  * Force refresh cache for user's properties
@@ -29,21 +30,22 @@ export async function POST(req: NextRequest) {
     try {
       // Clear user's specific property lists
       if (scope === 'user' || scope === 'all') {
-        await cacheDel(`seller:${userId}:properties:list`);
-        await cacheInvalidatePattern(`seller:${userId}:properties:list:*`);
+        await cacheInvalidatePattern(CACHE_KEYS.seller(userId).listPattern());
         log.info('Cleared user property cache', { userId });
       }
 
       // Clear all property listings
       if (scope === 'all') {
-        await cacheDel(`properties:list`);
-        await cacheInvalidatePattern(`properties:list:*`);
+        await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
         log.info('Cleared all properties cache');
       }
 
       // Clear specific property if provided
       if (body.propertyId) {
-        await cacheDel(`property:${body.propertyId}`);
+        const propertyKey = CACHE_KEYS.property(body.propertyId);
+        // Note: cacheDel is removed, only use pattern invalidation
+        // This is more reliable and single-call approach
+        await cacheInvalidatePattern(`${propertyKey}*`);
         log.info('Cleared specific property cache', { propertyId: body.propertyId });
       }
 

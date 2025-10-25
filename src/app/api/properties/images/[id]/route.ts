@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../../../pages/api/auth/[...nextauth]';
 import { query } from '../../../../../lib/db';
 import { createRequestId, createLogger } from '../../../../../lib/logger';
-import { cacheDel, cacheInvalidatePattern } from '../../../../../lib/cache';
+import { cacheInvalidatePattern } from '../../../../../lib/cache';
+import { getAffectedCachePatterns } from '../../../../../lib/cacheOptimization';
+import { CACHE_KEYS } from '../../../../../lib/cacheKeyBuilder';
 
 export async function DELETE(
   req: NextRequest,
@@ -27,7 +29,7 @@ export async function DELETE(
 
     // Get the image and property to verify ownership
     const getImageQuery = `
-      SELECT pi.id, pi.image_url, pi.property_id, p.seller_id
+      SELECT pi.id, pi.image_url, pi.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.room as rooms
       FROM property_images pi
       JOIN properties p ON pi.property_id = p.id
       WHERE pi.id = $1
@@ -62,10 +64,23 @@ export async function DELETE(
     // Invalidate property cache when image is deleted
     try {
       if (propertyId) {
-        const cacheKey = `property:${propertyId}`;
-        await cacheDel(cacheKey);
-        await cacheInvalidatePattern(`properties:list:*`);
-        log.info('Cache invalidated after image deletion', { propertyId, imageId });
+        const cacheKey = CACHE_KEYS.property(propertyId);
+        // Invalidate global listings and seller-specific listings
+        await cacheInvalidatePattern(`${cacheKey}*`);
+        await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
+        await cacheInvalidatePattern(CACHE_KEYS.seller(image.seller_id).listPattern());
+
+        // Targeted invalidation based on property attributes
+        try {
+          const affected = getAffectedCachePatterns(image);
+          for (const p of affected) {
+            await cacheInvalidatePattern(p);
+          }
+        } catch (ia) {
+          log.warn('Targeted invalidation failed', { error: ia });
+        }
+
+        log.info('Cache invalidated after image deletion', { propertyId, imageId, sellerId: image.seller_id });
       }
     } catch (e) {
       log.warn('Failed to invalidate cache after image deletion', { error: e });
@@ -73,7 +88,9 @@ export async function DELETE(
 
     log.info('Property image deleted successfully', { imageId });
 
-    return NextResponse.json({ success: true, id: imageId });
+    const response = NextResponse.json({ success: true, id: imageId });
+    response.headers.set('X-Cache-Invalidated', 'true');
+    return response;
   } catch (error) {
     log.error('Error deleting property image', { error });
     return NextResponse.json(

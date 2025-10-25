@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../../../pages/api/auth/[...nextauth]';
 import { query } from '../../../../../lib/db';
 import { createRequestId, createLogger } from '../../../../../lib/logger';
-import { cacheDel, cacheInvalidatePattern } from '../../../../../lib/cache';
+import { cacheInvalidatePattern } from '../../../../../lib/cache';
+import { getAffectedCachePatterns } from '../../../../../lib/cacheOptimization';
+import { CACHE_KEYS } from '../../../../../lib/cacheKeyBuilder';
 
 export async function POST(req: NextRequest) {
   const reqId = createRequestId('req-');
@@ -29,7 +31,8 @@ export async function POST(req: NextRequest) {
 
     // Verify property belongs to user
     const propertyCheck = await query(
-      'SELECT id, seller_id FROM properties WHERE id = $1',
+      `SELECT id, seller_id, city, operation_status_id, price, room as rooms
+       FROM properties WHERE id = $1`,
       [propertyId]
     );
 
@@ -59,16 +62,31 @@ export async function POST(req: NextRequest) {
 
     // Invalidate property cache when cover image is changed
     try {
-      const cacheKey = `property:${propertyId}`;
-      await cacheDel(cacheKey);
-      await cacheInvalidatePattern(`properties:list:*`);
-      log.info('Cache invalidated after cover image change', { propertyId, imageId });
+      const cacheKey = CACHE_KEYS.property(propertyId);
+      // Invalidate global listings and seller-specific listings
+      await cacheInvalidatePattern(`${cacheKey}*`);
+      await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
+      await cacheInvalidatePattern(CACHE_KEYS.seller(property.seller_id).listPattern());
+
+      // Targeted invalidation based on property attributes
+      try {
+        const affected = getAffectedCachePatterns(property);
+        for (const p of affected) {
+          await cacheInvalidatePattern(p);
+        }
+      } catch (ia) {
+        log.warn('Targeted invalidation failed', { error: ia });
+      }
+
+      log.info('Cache invalidated after cover image change', { propertyId, imageId, sellerId: property.seller_id });
     } catch (e) {
       log.warn('Failed to invalidate cache after cover image change', { error: e });
     }
 
     log.info('Cover image set successfully', { imageId, propertyId });
-    return NextResponse.json({ success: true, imageId, propertyId });
+    const response = NextResponse.json({ success: true, imageId, propertyId });
+    response.headers.set('X-Cache-Invalidated', 'true');
+    return response;
   } catch (error) {
     log.error('Error setting cover image', error);
     return NextResponse.json({ error: 'Failed to set cover image' }, { status: 500 });

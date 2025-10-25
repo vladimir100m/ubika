@@ -4,8 +4,11 @@ import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 import { query } from '../../../../lib/db';
 import { resolveImageUrl } from '../../../../lib/blob';
 import { Property } from '../../../../types';
-import { cacheGet, cacheSet, cacheDel, cacheInvalidatePattern } from '../../../../lib/cache';
+import { cacheGet, cacheSet, cacheInvalidatePattern } from '../../../../lib/cache';
+import { getAffectedCachePatterns } from '../../../../lib/cacheOptimization';
 import { createRequestId, createLogger } from '../../../../lib/logger';
+import { CACHE_KEYS } from '../../../../lib/cacheKeyBuilder';
+import { cacheMetrics } from '../../../../lib/cacheMetrics';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const reqId = createRequestId('req-');
@@ -209,12 +212,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     // Invalidate caches after successful update
     try {
-      const cacheKey = `property:${id}`;
-      await cacheDel(cacheKey); // Invalidate this property's cache
-      await cacheDel(`properties:list`); // Invalidate base list cache
-      await cacheDel(`seller:${userId}:properties:list`); // Invalidate seller base cache
-      await cacheInvalidatePattern(`seller:${userId}:properties:list:*`); // Invalidate seller's property list caches
-      await cacheInvalidatePattern(`properties:list:*`); // Invalidate all property listings
+      const cacheKey = CACHE_KEYS.property(id);
+      // Use pattern invalidation only for simplicity and reliability
+      await cacheInvalidatePattern(`${cacheKey}*`);
+      await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
+      await cacheInvalidatePattern(CACHE_KEYS.seller(userId).listPattern());
+      
+      // Targeted invalidation based on property attributes
+      try {
+        const affected = getAffectedCachePatterns(property);
+        for (const p of affected) {
+          await cacheInvalidatePattern(p);
+        }
+      } catch (ia) {
+        log.warn('Targeted invalidation failed', { error: ia });
+      }
+
       log.info('Cache invalidated after property update', { propertyId: id, userId });
     } catch (e) {
       log.warn('Failed to invalidate cache after update', { error: e });
@@ -250,9 +263,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const userId = (session.user as any).sub || session.user.email;
     log.info('Verifying ownership for user', { userId, propertyId: id });
 
-    // First, verify property exists and belongs to the user
-    const checkQuery = 'SELECT id, seller_id FROM properties WHERE id = $1';
-    const checkResult = await query(checkQuery, [id]);
+  // First, verify property exists and belongs to the user
+  const checkQuery = `SELECT id, seller_id, city, operation_status_id, price, room as rooms FROM properties WHERE id = $1`;
+  const checkResult = await query(checkQuery, [id]);
     
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
@@ -283,12 +296,22 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     // Invalidate caches after successful deletion
     try {
-      const cacheKey = `property:${id}`;
-      await cacheDel(cacheKey); // Invalidate this property's cache
-      await cacheDel(`properties:list`); // Invalidate base list cache
-      await cacheDel(`seller:${userId}:properties:list`); // Invalidate seller base cache
-      await cacheInvalidatePattern(`seller:${userId}:properties:list:*`); // Invalidate seller's property list caches
-      await cacheInvalidatePattern(`properties:list:*`); // Invalidate all property listings
+      const cacheKey = CACHE_KEYS.property(id);
+      // Use pattern invalidation only (more reliable, single call)
+      await cacheInvalidatePattern(`${cacheKey}*`);
+      await cacheInvalidatePattern(CACHE_KEYS.properties.listPattern());
+      await cacheInvalidatePattern(CACHE_KEYS.seller(propertyData.seller_id).listPattern());
+
+      // Targeted invalidation based on property attributes (zone/op/price/rooms)
+      try {
+        const affected = getAffectedCachePatterns(propertyData);
+        for (const p of affected) {
+          await cacheInvalidatePattern(p);
+        }
+      } catch (ia) {
+        log.warn('Targeted invalidation failed', { error: ia });
+      }
+
       log.info('Cache invalidated after property deletion', { propertyId: id, userId });
     } catch (e) {
       log.warn('Failed to invalidate cache after deletion', { error: e });
