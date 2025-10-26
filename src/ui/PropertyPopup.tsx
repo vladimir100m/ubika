@@ -4,9 +4,9 @@ import popupStyles from '../styles/PropertyPopup.module.css';
 import React, {useState, useEffect, useRef, RefObject, useCallback, useMemo} from 'react';
 import {useRouter} from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Loader } from '@googlemaps/js-api-loader';
+// Loader removed: map initialization is handled elsewhere or via `mapRef`
 import { Property, Neighborhood } from '../types';
-import { getCoverImageRaw, getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
+import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../lib/formatPropertyUtils';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
@@ -60,19 +60,15 @@ export default function PropertyPopup({
     }
   }, []);
   
+  // Memoize image list so we don't recompute on every render
+  const allImages = useMemo(() => getAllPropertyImagesRaw(selectedProperty), [selectedProperty]);
+
   // Handler for gallery navigation
   const handleImageChange = useCallback((direction: 'next' | 'prev') => {
     setImageLoading(true);
-    const allImages = getAllPropertyImagesRaw(selectedProperty);
-    const totalImages = allImages.length;
-    setCurrentImageIndex(prev => {
-      if (direction === 'next') {
-        return (prev + 1) % totalImages;
-      } else {
-        return (prev - 1 + totalImages) % totalImages;
-      }
-    });
-  }, [selectedProperty]);
+    const totalImages = allImages.length || 1;
+    setCurrentImageIndex(prev => (direction === 'next' ? (prev + 1) % totalImages : (prev - 1 + totalImages) % totalImages));
+  }, [allImages]);
 
   // formatted price and per square-meter helper values
   const formattedPrice = useMemo(() => formatNumberWithCommas(selectedProperty.price), [selectedProperty.price]);
@@ -81,20 +77,19 @@ export default function PropertyPopup({
     return Math.round(selectedProperty.price / selectedProperty.sq_meters);
   }, [selectedProperty.price, selectedProperty.sq_meters]);
 
-  // Get operation status badge info
-  const getOperationStatusBadge = () => {
+  // Memoize operation badge so repeated calls in render use same computed value
+  const operationBadge = useMemo(() => {
     const operationStatus = selectedProperty.property_status?.display_name;
     const operationStatusId = selectedProperty.property_status?.id;
 
-    // Define colors for different operation types
-    const badgeConfig = {
-      1: { backgroundColor: '#e4002b', text: operationStatus || 'For Sale' }, // Sale
-      2: { backgroundColor: '#2563eb', text: operationStatus || 'For Rent' }, // Rent  
-      3: { backgroundColor: '#6b7280', text: operationStatus || 'Not Available' } // Not Available
+    const badgeConfig: Record<number, { backgroundColor: string; text: string }> = {
+      1: { backgroundColor: '#e4002b', text: operationStatus || 'For Sale' },
+      2: { backgroundColor: '#2563eb', text: operationStatus || 'For Rent' },
+      3: { backgroundColor: '#6b7280', text: operationStatus || 'Not Available' }
     };
 
     return badgeConfig[operationStatusId as keyof typeof badgeConfig] || badgeConfig[1];
-  };
+  }, [selectedProperty.property_status]);
 
   // Handler for clicking on specific images in the grid
   const handleImageClick = (index: number) => {
@@ -123,7 +118,6 @@ export default function PropertyPopup({
 
   // Get dynamic grid layout based on number of images (max 3)
   const gridLayout = useMemo(() => {
-    const allImages = getAllPropertyImagesRaw(selectedProperty);
     const imageCount = Math.min(allImages.length, 3);
     switch (imageCount) {
       case 1:
@@ -149,7 +143,7 @@ export default function PropertyPopup({
           showViewAllButton: allImages.length > 3,
         };
     }
-  }, [selectedProperty]);
+  }, [allImages]);
 
   // Touch handlers for swipe navigation
   // Touch handlers for swipe navigation
@@ -187,7 +181,15 @@ export default function PropertyPopup({
                 <span className={popupStyles.closeIcon}>×</span>
               </button>
               <button
-                onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
+                onClick={(e)=>{e.stopPropagation();
+                  if (navigator.share) {
+                    navigator.share({ title: selectedProperty.title || 'Property', text: selectedProperty.description || 'Check this property', url: window.location.href }).catch(()=>{});
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    // small UX feedback; in-app toast would be preferable
+                    alert('Link copied');
+                  }
+                }}
                 aria-label="Share property details"
                 className={popupStyles.iconButton}
               >
@@ -220,10 +222,10 @@ export default function PropertyPopup({
                       <span
                         className={popupStyles.statusBadge}
                         style={{
-                          ['--op-color' as any]: getOperationStatusBadge().backgroundColor,
-                          ['--op-color-alpha' as any]: `${getOperationStatusBadge().backgroundColor}dd`
+                          ['--op-color' as any]: operationBadge.backgroundColor,
+                          ['--op-color-alpha' as any]: `${operationBadge.backgroundColor}dd`
                         }}
-                      >💰 {getOperationStatusBadge().text}</span>
+                      >💰 {operationBadge.text}</span>
 
                       {/* New Today Badge */}
                       <span className={popupStyles.hotBadge}>🔥 Hot Listing</span>
@@ -309,7 +311,7 @@ export default function PropertyPopup({
 
                   {/* Quick Actions */}
                   <div className={popupStyles.quickActions}>
-                    <button className={popupStyles.btnPrimary}>📞 Contact Agent</button>
+                    <button className={popupStyles.btnPrimary} onClick={() => setShowContactForm(true)}>📞 Contact Agent</button>
                     <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
                     <button className={popupStyles.btnSecondary}>💰 Get Pre-Approved</button>
                   </div>
