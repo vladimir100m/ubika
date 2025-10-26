@@ -278,8 +278,9 @@ export default function PropertyPopup({
                         key={index}
                         role="group"
                         aria-label={`${stat.label}: ${stat.value}`}
-                        className={popupStyles.statCard}
+                        className={`${popupStyles.statCard} ${popupStyles.statTile}`}
                         style={{
+                          /* keep color vars for potential theming */
                           ['--stat-bg-start' as any]: `${stat.color}15`,
                           ['--stat-bg-end' as any]: `${stat.color}08`,
                           ['--stat-border' as any]: `${stat.color}20`,
@@ -291,8 +292,10 @@ export default function PropertyPopup({
                         <div className={popupStyles.statInnerBg} />
                         <div className={popupStyles.statContent}>
                           <span className={popupStyles.statIcon} aria-hidden>{stat.icon}</span>
-                          <div className={`${popupStyles.statValue} ${stat.isText ? popupStyles.statValueText : ''}`}>{stat.value}</div>
-                          <div className={popupStyles.statLabel}>{stat.label}</div>
+                          <div className={popupStyles.statText}>
+                            <div className={`${popupStyles.statValue} ${stat.isText ? popupStyles.statValueText : ''}`}>{stat.value}</div>
+                            <div className={popupStyles.statLabel}>{stat.label}</div>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -302,7 +305,7 @@ export default function PropertyPopup({
                   <div className={popupStyles.quickActions}>
                     <button className={popupStyles.btnPrimary} onClick={() => setShowContactForm(true)}>📞 Contact Agent</button>
                     <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
-                    <button className={popupStyles.btnSecondary}>💰 Get Pre-Approved</button>
+                    {/* <button className={popupStyles.btnSecondary}>💰 Get Pre-Approved</button> */}
                   </div>
                 </div>
                 

@@ -82,15 +82,18 @@
 }
 
 .statsGrid {
+  /* Zillow-like tiles: responsive grid of compact stat tiles */
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
   align-items: stretch;
+  width: 100%;
 }
 
-@media (max-width: 1024px) {
-  .statsGrid { grid-template-columns: repeat(2, 1fr); }
+/* allow wrapping into two rows on narrow but prefer single row */
+@media (max-width: 600px) {
+  .statsGrid { gap: 10px; }
 }
 
 .roomStatItem {
@@ -127,61 +130,106 @@
   text-transform: uppercase;
 }
 .statCard {
-  border-radius: 14px;
-  padding: 18px 12px;
-  text-align: center;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-  cursor: pointer;
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  cursor: default;
   position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--stat-bg-start, rgba(255,255,255,0.03)) 0%, var(--stat-bg-end, rgba(255,255,255,0.01)) 100%);
+  overflow: visible;
+  background: linear-gradient(135deg, var(--stat-bg-start, rgba(255,255,255,0.02)) 0%, var(--stat-bg-end, rgba(255,255,255,0.01)) 100%);
   border: 1px solid var(--stat-border, rgba(0,0,0,0.04));
-  box-shadow: 0 6px 18px var(--stat-shadow, rgba(0,0,0,0.06));
+  box-shadow: 0 6px 14px var(--stat-shadow, rgba(0,0,0,0.04));
+}
+
+/* Minimalistic stat style: inline, no card chrome. Use alongside .statCard */
+.statTile {
+  background: #ffffff;
+  border: 1px solid #f1f3f4;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  min-height: 64px;
+}
+.statTile .statInnerBg { display: none; }
+.statTile .statIcon {
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.04);
+  border-radius: 10px;
+  flex: 0 0 44px;
+}
+.statTile .statText { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.statTile .statValue { font-size: 16px; font-weight: 800; color: #111827; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.statTile .statLabel {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+}
+
+@media (max-width: 480px) {
+  /* On narrow screens show two columns */
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .statTile { padding: 10px; }
+  .statTile .statIcon { width: 36px; height: 36px; font-size: 18px; flex: 0 0 36px; }
+  .statTile .statValue { font-size: 15px; }
+  .statTile .statLabel { font-size: 11px; }
 }
 
 .statInnerBg {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--stat-inner, rgba(255,255,255,0.06));
-  z-index: 0;
-  filter: blur(2px);
+  display: none; /* hide decorative blob for compact inline pills */
 }
 .statContent {
   position: relative;
   z-index: 1;
 }
+
 .statIcon {
-  font-size: 26px;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
+  font-size: 18px;
+  line-height: 1;
+  filter: none;
 }
+
 .statValue {
   font-weight: 800;
   color: #2c3e50;
-  margin-bottom: 4px;
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .statValueText {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
 }
 .statLabel {
   font-size: 12px;
   font-weight: 600;
   color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  text-transform: none;
+  opacity: 0.9;
 }
 
 .statCard:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 14px 36px rgba(0,0,0,0.12);
-  border-color: var(--stat-border-hover, #e6e9ef);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.08);
 }
 
 .quickActions {
@@ -602,102 +650,55 @@
   font-size: 14px;
 }
 
-/* Mobile-first tweaks: make stats and key info more prominent and stacked for small devices */
+/* Mobile tweaks: keep stats as a single horizontal row (no stacking) */
 @media (max-width: 480px) {
-  /* Stack stats vertically and center them like the mobile design */
   .statsGrid {
     display: flex;
-    flex-direction: column;
-    gap: 28px;
+    flex-direction: row; /* keep one row */
+    gap: 10px;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
   }
 
+  /* Keep stat cards compact inline on small screens */
   .statCard {
-    width: 100%;
-    max-width: 420px;
-    padding: 28px 18px;
-    border-radius: 18px;
-    text-align: center;
+    width: auto;
+    padding: 6px 8px;
+    border-radius: 10px;
+    text-align: left;
   }
 
   .statIcon {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 20px;
+    margin: 0 6px 0 0;
   }
 
   .statValue {
-    font-size: 30px;
-    font-weight: 900;
-    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 800;
     color: #2c3e50;
   }
 
   .statLabel {
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 600;
     color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-left: 8px;
+    text-transform: none;
+    opacity: 0.9;
   }
 
-  /* Mobile: show only the emoji icon inside a circular badge */
-  .statValue,
-  .statLabel {
-    display: none;
-  }
+  /* Ensure minimal variant still shows labels/value inline */
+  .statMinimal .statLabel { display: inline-block; }
+  .statMinimal .statContent { padding: 0; gap: 8px; }
 
-  .statCard {
-    width: 84px;
-    height: 84px;
-    padding: 0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-  }
-
-  .statInnerBg {
-    display: none;
-  }
-
-  .statIcon {
-    font-size: 36px;
-    margin: 0;
-    line-height: 1;
-  }
-
-  /* Make the address/title more prominent and centered */
-  .addressTitle {
-    font-size: 22px;
-    font-weight: 800;
-    text-align: center;
-  }
-
-  .addressMeta {
-    justify-content: center;
-  }
-
-  /* Slightly reduce header image height on small devices to free space */
-  .headerFixedHeight {
-    height: 320px;
-  }
-
-  /* Price adjustments for small screens */
-  .priceAmount {
-    font-size: 28px;
-    text-align: left;
-  }
-
-  .priceRow {
-    justify-content: flex-start;
-  }
-
-  /* Ensure quick actions wrap nicely on mobile */
-  .quickActions {
-    justify-content: center;
-  }
+  /* Slight header/price adjustments kept for small screens */
+  .headerFixedHeight { height: 320px; }
+  .priceAmount { font-size: 28px; text-align: left; }
+  .priceRow { justify-content: flex-start; }
+  .quickActions { justify-content: center; }
 }
