@@ -85,10 +85,10 @@ export default function PropertyPopup({
   }, [selectedProperty.property_status]);
 
   // Handler for clicking on specific images in the grid
-  const handleImageClick = (index: number) => {
+  const handleImageClick = useCallback((index: number) => {
     setCurrentImageIndex(index);
     setShowCarousel(true);
-  };
+  }, []);
 
   // Small data lists memoized for readability
   const statItems = useMemo(() => ([
@@ -172,7 +172,6 @@ export default function PropertyPopup({
   }, [allImages]);
 
   // Touch handlers for swipe navigation
-  // Touch handlers for swipe navigation
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -194,6 +193,13 @@ export default function PropertyPopup({
     }
   }, [touchStart, touchEnd, handleImageChange]);
   
+  // Prepare highlights: show up to 6 with a +N overflow pill
+  const { visibleFeatures, extraFeatureCount } = useMemo(() => {
+    const features = selectedProperty.features ?? [];
+    const visible = features.slice(0, 6);
+    return { visibleFeatures: visible, extraFeatureCount: Math.max(0, features.length - visible.length) };
+  }, [selectedProperty.features]);
+
   return (
     <>
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
@@ -300,22 +306,39 @@ export default function PropertyPopup({
                   <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
                   </div>
                <div className={popupStyles.highlightsSection}>
-                  <div className={popupStyles.highlightGrid}>
-                    {selectedProperty.features && selectedProperty.features.length > 0 
-                      ? selectedProperty.features.slice(0, 6).map((feature, idx) => (
-                          <div key={idx} className={popupStyles.highlightCard}>
-                            <span>{feature.name}</span>
-                          </div>
-                        ))
-                      : (
-                        <>
-                          <div className={popupStyles.highlightCard}><span>Prime Location</span></div>
-                          <div className={popupStyles.highlightCard}><span>Well Maintained</span></div>
-                          <div className={popupStyles.highlightCard}><span>Modern Updates</span></div>
-                        </>
-                      )
-                    }
-                    </div>
+                  <div className={popupStyles.highlightGrid} role="list" aria-label="Property highlights">
+                    {visibleFeatures && visibleFeatures.length > 0 ? (
+                      visibleFeatures.map((feature, idx) => (
+                        <div
+                          key={idx}
+                          role="listitem"
+                          tabIndex={0}
+                          title={feature.name || ''}
+                          aria-label={feature.name || 'Feature'}
+                          className={popupStyles.highlightCard}
+                        >
+                          <span>{feature.name}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className={popupStyles.highlightCard}><span>Prime Location</span></div>
+                        <div className={popupStyles.highlightCard}><span>Well Maintained</span></div>
+                        <div className={popupStyles.highlightCard}><span>Modern Updates</span></div>
+                      </>
+                    )}
+
+                    {extraFeatureCount > 0 && (
+                      <div
+                        className={popupStyles.highlightCard}
+                        role="listitem"
+                        aria-label={`Plus ${extraFeatureCount} more features`}
+                        title={`+${extraFeatureCount} more`}
+                      >
+                        <span>+{extraFeatureCount}</span>
+                      </div>
+                    )}
+                  </div>
                   </div>
                 </div>
                 
