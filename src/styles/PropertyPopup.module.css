@@ -65,6 +65,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: flex-end;
 }
 .actionButtonLight {
   background: rgba(255, 255, 255, 0.9);
@@ -265,6 +266,27 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Single-row quick actions with equal-width buttons */
+.quickActionsRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: stretch;
+  width: 100%;
+}
+.quickActionsRow > button {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .quickActionsRow { gap: 8px; }
+  .quickActionsRow > button { padding: 12px 10px; font-size: 14px; }
 }
 
 .highlightsSection {

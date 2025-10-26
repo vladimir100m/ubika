@@ -243,69 +243,61 @@ export default function PropertyPopup({
                 {/* Enhanced Property Header - Premium Real Estate Style */}
                 <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
                   {/* Top Row - Status and Favorites */}
-                  <div className={popupStyles.headerRow}>
-                    <div className={popupStyles.statusRow}>
-                      <span
-                        className={popupStyles.statusBadge}
-                        style={{
-                          ['--op-color' as any]: operationBadge.backgroundColor,
-                          ['--op-color-alpha' as any]: `${operationBadge.backgroundColor}dd`
-                        }}
-                      >{operationBadge.text}</span>
-
-                      {/* New Today Badge */}
-                      {/* <span className={popupStyles.hotBadge}>🔥 Hot Listing</span> */}
-                    </div>
-
-                    {/* Property Actions */}
-                    <div className={popupStyles.actionsGroup}>
-                      <button className={popupStyles.actionButtonLight}>📤 Share</button>
-                      <button className={popupStyles.actionButtonLight}>❤️ Save</button>
-                    </div>
-                  </div>
+                  {/* <div className={popupStyles.headerRow}>
+                  <span
+                    className={popupStyles.statusBadge}
+                    style={{
+                    ['--op-color' as any]: operationBadge.backgroundColor,
+                    ['--op-color-alpha' as any]: `${operationBadge.backgroundColor}dd`
+                    }}
+                  >
+                    {operationBadge.text}
+                  </span>
+                  </div> */}
 
                   {/* Price Section - simplified to show only the main price */}
                   <div className={popupStyles.priceSection}>
-                    <div className={popupStyles.priceRow}>
-                      <h1 className={popupStyles.priceAmount}>${formattedPrice}</h1>
-                    </div>
+                  <div className={popupStyles.priceRow}>
+                    <h1 className={popupStyles.priceAmount}>${formattedPrice}</h1>
+                  </div>
                   </div>
                   
                   {/* Enhanced Property Stats */}
                   <div className={popupStyles.statsGrid}>
-                    {statItems.map((stat, index) => (
-                      <div
-                        key={index}
-                        role="group"
-                        aria-label={`${stat.label}: ${stat.value}`}
-                        className={`${popupStyles.statCard} ${popupStyles.statTile}`}
-                        style={{
-                          /* keep color vars for potential theming */
-                          ['--stat-bg-start' as any]: `${stat.color}15`,
-                          ['--stat-bg-end' as any]: `${stat.color}08`,
-                          ['--stat-border' as any]: `${stat.color}20`,
-                          ['--stat-shadow' as any]: `${stat.color}20`,
-                          ['--stat-border-hover' as any]: `${stat.color}60`,
-                          ['--stat-inner' as any]: `${stat.color}10`
-                        }}
-                      >
-                        <div className={popupStyles.statInnerBg} />
-                        <div className={popupStyles.statContent}>
-                          <span className={popupStyles.statIcon} aria-hidden>{stat.icon}</span>
-                          <div className={popupStyles.statText}>
-                            <div className={`${popupStyles.statValue} ${stat.isText ? popupStyles.statValueText : ''}`}>{stat.value}</div>
-                            <div className={popupStyles.statLabel}>{stat.label}</div>
-                          </div>
-                        </div>
+                  {statItems
+                    .filter((stat) => ['Bedrooms', 'Bathrooms', 'm² Living'].includes(stat.label))
+                    .map((stat, index) => (
+                    <div
+                    key={index}
+                    role="group"
+                    aria-label={`${stat.label}: ${stat.value}`}
+                    className={`${popupStyles.statCard} ${popupStyles.statTile}`}
+                    style={{
+                      /* keep color vars for potential theming */
+                      ['--stat-bg-start' as any]: `${stat.color}15`,
+                      ['--stat-bg-end' as any]: `${stat.color}08`,
+                      ['--stat-border' as any]: `${stat.color}20`,
+                      ['--stat-shadow' as any]: `${stat.color}20`,
+                      ['--stat-border-hover' as any]: `${stat.color}60`,
+                      ['--stat-inner' as any]: `${stat.color}10`
+                    }}
+                    >
+                    <div className={popupStyles.statInnerBg} />
+                    <div className={popupStyles.statContent}>
+                      <span className={popupStyles.statIcon} aria-hidden>{stat.icon}</span>
+                      <div className={popupStyles.statText}>
+                      <div className={`${popupStyles.statValue} ${stat.isText ? popupStyles.statValueText : ''}`}>{stat.value}</div>
+                      {/* label hidden per design: only show emoji + value */}
                       </div>
-                    ))}
+                    </div>
+                    </div>
+                  ))}
                   </div>
 
-                  {/* Quick Actions */}
-                  <div className={popupStyles.quickActions}>
-                    <button className={popupStyles.btnPrimary} onClick={() => setShowContactForm(true)}>📞 Contact Agent</button>
-                    <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
-                    {/* <button className={popupStyles.btnSecondary}>💰 Get Pre-Approved</button> */}
+                  {/* Quick Actions - Single Row */}
+                  <div className={popupStyles.quickActionsRow}>
+                  <button className={popupStyles.btnPrimary} onClick={() => setShowContactForm(true)}>📞 Contact Agent</button>
+                  <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
                   </div>
                 </div>
                 
