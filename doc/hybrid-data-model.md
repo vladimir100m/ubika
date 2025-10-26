@@ -8,6 +8,16 @@ date: 2025-10-26
 
 > Hybrid architecture: SQL (authoritative) + NoSQL (read-optimized) + Redis (cache & pub/sub).
 
+---
+title: "Hybrid Data Model"
+version: v0.1.0
+date: 2025-10-26
+---
+
+# Hybrid Data Model — v0.1.0 (2025-10-26)
+
+> Hybrid architecture: SQL (authoritative) + NoSQL (read-optimized) + Redis (cache & pub/sub).
+
 ## Purpose & goals
 
 - Keep transactional integrity for canonical data in SQL (Neon/Postgres).
