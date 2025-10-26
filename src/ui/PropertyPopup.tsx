@@ -407,229 +407,209 @@ export default function PropertyPopup({
 
                   {/* Facts and features section */}
                   <div ref={detailsRef} id="details-section" style={{ 
-                    padding: '24px', 
+                    padding: '32px', 
                     marginBottom: '0',
-                    borderTop: '1px solid #e9e9e9',
-                    backgroundColor: '#ffffff'
+                    borderTop: '1px solid #f1f3f4',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
                   }}>
-                    <div style={{ marginBottom: '32px' }}>
+                    <div style={{ marginBottom: '40px' }}>
                       <h3 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        margin: '0 0 24px 0',
-                        color: '#2a2a33'
-                      }}>Facts and features</h3>
+                        fontSize: '24px', 
+                        fontWeight: '700', 
+                        margin: '0 0 28px 0',
+                        color: '#2c3e50',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        letterSpacing: '-0.3px'
+                      }}>📊 Details</h3>
                       
                       <div style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                         gap: '24px'
                       }}>
-                        {/* Interior details */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Interior details</h4>
-                          
-                          <div style={{ marginBottom: '16px' }}>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Bedrooms and bathrooms</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Bedrooms</span>
-                              <span>{selectedProperty.bedrooms}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Bathrooms</span>
-                              <span>{selectedProperty.bathrooms}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Full bathrooms</span>
-                              <span>{Math.floor(selectedProperty.bathrooms)}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px'
-                            }}>
-                              <span>Half bathrooms</span>
-                              <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
-                            </div>
-                          </div>
-                        </div>
                         
                         {/* Property details */}
                         <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                          border: '2px solid #f1f3f4', 
+                          borderRadius: '16px',
+                          padding: '24px',
+                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
+                          transition: 'all 0.3s ease'
                         }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Property details</h4>
+                            fontSize: '18px', 
+                            fontWeight: '700', 
+                            marginBottom: '20px',
+                            color: '#2c3e50',
+                            borderBottom: '2px solid #667eea',
+                            paddingBottom: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>🏢 Property</h4>
                           
-                          <div style={{ marginBottom: '16px' }}>
+                          <div style={{ marginBottom: '20px' }}>
                             <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Property information</div>
+                              fontSize: '16px', 
+                              fontWeight: '700', 
+                              marginBottom: '12px',
+                              color: '#6c757d',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px'
+                            }}>📋 Info</div>
                             
                             <div style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
+                              fontSize: '15px',
+                              marginBottom: '8px',
+                              padding: '8px 0',
+                              borderBottom: '1px solid #f1f3f4'
                             }}>
-                              <span>Property type</span>
-                              <span>{selectedProperty.property_type?.display_name || 'Single Family'}</span>
+                              <span style={{ fontWeight: '600', color: '#6c757d' }}>Type</span>
+                              <span style={{ fontWeight: '700', color: '#2c3e50' }}>{selectedProperty.property_type?.display_name || 'Single Family'}</span>
                             </div>
                             
                             <div style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
+                              fontSize: '15px',
+                              marginBottom: '8px',
+                              padding: '8px 0',
+                              borderBottom: '1px solid #f1f3f4'
                             }}>
-                              <span>Year built</span>
-                              <span>{selectedProperty.year_built || '2010'}</span>
+                              <span style={{ fontWeight: '600', color: '#6c757d' }}>Built</span>
+                              <span style={{ fontWeight: '700', color: '#2c3e50' }}>{selectedProperty.year_built || '2010'}</span>
                             </div>
                             
                             <div style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
-                              fontSize: '14px'
+                              fontSize: '15px',
+                              padding: '8px 0'
                             }}>
-                              <span>Square meters</span>
-                              <span>{selectedProperty.sq_meters}</span>
+                              <span style={{ fontWeight: '600', color: '#6c757d' }}>Size</span>
+                              <span style={{ fontWeight: '700', color: '#2c3e50' }}>{selectedProperty.sq_meters} m²</span>
                             </div>
                           </div>
                           
                           <div>
                             <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Construction details</div>
+                              fontSize: '16px', 
+                              fontWeight: '700', 
+                              marginBottom: '12px',
+                              color: '#6c757d',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px'
+                            }}>🔨 Features</div>
                             
                             <div style={{ 
                               display: 'flex', 
                               alignItems: 'center', 
-                              gap: '8px',
-                              marginBottom: '4px',
-                              fontSize: '14px'
+                              gap: '12px',
+                              marginBottom: '8px',
+                              fontSize: '15px',
+                              padding: '8px 12px',
+                              background: 'rgba(102, 126, 234, 0.05)',
+                              borderRadius: '8px',
+                              transition: 'all 0.2s ease'
                             }}>
                               <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Hardwood floors</span>
+                                fontSize: '18px'
+                              }}>🌳</span>
+                              <span style={{ fontWeight: '600', color: '#2c3e50' }}>Hardwood floors</span>
                             </div>
                             
                             <div style={{ 
                               display: 'flex', 
                               alignItems: 'center', 
-                              gap: '8px',
-                              fontSize: '14px'
+                              gap: '12px',
+                              fontSize: '15px',
+                              padding: '8px 12px',
+                              background: 'rgba(102, 126, 234, 0.05)',
+                              borderRadius: '8px',
+                              transition: 'all 0.2s ease'
                             }}>
                               <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Fireplace</span>
+                                fontSize: '18px'
+                              }}>🔥</span>
+                              <span style={{ fontWeight: '600', color: '#2c3e50' }}>Fireplace</span>
                             </div>
                           </div>
                         </div>
                         
                         {/* Outdoor features */}
                         <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                          border: '2px solid #f1f3f4', 
+                          borderRadius: '16px',
+                          padding: '24px',
+                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
+                          transition: 'all 0.3s ease'
                         }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Outdoor features</h4>
+                            fontSize: '18px', 
+                            fontWeight: '700', 
+                            marginBottom: '20px',
+                            color: '#2c3e50',
+                            borderBottom: '2px solid #667eea',
+                            paddingBottom: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>🌿 Outdoor</h4>
                           
                           <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            gap: '8px',
-                            marginBottom: '4px',
-                            fontSize: '14px'
+                            gap: '12px',
+                            marginBottom: '12px',
+                            fontSize: '15px',
+                            padding: '12px 16px',
+                            background: 'rgba(102, 126, 234, 0.05)',
+                            borderRadius: '12px',
+                            transition: 'all 0.2s ease'
                           }}>
                             <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Swimming pool</span>
+                              fontSize: '20px'
+                            }}>🏊‍♂️</span>
+                            <span style={{ fontWeight: '600', color: '#2c3e50' }}>Pool</span>
                           </div>
                           
                           <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            gap: '8px',
-                            marginBottom: '4px',
-                            fontSize: '14px'
+                            gap: '12px',
+                            marginBottom: '12px',
+                            fontSize: '15px',
+                            padding: '12px 16px',
+                            background: 'rgba(102, 126, 234, 0.05)',
+                            borderRadius: '12px',
+                            transition: 'all 0.2s ease'
                           }}>
                             <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Garden</span>
+                              fontSize: '20px'
+                            }}>🌺</span>
+                            <span style={{ fontWeight: '600', color: '#2c3e50' }}>Garden</span>
                           </div>
                           
                           <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            gap: '8px',
-                            fontSize: '14px'
+                            gap: '12px',
+                            fontSize: '15px',
+                            padding: '12px 16px',
+                            background: 'rgba(102, 126, 234, 0.05)',
+                            borderRadius: '12px',
+                            transition: 'all 0.2s ease'
                           }}>
                             <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Garage</span>
+                              fontSize: '20px'
+                            }}>🚗</span>
+                            <span style={{ fontWeight: '600', color: '#2c3e50' }}>Garage</span>
                           </div>
                         </div>
                       </div>
