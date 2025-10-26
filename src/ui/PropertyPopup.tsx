@@ -1,5 +1,6 @@
 import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
+import popupStyles from '../styles/PropertyPopup.module.css';
 import React, {useState, useEffect, useRef, RefObject, useCallback, useMemo} from 'react';
 import {useRouter} from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -72,6 +73,13 @@ export default function PropertyPopup({
       }
     });
   }, [selectedProperty]);
+
+  // formatted price and per square-meter helper values
+  const formattedPrice = useMemo(() => formatNumberWithCommas(selectedProperty.price), [selectedProperty.price]);
+  const perSqm = useMemo(() => {
+    if (!selectedProperty.sq_meters || selectedProperty.sq_meters === 0) return null;
+    return Math.round(selectedProperty.price / selectedProperty.sq_meters);
+  }, [selectedProperty.price, selectedProperty.sq_meters]);
 
   // Get operation status badge info
   const getOperationStatusBadge = () => {
@@ -170,32 +178,18 @@ export default function PropertyPopup({
     <>
         <div className={styles.propertyDetailOverlay} onClick={onClose}>
           <div className={styles.propertyDetailCard} onClick={(e) => e.stopPropagation()}>
-            <div style={{position:'absolute', top:12, right:12, display:'flex', gap:'10px', zIndex:60}}>
-              <button 
+            <div className={popupStyles.topRightButtons}>
+              <button
                 onClick={(e)=>{e.stopPropagation(); onClose();}}
                 aria-label="Close property popup"
-                style={{
-                  background:'rgba(255,255,255,0.9)',
-                  border:'1px solid rgba(0,0,0,0.1)',
-                  backdropFilter:'blur(4px)',
-                  width:44, height:44, borderRadius:12,
-                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
-                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)'
-                }}
+                className={popupStyles.iconButton}
               >
-                <span style={{fontSize:22,lineHeight:1}}>×</span>
+                <span className={popupStyles.closeIcon}>×</span>
               </button>
-              <button 
+              <button
                 onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
                 aria-label="Share property details"
-                style={{
-                  background:'rgba(255,255,255,0.9)',
-                  border:'1px solid rgba(0,0,0,0.1)',
-                  backdropFilter:'blur(4px)',
-                  width:44, height:44, borderRadius:12,
-                  display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
-                  boxShadow:'0 2px 6px rgba(0,0,0,0.2)'
-                }}
+                className={popupStyles.iconButton}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="3" />
@@ -207,7 +201,7 @@ export default function PropertyPopup({
               </button>
             </div>
             
-            <div className={styles.propertyDetailHeader} style={{ height: '420px' }}>
+            <div className={`${styles.propertyDetailHeader} ${popupStyles.headerFixedHeight}`}>
               <PropertyImageGrid
                 property={selectedProperty}
                 onOpenCarousel={(startIndex) => {
@@ -216,217 +210,73 @@ export default function PropertyPopup({
                 }}
               />
             </div>
-            <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
-              <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div className={`${styles.propertyDetailContent} ${popupStyles.contentNoPadding}`}>
+              <div className={`${styles.propertyDetailBody} ${popupStyles.bodyConstrained}`}>
                 {/* Enhanced Property Header - Premium Real Estate Style */}
                 <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
                   {/* Top Row - Status and Favorites */}
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'flex-start', 
-                    marginBottom: '20px' 
-                  }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      <span style={{ 
-                        backgroundColor: getOperationStatusBadge().backgroundColor, 
-                        color: 'white', 
-                        padding: '8px 16px', 
-                        borderRadius: '25px', 
-                        fontSize: '13px', 
-                        fontWeight: '700',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.8px',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                        background: `linear-gradient(135deg, ${getOperationStatusBadge().backgroundColor} 0%, ${getOperationStatusBadge().backgroundColor}dd 100%)`
-                      }}>💰 {getOperationStatusBadge().text}</span>
-                      
+                  <div className={popupStyles.headerRow}>
+                    <div className={popupStyles.statusRow}>
+                      <span
+                        className={popupStyles.statusBadge}
+                        style={{
+                          ['--op-color' as any]: getOperationStatusBadge().backgroundColor,
+                          ['--op-color-alpha' as any]: `${getOperationStatusBadge().backgroundColor}dd`
+                        }}
+                      >💰 {getOperationStatusBadge().text}</span>
+
                       {/* New Today Badge */}
-                      <span style={{
-                        background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)',
-                        color: 'white',
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        fontSize: '11px',
-                        fontWeight: '700',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
-                      }}>� Hot Listing</span>
+                      <span className={popupStyles.hotBadge}>🔥 Hot Listing</span>
                     </div>
-                    
+
                     {/* Property Actions */}
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      <button style={{
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        border: '2px solid #f1f3f4',
-                        borderRadius: '12px',
-                        padding: '10px 16px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#2c3e50',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}>📤 Share</button>
-                      <button style={{
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        border: '2px solid #f1f3f4',
-                        borderRadius: '12px',
-                        padding: '10px 16px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#2c3e50',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}>❤️ Save</button>
+                    <div className={popupStyles.actionsGroup}>
+                      <button className={popupStyles.actionButtonLight}>📤 Share</button>
+                      <button className={popupStyles.actionButtonLight}>❤️ Save</button>
                     </div>
                   </div>
 
                   {/* Price Section */}
-                  <div style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
-                      <h1 style={{ 
-                        fontSize: '40px', 
-                        fontWeight: '900', 
-                        color: '#2c3e50', 
-                        margin: '0',
-                        lineHeight: '1',
-                        letterSpacing: '-1px',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                      }}>${formatNumberWithCommas(selectedProperty.price)}</h1>
-                      
+                  <div className={popupStyles.priceSection}>
+                    <div className={popupStyles.priceRow}>
+                      <h1 className={popupStyles.priceAmount}>${formattedPrice}</h1>
+
                       {selectedProperty.operation_status_id === 2 && (
-                        <span style={{
-                          fontSize: '18px',
-                          fontWeight: '600',
-                          color: '#6c757d',
-                          background: 'rgba(108, 117, 125, 0.1)',
-                          padding: '4px 12px',
-                          borderRadius: '20px'
-                        }}>/month</span>
+                        <span className={popupStyles.pricePerMonth}>/month</span>
                       )}
-                      
+
                       {/* Price per sqm */}
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#6c757d',
-                        background: 'rgba(102, 126, 234, 0.1)',
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        📊 ${Math.round(selectedProperty.price / selectedProperty.sq_meters)}/m²
+                      <span className={popupStyles.pricePerSqm}>
+                        📊 {perSqm ? `$${perSqm}/m²` : '—'}
                       </span>
                     </div>
-                    
+
                     {/* Market Info */}
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '16px', 
-                      alignItems: 'center',
-                      fontSize: '13px',
-                      color: '#6c757d'
-                    }}>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: 'rgba(40, 167, 69, 0.1)',
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        color: '#28a745',
-                        fontWeight: '600'
-                      }}>📈 Below Market</span>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>⏰ Listed 3 days ago</span>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>👀 24 views today</span>
+                    <div className={popupStyles.marketInfo}>
+                      <span className={popupStyles.marketBadge}>📈 Below Market</span>
+                      <span>⏰ Listed 3 days ago</span>
+                      <span>👀 24 views today</span>
                     </div>
                   </div>
 
                   {/* Address Section */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h2 style={{ 
-                      fontSize: '20px',
-                      fontWeight: '600', 
-                      color: '#2c3e50', 
-                      margin: '0 0 8px 0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>📍 {selectedProperty.address}</h2>
-                    
-                    <div style={{
-                      fontSize: '16px',
-                      color: '#6c757d',
-                      fontWeight: '500',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '12px'
-                    }}>
+                  <div className={popupStyles.addressSection}>
+                    <h2 className={popupStyles.addressTitle}>📍 {selectedProperty.address}</h2>
+
+                    <div className={popupStyles.addressMeta}>
                       🏙️ {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}
                     </div>
-                    
+
                     {/* Neighborhood Info */}
-                    <div style={{
-                      display: 'flex',
-                      gap: '16px',
-                      fontSize: '14px',
-                      color: '#6c757d'
-                    }}>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: 'rgba(102, 126, 234, 0.1)',
-                        padding: '4px 10px',
-                        borderRadius: '12px'
-                      }}>🏫 Great Schools</span>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: 'rgba(102, 126, 234, 0.1)',
-                        padding: '4px 10px',
-                        borderRadius: '12px'
-                      }}>🚊 Transit Friendly</span>
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: 'rgba(102, 126, 234, 0.1)',
-                        padding: '4px 10px',
-                        borderRadius: '12px'
-                      }}>🛒 Shopping Nearby</span>
+                    <div className={popupStyles.neighborhoodChips}>
+                      <span className={popupStyles.neighborhoodChip}>🏫 Great Schools</span>
+                      <span className={popupStyles.neighborhoodChip}>🚊 Transit Friendly</span>
+                      <span className={popupStyles.neighborhoodChip}>🛒 Shopping Nearby</span>
                     </div>
                   </div>
                   
                   {/* Enhanced Property Stats */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                    gap: '16px',
-                    marginBottom: '24px'
-                  }}>
+                  <div className={popupStyles.statsGrid}>
                     {[
                       { icon: '🛏️', value: selectedProperty.bedrooms, label: 'Bedrooms', color: '#667eea' },
                       { icon: '🚿', value: selectedProperty.bathrooms, label: 'Bathrooms', color: '#764ba2' },
@@ -435,221 +285,52 @@ export default function PropertyPopup({
                       ...(selectedProperty.year_built ? [{ icon: '🏗️', value: selectedProperty.year_built, label: 'Year Built', color: '#43e97b' }] : []),
                       { icon: '🅿️', value: '2', label: 'Parking Spots', color: '#fa709a' }
                     ].map((stat, index) => (
-                      <div key={index} style={{
-                        background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}08 100%)`,
-                        border: `2px solid ${stat.color}20`,
-                        borderRadius: '16px',
-                        padding: '20px 16px',
-                        textAlign: 'center',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                        e.currentTarget.style.boxShadow = `0 8px 25px ${stat.color}30`;
-                        e.currentTarget.style.borderColor = `${stat.color}60`;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                        e.currentTarget.style.borderColor = `${stat.color}20`;
-                      }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '-20px',
-                          right: '-20px',
-                          width: '60px',
-                          height: '60px',
-                          background: `${stat.color}10`,
-                          borderRadius: '50%',
-                          zIndex: 0
-                        }}></div>
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          <div style={{ 
-                            fontSize: '28px', 
-                            marginBottom: '8px',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                          }}>{stat.icon}</div>
-                          <div style={{ 
-                            fontSize: stat.isText ? '14px' : '24px', 
-                            fontWeight: '800', 
-                            color: '#2c3e50',
-                            marginBottom: '4px',
-                            letterSpacing: stat.isText ? '0' : '-0.5px',
-                            lineHeight: '1.2'
-                          }}>{stat.value}</div>
-                          <div style={{ 
-                            fontSize: '12px', 
-                            fontWeight: '600', 
-                            color: '#6c757d',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                          }}>{stat.label}</div>
+                      <div
+                        key={index}
+                        className={popupStyles.statCard}
+                        style={{
+                          ['--stat-bg-start' as any]: `${stat.color}15`,
+                          ['--stat-bg-end' as any]: `${stat.color}08`,
+                          ['--stat-border' as any]: `${stat.color}20`,
+                          ['--stat-shadow' as any]: `${stat.color}30`,
+                          ['--stat-border-hover' as any]: `${stat.color}60`,
+                          ['--stat-inner' as any]: `${stat.color}10`
+                        }}
+                      >
+                        <div className={popupStyles.statInnerBg} />
+                        <div className={popupStyles.statContent}>
+                          <div className={popupStyles.statIcon}>{stat.icon}</div>
+                          <div className={`${popupStyles.statValue} ${stat.isText ? popupStyles.statValueText : ''}`}>{stat.value}</div>
+                          <div className={popupStyles.statLabel}>{stat.label}</div>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Quick Actions */}
-                  <div style={{
-                    display: 'flex',
-                    gap: '12px',
-                    flexWrap: 'wrap'
-                  }}>
-                    <button style={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      padding: '12px 24px',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
-                    }}>📞 Contact Agent</button>
-                    
-                    <button style={{
-                      background: 'rgba(255, 255, 255, 0.9)',
-                      color: '#2c3e50',
-                      border: '2px solid #f1f3f4',
-                      borderRadius: '12px',
-                      padding: '12px 24px',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>📅 Schedule Tour</button>
-                    
-                    <button style={{
-                      background: 'rgba(255, 255, 255, 0.9)',
-                      color: '#2c3e50',
-                      border: '2px solid #f1f3f4',
-                      borderRadius: '12px',
-                      padding: '12px 24px',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>💰 Get Pre-Approved</button>
+                  <div className={popupStyles.quickActions}>
+                    <button className={popupStyles.btnPrimary}>📞 Contact Agent</button>
+                    <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
+                    <button className={popupStyles.btnSecondary}>💰 Get Pre-Approved</button>
                   </div>
                 </div>
                 
                 {/* What's Special Section - Zillow Style */}
-                <div style={{ 
-                  padding: '32px', 
-                  backgroundColor: '#ffffff',
-                  borderBottom: '1px solid #f1f3f4',
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
-                }}>
-                  <h3 style={{ 
-                    fontSize: '24px', 
-                    fontWeight: '700', 
-                    margin: '0 0 20px 0',
-                    color: '#2c3e50',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    letterSpacing: '-0.3px'
-                  }}>✨ Highlights</h3>
-                  <div style={{ 
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                    gap: '16px'
-                  }}>
+                <div className={popupStyles.highlightsSection}>
+                  <h3 className={popupStyles.priceMetaSmall}>✨ Highlights</h3>
+                  <div className={popupStyles.highlightGrid}>
                     {selectedProperty.features && selectedProperty.features.length > 0 
                       ? selectedProperty.features.slice(0, 6).map((feature, idx) => (
-                          <div 
-                            key={idx}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              fontSize: '15px',
-                              color: '#2c3e50',
-                              fontWeight: '600',
-                              padding: '16px 20px',
-                              background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
-                              borderRadius: '12px',
-                              borderLeft: '4px solid #667eea',
-                              transition: 'all 0.3s ease',
-                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                            }}
-                          >
-                            <span style={{ 
-                              fontSize: '20px',
-                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
-                            }}>⭐</span>
+                          <div key={idx} className={popupStyles.highlightCard}>
+                            <span className={popupStyles.highlightIcon}>⭐</span>
                             <span>{feature.name}</span>
                           </div>
                         ))
                       : (
                         <>
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px', 
-                            fontSize: '15px', 
-                            color: '#2c3e50', 
-                            fontWeight: '600',
-                            padding: '16px 20px',
-                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
-                            borderRadius: '12px',
-                            borderLeft: '4px solid #667eea'
-                          }}>
-                            <span style={{ 
-                              fontSize: '20px',
-                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
-                            }}>⭐</span>
-                            <span>Prime Location</span>
-                          </div>
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px', 
-                            fontSize: '15px', 
-                            color: '#2c3e50', 
-                            fontWeight: '600',
-                            padding: '16px 20px',
-                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
-                            borderRadius: '12px',
-                            borderLeft: '4px solid #667eea'
-                          }}>
-                            <span style={{ 
-                              fontSize: '20px',
-                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
-                            }}>⭐</span>
-                            <span>Well Maintained</span>
-                          </div>
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px', 
-                            fontSize: '15px', 
-                            color: '#2c3e50', 
-                            fontWeight: '600',
-                            padding: '16px 20px',
-                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
-                            borderRadius: '12px',
-                            borderLeft: '4px solid #667eea'
-                          }}>
-                            <span style={{ 
-                              fontSize: '20px',
-                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
-                            }}>⭐</span>
-                            <span>Modern Updates</span>
-                          </div>
+                          <div className={popupStyles.highlightCard}><span className={popupStyles.highlightIcon}>⭐</span><span>Prime Location</span></div>
+                          <div className={popupStyles.highlightCard}><span className={popupStyles.highlightIcon}>⭐</span><span>Well Maintained</span></div>
+                          <div className={popupStyles.highlightCard}><span className={popupStyles.highlightIcon}>⭐</span><span>Modern Updates</span></div>
                         </>
                       )
                     }
@@ -660,7 +341,7 @@ export default function PropertyPopup({
                 <PropertyDetailTabsNav active={activeTab} onChange={handleTabChange} />
                 
                 {/* All content sections displayed one after another */}
-                <div style={{ backgroundColor: 'white' }}>
+                <div className={popupStyles.whiteBg}>
                   {/* Overview section */}
                   <div ref={overviewRef} id="overview-section" className={styles.overviewSection}>
                     <div className={styles.overviewGrid}>
@@ -680,317 +361,93 @@ export default function PropertyPopup({
                   </div>
 
                   {/* Enhanced Facts and Features Section */}
-                  <div ref={detailsRef} id="details-section" style={{ 
-                    padding: '40px 32px', 
-                    marginBottom: '0',
-                    borderTop: '1px solid #f1f3f4',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                    position: 'relative'
-                  }}>
+                  <div ref={detailsRef} id="details-section" className={popupStyles.detailsSection}>
                     {/* Section Header */}
-                    <div style={{ 
-                      textAlign: 'center',
-                      marginBottom: '48px',
-                      position: 'relative'
-                    }}>
-                      <h3 style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '800', 
-                        margin: '0 0 12px 0',
-                        color: '#2c3e50',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '16px',
-                        letterSpacing: '-0.5px',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                      }}>📊 Property Details</h3>
-                      <p style={{
-                        fontSize: '16px',
-                        color: '#6c757d',
-                        margin: '0',
-                        fontWeight: '500'
-                      }}>Comprehensive property information at a glance</p>
-                      <div style={{
-                        width: '80px',
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                        borderRadius: '2px',
-                        margin: '16px auto 0'
-                      }}></div>
+                    <div className={popupStyles.detailsHeader}>
+                      <h3 className={popupStyles.detailsHeaderTitle}>📊 Property Details</h3>
+                      <p className={popupStyles.detailsHeaderSub}>Comprehensive property information at a glance</p>
+                      <div className={popupStyles.headerSeparator} />
                     </div>
-                    
+
                     {/* Enhanced Grid Layout */}
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-                      gap: '32px',
-                      marginBottom: '32px'
-                    }}>
+                    <div className={popupStyles.gridLayout}>
                       
                       {/* Property Information Card */}
-                      <div style={{ 
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                        border: '2px solid #f1f3f4', 
-                        borderRadius: '20px',
-                        padding: '32px',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
-                        e.currentTarget.style.boxShadow = '0 16px 48px rgba(102, 126, 234, 0.15)';
-                        e.currentTarget.style.borderColor = '#667eea';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
-                        e.currentTarget.style.borderColor = '#f1f3f4';
-                      }}>
+                      <div className={popupStyles.infoCard}>
                         {/* Card Background Decoration */}
-                        <div style={{
-                          position: 'absolute',
-                          top: '-50%',
-                          right: '-50%',
-                          width: '200px',
-                          height: '200px',
-                          background: 'linear-gradient(45deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%)',
-                          borderRadius: '50%',
-                          zIndex: 0
-                        }}></div>
-                        
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          <h4 style={{ 
-                            fontSize: '22px', 
-                            fontWeight: '800', 
-                            marginBottom: '24px',
-                            color: '#2c3e50',
-                            borderBottom: '3px solid #667eea',
-                            paddingBottom: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            letterSpacing: '-0.3px'
-                          }}>🏢 Property Info</h4>
-                          
+                        <div className={popupStyles.cardDecor} />
+
+                        <div className={popupStyles.cardInner}>
+                          <h4 className={popupStyles.cardTitle}>🏢 Property Info</h4>
+
                           {/* Property Stats Grid */}
-                          <div style={{ 
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '20px',
-                            marginBottom: '24px'
-                          }}>
+                          <div className={popupStyles.infoStatsGrid}>
                             {[
                               { icon: '🏠', label: 'Type', value: selectedProperty.property_type?.display_name || 'Single Family' },
                               { icon: '🏗️', label: 'Built', value: selectedProperty.year_built || '2010' },
                               { icon: '📐', label: 'Size', value: `${selectedProperty.sq_meters} m²` },
                               { icon: '🆔', label: 'ID', value: `#${selectedProperty.id}` }
                             ].map((item, index) => (
-                              <div key={index} style={{
-                                padding: '16px',
-                                background: 'rgba(102, 126, 234, 0.05)',
-                                borderRadius: '12px',
-                                border: '1px solid rgba(102, 126, 234, 0.1)',
-                                transition: 'all 0.3s ease',
-                                cursor: 'pointer'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
-                                e.currentTarget.style.transform = 'scale(1.02)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(102, 126, 234, 0.05)';
-                                e.currentTarget.style.transform = 'scale(1)';
-                              }}>
-                                <div style={{
-                                  fontSize: '24px',
-                                  marginBottom: '8px',
-                                  textAlign: 'center'
-                                }}>{item.icon}</div>
-                                <div style={{
-                                  fontSize: '12px',
-                                  fontWeight: '600',
-                                  color: '#6c757d',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.5px',
-                                  textAlign: 'center',
-                                  marginBottom: '4px'
-                                }}>{item.label}</div>
-                                <div style={{
-                                  fontSize: '16px',
-                                  fontWeight: '700',
-                                  color: '#2c3e50',
-                                  textAlign: 'center',
-                                  wordBreak: 'break-word'
-                                }}>{item.value}</div>
+                              <div key={index} className={popupStyles.infoStat}>
+                                <div className={popupStyles.infoStatIcon}>{item.icon}</div>
+                                <div className={popupStyles.infoStatLabel}>{item.label}</div>
+                                <div className={popupStyles.infoStatValue}>{item.value}</div>
                               </div>
                             ))}
                           </div>
                           
                           {/* Interior Features */}
                           <div>
-                            <div style={{ 
-                              fontSize: '16px', 
-                              fontWeight: '700', 
-                              marginBottom: '16px',
-                              color: '#6c757d',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}>🔨 Interior Features</div>
+                            <div className={popupStyles.interiorHeading}>🔨 Interior Features</div>
                             
-                            <div style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '12px'
-                            }}>
+                            <div className={popupStyles.featureList}>
                               {[
                                 { icon: '🌳', name: 'Hardwood Floors', description: 'Beautiful oak hardwood throughout' },
-                                { icon: '🔥', name: 'Fireplace', description: 'Gas fireplace in living room' },
-                                { icon: '❄️', name: 'Central AC', description: 'Climate controlled comfort' },
-                                { icon: '💡', name: 'Modern Lighting', description: 'LED fixtures throughout' }
-                              ].map((feature, index) => (
-                                <div key={index} style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: '16px',
-                                  fontSize: '15px',
-                                  padding: '12px 16px',
-                                  background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)',
-                                  borderRadius: '12px',
-                                  border: '1px solid rgba(102, 126, 234, 0.1)',
-                                  transition: 'all 0.3s ease',
-                                  cursor: 'pointer'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
-                                  e.currentTarget.style.transform = 'translateX(4px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)';
-                                  e.currentTarget.style.transform = 'translateX(0)';
-                                }}>
-                                  <span style={{ 
-                                    fontSize: '20px',
-                                    minWidth: '20px'
-                                  }}>{feature.icon}</span>
-                                  <div>
-                                    <div style={{ fontWeight: '700', color: '#2c3e50' }}>{feature.name}</div>
-                                    <div style={{ fontSize: '13px', color: '#6c757d', marginTop: '2px' }}>{feature.description}</div>
+                                  { icon: '🔥', name: 'Fireplace', description: 'Gas fireplace in living room' },
+                                  { icon: '❄️', name: 'Central AC', description: 'Climate controlled comfort' },
+                                  { icon: '💡', name: 'Modern Lighting', description: 'LED fixtures throughout' }
+                                ].map((feature, index) => (
+                                  <div key={index} className={popupStyles.featureItem}>
+                                    <span className={popupStyles.featureIcon}>{feature.icon}</span>
+                                    <div>
+                                      <div className={popupStyles.featureName}>{feature.name}</div>
+                                      <div className={popupStyles.featureDesc}>{feature.description}</div>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
                             </div>
                           </div>
                         </div>
                       </div>
                       
                       {/* Outdoor & Amenities Card */}
-                      <div style={{ 
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                        border: '2px solid #f1f3f4', 
-                        borderRadius: '20px',
-                        padding: '32px',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
-                        e.currentTarget.style.boxShadow = '0 16px 48px rgba(102, 126, 234, 0.15)';
-                        e.currentTarget.style.borderColor = '#667eea';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
-                        e.currentTarget.style.borderColor = '#f1f3f4';
-                      }}>
+                      <div className={popupStyles.outdoorCard}>
                         {/* Card Background Decoration */}
-                        <div style={{
-                          position: 'absolute',
-                          top: '-50%',
-                          left: '-50%',
-                          width: '200px',
-                          height: '200px',
-                          background: 'linear-gradient(45deg, rgba(118, 75, 162, 0.03) 0%, rgba(102, 126, 234, 0.03) 100%)',
-                          borderRadius: '50%',
-                          zIndex: 0
-                        }}></div>
+                        <div className={popupStyles.cardDecorLeft} />
                         
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          <h4 style={{ 
-                            fontSize: '22px', 
-                            fontWeight: '800', 
-                            marginBottom: '24px',
-                            color: '#2c3e50',
-                            borderBottom: '3px solid #667eea',
-                            paddingBottom: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            letterSpacing: '-0.3px'
-                          }}>🌿 Outdoor & Amenities</h4>
+                        <div className={popupStyles.cardInner}>
+                          <h4 className={popupStyles.cardTitle}>🌿 Outdoor & Amenities</h4>
                           
                           {/* Room Stats */}
-                          <div style={{ 
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: '16px',
-                            marginBottom: '32px'
-                          }}>
+                          <div className={popupStyles.roomStatsGrid}>
                             {[
                               { icon: '🛏️', label: 'Beds', value: selectedProperty.bedrooms },
                               { icon: '🚿', label: 'Baths', value: selectedProperty.bathrooms },
                               { icon: '🅿️', label: 'Parking', value: '2 cars' }
                             ].map((item, index) => (
-                              <div key={index} style={{
-                                padding: '20px 16px',
-                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
-                                borderRadius: '16px',
-                                textAlign: 'center',
-                                border: '2px solid rgba(102, 126, 234, 0.1)',
-                                transition: 'all 0.3s ease',
-                                cursor: 'pointer'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.05)';
-                                e.currentTarget.style.borderColor = '#667eea';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.1)';
-                              }}>
-                                <div style={{ fontSize: '28px', marginBottom: '8px' }}>{item.icon}</div>
-                                <div style={{ fontSize: '24px', fontWeight: '800', color: '#2c3e50', marginBottom: '4px' }}>{item.value}</div>
-                                <div style={{ fontSize: '12px', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase' }}>{item.label}</div>
+                              <div key={index} className={popupStyles.roomStatItem}>
+                                <div className={popupStyles.roomStatIcon}>{item.icon}</div>
+                                <div className={popupStyles.roomStatValue}>{item.value}</div>
+                                <div className={popupStyles.roomStatLabel}>{item.label}</div>
                               </div>
                             ))}
                           </div>
                           
                           {/* Outdoor Features */}
                           <div>
-                            <div style={{ 
-                              fontSize: '16px', 
-                              fontWeight: '700', 
-                              marginBottom: '16px',
-                              color: '#6c757d',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}>🌟 Outdoor Features</div>
+                            <div className={popupStyles.outdoorHeading}>🌟 Outdoor Features</div>
                             
-                            <div style={{
-                              display: 'grid',
-                              gridTemplateColumns: '1fr',
-                              gap: '16px'
-                            }}>
+                            <div className={popupStyles.outdoorFeatureList}>
                               {[
                                 { icon: '🏊‍♂️', name: 'Swimming Pool', description: 'Heated saltwater pool with spa', highlight: true },
                                 { icon: '🌺', name: 'Landscaped Garden', description: 'Professional landscape design', highlight: true },
@@ -999,53 +456,13 @@ export default function PropertyPopup({
                                 { icon: '🌳', name: 'Mature Trees', description: 'Privacy and shade' },
                                 { icon: '💡', name: 'Outdoor Lighting', description: 'LED landscape lighting' }
                               ].map((feature, index) => (
-                                <div key={index} style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: '16px',
-                                  fontSize: '15px',
-                                  padding: '16px 20px',
-                                  background: feature.highlight 
-                                    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)'
-                                    : 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)',
-                                  borderRadius: '16px',
-                                  border: feature.highlight 
-                                    ? '2px solid rgba(102, 126, 234, 0.3)'
-                                    : '1px solid rgba(102, 126, 234, 0.1)',
-                                  transition: 'all 0.3s ease',
-                                  cursor: 'pointer',
-                                  position: 'relative'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform = 'translateX(8px)';
-                                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.2)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform = 'translateX(0)';
-                                  e.currentTarget.style.boxShadow = 'none';
-                                }}>
-                                  {feature.highlight && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      top: '8px',
-                                      right: '8px',
-                                      background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                                      color: 'white',
-                                      fontSize: '10px',
-                                      padding: '4px 8px',
-                                      borderRadius: '12px',
-                                      fontWeight: '600',
-                                      textTransform: 'uppercase'
-                                    }}>Featured</div>
-                                  )}
-                                  <span style={{ 
-                                    fontSize: '24px',
-                                    minWidth: '24px'
-                                  }}>{feature.icon}</span>
-                                  <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: '700', color: '#2c3e50', marginBottom: '2px' }}>{feature.name}</div>
-                                    <div style={{ fontSize: '13px', color: '#6c757d' }}>{feature.description}</div>
-                                  </div>
+                                <div key={index} className={`${popupStyles.outdoorItem} ${feature.highlight ? popupStyles.outdoorHighlight : ''}`}>
+                                      {feature.highlight && <div className={popupStyles.featureBadge}>Featured</div>}
+                                      <span className={popupStyles.outdoorIcon}>{feature.icon}</span>
+                                      <div className={popupStyles.outdoorItemContent}>
+                                        <div className={popupStyles.outdoorItemTitle}>{feature.name}</div>
+                                        <div className={popupStyles.outdoorItemDesc}>{feature.description}</div>
+                                      </div>
                                 </div>
                               ))}
                             </div>
@@ -1055,188 +472,92 @@ export default function PropertyPopup({
                     </div>
                     
                     {/* Additional Info Banner */}
-                    <div style={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: '20px',
-                      padding: '24px 32px',
-                      color: 'white',
-                      textAlign: 'center',
-                      boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
-                    }}>
-                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>🏆</div>
-                      <h5 style={{ 
-                        fontSize: '18px', 
-                        fontWeight: '700', 
-                        margin: '0 0 8px 0',
-                        letterSpacing: '-0.2px'
-                      }}>Premium Property Features</h5>
-                      <p style={{ 
-                        fontSize: '14px', 
-                        margin: '0',
-                        opacity: '0.9',
-                        fontWeight: '500'
-                      }}>This property includes high-end finishes, energy-efficient systems, and smart home integration</p>
+                    <div className={popupStyles.additionalBanner}>
+                      <div className={popupStyles.bannerIcon}>🏆</div>
+                      <h5 className={popupStyles.bannerTitle}>Premium Property Features</h5>
+                      <p className={popupStyles.bannerText}>This property includes high-end finishes, energy-efficient systems, and smart home integration</p>
                     </div>
                   </div>
                   
                   {/* Location Section */}
-                  <div ref={mapLocationRef} id="location-section" style={{ 
-                    marginBottom: '0',
-                    padding: '24px',
-                    borderTop: '1px solid #e9e9e9',
-                    backgroundColor: '#ffffff'
-                  }}>
+                    <div ref={mapLocationRef} id="location-section" className={popupStyles.locationSection}>
                     <div>
-                      <h2 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: '600', 
-                        marginBottom: '24px',
-                        color: '#2a2a33'
-                      }}>Location</h2>
+                      <h2 className={popupStyles.sectionTitle}>Location</h2>
                       
                       {/* Map Subsection */}
-                      <div style={{ marginBottom: '32px' }}>
-                        <h3 style={{ 
-                          fontSize: '16px', 
-                          fontWeight: '600', 
-                          marginBottom: '16px',
-                          color: '#2a2a33'
-                        }}>Map</h3>
-                        <div style={{ 
-                          width: '100%', 
-                          height: '350px', 
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                          position: 'relative'
-                        }}>
-                          <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
+                      <div className={popupStyles.subsectionBlock}>
+                        <h3 className={popupStyles.subsectionTitle}>Map</h3>
+                        <div className={popupStyles.mapBox}>
+                          <div ref={mapRef} className={popupStyles.mapInner}></div>
                         </div>
                       </div>
                       
                       {/* Neighborhood Subsection */}
                       <div>
-                        <h3 style={{ 
-                          fontSize: '16px', 
-                          fontWeight: '600', 
-                          marginBottom: '16px',
-                          color: '#2a2a33'
-                        }}>Neighborhood</h3>
-                        <p style={{ 
-                          fontSize: '14px', 
-                          lineHeight: '1.6', 
-                          color: '#666',
-                          marginBottom: '24px',
-                          margin: '0 0 24px 0'
-                        }}>
+                        <h3 className={popupStyles.subsectionTitle}>Neighborhood</h3>
+                        <p className={popupStyles.neighborhoodParagraph}>
                           This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
                         </p>
                       
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                        gap: '20px'
-                      }}>
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '8px',
-                          padding: '16px',
-                          backgroundColor: '#fafafa'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '14px', 
-                            fontWeight: '600', 
-                            marginBottom: '12px',
-                            color: '#2a2a33',
-                            borderBottom: 'none',
-                            paddingBottom: '0'
-                          }}>Transportation</h4>
+                      <div className={popupStyles.neighborhoodGrid}>
+                        <div className={popupStyles.neighborhoodCard}>
+                          <h4 className={popupStyles.cardHeading}>Transportation</h4>
                           
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px',
-                            marginBottom: '12px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                          <div className={popupStyles.iconRow}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={popupStyles.iconSvg}>
                               <path d="M8 5H16C17.1046 5 18 5.89543 18 7V19C18 20.1046 17.1046 21 16 21H8C6.89543 21 6 20.1046 6 19V7C6 5.89543 6.89543 5 8 5Z" stroke="#1277e1" strokeWidth="2" />
                               <path d="M6 9H18" stroke="#1277e1" strokeWidth="2" />
                               <path d="M9 17H15" stroke="#1277e1" strokeWidth="2" />
                             </svg>
                             <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Public Transportation</div>
-                              <div style={{ fontSize: '14px' }}>
+                              <div className={popupStyles.smallHeading}>Public Transportation</div>
+                              <div className={popupStyles.smallText}>
                                 {neighborhoodData?.subway_access || '10 minute walk to nearest subway station'}
                               </div>
                             </div>
                           </div>
                           
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                          <div className={popupStyles.iconRowNoMargin}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={popupStyles.iconSvg}>
                               <path d="M5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5Z" stroke="#1277e1" strokeWidth="2" />
                               <path d="M3 9H21" stroke="#1277e1" strokeWidth="2" />
                               <path d="M7 15H8" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
                               <path d="M12 15H13" stroke="#1277e1" strokeWidth="2" strokeLinecap="round" />
                             </svg>
                             <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Highway Access</div>
-                              <div style={{ fontSize: '14px' }}>
+                              <div className={popupStyles.smallHeading}>Highway Access</div>
+                              <div className={popupStyles.smallText}>
                                 {neighborhoodData?.highway_access || '5 minute drive to nearest highway'}
                               </div>
                             </div>
                           </div>
                         </div>
                         
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '8px',
-                          padding: '16px',
-                          backgroundColor: '#fafafa'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '14px', 
-                            fontWeight: '600', 
-                            marginBottom: '12px',
-                            color: '#2a2a33',
-                            borderBottom: 'none',
-                            paddingBottom: '0'
-                          }}>Restaurants & Shopping</h4>
+                        <div className={popupStyles.neighborhoodCard}>
+                          <h4 className={popupStyles.cardHeading}>Restaurants & Shopping</h4>
                           
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px',
-                            marginBottom: '12px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                          <div className={popupStyles.iconRow}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={popupStyles.iconSvg}>
                               <path d="M14 3H10C9.44772 3 9 3.44772 9 4V11H15V4C15 3.44772 14.5523 3 14 3Z" stroke="#1277e1" strokeWidth="2" />
                               <path d="M9 7H6C5.44772 7 5 7.44772 5 8V11H9V7Z" stroke="#1277e1" strokeWidth="2" />
                               <path d="M15 7H18C18.5523 7 19 7.44772 19 8V11H15V7Z" stroke="#1277e1" strokeWidth="2" />
                               <path d="M5 11H19V16C19 18.2091 17.2091 20 15 20H9C6.79086 20 5 18.2091 5 16V11Z" stroke="#1277e1" strokeWidth="2" />
                             </svg>
                             <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Restaurants</div>
-                              <div style={{ fontSize: '14px' }}>
+                              <div className={popupStyles.smallHeading}>Restaurants</div>
+                              <div className={popupStyles.smallText}>
                                 {neighborhoodData?.dining_options || 'Variety of dining options within walking distance'}
                               </div>
                             </div>
                           </div>
                           
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            gap: '8px'
-                          }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: '2px' }}>
+                          <div className={popupStyles.iconRowNoMargin}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={popupStyles.iconSvg}>
                               <path d="M16 6V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 2.89543 8 4V6M3 6H21V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6Z" stroke="#1277e1" strokeWidth="2" />
                             </svg>
                             <div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>Shopping</div>
-                              <div style={{ fontSize: '14px' }}>
+                              <div className={popupStyles.smallHeading}>Shopping</div>
+                              <div className={popupStyles.smallText}>
                                 {neighborhoodData?.shopping_access || 'Shopping centers and grocery stores nearby'}
                               </div>
                             </div>
@@ -1248,247 +569,81 @@ export default function PropertyPopup({
                 </div>
 
                 {/* Contact Agent Section */}
-                <div style={{ 
-                  padding: '24px', 
-                  backgroundColor: '#f8f9fa',
-                  borderTop: '1px solid #e9e9e9'
-                }}>
-                    <div style={{ 
-                      maxWidth: '600px', 
-                      margin: '0 auto', 
-                      textAlign: 'center' 
-                    }}>
+                <div className={popupStyles.contactSection}>
+                    <div className={popupStyles.contactInner}>
                       {!showContactForm ? (
                         // Initial state - just show the contact button
-                        <div style={{ 
-                          opacity: showContactForm ? 0 : 1,
-                          transition: 'opacity 0.3s ease'
-                        }}>
-                          <h3 style={{ 
-                            fontSize: '24px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
-                          }}>Contact an agent about this home</h3>
-                          <p style={{ 
-                            fontSize: '16px', 
-                            color: '#666', 
-                            marginBottom: '24px',
-                            lineHeight: '1.5'
-                          }}>
-                            Get more information about this property, schedule a viewing, or ask any questions you may have.
-                          </p>
+                        <div className={`${popupStyles.contactIntro} ${showContactForm ? popupStyles.hidden : ''}`}>
+                          <h3>Contact an agent about this home</h3>
+                          <p>Get more information about this property, schedule a viewing, or ask any questions you may have.</p>
                           <button 
                             onClick={() => setShowContactForm(true)}
-                            style={{
-                              padding: '16px 32px',
-                              backgroundColor: '#1277e1',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontSize: '18px',
-                              fontWeight: '600',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              boxShadow: '0 4px 12px rgba(18, 119, 225, 0.3)'
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.backgroundColor = '#0f6bc7';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                              e.currentTarget.style.boxShadow = '0 6px 16px rgba(18, 119, 225, 0.4)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.backgroundColor = '#1277e1';
-                              e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(18, 119, 225, 0.3)';
-                            }}
+                            className={popupStyles.contactPrimaryBtn}
                           >
                             Contact Agent
                           </button>
                         </div>
                       ) : (
                         // Contact form state
-                        <div style={{ 
-                          opacity: showContactForm ? 1 : 0,
-                          transition: 'opacity 0.3s ease',
-                          backgroundColor: 'white',
-                          padding: '32px',
-                          borderRadius: '12px',
-                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
-                          textAlign: 'left'
-                        }}>
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            marginBottom: '24px'
-                          }}>
-                            <h3 style={{ 
-                              fontSize: '20px', 
-                              fontWeight: '600', 
-                              margin: '0',
-                              color: '#2a2a33'
-                            }}>Contact an agent</h3>
+                        <div className={`${popupStyles.contactCard} ${showContactForm ? '' : popupStyles.hidden}`}>
+                          <div className={popupStyles.contactHeader}>
+                            <h3>Contact an agent</h3>
                             <button
                               onClick={handleCloseContactForm}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                fontSize: '24px',
-                                cursor: 'pointer',
-                                color: '#666',
-                                padding: '0',
-                                lineHeight: '1',
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'background-color 0.2s ease'
-                              }}
-                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              className={popupStyles.contactCloseBtn}
                               aria-label="Close contact form"
                             >
                               ×
                             </button>
                           </div>
-                          
-                          <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                            gap: '16px',
-                            marginBottom: '16px'
-                          }}>
+
+                          <div className={popupStyles.contactFieldsGrid}>
                             <div>
                               <input 
+                                className={popupStyles.inputField}
                                 type="text" 
                                 placeholder="Your Name" 
                                 value={contactFormData.name}
                                 onChange={(e) => handleContactFormChange('name', e.target.value)}
-                                style={{
-                                  width: '100%',
-                                  padding: '12px 16px',
-                                  border: '2px solid #e9e9e9',
-                                  borderRadius: '8px',
-                                  fontSize: '16px',
-                                  transition: 'border-color 0.2s ease',
-                                  boxSizing: 'border-box'
-                                }}
-                                onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
-                                onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
                               />
                             </div>
                             <div>
                               <input 
+                                className={popupStyles.inputField}
                                 type="text" 
                                 placeholder="Phone" 
                                 value={contactFormData.phone}
                                 onChange={(e) => handleContactFormChange('phone', e.target.value)}
-                                style={{
-                                  width: '100%',
-                                  padding: '12px 16px',
-                                  border: '2px solid #e9e9e9',
-                                  borderRadius: '8px',
-                                  fontSize: '16px',
-                                  transition: 'border-color 0.2s ease',
-                                  boxSizing: 'border-box'
-                                }}
-                                onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
-                                onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
                               />
                             </div>
                           </div>
-                          
-                          <div style={{ marginBottom: '24px' }}>
+
+                          <div className={popupStyles.contactFieldSingle}>
                             <input 
+                              className={popupStyles.inputField}
                               type="email" 
                               placeholder="Email" 
                               value={contactFormData.email}
                               onChange={(e) => handleContactFormChange('email', e.target.value)}
-                              style={{
-                                width: '100%',
-                                padding: '12px 16px',
-                                border: '2px solid #e9e9e9',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                transition: 'border-color 0.2s ease',
-                                boxSizing: 'border-box',
-                                marginBottom: '16px'
-                              }}
-                              onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
-                              onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
                             />
                             <textarea 
+                              className={popupStyles.textareaField}
                               rows={4} 
                               placeholder="I'm interested in this property" 
                               value={contactFormData.message}
                               onChange={(e) => handleContactFormChange('message', e.target.value)}
-                              style={{
-                                width: '100%',
-                                padding: '12px 16px',
-                                border: '2px solid #e9e9e9',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                transition: 'border-color 0.2s ease',
-                                boxSizing: 'border-box',
-                                resize: 'vertical',
-                                minHeight: '100px'
-                              }}
-                              onFocus={(e) => e.currentTarget.style.borderColor = '#1277e1'}
-                              onBlur={(e) => e.currentTarget.style.borderColor = '#e9e9e9'}
                             />
                           </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            gap: '12px',
-                            justifyContent: 'flex-end'
-                          }}>
+
+                          <div className={popupStyles.formActions}>
                             <button 
                               onClick={handleCloseContactForm}
-                              style={{
-                                padding: '12px 24px',
-                                backgroundColor: '#f5f5f5',
-                                color: '#666',
-                                border: '2px solid #e9e9e9',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = '#e9e9e9';
-                                e.currentTarget.style.borderColor = '#ddd';
-                              }}
-                              onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = '#f5f5f5';
-                                e.currentTarget.style.borderColor = '#e9e9e9';
-                              }}
+                              className={popupStyles.btnCancel}
                             >
                               Cancel
                             </button>
                             <button 
-                              style={{
-                                padding: '12px 24px',
-                                backgroundColor: '#1277e1',
-                                color: 'white',
-                                border: '2px solid #1277e1',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = '#0f6bc7';
-                                e.currentTarget.style.borderColor = '#0f6bc7';
-                              }}
-                              onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = '#1277e1';
-                                e.currentTarget.style.borderColor = '#1277e1';
-                              }}
+                              className={popupStyles.btnSend}
                             >
                               Send Message
                             </button>
