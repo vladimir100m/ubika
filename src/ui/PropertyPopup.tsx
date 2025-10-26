@@ -10,7 +10,6 @@ import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../lib/formatPropertyUtils';
 import PropertyDetailTabsNav from './PropertyDetailTabsNav';
 import PropertyImageCarousel from './PropertyImageCarousel';
-// Favorite/save feature removed
 
 export default function PropertyPopup({ 
   selectedProperty, 
@@ -60,9 +59,6 @@ export default function PropertyPopup({
     }
   }, []);
   
-  // Handler for saving/unsaving a property
-  // Favorite/save handlers removed
-
   // Handler for gallery navigation
   const handleImageChange = useCallback((direction: 'next' | 'prev') => {
     setImageLoading(true);
@@ -189,7 +185,6 @@ export default function PropertyPopup({
               >
                 <span style={{fontSize:22,lineHeight:1}}>×</span>
               </button>
-              {/* Favorite/save button removed */}
               <button 
                 onClick={(e)=>{e.stopPropagation(); if(navigator.share){navigator.share({title:selectedProperty.title || 'Property', text:selectedProperty.description || 'Check this property', url: window.location.href}).catch(()=>{});} else {navigator.clipboard.writeText(window.location.href); alert('Link copied');}}}
                 aria-label="Share property details"
@@ -225,46 +220,168 @@ export default function PropertyPopup({
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 {/* Property Basic Info - Zillow style */}
                 <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
                       <span style={{ 
                         backgroundColor: getOperationStatusBadge().backgroundColor, 
                         color: 'white', 
-                        padding: '4px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '12px', 
-                        fontWeight: '600',
-                        display: 'inline-block',
-                        marginBottom: '8px'
-                      }}>{getOperationStatusBadge().text}</span>
+                        padding: '6px 12px', 
+                        borderRadius: '8px', 
+                        fontSize: '13px', 
+                        fontWeight: '700',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '12px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                      }}>💰 {getOperationStatusBadge().text}</span>
                       <h1 style={{ 
-                        fontSize: '28px', 
-                        fontWeight: '600', 
-                        color: '#2a2a33', 
-                        margin: '0 0 8px 0',
-                        lineHeight: '1.2'
-                      }}>${formatNumberWithCommas(selectedProperty.price)}</h1>
+                        fontSize: '32px', 
+                        fontWeight: '800', 
+                        color: '#2c3e50', 
+                        margin: '0 0 12px 0',
+                        lineHeight: '1.2',
+                        letterSpacing: '-0.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}> $ ${formatNumberWithCommas(selectedProperty.price)}</h1>
                     </div>
                   </div>
                   <h2 style={{ 
-                    fontSize: '16px',
-                    fontWeight: '400', 
-                    color: '#2a2a33', 
-                    margin: '0 0 4px 0' 
-                  }}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
+                    fontSize: '18px',
+                    fontWeight: '500', 
+                    color: '#6c757d', 
+                    margin: '0 0 8px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>📍 {selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
                   
                   {/* Property Stats */}
                   <div className={styles.propertyStatsRow}>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.bedrooms}</strong><span>beds</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.sq_meters}</strong><span>m²</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.property_type?.display_name || 'House'}</strong></div>
+                    <div className={styles.propertyStat}><span>🛏️</span><strong>{selectedProperty.bedrooms}</strong><span>beds</span></div>
+                    <div className={styles.propertyStat}><span>🚿</span><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
+                    <div className={styles.propertyStat}><span>📐</span><strong>{selectedProperty.sq_meters}</strong><span>m²</span></div>
+                    <div className={styles.propertyStat}><span>🏠</span><strong>{selectedProperty.property_type?.display_name || 'House'}</strong></div>
                     {selectedProperty.year_built && (
-                      <div className={styles.propertyStat}><strong>{selectedProperty.year_built}</strong><span>built</span></div>
+                      <div className={styles.propertyStat}><span>🏗️</span><strong>{selectedProperty.year_built}</strong><span>built</span></div>
                     )}
                   </div>
                 </div>
                 
+                {/* What's Special Section - Zillow Style */}
+                <div style={{ 
+                  padding: '32px', 
+                  backgroundColor: '#ffffff',
+                  borderBottom: '1px solid #f1f3f4',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+                }}>
+                  <h3 style={{ 
+                    fontSize: '24px', 
+                    fontWeight: '700', 
+                    margin: '0 0 20px 0',
+                    color: '#2c3e50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    letterSpacing: '-0.3px'
+                  }}>✨ Highlights</h3>
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: '16px'
+                  }}>
+                    {selectedProperty.features && selectedProperty.features.length > 0 
+                      ? selectedProperty.features.slice(0, 6).map((feature, idx) => (
+                          <div 
+                            key={idx}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              fontSize: '15px',
+                              color: '#2c3e50',
+                              fontWeight: '600',
+                              padding: '16px 20px',
+                              background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                              borderRadius: '12px',
+                              borderLeft: '4px solid #667eea',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                            }}
+                          >
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
+                            <span>{feature.name}</span>
+                          </div>
+                        ))
+                      : (
+                        <>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            fontSize: '15px', 
+                            color: '#2c3e50', 
+                            fontWeight: '600',
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                            borderRadius: '12px',
+                            borderLeft: '4px solid #667eea'
+                          }}>
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
+                            <span>Prime Location</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            fontSize: '15px', 
+                            color: '#2c3e50', 
+                            fontWeight: '600',
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                            borderRadius: '12px',
+                            borderLeft: '4px solid #667eea'
+                          }}>
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
+                            <span>Well Maintained</span>
+                          </div>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            fontSize: '15px', 
+                            color: '#2c3e50', 
+                            fontWeight: '600',
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                            borderRadius: '12px',
+                            borderLeft: '4px solid #667eea'
+                          }}>
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
+                            <span>Modern Updates</span>
+                          </div>
+                        </>
+                      )
+                    }
+                  </div>
+                </div>
+
                 {/* Tabs Navigation */}
                 <PropertyDetailTabsNav active={activeTab} onChange={handleTabChange} />
                 
@@ -275,7 +392,7 @@ export default function PropertyPopup({
                     <div className={styles.overviewGrid}>
                       <div className={styles.overviewMain}>
                         <div className={styles.descBlock}>
-                          <h3 className={styles.sectionHeading}>Overview</h3>
+                          <h3 className={styles.sectionHeading}>About this home</h3>
                           <p className={`${styles.descText} ${!descExpanded ? styles.descClamp : ''}`}>{selectedProperty.description || `This beautiful ${selectedProperty.property_type?.display_name || 'property'} features ${selectedProperty.bedrooms} bedrooms and ${selectedProperty.bathrooms} bathrooms across ${selectedProperty.sq_meters} square meters of living space. Located in a desirable neighborhood in ${selectedProperty.city}, ${selectedProperty.state}, this home offers easy access to local amenities, schools, and transportation.`}</p>
                           {(!descExpanded && (selectedProperty.description?.length || 0) > 320) && (
                             <button className={styles.readMoreBtn} onClick={() => setDescExpanded(true)}>Read more</button>
@@ -288,270 +405,435 @@ export default function PropertyPopup({
                     </div>
                   </div>
 
-                  {/* Facts and features section */}
-                  <div ref={detailsRef} id="details-section" style={{ padding: '24px', marginBottom: '40px' }}>
-                    <div style={{ marginBottom: '32px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                  {/* Enhanced Facts and Features Section */}
+                  <div ref={detailsRef} id="details-section" style={{ 
+                    padding: '40px 32px', 
+                    marginBottom: '0',
+                    borderTop: '1px solid #f1f3f4',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                    position: 'relative'
+                  }}>
+                    {/* Section Header */}
+                    <div style={{ 
+                      textAlign: 'center',
+                      marginBottom: '48px',
+                      position: 'relative'
+                    }}>
+                      <h3 style={{ 
+                        fontSize: '32px', 
+                        fontWeight: '800', 
+                        margin: '0 0 12px 0',
+                        color: '#2c3e50',
+                        display: 'flex',
                         alignItems: 'center',
-                        marginBottom: '16px'
-                      }}>
-                        <h3 style={{ 
-                          fontSize: '20px', 
-                          fontWeight: '600', 
-                          margin: '0',
-                          color: '#2a2a33'
-                        }}>Facts and features</h3>
-                        
-                        {/* Favorite/save controls removed */}
-                      </div>
+                        justifyContent: 'center',
+                        gap: '16px',
+                        letterSpacing: '-0.5px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}>📊 Property Details</h3>
+                      <p style={{
+                        fontSize: '16px',
+                        color: '#6c757d',
+                        margin: '0',
+                        fontWeight: '500'
+                      }}>Comprehensive property information at a glance</p>
+                      <div style={{
+                        width: '80px',
+                        height: '4px',
+                        background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                        borderRadius: '2px',
+                        margin: '16px auto 0'
+                      }}></div>
+                    </div>
+                    
+                    {/* Enhanced Grid Layout */}
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                      gap: '32px',
+                      marginBottom: '32px'
+                    }}>
                       
+                      {/* Property Information Card */}
                       <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                        border: '2px solid #f1f3f4', 
+                        borderRadius: '20px',
+                        padding: '32px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-8px)';
+                        e.currentTarget.style.boxShadow = '0 16px 48px rgba(102, 126, 234, 0.15)';
+                        e.currentTarget.style.borderColor = '#667eea';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+                        e.currentTarget.style.borderColor = '#f1f3f4';
                       }}>
-                        {/* Interior details */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Interior details</h4>
-                          
-                          <div style={{ marginBottom: '16px' }}>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Bedrooms and bathrooms</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Bedrooms</span>
-                              <span>{selectedProperty.bedrooms}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Bathrooms</span>
-                              <span>{selectedProperty.bathrooms}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Full bathrooms</span>
-                              <span>{Math.floor(selectedProperty.bathrooms)}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px'
-                            }}>
-                              <span>Half bathrooms</span>
-                              <span>{selectedProperty.bathrooms % 1 > 0 ? 1 : 0}</span>
-                            </div>
-                          </div>
-                        </div>
+                        {/* Card Background Decoration */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          right: '-50%',
+                          width: '200px',
+                          height: '200px',
+                          background: 'linear-gradient(45deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%)',
+                          borderRadius: '50%',
+                          zIndex: 0
+                        }}></div>
                         
-                        {/* Property details */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Property details</h4>
+                            fontSize: '22px', 
+                            fontWeight: '800', 
+                            marginBottom: '24px',
+                            color: '#2c3e50',
+                            borderBottom: '3px solid #667eea',
+                            paddingBottom: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            letterSpacing: '-0.3px'
+                          }}>🏢 Property Info</h4>
                           
-                          <div style={{ marginBottom: '16px' }}>
-                            <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Property information</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Property type</span>
-                              <span>{selectedProperty.property_type?.display_name || 'Single Family'}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px',
-                              marginBottom: '4px'
-                            }}>
-                              <span>Year built</span>
-                              <span>{selectedProperty.year_built || '2010'}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '14px'
-                            }}>
-                              <span>Square meters</span>
-                              <span>{selectedProperty.sq_meters}</span>
-                            </div>
+                          {/* Property Stats Grid */}
+                          <div style={{ 
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '20px',
+                            marginBottom: '24px'
+                          }}>
+                            {[
+                              { icon: '🏠', label: 'Type', value: selectedProperty.property_type?.display_name || 'Single Family' },
+                              { icon: '🏗️', label: 'Built', value: selectedProperty.year_built || '2010' },
+                              { icon: '📐', label: 'Size', value: `${selectedProperty.sq_meters} m²` },
+                              { icon: '🆔', label: 'ID', value: `#${selectedProperty.id}` }
+                            ].map((item, index) => (
+                              <div key={index} style={{
+                                padding: '16px',
+                                background: 'rgba(102, 126, 234, 0.05)',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(102, 126, 234, 0.1)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                                e.currentTarget.style.transform = 'scale(1.02)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(102, 126, 234, 0.05)';
+                                e.currentTarget.style.transform = 'scale(1)';
+                              }}>
+                                <div style={{
+                                  fontSize: '24px',
+                                  marginBottom: '8px',
+                                  textAlign: 'center'
+                                }}>{item.icon}</div>
+                                <div style={{
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                  color: '#6c757d',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                  textAlign: 'center',
+                                  marginBottom: '4px'
+                                }}>{item.label}</div>
+                                <div style={{
+                                  fontSize: '16px',
+                                  fontWeight: '700',
+                                  color: '#2c3e50',
+                                  textAlign: 'center',
+                                  wordBreak: 'break-word'
+                                }}>{item.value}</div>
+                              </div>
+                            ))}
                           </div>
                           
+                          {/* Interior Features */}
                           <div>
                             <div style={{ 
-                              fontSize: '14px', 
-                              fontWeight: '600', 
-                              marginBottom: '8px'
-                            }}>Construction details</div>
+                              fontSize: '16px', 
+                              fontWeight: '700', 
+                              marginBottom: '16px',
+                              color: '#6c757d',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}>🔨 Interior Features</div>
                             
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              marginBottom: '4px',
-                              fontSize: '14px'
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '12px'
                             }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Hardwood floors</span>
+                              {[
+                                { icon: '🌳', name: 'Hardwood Floors', description: 'Beautiful oak hardwood throughout' },
+                                { icon: '🔥', name: 'Fireplace', description: 'Gas fireplace in living room' },
+                                { icon: '❄️', name: 'Central AC', description: 'Climate controlled comfort' },
+                                { icon: '💡', name: 'Modern Lighting', description: 'LED fixtures throughout' }
+                              ].map((feature, index) => (
+                                <div key={index} style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '16px',
+                                  fontSize: '15px',
+                                  padding: '12px 16px',
+                                  background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)',
+                                  borderRadius: '12px',
+                                  border: '1px solid rgba(102, 126, 234, 0.1)',
+                                  transition: 'all 0.3s ease',
+                                  cursor: 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
+                                  e.currentTarget.style.transform = 'translateX(4px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)';
+                                  e.currentTarget.style.transform = 'translateX(0)';
+                                }}>
+                                  <span style={{ 
+                                    fontSize: '20px',
+                                    minWidth: '20px'
+                                  }}>{feature.icon}</span>
+                                  <div>
+                                    <div style={{ fontWeight: '700', color: '#2c3e50' }}>{feature.name}</div>
+                                    <div style={{ fontSize: '13px', color: '#6c757d', marginTop: '2px' }}>{feature.description}</div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              fontSize: '14px'
-                            }}>
-                              <span style={{ 
-                                color: '#1277e1', 
-                                fontSize: '16px'
-                              }}>•</span>
-                              <span>Fireplace</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Outdoor features */}
-                        <div style={{ 
-                          border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '16px', 
-                            fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33',
-                            borderBottom: '1px solid #e9e9e9',
-                            paddingBottom: '8px'
-                          }}>Outdoor features</h4>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            marginBottom: '4px',
-                            fontSize: '14px'
-                          }}>
-                            <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Swimming pool</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            marginBottom: '4px',
-                            fontSize: '14px'
-                          }}>
-                            <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Garden</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px',
-                            fontSize: '14px'
-                          }}>
-                            <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '16px'
-                            }}>•</span>
-                            <span>Garage</span>
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Outdoor & Amenities Card */}
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                        border: '2px solid #f1f3f4', 
+                        borderRadius: '20px',
+                        padding: '32px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-8px)';
+                        e.currentTarget.style.boxShadow = '0 16px 48px rgba(102, 126, 234, 0.15)';
+                        e.currentTarget.style.borderColor = '#667eea';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+                        e.currentTarget.style.borderColor = '#f1f3f4';
+                      }}>
+                        {/* Card Background Decoration */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          left: '-50%',
+                          width: '200px',
+                          height: '200px',
+                          background: 'linear-gradient(45deg, rgba(118, 75, 162, 0.03) 0%, rgba(102, 126, 234, 0.03) 100%)',
+                          borderRadius: '50%',
+                          zIndex: 0
+                        }}></div>
+                        
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                          <h4 style={{ 
+                            fontSize: '22px', 
+                            fontWeight: '800', 
+                            marginBottom: '24px',
+                            color: '#2c3e50',
+                            borderBottom: '3px solid #667eea',
+                            paddingBottom: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            letterSpacing: '-0.3px'
+                          }}>🌿 Outdoor & Amenities</h4>
+                          
+                          {/* Room Stats */}
+                          <div style={{ 
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '16px',
+                            marginBottom: '32px'
+                          }}>
+                            {[
+                              { icon: '🛏️', label: 'Beds', value: selectedProperty.bedrooms },
+                              { icon: '🚿', label: 'Baths', value: selectedProperty.bathrooms },
+                              { icon: '🅿️', label: 'Parking', value: '2 cars' }
+                            ].map((item, index) => (
+                              <div key={index} style={{
+                                padding: '20px 16px',
+                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
+                                borderRadius: '16px',
+                                textAlign: 'center',
+                                border: '2px solid rgba(102, 126, 234, 0.1)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.borderColor = '#667eea';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                              }}>
+                                <div style={{ fontSize: '28px', marginBottom: '8px' }}>{item.icon}</div>
+                                <div style={{ fontSize: '24px', fontWeight: '800', color: '#2c3e50', marginBottom: '4px' }}>{item.value}</div>
+                                <div style={{ fontSize: '12px', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase' }}>{item.label}</div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Outdoor Features */}
+                          <div>
+                            <div style={{ 
+                              fontSize: '16px', 
+                              fontWeight: '700', 
+                              marginBottom: '16px',
+                              color: '#6c757d',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}>🌟 Outdoor Features</div>
+                            
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr',
+                              gap: '16px'
+                            }}>
+                              {[
+                                { icon: '🏊‍♂️', name: 'Swimming Pool', description: 'Heated saltwater pool with spa', highlight: true },
+                                { icon: '🌺', name: 'Landscaped Garden', description: 'Professional landscape design', highlight: true },
+                                { icon: '🚗', name: 'Attached Garage', description: '2-car garage with storage' },
+                                { icon: '🍖', name: 'BBQ Area', description: 'Built-in outdoor kitchen' },
+                                { icon: '🌳', name: 'Mature Trees', description: 'Privacy and shade' },
+                                { icon: '💡', name: 'Outdoor Lighting', description: 'LED landscape lighting' }
+                              ].map((feature, index) => (
+                                <div key={index} style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '16px',
+                                  fontSize: '15px',
+                                  padding: '16px 20px',
+                                  background: feature.highlight 
+                                    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)'
+                                    : 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)',
+                                  borderRadius: '16px',
+                                  border: feature.highlight 
+                                    ? '2px solid rgba(102, 126, 234, 0.3)'
+                                    : '1px solid rgba(102, 126, 234, 0.1)',
+                                  transition: 'all 0.3s ease',
+                                  cursor: 'pointer',
+                                  position: 'relative'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'translateX(8px)';
+                                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'translateX(0)';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}>
+                                  {feature.highlight && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      top: '8px',
+                                      right: '8px',
+                                      background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                                      color: 'white',
+                                      fontSize: '10px',
+                                      padding: '4px 8px',
+                                      borderRadius: '12px',
+                                      fontWeight: '600',
+                                      textTransform: 'uppercase'
+                                    }}>Featured</div>
+                                  )}
+                                  <span style={{ 
+                                    fontSize: '24px',
+                                    minWidth: '24px'
+                                  }}>{feature.icon}</span>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: '700', color: '#2c3e50', marginBottom: '2px' }}>{feature.name}</div>
+                                    <div style={{ fontSize: '13px', color: '#6c757d' }}>{feature.description}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Additional Info Banner */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: '20px',
+                      padding: '24px 32px',
+                      color: 'white',
+                      textAlign: 'center',
+                      boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+                    }}>
+                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>🏆</div>
+                      <h5 style={{ 
+                        fontSize: '18px', 
+                        fontWeight: '700', 
+                        margin: '0 0 8px 0',
+                        letterSpacing: '-0.2px'
+                      }}>Premium Property Features</h5>
+                      <p style={{ 
+                        fontSize: '14px', 
+                        margin: '0',
+                        opacity: '0.9',
+                        fontWeight: '500'
+                      }}>This property includes high-end finishes, energy-efficient systems, and smart home integration</p>
                     </div>
                   </div>
                   
                   {/* Location Section */}
                   <div ref={mapLocationRef} id="location-section" style={{ 
-                    marginBottom: '40px',
+                    marginBottom: '0',
                     padding: '24px',
-                    borderTop: '1px solid #e9e9e9'
+                    borderTop: '1px solid #e9e9e9',
+                    backgroundColor: '#ffffff'
                   }}>
-                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                    <div>
                       <h2 style={{ 
-                        fontSize: '28px', 
-                        fontWeight: '700', 
-                        marginBottom: '32px',
-                        color: '#2a2a33',
-                        textAlign: 'center'
+                        fontSize: '20px', 
+                        fontWeight: '600', 
+                        marginBottom: '24px',
+                        color: '#2a2a33'
                       }}>Location</h2>
                       
                       {/* Map Subsection */}
                       <div style={{ marginBottom: '32px' }}>
                         <h3 style={{ 
-                          fontSize: '20px', 
+                          fontSize: '16px', 
                           fontWeight: '600', 
                           marginBottom: '16px',
                           color: '#2a2a33'
                         }}>Map</h3>
                         <div style={{ 
                           width: '100%', 
-                          height: '400px', 
+                          height: '350px', 
                           borderRadius: '8px',
                           overflow: 'hidden',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                           position: 'relative'
                         }}>
                           <div ref={mapRef} style={{ width: '100%', height: '100%' }}></div>
@@ -561,35 +843,39 @@ export default function PropertyPopup({
                       {/* Neighborhood Subsection */}
                       <div>
                         <h3 style={{ 
-                          fontSize: '20px', 
+                          fontSize: '16px', 
                           fontWeight: '600', 
                           marginBottom: '16px',
                           color: '#2a2a33'
                         }}>Neighborhood</h3>
-                      <p style={{ 
-                        fontSize: '16px', 
-                        lineHeight: '1.5', 
-                        color: '#2a2a33',
-                        marginBottom: '24px'
-                      }}>
-                        This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
-                      </p>
+                        <p style={{ 
+                          fontSize: '14px', 
+                          lineHeight: '1.6', 
+                          color: '#666',
+                          marginBottom: '24px',
+                          margin: '0 0 24px 0'
+                        }}>
+                          This property is located in {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}, a desirable neighborhood with easy access to schools, shopping, and public transportation.
+                        </p>
                       
                       <div style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '24px'
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '20px'
                       }}>
                         <div style={{ 
                           border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          borderRadius: '8px',
+                          padding: '16px',
+                          backgroundColor: '#fafafa'
                         }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
+                            fontSize: '14px', 
                             fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
+                            marginBottom: '12px',
+                            color: '#2a2a33',
+                            borderBottom: 'none',
+                            paddingBottom: '0'
                           }}>Transportation</h4>
                           
                           <div style={{ 
@@ -633,14 +919,17 @@ export default function PropertyPopup({
                         
                         <div style={{ 
                           border: '1px solid #e9e9e9', 
-                          borderRadius: '4px',
-                          padding: '16px'
+                          borderRadius: '8px',
+                          padding: '16px',
+                          backgroundColor: '#fafafa'
                         }}>
                           <h4 style={{ 
-                            fontSize: '16px', 
+                            fontSize: '14px', 
                             fontWeight: '600', 
-                            marginBottom: '16px',
-                            color: '#2a2a33'
+                            marginBottom: '12px',
+                            color: '#2a2a33',
+                            borderBottom: 'none',
+                            paddingBottom: '0'
                           }}>Restaurants & Shopping</h4>
                           
                           <div style={{ 
@@ -682,14 +971,14 @@ export default function PropertyPopup({
                       </div>
                     </div>
                   </div>
-                  </div>
+                </div>
 
-                  {/* Contact Agent Section - Moved to the end */}
-                  <div style={{ 
-                    padding: '24px', 
-                    backgroundColor: '#f8f9fa',
-                    borderTop: '1px solid #e9e9e9'
-                  }}>
+                {/* Contact Agent Section */}
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: '#f8f9fa',
+                  borderTop: '1px solid #e9e9e9'
+                }}>
                     <div style={{ 
                       maxWidth: '600px', 
                       margin: '0 auto', 

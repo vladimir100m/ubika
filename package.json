@@ -17,6 +17,7 @@
     "@auth0/nextjs-auth0": "^3.5.0",
     "@react-google-maps/api": "^2.20.6",
     "@types/formidable": "^3.4.5",
+    "@types/uuid": "^10.0.0",
     "@vercel/blob": "^1.1.1",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
@@ -29,7 +30,8 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-multi-carousel": "^2.8.6",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "22.15.17",

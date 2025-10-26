@@ -267,7 +267,6 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
                 <PropertyCardGrid
                   properties={properties}
                   onPropertyClick={handlePropertyClick}
-                  isCompact={false}
                   hideActions={false}
                   showEditDelete={true}
                   onEdit={handleEditPropertyClick}

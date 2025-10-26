@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect, DragEvent, forwardRef, useImperativeHandle } from 'react';
 import { PropertyImage } from '../types';
 import styles from '../styles/PropertyImageEditor.module.css';
+import { fetchFreshProperty } from '../lib/frontendCacheUtils';
+import { emitImageUpdate } from '../lib/propertyUpdateEvents';
 
 interface PropertyImageEditorProps {
   propertyId?: number | string;
@@ -188,30 +190,82 @@ const PropertyImageEditor = forwardRef<any, PropertyImageEditorProps>(({
     if (!item.file) return;
     updateUploadStatus(item.tempId, 'uploading', 0);
 
-    const formData = new FormData();
-    formData.append('file', item.file);
-    formData.append('propertyId', String(targetPropertyId));
-    formData.append('sellerId', sellerId || 'anonymous');
-
     try {
-      const response = await fetch('/api/blobs/upload', {
+      // Step 1: Upload to Vercel Blob
+      const formData = new FormData();
+      formData.append('file', item.file);
+
+      console.log('📤 Uploading to Vercel Blob...');
+      const blobResponse = await fetch('/api/blobs/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies/session
       });
 
-      if (response.ok) {
-        const newImage: PropertyImage = await response.json();
-        setImages(prev => [...prev, newImage]);
-        if (targetPropertyId) {
-          onImagesUpdated(targetPropertyId);
-        }
-        updateUploadStatus(item.tempId, 'done');
-      } else {
-        const errorData = await response.json();
-        updateUploadStatus(item.tempId, 'error', undefined, errorData.error || 'Upload failed');
+      if (!blobResponse.ok) {
+        const errorData = await blobResponse.json();
+        console.error('❌ Blob upload failed:', errorData);
+        updateUploadStatus(item.tempId, 'error', undefined, errorData.error || 'Blob upload failed');
+        return;
       }
+
+      const blobData = await blobResponse.json();
+      console.log('✅ Blob upload successful:', blobData.url);
+
+      // Step 2: Register in database
+      console.log('💾 Registering image in database...');
+      const registerResponse = await fetch('/api/properties/images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          property_id: targetPropertyId,
+          image_url: blobData.url,
+          is_cover: images.length === 0, // First image is cover
+          display_order: images.length,
+        }),
+        credentials: 'include', // Include cookies/session
+      });
+
+      if (!registerResponse.ok) {
+        const errorData = await registerResponse.json();
+        console.error('❌ Database registration failed:', errorData);
+        updateUploadStatus(item.tempId, 'error', undefined, errorData.error || 'Database registration failed');
+        return;
+      }
+
+      const newImage: PropertyImage = await registerResponse.json();
+      console.log('✅ Image registered in database:', newImage);
+      
+      // Update local state
+      setImages(prev => [...prev, newImage]);
+      
+      // Trigger callback to parent component
+      if (targetPropertyId) {
+        onImagesUpdated(targetPropertyId);
+      }
+      
+      // Auto-refresh property data to ensure fresh images list
+      if (targetPropertyId) {
+        try {
+          const freshProperty = await fetchFreshProperty(targetPropertyId);
+          if (freshProperty.images) {
+            setImages(freshProperty.images);
+            console.log('🔄 Refreshed images from server:', freshProperty.images.length);
+            
+            // Emit property update event to notify other components (like home page)
+            emitImageUpdate(targetPropertyId, freshProperty.images.length);
+          }
+        } catch (refreshError) {
+          console.warn('⚠️ Failed to refresh property data:', refreshError);
+          // Don't fail the upload, just log the warning
+        }
+      }
+      
+      updateUploadStatus(item.tempId, 'done');
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('❌ Upload error:', error);
       updateUploadStatus(item.tempId, 'error', undefined, 'Network error');
     }
   };

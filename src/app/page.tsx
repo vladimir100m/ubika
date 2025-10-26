@@ -12,6 +12,8 @@ import standardStyles from '../styles/StandardComponents.module.css';
 import styles from '../styles/Home.module.css';
 import { Property } from '../types'; // Import Property type
 import { FilterOptions } from '../ui/MapFilters';
+import { buildFreshApiUrl } from '../lib/frontendCacheUtils';
+import { usePropertyUpdateListener, PropertyUpdateEvent } from '../lib/propertyUpdateEvents';
 const Home: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,8 +32,18 @@ const Home: React.FC = () => {
       setError(null);
       try {
         const queryParams = new URLSearchParams(searchParams?.toString() ?? '');
-        const apiUrl = `/api/properties?${queryParams.toString()}`;
-        const response = await fetch(apiUrl);
+        // Use cache-busting URL to ensure fresh data
+        const apiUrl = buildFreshApiUrl('/api/properties', { forceListRefresh: true });
+        const fullUrl = queryParams.toString() 
+          ? `${apiUrl}&${queryParams.toString()}`
+          : apiUrl;
+          
+        const response = await fetch(fullUrl, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         if (!response.ok) {
           throw new Error(`Error fetching properties: ${response.statusText}`);
         }
@@ -54,6 +66,47 @@ const Home: React.FC = () => {
 
     fetchProperties();
   }, [searchParams, user, isLoading]);
+
+  // Listen for property update events and refresh data when images are updated
+  useEffect(() => {
+    const cleanup = usePropertyUpdateListener((event: PropertyUpdateEvent) => {
+      if (event.type === 'PROPERTY_IMAGES_UPDATED') {
+        console.log('🏠 Home page received image update event, refreshing properties...');
+        // Refresh the properties list to show updated image counts
+        setLoading(true);
+        const queryParams = new URLSearchParams(searchParams?.toString() ?? '');
+        const apiUrl = buildFreshApiUrl('/api/properties', { 
+          forceListRefresh: true,
+          timestamp: Date.now() // Force fresh data
+        });
+        const fullUrl = queryParams.toString() 
+          ? `${apiUrl}&${queryParams.toString()}`
+          : apiUrl;
+          
+        fetch(fullUrl, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setProperties(data);
+            console.log('✅ Home page properties refreshed after image update');
+          }
+        })
+        .catch(error => {
+          console.error('❌ Failed to refresh properties after image update:', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+      }
+    });
+
+    return cleanup;
+  }, [searchParams]);
 
   // Function to handle property card click
   const handlePropertyClick = (property: Property) => {
@@ -131,8 +184,6 @@ const Home: React.FC = () => {
               <PropertyCardGrid
                 properties={properties}
                 onPropertyClick={handlePropertyClick}
-                isSaved={false}
-                onSaveToggle={() => {}}
               />
             ) : (
               <EmptyState message="No properties match the current filters. Try adjusting your search." />

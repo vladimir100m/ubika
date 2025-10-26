@@ -6,9 +6,6 @@ import styles from '../styles/Home.module.css';
 interface PropertyCardGridProps {
   properties: Property[];
   onPropertyClick?: (property: Property) => void;
-  isSaved?: boolean;
-  onSaveToggle?: (propertyId: number) => void;
-  isCompact?: boolean;
   hideActions?: boolean;
   onEdit?: (property: Property) => void;
   onDelete?: (property: Property) => void;
@@ -28,9 +25,6 @@ interface PropertyCardGridProps {
 const PropertyCardGrid: React.FC<PropertyCardGridProps> = ({
   properties,
   onPropertyClick,
-  isSaved = false,
-  onSaveToggle,
-  isCompact = false,
   hideActions = false,
   onEdit,
   onDelete,
@@ -48,8 +42,6 @@ const PropertyCardGrid: React.FC<PropertyCardGridProps> = ({
           key={property.id}
           property={property}
           onClick={() => onPropertyClick?.(property)}
-          isSaved={isSaved}
-          onSaveToggle={() => onSaveToggle?.(property.id)}
           hideActions={hideActions}
           onEdit={() => onEdit?.(property)}
           onDelete={() => onDelete?.(property)}
