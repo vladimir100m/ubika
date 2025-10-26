@@ -1,10 +1,7 @@
-import galleryStyles from '../styles/StyledGallery.module.css';
 import styles from '../styles/Home.module.css';
 import popupStyles from '../styles/PropertyPopup.module.css';
-import React, {useState, useEffect, useRef, RefObject, useCallback, useMemo} from 'react';
-import {useRouter} from 'next/navigation';
+import React, {useState, useRef, RefObject, useCallback, useMemo} from 'react';
 import { useSession } from 'next-auth/react';
-// Loader removed: map initialization is handled elsewhere or via `mapRef`
 import { Property, Neighborhood } from '../types';
 import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
@@ -21,14 +18,10 @@ export default function PropertyPopup({
   onClose: () => void; 
   mapRef: RefObject<HTMLDivElement>;
 }) {
-  const router = useRouter();
   const { data: session, status } = useSession();
-  const isLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState('overview');
   const [descExpanded, setDescExpanded] = useState(false);
-  const [mapInitialized, setMapInitialized] = useState(false);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
-  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [showCarousel, setShowCarousel] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -253,11 +246,9 @@ export default function PropertyPopup({
                       </span>
                     </div>
 
-                    {/* Market Info */}
+                    {/* Market Info (minimal) */}
                     <div className={popupStyles.marketInfo}>
                       <span className={popupStyles.marketBadge}>📈 Below Market</span>
-                      <span>⏰ Listed 3 days ago</span>
-                      <span>👀 24 views today</span>
                     </div>
                   </div>
 
@@ -269,12 +260,7 @@ export default function PropertyPopup({
                       🏙️ {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}
                     </div>
 
-                    {/* Neighborhood Info */}
-                    <div className={popupStyles.neighborhoodChips}>
-                      <span className={popupStyles.neighborhoodChip}>🏫 Great Schools</span>
-                      <span className={popupStyles.neighborhoodChip}>🚊 Transit Friendly</span>
-                      <span className={popupStyles.neighborhoodChip}>🛒 Shopping Nearby</span>
-                    </div>
+                    {/* Neighborhood summary kept in address meta; chips removed for clarity */}
                   </div>
                   
                   {/* Enhanced Property Stats */}
@@ -375,12 +361,12 @@ export default function PropertyPopup({
                     <div className={popupStyles.gridLayout}>
                       
                       {/* Property Information Card */}
-                      <div className={popupStyles.infoCard}>
+                      <div className={`${popupStyles.infoCard} ${popupStyles.infoCardInner}`}>
                         {/* Card Background Decoration */}
                         <div className={popupStyles.cardDecor} />
 
-                        <div className={popupStyles.cardInner}>
-                          <h4 className={popupStyles.cardTitle}>🏢 Property Info</h4>
+                          <div className={popupStyles.cardInner}>
+                            <h4 className={popupStyles.cardTitle}>🏢 Property Info</h4>
 
                           {/* Property Stats Grid */}
                           <div className={popupStyles.infoStatsGrid}>

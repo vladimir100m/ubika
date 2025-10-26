@@ -356,6 +356,33 @@
   gap: 32px;
   margin-bottom: 32px;
 }
+
+/* New responsive grid layout for details section with named areas */
+.gridLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "info outdoor"
+    "banner banner";
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .gridLayout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "info"
+      "outdoor"
+      "banner";
+  }
+}
+
+/* Place cards into the named grid areas */
+.infoCard { grid-area: info; }
+.outdoorCard { grid-area: outdoor; }
+.additionalBanner { grid-area: banner; }
 .infoCard {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border: 2px solid #f1f3f4;
@@ -433,7 +460,7 @@
   position: relative;
   overflow: hidden;
 }
-.outdoorGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+.outdoorGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
 .outdoorItem { padding: 20px 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 16px; text-align: center; border: 2px solid rgba(102, 126, 234, 0.1); transition: all 0.3s ease; cursor: pointer; }
 
 .additionalBanner {
