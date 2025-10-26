@@ -299,30 +299,26 @@ export default function PropertyPopup({
                   <button className={popupStyles.btnPrimary} onClick={() => setShowContactForm(true)}>📞 Contact Agent</button>
                   <button className={popupStyles.btnSecondary}>📅 Schedule Tour</button>
                   </div>
-                </div>
-                
-                {/* What's Special Section - Zillow Style */}
-                <div className={popupStyles.highlightsSection}>
-                  <h3 className={popupStyles.priceMetaSmall}>✨ Highlights</h3>
+               <div className={popupStyles.highlightsSection}>
                   <div className={popupStyles.highlightGrid}>
                     {selectedProperty.features && selectedProperty.features.length > 0 
                       ? selectedProperty.features.slice(0, 6).map((feature, idx) => (
                           <div key={idx} className={popupStyles.highlightCard}>
-                            <span className={popupStyles.highlightIcon}>⭐</span>
                             <span>{feature.name}</span>
                           </div>
                         ))
                       : (
                         <>
-                          <div className={popupStyles.highlightCard}><span className={popupStyles.highlightIcon}>⭐</span><span>Prime Location</span></div>
-                          <div className={popupStyles.highlightCard}><span className={popupStyles.highlightIcon}>⭐</span><span>Well Maintained</span></div>
-                          <div className={popupStyles.highlightCard}><span className={popupStyles.highlightIcon}>⭐</span><span>Modern Updates</span></div>
+                          <div className={popupStyles.highlightCard}><span>Prime Location</span></div>
+                          <div className={popupStyles.highlightCard}><span>Well Maintained</span></div>
+                          <div className={popupStyles.highlightCard}><span>Modern Updates</span></div>
                         </>
                       )
                     }
+                    </div>
                   </div>
                 </div>
-
+                
                 {/* Tabs Navigation */}
                 <PropertyDetailTabsNav active={activeTab} onChange={handleTabChange} />
                 
@@ -349,14 +345,13 @@ export default function PropertyPopup({
                   {/* Enhanced Facts and Features Section */}
                   <div ref={detailsRef} id="details-section" className={popupStyles.detailsSection}>
                     {/* Section Header */}
-                    <div className={popupStyles.detailsHeader}>
-                      <h3 className={popupStyles.detailsHeaderTitle}>📊 Property Details</h3>
-                      <p className={popupStyles.detailsHeaderSub}>Comprehensive property information at a glance</p>
-                      <div className={popupStyles.headerSeparator} />
-                    </div>
-
-                    {/* Enhanced Grid Layout */}
                     <div className={popupStyles.gridLayout}>
+
+                      {/* <div className={popupStyles.detailsHeader}>
+                        <h3 className={popupStyles.detailsHeaderTitle}>📊 Property Details</h3>
+                        <div className={popupStyles.headerSeparator} />
+                      </div> */}
+
                       
                       {/* Property Information Card */}
                       <div className={`${popupStyles.infoCard} ${popupStyles.infoCardInner}`}>
@@ -364,10 +359,10 @@ export default function PropertyPopup({
                         <div className={popupStyles.cardDecor} />
 
                           <div className={popupStyles.cardInner}>
-                            <h4 className={popupStyles.cardTitle}>🏢 Property Info</h4>
+                            <h4 className={popupStyles.outdoorHeading}>🏢 Property Info</h4>
 
                           {/* Property Stats Grid */}
-                          <div className={popupStyles.infoStatsGrid}>
+                          {/* <div className={popupStyles.infoStatsGrid}>
                             {infoStats.map((item, index) => (
                               <div key={index} className={popupStyles.infoStat}>
                                 <div className={popupStyles.infoStatIcon}>{item.icon}</div>
@@ -375,13 +370,13 @@ export default function PropertyPopup({
                                 <div className={popupStyles.infoStatValue}>{item.value}</div>
                               </div>
                             ))}
-                          </div>
+                          </div> */}
                           
                           {/* Interior Features */}
-                          <div>
-                            <div className={popupStyles.interiorHeading}>🔨 Interior Features</div>
+                            <div className={popupStyles.interiorHeading}>
+                              <h4 className={popupStyles.outdoorHeading}>🔨 Interior Features</h4>
                             
-                            <div className={popupStyles.featureList}>
+                            {/* <div className={popupStyles.featureList}>
                               {interiorFeatures.map((feature, index) => (
                                     <div key={index} className={popupStyles.featureItem}>
                                       <span className={popupStyles.featureIcon}>{feature.icon}</span>
@@ -391,39 +386,11 @@ export default function PropertyPopup({
                                       </div>
                                     </div>
                                   ))}
-                            </div>
+                            </div> */}
                           </div>
-                        </div>
-                      </div>
-                      
-                      {/* Outdoor & Amenities Card */}
-                      <div className={popupStyles.outdoorCard}>
-                        {/* Card Background Decoration */}
-                        <div className={popupStyles.cardDecorLeft} />
-                        
-                        <div className={popupStyles.cardInner}>
-                          <h4 className={popupStyles.cardTitle}>🌿 Outdoor & Amenities</h4>
-                          
-                          {/* Room Stats */}
-                          <div className={popupStyles.roomStatsGrid}>
-                            {[
-                              { icon: '🛏️', label: 'Beds', value: selectedProperty.bedrooms },
-                              { icon: '🚿', label: 'Baths', value: selectedProperty.bathrooms },
-                              { icon: '🅿️', label: 'Parking', value: '2 cars' }
-                            ].map((item, index) => (
-                              <div key={index} className={popupStyles.roomStatItem}>
-                                <div className={popupStyles.roomStatIcon}>{item.icon}</div>
-                                <div className={popupStyles.roomStatValue}>{item.value}</div>
-                                <div className={popupStyles.roomStatLabel}>{item.label}</div>
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {/* Outdoor Features */}
-                          <div>
                             <div className={popupStyles.outdoorHeading}>🌟 Outdoor Features</div>
                             
-                            <div className={popupStyles.outdoorFeatureList}>
+                            {/* <div className={popupStyles.outdoorFeatureList}>
                               {outdoorFeatures.map((feature, index) => (
                                 <div key={index} className={`${popupStyles.outdoorItem} ${feature.highlight ? popupStyles.outdoorHighlight : ''}`}>
                                       {feature.highlight && <div className={popupStyles.featureBadge}>Featured</div>}
@@ -434,10 +401,10 @@ export default function PropertyPopup({
                                       </div>
                                 </div>
                               ))}
-                            </div>
-                          </div>
+                            </div> */}
                         </div>
                       </div>
+
                     </div>
                     
                     {/* Additional Info Banner */}
