@@ -405,214 +405,403 @@ export default function PropertyPopup({
                     </div>
                   </div>
 
-                  {/* Facts and features section */}
+                  {/* Enhanced Facts and Features Section */}
                   <div ref={detailsRef} id="details-section" style={{ 
-                    padding: '32px', 
+                    padding: '40px 32px', 
                     marginBottom: '0',
                     borderTop: '1px solid #f1f3f4',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                    position: 'relative'
                   }}>
-                    <div style={{ marginBottom: '40px' }}>
+                    {/* Section Header */}
+                    <div style={{ 
+                      textAlign: 'center',
+                      marginBottom: '48px',
+                      position: 'relative'
+                    }}>
                       <h3 style={{ 
-                        fontSize: '24px', 
-                        fontWeight: '700', 
-                        margin: '0 0 28px 0',
+                        fontSize: '32px', 
+                        fontWeight: '800', 
+                        margin: '0 0 12px 0',
                         color: '#2c3e50',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px',
-                        letterSpacing: '-0.3px'
-                      }}>📊 Details</h3>
+                        justifyContent: 'center',
+                        gap: '16px',
+                        letterSpacing: '-0.5px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}>📊 Property Details</h3>
+                      <p style={{
+                        fontSize: '16px',
+                        color: '#6c757d',
+                        margin: '0',
+                        fontWeight: '500'
+                      }}>Comprehensive property information at a glance</p>
+                      <div style={{
+                        width: '80px',
+                        height: '4px',
+                        background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                        borderRadius: '2px',
+                        margin: '16px auto 0'
+                      }}></div>
+                    </div>
+                    
+                    {/* Enhanced Grid Layout */}
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                      gap: '32px',
+                      marginBottom: '32px'
+                    }}>
                       
+                      {/* Property Information Card */}
                       <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                        gap: '24px'
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                        border: '2px solid #f1f3f4', 
+                        borderRadius: '20px',
+                        padding: '32px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-8px)';
+                        e.currentTarget.style.boxShadow = '0 16px 48px rgba(102, 126, 234, 0.15)';
+                        e.currentTarget.style.borderColor = '#667eea';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+                        e.currentTarget.style.borderColor = '#f1f3f4';
                       }}>
+                        {/* Card Background Decoration */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          right: '-50%',
+                          width: '200px',
+                          height: '200px',
+                          background: 'linear-gradient(45deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%)',
+                          borderRadius: '50%',
+                          zIndex: 0
+                        }}></div>
                         
-                        {/* Property details */}
-                        <div style={{ 
-                          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                          border: '2px solid #f1f3f4', 
-                          borderRadius: '16px',
-                          padding: '24px',
-                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
-                          transition: 'all 0.3s ease'
-                        }}>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
                           <h4 style={{ 
-                            fontSize: '18px', 
-                            fontWeight: '700', 
-                            marginBottom: '20px',
+                            fontSize: '22px', 
+                            fontWeight: '800', 
+                            marginBottom: '24px',
                             color: '#2c3e50',
-                            borderBottom: '2px solid #667eea',
-                            paddingBottom: '12px',
+                            borderBottom: '3px solid #667eea',
+                            paddingBottom: '16px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px'
-                          }}>🏢 Property</h4>
+                            gap: '12px',
+                            letterSpacing: '-0.3px'
+                          }}>🏢 Property Info</h4>
                           
-                          <div style={{ marginBottom: '20px' }}>
-                            <div style={{ 
-                              fontSize: '16px', 
-                              fontWeight: '700', 
-                              marginBottom: '12px',
-                              color: '#6c757d',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px'
-                            }}>📋 Info</div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '15px',
-                              marginBottom: '8px',
-                              padding: '8px 0',
-                              borderBottom: '1px solid #f1f3f4'
-                            }}>
-                              <span style={{ fontWeight: '600', color: '#6c757d' }}>Type</span>
-                              <span style={{ fontWeight: '700', color: '#2c3e50' }}>{selectedProperty.property_type?.display_name || 'Single Family'}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '15px',
-                              marginBottom: '8px',
-                              padding: '8px 0',
-                              borderBottom: '1px solid #f1f3f4'
-                            }}>
-                              <span style={{ fontWeight: '600', color: '#6c757d' }}>Built</span>
-                              <span style={{ fontWeight: '700', color: '#2c3e50' }}>{selectedProperty.year_built || '2010'}</span>
-                            </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              fontSize: '15px',
-                              padding: '8px 0'
-                            }}>
-                              <span style={{ fontWeight: '600', color: '#6c757d' }}>Size</span>
-                              <span style={{ fontWeight: '700', color: '#2c3e50' }}>{selectedProperty.sq_meters} m²</span>
-                            </div>
+                          {/* Property Stats Grid */}
+                          <div style={{ 
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '20px',
+                            marginBottom: '24px'
+                          }}>
+                            {[
+                              { icon: '🏠', label: 'Type', value: selectedProperty.property_type?.display_name || 'Single Family' },
+                              { icon: '🏗️', label: 'Built', value: selectedProperty.year_built || '2010' },
+                              { icon: '📐', label: 'Size', value: `${selectedProperty.sq_meters} m²` },
+                              { icon: '🆔', label: 'ID', value: `#${selectedProperty.id}` }
+                            ].map((item, index) => (
+                              <div key={index} style={{
+                                padding: '16px',
+                                background: 'rgba(102, 126, 234, 0.05)',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(102, 126, 234, 0.1)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                                e.currentTarget.style.transform = 'scale(1.02)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(102, 126, 234, 0.05)';
+                                e.currentTarget.style.transform = 'scale(1)';
+                              }}>
+                                <div style={{
+                                  fontSize: '24px',
+                                  marginBottom: '8px',
+                                  textAlign: 'center'
+                                }}>{item.icon}</div>
+                                <div style={{
+                                  fontSize: '12px',
+                                  fontWeight: '600',
+                                  color: '#6c757d',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                  textAlign: 'center',
+                                  marginBottom: '4px'
+                                }}>{item.label}</div>
+                                <div style={{
+                                  fontSize: '16px',
+                                  fontWeight: '700',
+                                  color: '#2c3e50',
+                                  textAlign: 'center',
+                                  wordBreak: 'break-word'
+                                }}>{item.value}</div>
+                              </div>
+                            ))}
                           </div>
                           
+                          {/* Interior Features */}
                           <div>
                             <div style={{ 
                               fontSize: '16px', 
                               fontWeight: '700', 
-                              marginBottom: '12px',
+                              marginBottom: '16px',
                               color: '#6c757d',
                               textTransform: 'uppercase',
-                              letterSpacing: '0.5px'
-                            }}>🔨 Features</div>
+                              letterSpacing: '0.5px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}>🔨 Interior Features</div>
                             
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '12px',
-                              marginBottom: '8px',
-                              fontSize: '15px',
-                              padding: '8px 12px',
-                              background: 'rgba(102, 126, 234, 0.05)',
-                              borderRadius: '8px',
-                              transition: 'all 0.2s ease'
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '12px'
                             }}>
-                              <span style={{ 
-                                fontSize: '18px'
-                              }}>🌳</span>
-                              <span style={{ fontWeight: '600', color: '#2c3e50' }}>Hardwood floors</span>
+                              {[
+                                { icon: '🌳', name: 'Hardwood Floors', description: 'Beautiful oak hardwood throughout' },
+                                { icon: '🔥', name: 'Fireplace', description: 'Gas fireplace in living room' },
+                                { icon: '❄️', name: 'Central AC', description: 'Climate controlled comfort' },
+                                { icon: '💡', name: 'Modern Lighting', description: 'LED fixtures throughout' }
+                              ].map((feature, index) => (
+                                <div key={index} style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '16px',
+                                  fontSize: '15px',
+                                  padding: '12px 16px',
+                                  background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)',
+                                  borderRadius: '12px',
+                                  border: '1px solid rgba(102, 126, 234, 0.1)',
+                                  transition: 'all 0.3s ease',
+                                  cursor: 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)';
+                                  e.currentTarget.style.transform = 'translateX(4px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)';
+                                  e.currentTarget.style.transform = 'translateX(0)';
+                                }}>
+                                  <span style={{ 
+                                    fontSize: '20px',
+                                    minWidth: '20px'
+                                  }}>{feature.icon}</span>
+                                  <div>
+                                    <div style={{ fontWeight: '700', color: '#2c3e50' }}>{feature.name}</div>
+                                    <div style={{ fontSize: '13px', color: '#6c757d', marginTop: '2px' }}>{feature.description}</div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '12px',
-                              fontSize: '15px',
-                              padding: '8px 12px',
-                              background: 'rgba(102, 126, 234, 0.05)',
-                              borderRadius: '8px',
-                              transition: 'all 0.2s ease'
-                            }}>
-                              <span style={{ 
-                                fontSize: '18px'
-                              }}>🔥</span>
-                              <span style={{ fontWeight: '600', color: '#2c3e50' }}>Fireplace</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Outdoor features */}
-                        <div style={{ 
-                          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                          border: '2px solid #f1f3f4', 
-                          borderRadius: '16px',
-                          padding: '24px',
-                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
-                          transition: 'all 0.3s ease'
-                        }}>
-                          <h4 style={{ 
-                            fontSize: '18px', 
-                            fontWeight: '700', 
-                            marginBottom: '20px',
-                            color: '#2c3e50',
-                            borderBottom: '2px solid #667eea',
-                            paddingBottom: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}>🌿 Outdoor</h4>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px',
-                            marginBottom: '12px',
-                            fontSize: '15px',
-                            padding: '12px 16px',
-                            background: 'rgba(102, 126, 234, 0.05)',
-                            borderRadius: '12px',
-                            transition: 'all 0.2s ease'
-                          }}>
-                            <span style={{ 
-                              fontSize: '20px'
-                            }}>🏊‍♂️</span>
-                            <span style={{ fontWeight: '600', color: '#2c3e50' }}>Pool</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px',
-                            marginBottom: '12px',
-                            fontSize: '15px',
-                            padding: '12px 16px',
-                            background: 'rgba(102, 126, 234, 0.05)',
-                            borderRadius: '12px',
-                            transition: 'all 0.2s ease'
-                          }}>
-                            <span style={{ 
-                              fontSize: '20px'
-                            }}>🌺</span>
-                            <span style={{ fontWeight: '600', color: '#2c3e50' }}>Garden</span>
-                          </div>
-                          
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '12px',
-                            fontSize: '15px',
-                            padding: '12px 16px',
-                            background: 'rgba(102, 126, 234, 0.05)',
-                            borderRadius: '12px',
-                            transition: 'all 0.2s ease'
-                          }}>
-                            <span style={{ 
-                              fontSize: '20px'
-                            }}>🚗</span>
-                            <span style={{ fontWeight: '600', color: '#2c3e50' }}>Garage</span>
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Outdoor & Amenities Card */}
+                      <div style={{ 
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                        border: '2px solid #f1f3f4', 
+                        borderRadius: '20px',
+                        padding: '32px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-8px)';
+                        e.currentTarget.style.boxShadow = '0 16px 48px rgba(102, 126, 234, 0.15)';
+                        e.currentTarget.style.borderColor = '#667eea';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+                        e.currentTarget.style.borderColor = '#f1f3f4';
+                      }}>
+                        {/* Card Background Decoration */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          left: '-50%',
+                          width: '200px',
+                          height: '200px',
+                          background: 'linear-gradient(45deg, rgba(118, 75, 162, 0.03) 0%, rgba(102, 126, 234, 0.03) 100%)',
+                          borderRadius: '50%',
+                          zIndex: 0
+                        }}></div>
+                        
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                          <h4 style={{ 
+                            fontSize: '22px', 
+                            fontWeight: '800', 
+                            marginBottom: '24px',
+                            color: '#2c3e50',
+                            borderBottom: '3px solid #667eea',
+                            paddingBottom: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            letterSpacing: '-0.3px'
+                          }}>🌿 Outdoor & Amenities</h4>
+                          
+                          {/* Room Stats */}
+                          <div style={{ 
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '16px',
+                            marginBottom: '32px'
+                          }}>
+                            {[
+                              { icon: '🛏️', label: 'Beds', value: selectedProperty.bedrooms },
+                              { icon: '🚿', label: 'Baths', value: selectedProperty.bathrooms },
+                              { icon: '🅿️', label: 'Parking', value: '2 cars' }
+                            ].map((item, index) => (
+                              <div key={index} style={{
+                                padding: '20px 16px',
+                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
+                                borderRadius: '16px',
+                                textAlign: 'center',
+                                border: '2px solid rgba(102, 126, 234, 0.1)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.borderColor = '#667eea';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.1)';
+                              }}>
+                                <div style={{ fontSize: '28px', marginBottom: '8px' }}>{item.icon}</div>
+                                <div style={{ fontSize: '24px', fontWeight: '800', color: '#2c3e50', marginBottom: '4px' }}>{item.value}</div>
+                                <div style={{ fontSize: '12px', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase' }}>{item.label}</div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Outdoor Features */}
+                          <div>
+                            <div style={{ 
+                              fontSize: '16px', 
+                              fontWeight: '700', 
+                              marginBottom: '16px',
+                              color: '#6c757d',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}>🌟 Outdoor Features</div>
+                            
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr',
+                              gap: '16px'
+                            }}>
+                              {[
+                                { icon: '🏊‍♂️', name: 'Swimming Pool', description: 'Heated saltwater pool with spa', highlight: true },
+                                { icon: '🌺', name: 'Landscaped Garden', description: 'Professional landscape design', highlight: true },
+                                { icon: '🚗', name: 'Attached Garage', description: '2-car garage with storage' },
+                                { icon: '🍖', name: 'BBQ Area', description: 'Built-in outdoor kitchen' },
+                                { icon: '🌳', name: 'Mature Trees', description: 'Privacy and shade' },
+                                { icon: '💡', name: 'Outdoor Lighting', description: 'LED landscape lighting' }
+                              ].map((feature, index) => (
+                                <div key={index} style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '16px',
+                                  fontSize: '15px',
+                                  padding: '16px 20px',
+                                  background: feature.highlight 
+                                    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)'
+                                    : 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(102, 126, 234, 0.05) 100%)',
+                                  borderRadius: '16px',
+                                  border: feature.highlight 
+                                    ? '2px solid rgba(102, 126, 234, 0.3)'
+                                    : '1px solid rgba(102, 126, 234, 0.1)',
+                                  transition: 'all 0.3s ease',
+                                  cursor: 'pointer',
+                                  position: 'relative'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'translateX(8px)';
+                                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'translateX(0)';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}>
+                                  {feature.highlight && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      top: '8px',
+                                      right: '8px',
+                                      background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                                      color: 'white',
+                                      fontSize: '10px',
+                                      padding: '4px 8px',
+                                      borderRadius: '12px',
+                                      fontWeight: '600',
+                                      textTransform: 'uppercase'
+                                    }}>Featured</div>
+                                  )}
+                                  <span style={{ 
+                                    fontSize: '24px',
+                                    minWidth: '24px'
+                                  }}>{feature.icon}</span>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: '700', color: '#2c3e50', marginBottom: '2px' }}>{feature.name}</div>
+                                    <div style={{ fontSize: '13px', color: '#6c757d' }}>{feature.description}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Additional Info Banner */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: '20px',
+                      padding: '24px 32px',
+                      color: 'white',
+                      textAlign: 'center',
+                      boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+                    }}>
+                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>🏆</div>
+                      <h5 style={{ 
+                        fontSize: '18px', 
+                        fontWeight: '700', 
+                        margin: '0 0 8px 0',
+                        letterSpacing: '-0.2px'
+                      }}>Premium Property Features</h5>
+                      <p style={{ 
+                        fontSize: '14px', 
+                        margin: '0',
+                        opacity: '0.9',
+                        fontWeight: '500'
+                      }}>This property includes high-end finishes, energy-efficient systems, and smart home integration</p>
                     </div>
                   </div>
                   
