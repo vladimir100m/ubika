@@ -6,37 +6,24 @@
  * Usage: node scripts/flush-redis.js
  */
 
-const Redis = require('ioredis');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') });
 
 async function flushRedis() {
   console.log('🧹 Complete Redis Cache Flush\n');
   
   try {
-    const redisUrl = process.env.REDIS_URL;
-    if (!redisUrl) {
+    const cache = require('./cache-wrapper')
+    const redis = cache.client
+
+    if (!redis) {
       console.error('❌ REDIS_URL not found in .env.local');
       process.exit(1);
     }
 
-    console.log(`🔗 Connecting to Redis: ${redisUrl.replace(/\/\/.*@/, '//***@')}`);
-
-    const redis = new Redis(redisUrl, {
-      retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-      },
-      maxRetriesPerRequest: 3,
-      connectTimeout: 10000,
-      lazyConnect: true
-    });
-
-    // Connect explicitly
-    await redis.connect();
-    console.log('✅ Connected to Redis successfully');
+    console.log('🔗 Connecting to Redis (via cache-wrapper)')
 
     // Get current database info
-    const dbSize = await redis.dbsize();
+    const dbSize = await cache.dbsize()
     console.log(`📊 Current database contains ${dbSize} keys`);
 
     if (dbSize === 0) {
@@ -47,7 +34,7 @@ async function flushRedis() {
 
     // Show some existing keys for confirmation
     console.log('\n🔍 Sample keys before clearing:');
-    const sampleKeys = await redis.keys('*');
+  const sampleKeys = await cache.keys('*');
     sampleKeys.slice(0, 10).forEach((key, index) => {
       console.log(`   ${index + 1}. ${key}`);
     });
@@ -57,10 +44,10 @@ async function flushRedis() {
 
     // Flush the entire database
     console.log('\n🚀 Flushing entire Redis database...');
-    await redis.flushdb();
+  await cache.flushdb();
 
     // Verify the flush
-    const newDbSize = await redis.dbsize();
+  const newDbSize = await cache.dbsize();
     console.log(`✅ Database flushed successfully!`);
     console.log(`📊 Database now contains ${newDbSize} keys`);
 
@@ -71,7 +58,7 @@ async function flushRedis() {
       console.log('⚠️  Some keys might still exist (possibly persistent data)');
     }
 
-    redis.disconnect();
+  if (cache.disconnect) await cache.disconnect()
   } catch (error) {
     console.error('❌ Error:', error.message);
     if (error.code === 'ECONNREFUSED') {

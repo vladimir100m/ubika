@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const pkg = require('pg');
 const { Pool } = pkg;
-const Redis = require('ioredis');
+const cache = require('./cache-wrapper')
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 
@@ -19,7 +19,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-const redis = new Redis(process.env.REDIS_URL);
+const redis = cache.client
 
 // Configuration
 const IMAGES_DIR = path.resolve(__dirname, '../data/images');
@@ -174,20 +174,20 @@ async function createFictionalProperties() {
       console.log(`   ID: ${propertyId} | Images: ${imagesAdded}`);
     }
 
-    // Clear relevant cache patterns
-    console.log(`\n🔄 Clearing cache...\n`);
-    const cachePatterns = ['v1:properties:*', 'v1:seller:*', 'v1:property:*', 'cache:*'];
-    let clearedCount = 0;
+    // Clear relevant cache patterns (via cache-wrapper)
+    console.log(`\n🔄 Clearing cache...\n`)
+    const cachePatterns = ['v1:properties:*', 'v1:seller:*', 'v1:property:*', 'cache:*']
+    let clearedCount = 0
 
     for (const pattern of cachePatterns) {
-      const keys = await redis.keys(pattern);
+      const keys = await cache.keys(pattern)
       if (keys.length > 0) {
-        await redis.del(...keys);
-        clearedCount += keys.length;
+        await cache.del(...keys)
+        clearedCount += keys.length
       }
     }
 
-    console.log(`✓ Cleared ${clearedCount} cache keys\n`);
+    console.log(`✓ Cleared ${clearedCount} cache keys\n`)
 
     // Summary
     console.log(`📊 Summary:`);
@@ -206,9 +206,9 @@ async function createFictionalProperties() {
     console.error(error);
     process.exit(1);
   } finally {
-    client.release();
-    await pool.end();
-    redis.disconnect();
+  client.release();
+  await pool.end();
+  if (cache.disconnect) await cache.disconnect()
   }
 }
 

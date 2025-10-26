@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "jest --runInBand",
     "db:test": "node infra/scripts/testConnection.js",
     "db:setup": "./infra/scripts/setupNeonDatabase.sh",
     "db:reset": "node infra/scripts/deleteDatabase.js",
@@ -35,12 +36,16 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.3",
     "@types/node": "22.15.17",
     "@types/pg": "^8.15.2",
     "@types/react": "18.3.5",
     "dotenv-cli": "^10.0.0",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "typescript": "latest"
   }

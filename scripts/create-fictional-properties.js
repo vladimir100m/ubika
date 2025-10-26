@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const pkg = require('pg');
 const { Pool } = pkg;
-const Redis = require('ioredis');
+const cache = require('./cache-wrapper')
 
 // Load environment variables
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
@@ -271,45 +271,29 @@ async function main() {
     console.log(`   - Properties created: ${propertiesCreated} / ${NUM_USERS * NUM_PROPERTIES_PER_USER}`);
     console.log(`   - Total images added: ${imagesAdded}`);
     
-    // Clear Redis cache to refresh UI
-    console.log('\n🔄 Clearing Redis cache...');
+    // Clear Redis cache to refresh UI (via cache-wrapper)
+    console.log('\n🔄 Clearing Redis cache...')
     try {
-      const redisUrl = process.env.REDIS_URL;
-      const redis = new Redis(redisUrl || 'redis://localhost:6379', {
-        retryStrategy: (times) => {
-          const delay = Math.min(times * 50, 2000);
-          return delay;
-        },
-        maxRetriesPerRequest: null
-      });
-      
-      // Clear all cache patterns
-      const patterns = [
-        'v1:properties:*',
-        'v1:seller:*',
-        'v1:property:*',
-        'cache:*'
-      ];
-      
-      let cleared = 0;
+      const patterns = ['v1:properties:*', 'v1:seller:*', 'v1:property:*', 'cache:*']
+      let cleared = 0
       for (const pattern of patterns) {
         try {
-          const keys = await redis.keys(pattern);
+          const keys = await cache.keys(pattern)
           if (keys.length > 0) {
-            await redis.del(...keys);
-            cleared += keys.length;
-            console.log(`   ✓ Cleared ${keys.length} keys matching ${pattern}`);
+            await cache.del(...keys)
+            cleared += keys.length
+            console.log(`   ✓ Cleared ${keys.length} keys matching ${pattern}`)
           }
         } catch (e) {
-          console.log(`   ⚠ Pattern ${pattern}: ${e.message}`);
+          console.log(`   ⚠ Pattern ${pattern}: ${e.message}`)
         }
       }
-      
-      redis.disconnect();
-      console.log(`✓ Total cache entries cleared: ${cleared}`);
+
+      if (cache.disconnect) await cache.disconnect()
+      console.log(`✓ Total cache entries cleared: ${cleared}`)
     } catch (cacheError) {
-      console.warn('⚠️  Warning: Could not clear Redis cache:', cacheError.message);
-      console.log('   Properties created in database - refresh UI manually or restart server');
+      console.warn('⚠️  Warning: Could not clear Redis cache:', cacheError.message)
+      console.log('   Properties created in database - refresh UI manually or restart server')
     }
     
   } catch (error) {
