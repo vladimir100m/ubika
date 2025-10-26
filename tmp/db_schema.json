@@ -1,0 +1,703 @@
+{
+  "media_types": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('media_types_id_seq'::regclass)"
+    },
+    {
+      "column": "name",
+      "type": "text",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "allowed_extensions",
+      "type": "ARRAY",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    }
+  ],
+  "neighborhoods": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('neighborhoods_id_seq'::regclass)"
+    },
+    {
+      "column": "name",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": 100,
+      "default": null
+    },
+    {
+      "column": "city",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": 100,
+      "default": null
+    },
+    {
+      "column": "state",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": 100,
+      "default": null
+    },
+    {
+      "column": "country",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": 100,
+      "default": null
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "subway_access",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "dining_options",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "schools_info",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "shopping_info",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "parks_recreation",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "safety_rating",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "walkability_score",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "column": "updated_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "properties": [
+    {
+      "column": "id",
+      "type": "uuid",
+      "nullable": false,
+      "maxLength": null,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "column": "title",
+      "type": "text",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "price",
+      "type": "numeric",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "address",
+      "type": "text",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "city",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "state",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "country",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "zip_code",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "type",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "room",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": "0"
+    },
+    {
+      "column": "bathrooms",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": "0"
+    },
+    {
+      "column": "status",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": "'available'::text"
+    },
+    {
+      "column": "year_built",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "seller_id",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "operation_status_id",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": "1"
+    },
+    {
+      "column": "geocode",
+      "type": "jsonb",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "latitude",
+      "type": "numeric",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "longitude",
+      "type": "numeric",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "now()"
+    },
+    {
+      "column": "updated_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "now()"
+    },
+    {
+      "column": "square_meters",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": "1"
+    }
+  ],
+  "property_feature_assignments": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('property_feature_assignments_id_seq'::regclass)"
+    },
+    {
+      "column": "property_id",
+      "type": "uuid",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "feature_id",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "property_features": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('property_features_id_seq'::regclass)"
+    },
+    {
+      "column": "name",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": 100,
+      "default": null
+    },
+    {
+      "column": "category",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": 50,
+      "default": "'general'::character varying"
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "icon",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": 50,
+      "default": null
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "column": "updated_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "property_images": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('property_images_id_seq'::regclass)"
+    },
+    {
+      "column": "property_id",
+      "type": "uuid",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "image_url",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": 500,
+      "default": null
+    },
+    {
+      "column": "is_cover",
+      "type": "boolean",
+      "nullable": true,
+      "maxLength": null,
+      "default": "false"
+    },
+    {
+      "column": "display_order",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": "1"
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "column": "updated_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "column": "file_size",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "mime_type",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": 100,
+      "default": null
+    },
+    {
+      "column": "original_filename",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": 255,
+      "default": null
+    },
+    {
+      "column": "blob_path",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": 500,
+      "default": null
+    },
+    {
+      "column": "alt_text",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    }
+  ],
+  "property_media": [
+    {
+      "column": "id",
+      "type": "uuid",
+      "nullable": false,
+      "maxLength": null,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "column": "property_id",
+      "type": "uuid",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "media_type",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "url",
+      "type": "text",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "storage_key",
+      "type": "text",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "file_name",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "file_size",
+      "type": "integer",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "mime_type",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "is_primary",
+      "type": "boolean",
+      "nullable": true,
+      "maxLength": null,
+      "default": "false"
+    },
+    {
+      "column": "uploaded_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "now()"
+    }
+  ],
+  "property_operation_statuses": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('property_operation_statuses_id_seq'::regclass)"
+    },
+    {
+      "column": "name",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "display_name",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "property_statuses": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('property_statuses_id_seq'::regclass)"
+    },
+    {
+      "column": "name",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "display_name",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "color",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": null,
+      "default": "'#000000'::character varying"
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "property_types": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('property_types_id_seq'::regclass)"
+    },
+    {
+      "column": "name",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "display_name",
+      "type": "character varying",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "description",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "user_saved_properties": [
+    {
+      "column": "id",
+      "type": "integer",
+      "nullable": false,
+      "maxLength": null,
+      "default": "nextval('user_saved_properties_id_seq'::regclass)"
+    },
+    {
+      "column": "user_id",
+      "type": "character varying",
+      "nullable": false,
+      "maxLength": 255,
+      "default": null
+    },
+    {
+      "column": "property_id",
+      "type": "uuid",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "saved_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "column": "is_favorite",
+      "type": "boolean",
+      "nullable": true,
+      "maxLength": null,
+      "default": "false"
+    },
+    {
+      "column": "notes",
+      "type": "text",
+      "nullable": true,
+      "maxLength": null,
+      "default": null
+    },
+    {
+      "column": "updated_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "maxLength": null,
+      "default": "CURRENT_TIMESTAMP"
+    }
+  ]
+}
