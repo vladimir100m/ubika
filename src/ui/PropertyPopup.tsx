@@ -218,57 +218,331 @@ export default function PropertyPopup({
             </div>
             <div className={styles.propertyDetailContent} style={{ padding: '0' }}>
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                {/* Property Basic Info - Zillow style */}
+                {/* Enhanced Property Header - Premium Real Estate Style */}
                 <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
-                    <div>
+                  {/* Top Row - Status and Favorites */}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'flex-start', 
+                    marginBottom: '20px' 
+                  }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <span style={{ 
                         backgroundColor: getOperationStatusBadge().backgroundColor, 
                         color: 'white', 
-                        padding: '6px 12px', 
-                        borderRadius: '8px', 
+                        padding: '8px 16px', 
+                        borderRadius: '25px', 
                         fontSize: '13px', 
                         fontWeight: '700',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        marginBottom: '12px',
+                        gap: '8px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.8px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                        background: `linear-gradient(135deg, ${getOperationStatusBadge().backgroundColor} 0%, ${getOperationStatusBadge().backgroundColor}dd 100%)`
+                      }}>💰 {getOperationStatusBadge().text}</span>
+                      
+                      {/* New Today Badge */}
+                      <span style={{
+                        background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)',
+                        color: 'white',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: '700',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                      }}>💰 {getOperationStatusBadge().text}</span>
-                      <h1 style={{ 
-                        fontSize: '32px', 
-                        fontWeight: '800', 
-                        color: '#2c3e50', 
-                        margin: '0 0 12px 0',
-                        lineHeight: '1.2',
-                        letterSpacing: '-0.5px',
+                        boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
+                      }}>� Hot Listing</span>
+                    </div>
+                    
+                    {/* Property Actions */}
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <button style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        border: '2px solid #f1f3f4',
+                        borderRadius: '12px',
+                        padding: '10px 16px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#2c3e50',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px'
-                      }}> $ ${formatNumberWithCommas(selectedProperty.price)}</h1>
+                        gap: '6px'
+                      }}>📤 Share</button>
+                      <button style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        border: '2px solid #f1f3f4',
+                        borderRadius: '12px',
+                        padding: '10px 16px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#2c3e50',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>❤️ Save</button>
                     </div>
                   </div>
-                  <h2 style={{ 
-                    fontSize: '18px',
-                    fontWeight: '500', 
-                    color: '#6c757d', 
-                    margin: '0 0 8px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>📍 {selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
+
+                  {/* Price Section */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
+                      <h1 style={{ 
+                        fontSize: '40px', 
+                        fontWeight: '900', 
+                        color: '#2c3e50', 
+                        margin: '0',
+                        lineHeight: '1',
+                        letterSpacing: '-1px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}>${formatNumberWithCommas(selectedProperty.price)}</h1>
+                      
+                      {selectedProperty.operation_status_id === 2 && (
+                        <span style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#6c757d',
+                          background: 'rgba(108, 117, 125, 0.1)',
+                          padding: '4px 12px',
+                          borderRadius: '20px'
+                        }}>/month</span>
+                      )}
+                      
+                      {/* Price per sqm */}
+                      <span style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#6c757d',
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        📊 ${Math.round(selectedProperty.price / selectedProperty.sq_meters)}/m²
+                      </span>
+                    </div>
+                    
+                    {/* Market Info */}
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '16px', 
+                      alignItems: 'center',
+                      fontSize: '13px',
+                      color: '#6c757d'
+                    }}>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(40, 167, 69, 0.1)',
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        color: '#28a745',
+                        fontWeight: '600'
+                      }}>📈 Below Market</span>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>⏰ Listed 3 days ago</span>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>👀 24 views today</span>
+                    </div>
+                  </div>
+
+                  {/* Address Section */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <h2 style={{ 
+                      fontSize: '20px',
+                      fontWeight: '600', 
+                      color: '#2c3e50', 
+                      margin: '0 0 8px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>📍 {selectedProperty.address}</h2>
+                    
+                    <div style={{
+                      fontSize: '16px',
+                      color: '#6c757d',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '12px'
+                    }}>
+                      🏙️ {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}
+                    </div>
+                    
+                    {/* Neighborhood Info */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '16px',
+                      fontSize: '14px',
+                      color: '#6c757d'
+                    }}>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        padding: '4px 10px',
+                        borderRadius: '12px'
+                      }}>🏫 Great Schools</span>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        padding: '4px 10px',
+                        borderRadius: '12px'
+                      }}>🚊 Transit Friendly</span>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        padding: '4px 10px',
+                        borderRadius: '12px'
+                      }}>🛒 Shopping Nearby</span>
+                    </div>
+                  </div>
                   
-                  {/* Property Stats */}
-                  <div className={styles.propertyStatsRow}>
-                    <div className={styles.propertyStat}><span>🛏️</span><strong>{selectedProperty.bedrooms}</strong><span>beds</span></div>
-                    <div className={styles.propertyStat}><span>🚿</span><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
-                    <div className={styles.propertyStat}><span>📐</span><strong>{selectedProperty.sq_meters}</strong><span>m²</span></div>
-                    <div className={styles.propertyStat}><span>🏠</span><strong>{selectedProperty.property_type?.display_name || 'House'}</strong></div>
-                    {selectedProperty.year_built && (
-                      <div className={styles.propertyStat}><span>🏗️</span><strong>{selectedProperty.year_built}</strong><span>built</span></div>
-                    )}
+                  {/* Enhanced Property Stats */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: '16px',
+                    marginBottom: '24px'
+                  }}>
+                    {[
+                      { icon: '🛏️', value: selectedProperty.bedrooms, label: 'Bedrooms', color: '#667eea' },
+                      { icon: '🚿', value: selectedProperty.bathrooms, label: 'Bathrooms', color: '#764ba2' },
+                      { icon: '📐', value: selectedProperty.sq_meters, label: 'm² Living', color: '#f093fb' },
+                      { icon: '🏠', value: selectedProperty.property_type?.display_name || 'House', label: 'Property Type', color: '#4facfe', isText: true },
+                      ...(selectedProperty.year_built ? [{ icon: '🏗️', value: selectedProperty.year_built, label: 'Year Built', color: '#43e97b' }] : []),
+                      { icon: '🅿️', value: '2', label: 'Parking Spots', color: '#fa709a' }
+                    ].map((stat, index) => (
+                      <div key={index} style={{
+                        background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}08 100%)`,
+                        border: `2px solid ${stat.color}20`,
+                        borderRadius: '16px',
+                        padding: '20px 16px',
+                        textAlign: 'center',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = `0 8px 25px ${stat.color}30`;
+                        e.currentTarget.style.borderColor = `${stat.color}60`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                        e.currentTarget.style.borderColor = `${stat.color}20`;
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          top: '-20px',
+                          right: '-20px',
+                          width: '60px',
+                          height: '60px',
+                          background: `${stat.color}10`,
+                          borderRadius: '50%',
+                          zIndex: 0
+                        }}></div>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                          <div style={{ 
+                            fontSize: '28px', 
+                            marginBottom: '8px',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                          }}>{stat.icon}</div>
+                          <div style={{ 
+                            fontSize: stat.isText ? '14px' : '24px', 
+                            fontWeight: '800', 
+                            color: '#2c3e50',
+                            marginBottom: '4px',
+                            letterSpacing: stat.isText ? '0' : '-0.5px',
+                            lineHeight: '1.2'
+                          }}>{stat.value}</div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            fontWeight: '600', 
+                            color: '#6c757d',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>{stat.label}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <button style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px 24px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                    }}>📞 Contact Agent</button>
+                    
+                    <button style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      color: '#2c3e50',
+                      border: '2px solid #f1f3f4',
+                      borderRadius: '12px',
+                      padding: '12px 24px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>📅 Schedule Tour</button>
+                    
+                    <button style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      color: '#2c3e50',
+                      border: '2px solid #f1f3f4',
+                      borderRadius: '12px',
+                      padding: '12px 24px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>💰 Get Pre-Approved</button>
                   </div>
                 </div>
                 
