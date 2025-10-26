@@ -65,8 +65,8 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       <div className={styles.header}>
         <div className={styles.priceSection}>
           <div className={styles.price}>
-            {formatPropertyPriceCompact(property.price)}
-            {property.operation_status_id === 2 && <span className={styles.period}>/month</span>}
+            💰 {formatPropertyPriceCompact(property.price)}
+            {property.operation_status_id === 2 && <span className={styles.period}>/mo</span>}
           </div>
           {property.property_status && (
             <div className={`${styles.statusBadge} ${styles[property.property_status.display_name?.toLowerCase() || '']}`}>
@@ -76,15 +76,11 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
         </div>
         
         <h1 className={styles.title}>
-          {property.title || `${property.property_type?.display_name || 'Property'} in ${property.city}`}
+          🏠 {property.title || `${property.property_type?.display_name || 'Home'} in ${property.city}`}
         </h1>
         
         <div className={styles.location}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          <span>{property.address}, {property.city}, {property.state}, {property.country}</span>
+          📍 {property.address}, {property.city}
         </div>
       </div>
 
@@ -100,7 +96,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
             <div className={styles.detailIcon}>🛏️</div>
             <div>
               <div className={styles.detailValue}>{property.bedrooms}</div>
-              <div className={styles.detailLabel}>Bedrooms</div>
+              <div className={styles.detailLabel}>Beds</div>
             </div>
           </div>
           
@@ -108,7 +104,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
             <div className={styles.detailIcon}>🚿</div>
             <div>
               <div className={styles.detailValue}>{property.bathrooms}</div>
-              <div className={styles.detailLabel}>Bathrooms</div>
+              <div className={styles.detailLabel}>Baths</div>
             </div>
           </div>
           
@@ -124,7 +120,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
             <div className={styles.detailIcon}>🏠</div>
             <div>
               <div className={styles.detailValue}>{property.property_type?.display_name || 'N/A'}</div>
-              <div className={styles.detailLabel}>Property Type</div>
+              <div className={styles.detailLabel}>Type</div>
             </div>
           </div>
         </div>
@@ -134,12 +130,12 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {property.features && property.features.length > 0 && (
         <div className={styles.section}>
           <div className={styles.specialHighlightsHeader}>
-            <h2 className={styles.propertyTitle}>What's Special</h2>
+            <h2 className={styles.propertyTitle}>✨ Highlights</h2>
           </div>
           <div className={styles.specialHighlights}>
-            {property.features.slice(0, 7).map((feature) => (
+            {property.features.slice(0, 6).map((feature) => (
               <div key={feature.id} className={styles.highlightBullet}>
-                • {feature.name}
+                ⭐ {feature.name}
               </div>
             ))}
           </div>
@@ -150,7 +146,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {property.description && (
         <div className={styles.section}>
           <div className={`${styles.collapsibleHeader}`}>
-            <h2 className={styles.propertyTitle}>About This Property</h2>
+            <h2 className={styles.propertyTitle}>📋 About</h2>
           </div>
           <div id="section-description" className={styles.sectionBodyFade}>
             <p className={styles.description}>{property.description}</p>
@@ -161,28 +157,28 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Property Information */}
       <div className={styles.section}>
         <div className={styles.collapsibleHeader}>
-          <h2 className={styles.propertyTitle}>Facts & Features</h2>
+          <h2 className={styles.propertyTitle}>📊 Details</h2>
         </div>
         <div id="section-info" className={`${styles.sectionBodyFade} ${styles.propertyInfo}`}>
           {/* Interior Section */}
           <div className={styles.factsCategory}>
-            <h3 className={styles.categoryTitle}>Interior</h3>
+            <h3 className={styles.categoryTitle}>🏠 Interior</h3>
             <div className={styles.infoGrid}>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Bedrooms</span>
+                <span className={styles.infoLabel}>Beds</span>
                 <span className={styles.infoValue}>{property.bedrooms}</span>
               </div>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Bathrooms</span>
+                <span className={styles.infoLabel}>Baths</span>
                 <span className={styles.infoValue}>{property.bathrooms}</span>
               </div>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Square Meters</span>
-                <span className={styles.infoValue}>{property.sq_meters}</span>
+                <span className={styles.infoLabel}>Size</span>
+                <span className={styles.infoValue}>{property.sq_meters} m²</span>
               </div>
               {property.year_built && (
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Year Built</span>
+                  <span className={styles.infoLabel}>Built</span>
                   <span className={styles.infoValue}>{property.year_built}</span>
                 </div>
               )}
@@ -191,10 +187,10 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
 
           {/* Property Section */}
           <div className={styles.factsCategory}>
-            <h3 className={styles.categoryTitle}>Property</h3>
+            <h3 className={styles.categoryTitle}>🏢 Property</h3>
             <div className={styles.infoGrid}>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Property Type</span>
+                <span className={styles.infoLabel}>Type</span>
                 <span className={styles.infoValue}>{property.property_type?.display_name || 'N/A'}</span>
               </div>
               <div className={styles.infoItem}>
@@ -203,12 +199,12 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
               </div>
               {property.zip_code && (
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>ZIP Code</span>
+                  <span className={styles.infoLabel}>ZIP</span>
                   <span className={styles.infoValue}>{property.zip_code}</span>
                 </div>
               )}
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Property ID</span>
+                <span className={styles.infoLabel}>ID</span>
                 <span className={styles.infoValue}>{property.id}</span>
               </div>
             </div>
@@ -216,21 +212,21 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
 
           {/* Location Section */}
           <div className={styles.factsCategory}>
-            <h3 className={styles.categoryTitle}>Location</h3>
+            <h3 className={styles.categoryTitle}>📍 Location</h3>
             <div className={styles.infoGrid}>
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>Address</span>
-                <span className={styles.infoValue}>{property.address}, {property.city}, {property.state}</span>
+                <span className={styles.infoValue}>{property.address}, {property.city}</span>
               </div>
               {property.lat !== undefined && property.lng !== undefined && (
                 <>
                   <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Latitude</span>
-                    <span className={styles.infoValue}>{property.lat.toFixed(6)}</span>
+                    <span className={styles.infoLabel}>Lat</span>
+                    <span className={styles.infoValue}>{property.lat.toFixed(4)}</span>
                   </div>
                   <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Longitude</span>
-                    <span className={styles.infoValue}>{property.lng.toFixed(6)}</span>
+                    <span className={styles.infoLabel}>Lng</span>
+                    <span className={styles.infoValue}>{property.lng.toFixed(4)}</span>
                   </div>
                 </>
               )}
@@ -239,15 +235,15 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
 
           {/* Listing Details Section */}
           <div className={styles.factsCategory}>
-            <h3 className={styles.categoryTitle}>Listing Details</h3>
+            <h3 className={styles.categoryTitle}>📅 Listing</h3>
             <div className={styles.infoGrid}>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Listed Date</span>
+                <span className={styles.infoLabel}>Listed</span>
                 <span className={styles.infoValue}>{formatPropertyDate(property.created_at)}</span>
               </div>
               {property.updated_at !== property.created_at && (
                 <div className={styles.infoItem}>
-                  <span className={styles.infoLabel}>Last Updated</span>
+                  <span className={styles.infoLabel}>Updated</span>
                   <span className={styles.infoValue}>{formatPropertyDate(property.updated_at)}</span>
                 </div>
               )}
@@ -266,7 +262,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {property.features && property.features.length > 0 && (
         <div className={styles.section}>
           <div className={styles.collapsibleHeader}>
-            <h2 className={styles.propertyTitle}>All Features ({property.features.length})</h2>
+            <h2 className={styles.propertyTitle}>🔧 Features ({property.features.length})</h2>
           </div>
           <div id="section-features" className={styles.sectionBodyFade}>
             <div className={styles.featuresContainer}>
@@ -279,11 +275,11 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                 }, {} as Record<string, any[]>)
               ).map(([category, features]) => (
                 <div key={category} className={styles.featureCategory}>
-                  <h4 className={styles.featureCategoryTitle}>{category}</h4>
+                  <h4 className={styles.featureCategoryTitle}>⚡ {category}</h4>
                   <div className={styles.featuresList}>
                     {features.map((feature) => (
                       <div key={feature.id} className={styles.featureItemBullet}>
-                        • {feature.name}
+                        ✓ {feature.name}
                       </div>
                     ))}
                   </div>
@@ -298,7 +294,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {neighborhoodData && (
         <div className={styles.section}>
           <div className={styles.collapsibleHeader}>
-            <h2 className={styles.propertyTitle}>Neighborhood: {neighborhoodData.name}</h2>
+            <h2 className={styles.propertyTitle}>🏘️ Neighborhood: {neighborhoodData.name}</h2>
           </div>
           <div id="section-neighborhood" className={styles.sectionBodyFade}>
             <div className={styles.neighborhoodInfo}>
@@ -307,11 +303,11 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
               </p>
               <div className={styles.neighborhoodDetails}>
                 <div className={styles.neighborhoodItem}>
-                  <h4>🚇 Subway Access</h4>
+                  <h4>🚇 Transit</h4>
                   <p>{neighborhoodData.subway_access}</p>
                 </div>
                 <div className={styles.neighborhoodItem}>
-                  <h4>🍽️ Dining Options</h4>
+                  <h4>🍽️ Dining</h4>
                   <p>{neighborhoodData.dining_options}</p>
                 </div>
                 <div className={styles.neighborhoodItem}>
@@ -319,7 +315,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   <p>{neighborhoodData.shopping_access}</p>
                 </div>
                 <div className={styles.neighborhoodItem}>
-                  <h4>🛣️ Highway Access</h4>
+                  <h4>🛣️ Roads</h4>
                   <p>{neighborhoodData.highway_access}</p>
                 </div>
               </div>
@@ -331,26 +327,26 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* HOA & Amenities Section */}
       <div className={styles.section}>
         <div className={styles.collapsibleHeader}>
-          <h2 className={styles.propertyTitle}>Community & HOA</h2>
+          <h2 className={styles.propertyTitle}>🏘️ Community</h2>
         </div>
         <div id="section-hoa" className={styles.sectionBodyFade}>
           <div className={styles.hoaGrid}>
             <div className={styles.hoaItem}>
-              <h4>🏘️ Amenities</h4>
+              <h4>� Amenities</h4>
               <ul className={styles.amenitiesList}>
-                <li>• Parking included</li>
-                <li>• Fitness center</li>
-                <li>• Community room</li>
-                <li>• Guest suites</li>
+                <li>🚗 Parking</li>
+                <li>💪 Fitness center</li>
+                <li>👥 Community room</li>
+                <li>🏨 Guest suites</li>
               </ul>
             </div>
             <div className={styles.hoaItem}>
-              <h4>📋 Services</h4>
+              <h4>�️ Services</h4>
               <ul className={styles.servicesList}>
-                <li>• Building insurance included</li>
-                <li>• Common elements maintained</li>
-                <li>• 24/7 security</li>
-                <li>• Visitor parking available</li>
+                <li>🏠 Building insurance</li>
+                <li>🔧 Maintenance</li>
+                <li>🔒 24/7 security</li>
+                <li>🅿️ Visitor parking</li>
               </ul>
             </div>
           </div>
@@ -360,24 +356,24 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {/* Financial & Listing Details Section */}
       <div className={styles.section}>
         <div className={styles.collapsibleHeader}>
-          <h2 className={styles.propertyTitle}>Financial & Listing Details</h2>
+          <h2 className={styles.propertyTitle}>💰 Financials</h2>
         </div>
         <div id="section-financial" className={styles.sectionBodyFade}>
           <div className={styles.financialGrid}>
             <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>HOA Fee</span>
-              <span className={styles.financialValue}>$1,304/month</span>
+              <span className={styles.financialLabel}>🏠 HOA</span>
+              <span className={styles.financialValue}>$1,304/mo</span>
             </div>
             <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>Annual Tax</span>
-              <span className={styles.financialValue}>$3,460</span>
+              <span className={styles.financialLabel}>🧾 Tax</span>
+              <span className={styles.financialValue}>$3,460/yr</span>
             </div>
             <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>Days on Market</span>
+              <span className={styles.financialLabel}>📅 Days Listed</span>
               <span className={styles.financialValue}>51</span>
             </div>
             <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>Property Views</span>
+              <span className={styles.financialLabel}>👀 Views</span>
               <span className={styles.financialValue}>136</span>
             </div>
           </div>
@@ -388,19 +384,19 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       {showContact && (
         <div className={styles.section}>
           <div className={styles.collapsibleHeader}>
-            <h2 className={styles.propertyTitle}>Contact an Agent</h2>
+            <h2 className={styles.propertyTitle}>📞 Contact</h2>
           </div>
           <div id="section-contact" className={styles.sectionBodyFade}>
             <div className={styles.contactSection}>
               <p className={styles.contactDescription}>
-                Get more information about this property, schedule a viewing, or ask any questions.
+                Get info, schedule viewing, or ask questions 👋
               </p>
               <form className={styles.contactForm}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Name *</label>
+                  <label className={styles.formLabel}>👤 Name *</label>
                   <input
                     type="text"
-                    placeholder="Your full name"
+                    placeholder="Your name"
                     value={contactForm.name}
                     onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
                     className={styles.formInput}
@@ -408,7 +404,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Email *</label>
+                  <label className={styles.formLabel}>📧 Email *</label>
                   <input
                     type="email"
                     placeholder="your.email@example.com"
@@ -419,7 +415,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Phone</label>
+                  <label className={styles.formLabel}>📱 Phone</label>
                   <input
                     type="tel"
                     placeholder="+1 (555) 123-4567"
@@ -429,7 +425,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Message</label>
+                  <label className={styles.formLabel}>💬 Message</label>
                   <textarea
                     placeholder="I'm interested in this property..."
                     value={contactForm.message}
@@ -444,18 +440,18 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                     className={styles.submitButton}
                     disabled={submitStatus === 'loading'}
                   >
-                    {submitStatus === 'loading' ? 'Sending...' : 'Send Message'}
+                    {submitStatus === 'loading' ? '📤 Sending...' : '🚀 Send Message'}
                   </button>
                   <div className={styles.contactInfo}>
-                    <p><strong>Ubika Real Estate</strong></p>
+                    <p><strong>🏢 Ubika Real Estate</strong></p>
                     <p>📧 info@ubika.com | 📞 +1 (555) 123-4567</p>
                   </div>
                 </div>
                 {submitStatus === 'success' && (
-                  <div className={styles.successMessage}>✅ Message sent successfully!</div>
+                  <div className={styles.successMessage}>✅ Message sent!</div>
                 )}
                 {submitStatus === 'error' && (
-                  <div className={styles.errorMessage}>❌ Error sending message. Please try again.</div>
+                  <div className={styles.errorMessage}>❌ Error. Try again.</div>
                 )}
               </form>
             </div>

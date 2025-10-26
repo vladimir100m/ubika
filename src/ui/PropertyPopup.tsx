@@ -220,62 +220,79 @@ export default function PropertyPopup({
               <div className={styles.propertyDetailBody} style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 {/* Property Basic Info - Zillow style */}
                 <div className={`${styles.propertyDetailInfo} ${styles.propertyHeadBlock}`}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
                       <span style={{ 
                         backgroundColor: getOperationStatusBadge().backgroundColor, 
                         color: 'white', 
-                        padding: '4px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '12px', 
-                        fontWeight: '600',
-                        display: 'inline-block',
-                        marginBottom: '8px'
-                      }}>{getOperationStatusBadge().text}</span>
+                        padding: '6px 12px', 
+                        borderRadius: '8px', 
+                        fontSize: '13px', 
+                        fontWeight: '700',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '12px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                      }}>💰 {getOperationStatusBadge().text}</span>
                       <h1 style={{ 
-                        fontSize: '28px', 
-                        fontWeight: '600', 
-                        color: '#2a2a33', 
-                        margin: '0 0 8px 0',
-                        lineHeight: '1.2'
-                      }}>${formatNumberWithCommas(selectedProperty.price)}</h1>
+                        fontSize: '32px', 
+                        fontWeight: '800', 
+                        color: '#2c3e50', 
+                        margin: '0 0 12px 0',
+                        lineHeight: '1.2',
+                        letterSpacing: '-0.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}> $ ${formatNumberWithCommas(selectedProperty.price)}</h1>
                     </div>
                   </div>
                   <h2 style={{ 
-                    fontSize: '16px',
-                    fontWeight: '400', 
-                    color: '#2a2a33', 
-                    margin: '0 0 4px 0' 
-                  }}>{selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
+                    fontSize: '18px',
+                    fontWeight: '500', 
+                    color: '#6c757d', 
+                    margin: '0 0 8px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>📍 {selectedProperty.address}, {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}</h2>
                   
                   {/* Property Stats */}
                   <div className={styles.propertyStatsRow}>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.bedrooms}</strong><span>beds</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.sq_meters}</strong><span>m²</span></div>
-                    <div className={styles.propertyStat}><strong>{selectedProperty.property_type?.display_name || 'House'}</strong></div>
+                    <div className={styles.propertyStat}><span>🛏️</span><strong>{selectedProperty.bedrooms}</strong><span>beds</span></div>
+                    <div className={styles.propertyStat}><span>🚿</span><strong>{selectedProperty.bathrooms}</strong><span>baths</span></div>
+                    <div className={styles.propertyStat}><span>📐</span><strong>{selectedProperty.sq_meters}</strong><span>m²</span></div>
+                    <div className={styles.propertyStat}><span>🏠</span><strong>{selectedProperty.property_type?.display_name || 'House'}</strong></div>
                     {selectedProperty.year_built && (
-                      <div className={styles.propertyStat}><strong>{selectedProperty.year_built}</strong><span>built</span></div>
+                      <div className={styles.propertyStat}><span>🏗️</span><strong>{selectedProperty.year_built}</strong><span>built</span></div>
                     )}
                   </div>
                 </div>
                 
                 {/* What's Special Section - Zillow Style */}
                 <div style={{ 
-                  padding: '24px', 
+                  padding: '32px', 
                   backgroundColor: '#ffffff',
-                  borderBottom: '1px solid #e9e9e9'
+                  borderBottom: '1px solid #f1f3f4',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)'
                 }}>
                   <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: '600', 
-                    margin: '0 0 16px 0',
-                    color: '#2a2a33'
-                  }}>What's special</h3>
+                    fontSize: '24px', 
+                    fontWeight: '700', 
+                    margin: '0 0 20px 0',
+                    color: '#2c3e50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    letterSpacing: '-0.3px'
+                  }}>✨ Highlights</h3>
                   <div style={{ 
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                    gap: '12px'
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: '16px'
                   }}>
                     {selectedProperty.features && selectedProperty.features.length > 0 
                       ? selectedProperty.features.slice(0, 6).map((feature, idx) => (
@@ -284,32 +301,79 @@ export default function PropertyPopup({
                             style={{
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '8px',
-                              fontSize: '14px',
-                              color: '#2a2a33',
-                              fontWeight: '500'
+                              gap: '12px',
+                              fontSize: '15px',
+                              color: '#2c3e50',
+                              fontWeight: '600',
+                              padding: '16px 20px',
+                              background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                              borderRadius: '12px',
+                              borderLeft: '4px solid #667eea',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
                             }}
                           >
                             <span style={{ 
-                              color: '#1277e1', 
-                              fontSize: '18px',
-                              fontWeight: 'bold'
-                            }}>✓</span>
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
                             <span>{feature.name}</span>
                           </div>
                         ))
                       : (
                         <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#2a2a33', fontWeight: '500' }}>
-                            <span style={{ color: '#1277e1', fontSize: '18px', fontWeight: 'bold' }}>✓</span>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            fontSize: '15px', 
+                            color: '#2c3e50', 
+                            fontWeight: '600',
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                            borderRadius: '12px',
+                            borderLeft: '4px solid #667eea'
+                          }}>
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
                             <span>Prime Location</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#2a2a33', fontWeight: '500' }}>
-                            <span style={{ color: '#1277e1', fontSize: '18px', fontWeight: 'bold' }}>✓</span>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            fontSize: '15px', 
+                            color: '#2c3e50', 
+                            fontWeight: '600',
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                            borderRadius: '12px',
+                            borderLeft: '4px solid #667eea'
+                          }}>
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
                             <span>Well Maintained</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#2a2a33', fontWeight: '500' }}>
-                            <span style={{ color: '#1277e1', fontSize: '18px', fontWeight: 'bold' }}>✓</span>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            fontSize: '15px', 
+                            color: '#2c3e50', 
+                            fontWeight: '600',
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)',
+                            borderRadius: '12px',
+                            borderLeft: '4px solid #667eea'
+                          }}>
+                            <span style={{ 
+                              fontSize: '20px',
+                              filter: 'drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3))'
+                            }}>⭐</span>
                             <span>Modern Updates</span>
                           </div>
                         </>
