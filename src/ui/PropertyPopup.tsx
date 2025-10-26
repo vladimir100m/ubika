@@ -1,7 +1,7 @@
 import styles from '../styles/Home.module.css';
 import popupStyles from '../styles/PropertyPopup.module.css';
 import React, {useState, useRef, RefObject, useCallback, useMemo} from 'react';
-import { useSession } from 'next-auth/react';
+// session handling removed from this component (not used)
 import { Property, Neighborhood } from '../types';
 import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
@@ -18,7 +18,7 @@ export default function PropertyPopup({
   onClose: () => void; 
   mapRef: RefObject<HTMLDivElement>;
 }) {
-  const { data: session, status } = useSession();
+  // session removed - authentication is handled at higher level if needed
   const [activeTab, setActiveTab] = useState('overview');
   const [descExpanded, setDescExpanded] = useState(false);
   const [neighborhoodData, setNeighborhoodData] = useState<Neighborhood | null>(null);
@@ -89,6 +89,39 @@ export default function PropertyPopup({
     setCurrentImageIndex(index);
     setShowCarousel(true);
   };
+
+  // Small data lists memoized for readability
+  const statItems = useMemo(() => ([
+    { icon: '🛏️', value: selectedProperty.bedrooms, label: 'Bedrooms', color: '#667eea' },
+    { icon: '🚿', value: selectedProperty.bathrooms, label: 'Bathrooms', color: '#764ba2' },
+    { icon: '📐', value: selectedProperty.sq_meters, label: 'm² Living', color: '#f093fb' },
+    { icon: '🏠', value: selectedProperty.property_type?.display_name || 'House', label: 'Property Type', color: '#4facfe', isText: true },
+    ...(selectedProperty.year_built ? [{ icon: '🏗️', value: selectedProperty.year_built, label: 'Year Built', color: '#43e97b' }] : []),
+    { icon: '🅿️', value: '2', label: 'Parking Spots', color: '#fa709a' }
+  ]), [selectedProperty]);
+
+  const infoStats = useMemo(() => ([
+    { icon: '🏠', label: 'Type', value: selectedProperty.property_type?.display_name || 'Single Family' },
+    { icon: '🏗️', label: 'Built', value: selectedProperty.year_built || '2010' },
+    { icon: '📐', label: 'Size', value: `${selectedProperty.sq_meters} m²` },
+    { icon: '🆔', label: 'ID', value: `#${selectedProperty.id}` }
+  ]), [selectedProperty]);
+
+  const interiorFeatures = useMemo(() => ([
+    { icon: '🌳', name: 'Hardwood Floors', description: 'Beautiful oak hardwood throughout' },
+    { icon: '🔥', name: 'Fireplace', description: 'Gas fireplace in living room' },
+    { icon: '❄️', name: 'Central AC', description: 'Climate controlled comfort' },
+    { icon: '💡', name: 'Modern Lighting', description: 'LED fixtures throughout' }
+  ]), []);
+
+  const outdoorFeatures = useMemo(() => ([
+    { icon: '🏊‍♂️', name: 'Swimming Pool', description: 'Heated saltwater pool with spa', highlight: true },
+    { icon: '🌺', name: 'Landscaped Garden', description: 'Professional landscape design', highlight: true },
+    { icon: '🚗', name: 'Attached Garage', description: '2-car garage with storage' },
+    { icon: '🍖', name: 'BBQ Area', description: 'Built-in outdoor kitchen' },
+    { icon: '🌳', name: 'Mature Trees', description: 'Privacy and shade' },
+    { icon: '💡', name: 'Outdoor Lighting', description: 'LED landscape lighting' }
+  ]), []);
 
   // Handle contact form actions
   const handleCloseContactForm = () => {
@@ -218,10 +251,10 @@ export default function PropertyPopup({
                           ['--op-color' as any]: operationBadge.backgroundColor,
                           ['--op-color-alpha' as any]: `${operationBadge.backgroundColor}dd`
                         }}
-                      >💰 {operationBadge.text}</span>
+                      >{operationBadge.text}</span>
 
                       {/* New Today Badge */}
-                      <span className={popupStyles.hotBadge}>🔥 Hot Listing</span>
+                      {/* <span className={popupStyles.hotBadge}>🔥 Hot Listing</span> */}
                     </div>
 
                     {/* Property Actions */}
@@ -231,63 +264,33 @@ export default function PropertyPopup({
                     </div>
                   </div>
 
-                  {/* Price Section */}
+                  {/* Price Section - simplified to show only the main price */}
                   <div className={popupStyles.priceSection}>
                     <div className={popupStyles.priceRow}>
                       <h1 className={popupStyles.priceAmount}>${formattedPrice}</h1>
-
-                      {selectedProperty.operation_status_id === 2 && (
-                        <span className={popupStyles.pricePerMonth}>/month</span>
-                      )}
-
-                      {/* Price per sqm */}
-                      <span className={popupStyles.pricePerSqm}>
-                        📊 {perSqm ? `$${perSqm}/m²` : '—'}
-                      </span>
                     </div>
-
-                    {/* Market Info (minimal) */}
-                    <div className={popupStyles.marketInfo}>
-                      <span className={popupStyles.marketBadge}>📈 Below Market</span>
-                    </div>
-                  </div>
-
-                  {/* Address Section */}
-                  <div className={popupStyles.addressSection}>
-                    <h2 className={popupStyles.addressTitle}>📍 {selectedProperty.address}</h2>
-
-                    <div className={popupStyles.addressMeta}>
-                      🏙️ {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip_code}
-                    </div>
-
-                    {/* Neighborhood summary kept in address meta; chips removed for clarity */}
                   </div>
                   
                   {/* Enhanced Property Stats */}
                   <div className={popupStyles.statsGrid}>
-                    {[
-                      { icon: '🛏️', value: selectedProperty.bedrooms, label: 'Bedrooms', color: '#667eea' },
-                      { icon: '🚿', value: selectedProperty.bathrooms, label: 'Bathrooms', color: '#764ba2' },
-                      { icon: '📐', value: selectedProperty.sq_meters, label: 'm² Living', color: '#f093fb' },
-                      { icon: '🏠', value: selectedProperty.property_type?.display_name || 'House', label: 'Property Type', color: '#4facfe', isText: true },
-                      ...(selectedProperty.year_built ? [{ icon: '🏗️', value: selectedProperty.year_built, label: 'Year Built', color: '#43e97b' }] : []),
-                      { icon: '🅿️', value: '2', label: 'Parking Spots', color: '#fa709a' }
-                    ].map((stat, index) => (
+                    {statItems.map((stat, index) => (
                       <div
                         key={index}
+                        role="group"
+                        aria-label={`${stat.label}: ${stat.value}`}
                         className={popupStyles.statCard}
                         style={{
                           ['--stat-bg-start' as any]: `${stat.color}15`,
                           ['--stat-bg-end' as any]: `${stat.color}08`,
                           ['--stat-border' as any]: `${stat.color}20`,
-                          ['--stat-shadow' as any]: `${stat.color}30`,
+                          ['--stat-shadow' as any]: `${stat.color}20`,
                           ['--stat-border-hover' as any]: `${stat.color}60`,
                           ['--stat-inner' as any]: `${stat.color}10`
                         }}
                       >
                         <div className={popupStyles.statInnerBg} />
                         <div className={popupStyles.statContent}>
-                          <div className={popupStyles.statIcon}>{stat.icon}</div>
+                          <span className={popupStyles.statIcon} aria-hidden>{stat.icon}</span>
                           <div className={`${popupStyles.statValue} ${stat.isText ? popupStyles.statValueText : ''}`}>{stat.value}</div>
                           <div className={popupStyles.statLabel}>{stat.label}</div>
                         </div>
@@ -370,12 +373,7 @@ export default function PropertyPopup({
 
                           {/* Property Stats Grid */}
                           <div className={popupStyles.infoStatsGrid}>
-                            {[
-                              { icon: '🏠', label: 'Type', value: selectedProperty.property_type?.display_name || 'Single Family' },
-                              { icon: '🏗️', label: 'Built', value: selectedProperty.year_built || '2010' },
-                              { icon: '📐', label: 'Size', value: `${selectedProperty.sq_meters} m²` },
-                              { icon: '🆔', label: 'ID', value: `#${selectedProperty.id}` }
-                            ].map((item, index) => (
+                            {infoStats.map((item, index) => (
                               <div key={index} className={popupStyles.infoStat}>
                                 <div className={popupStyles.infoStatIcon}>{item.icon}</div>
                                 <div className={popupStyles.infoStatLabel}>{item.label}</div>
@@ -389,20 +387,15 @@ export default function PropertyPopup({
                             <div className={popupStyles.interiorHeading}>🔨 Interior Features</div>
                             
                             <div className={popupStyles.featureList}>
-                              {[
-                                { icon: '🌳', name: 'Hardwood Floors', description: 'Beautiful oak hardwood throughout' },
-                                  { icon: '🔥', name: 'Fireplace', description: 'Gas fireplace in living room' },
-                                  { icon: '❄️', name: 'Central AC', description: 'Climate controlled comfort' },
-                                  { icon: '💡', name: 'Modern Lighting', description: 'LED fixtures throughout' }
-                                ].map((feature, index) => (
-                                  <div key={index} className={popupStyles.featureItem}>
-                                    <span className={popupStyles.featureIcon}>{feature.icon}</span>
-                                    <div>
-                                      <div className={popupStyles.featureName}>{feature.name}</div>
-                                      <div className={popupStyles.featureDesc}>{feature.description}</div>
+                              {interiorFeatures.map((feature, index) => (
+                                    <div key={index} className={popupStyles.featureItem}>
+                                      <span className={popupStyles.featureIcon}>{feature.icon}</span>
+                                      <div>
+                                        <div className={popupStyles.featureName}>{feature.name}</div>
+                                        <div className={popupStyles.featureDesc}>{feature.description}</div>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ))}
                             </div>
                           </div>
                         </div>
@@ -436,14 +429,7 @@ export default function PropertyPopup({
                             <div className={popupStyles.outdoorHeading}>🌟 Outdoor Features</div>
                             
                             <div className={popupStyles.outdoorFeatureList}>
-                              {[
-                                { icon: '🏊‍♂️', name: 'Swimming Pool', description: 'Heated saltwater pool with spa', highlight: true },
-                                { icon: '🌺', name: 'Landscaped Garden', description: 'Professional landscape design', highlight: true },
-                                { icon: '🚗', name: 'Attached Garage', description: '2-car garage with storage' },
-                                { icon: '🍖', name: 'BBQ Area', description: 'Built-in outdoor kitchen' },
-                                { icon: '🌳', name: 'Mature Trees', description: 'Privacy and shade' },
-                                { icon: '💡', name: 'Outdoor Lighting', description: 'LED landscape lighting' }
-                              ].map((feature, index) => (
+                              {outdoorFeatures.map((feature, index) => (
                                 <div key={index} className={`${popupStyles.outdoorItem} ${feature.highlight ? popupStyles.outdoorHighlight : ''}`}>
                                       {feature.highlight && <div className={popupStyles.featureBadge}>Featured</div>}
                                       <span className={popupStyles.outdoorIcon}>{feature.icon}</span>

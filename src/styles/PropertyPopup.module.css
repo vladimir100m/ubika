@@ -36,7 +36,7 @@
 }
 
 .statusBadge {
-  color: white;
+  color: #1f8daf;
   padding: 8px 16px;
   border-radius: 25px;
   font-size: 13px;
@@ -66,7 +66,6 @@
   gap: 12px;
   align-items: center;
 }
-
 .actionButtonLight {
   background: rgba(255, 255, 255, 0.9);
   border: 2px solid #f1f3f4;
@@ -82,96 +81,16 @@
   gap: 6px;
 }
 
-/* Price section styles */
-.priceSection {
-  margin-bottom: 20px;
-}
-
-.priceRow {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.priceAmount {
-  font-size: 40px;
-  font-weight: 900;
-  color: #2c3e50;
-  margin: 0;
-  line-height: 1;
-  letter-spacing: -1px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .priceAmount {
-    font-size: 28px;
-  }
-  .priceRow { gap: 10px; }
-}
-
-.priceMetaSmall {
-  font-size: 13px;
-  color: #6c757d;
-}
-
-/* Additional component classes to replace inline styles in PropertyPopup */
-.closeIcon {
-  font-size: 22px;
-  line-height: 1;
-}
-
-.headerRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-}
-
-.addressSection {
-  margin-bottom: 24px;
-}
-.addressTitle {
-  font-size: 20px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.addressMeta {
-  font-size: 16px;
-  color: #6c757d;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.neighborhoodChips {
-  display: flex;
-  gap: 16px;
-  font-size: 14px;
-  color: #6c757d;
-}
-.neighborhoodChip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(102, 126, 234, 0.1);
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 24px;
+  align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .roomStatItem {
@@ -208,43 +127,61 @@
   text-transform: uppercase;
 }
 .statCard {
-  border-radius: 16px;
-  padding: 20px 16px;
+  border-radius: 14px;
+  padding: 18px 12px;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, var(--stat-bg-start, rgba(255,255,255,0.03)) 0%, var(--stat-bg-end, rgba(255,255,255,0.01)) 100%);
+  border: 1px solid var(--stat-border, rgba(0,0,0,0.04));
+  box-shadow: 0 6px 18px var(--stat-shadow, rgba(0,0,0,0.06));
 }
+
 .statInnerBg {
   position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 60px;
-  height: 60px;
+  top: -12px;
+  right: -12px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  background: var(--stat-inner, rgba(255,255,255,0.06));
   z-index: 0;
+  filter: blur(2px);
 }
 .statContent {
   position: relative;
   z-index: 1;
 }
 .statIcon {
-  font-size: 28px;
+  font-size: 26px;
   margin-bottom: 8px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
 }
 .statValue {
   font-weight: 800;
   color: #2c3e50;
   margin-bottom: 4px;
+  font-size: 18px;
+}
+
+.statValueText {
+  font-size: 16px;
+  font-weight: 700;
 }
 .statLabel {
   font-size: 12px;
   font-weight: 600;
   color: #6c757d;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+}
+
+.statCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+  border-color: var(--stat-border-hover, #e6e9ef);
 }
 
 .quickActions {
@@ -663,4 +600,104 @@
 
 .smallText {
   font-size: 14px;
+}
+
+/* Mobile-first tweaks: make stats and key info more prominent and stacked for small devices */
+@media (max-width: 480px) {
+  /* Stack stats vertically and center them like the mobile design */
+  .statsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .statCard {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 18px;
+    border-radius: 18px;
+    text-align: center;
+  }
+
+  .statIcon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .statValue {
+    font-size: 30px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: #2c3e50;
+  }
+
+  .statLabel {
+    font-size: 13px;
+    font-weight: 800;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Mobile: show only the emoji icon inside a circular badge */
+  .statValue,
+  .statLabel {
+    display: none;
+  }
+
+  .statCard {
+    width: 84px;
+    height: 84px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .statInnerBg {
+    display: none;
+  }
+
+  .statIcon {
+    font-size: 36px;
+    margin: 0;
+    line-height: 1;
+  }
+
+  /* Make the address/title more prominent and centered */
+  .addressTitle {
+    font-size: 22px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .addressMeta {
+    justify-content: center;
+  }
+
+  /* Slightly reduce header image height on small devices to free space */
+  .headerFixedHeight {
+    height: 320px;
+  }
+
+  /* Price adjustments for small screens */
+  .priceAmount {
+    font-size: 28px;
+    text-align: left;
+  }
+
+  .priceRow {
+    justify-content: flex-start;
+  }
+
+  /* Ensure quick actions wrap nicely on mobile */
+  .quickActions {
+    justify-content: center;
+  }
 }
