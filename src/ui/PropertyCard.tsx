@@ -153,6 +153,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             <span className={styles.bedBathCount}>{property.bedrooms}</span>
             {/* <span className={styles.bedBathLabel}>beds</span> */}
           </div>
+          
           <div className={styles.bedBathItem}>
             <span className={styles.bedBathIcon}>🚿</span>
             <span className={styles.bedBathCount}>{property.bathrooms}</span>
