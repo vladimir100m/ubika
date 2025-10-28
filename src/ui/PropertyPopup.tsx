@@ -6,6 +6,7 @@ import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../lib/formatPropertyUtils';
 import PropertyImageCarousel from './PropertyImageCarousel';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 
 /**
  * Utility function to extract and filter features by category
@@ -45,6 +46,14 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
   // Touch state for carousel swipe
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Description expansion state
+  const [expandedDescription, setExpandedDescription] = useState(false);
+
+  // Load Google Maps
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+  });
   
   // ============ MEMOIZED COMPUTATIONS ============
 
@@ -68,6 +77,50 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
     }),
     [selectedProperty.features]
   );
+
+  // Description truncation logic
+  const MAX_DESC_LENGTH = 300;
+  const truncatedDescription = useMemo(() => {
+    if (!selectedProperty.description) return '';
+    if (selectedProperty.description.length <= MAX_DESC_LENGTH) return selectedProperty.description;
+    return selectedProperty.description.substring(0, MAX_DESC_LENGTH) + '...';
+  }, [selectedProperty.description]);
+
+  const hasMoreDescription = useMemo(
+    () => selectedProperty.description && selectedProperty.description.length > MAX_DESC_LENGTH,
+    [selectedProperty.description]
+  );
+
+  // Full location string
+  const fullLocation = useMemo(() => {
+    const parts = [selectedProperty.address, selectedProperty.city, selectedProperty.state, selectedProperty.zip_code]
+      .filter(Boolean);
+    return parts.join(', ');
+  }, [selectedProperty.address, selectedProperty.city, selectedProperty.state, selectedProperty.zip_code]);
+
+  // Map center coordinates
+  const mapCenter = useMemo(
+    () => ({ lat: selectedProperty.lat || 0, lng: selectedProperty.lng || 0 }),
+    [selectedProperty.lat, selectedProperty.lng]
+  );
+
+  // Price per square meter
+  const pricePerSqm = useMemo(() => {
+    const sqm = selectedProperty.sq_meters || selectedProperty.squareMeters;
+    if (!sqm || sqm === 0) return null;
+    return Math.round(selectedProperty.price / sqm);
+  }, [selectedProperty.price, selectedProperty.sq_meters, selectedProperty.squareMeters]);
+
+  // Year built / Age
+  const yearBuilt = useMemo(
+    () => selectedProperty.year_built || selectedProperty.yearbuilt,
+    [selectedProperty.year_built, selectedProperty.yearbuilt]
+  );
+
+  const propertyAge = useMemo(() => {
+    if (!yearBuilt) return null;
+    return new Date().getFullYear() - yearBuilt;
+  }, [yearBuilt]);
 
   // ============ EVENT HANDLERS ============
 
@@ -171,59 +224,128 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
             <div className={`${styles.propertyDetailContent} ${popupStyles.contentNoPadding}`}>
               <div className={`${styles.propertyDetailBody} ${popupStyles.bodyConstrained}`}>
                 
-                {/* ===== HERO SECTION: PRICE, AVAILABILITY, LOCATION ===== */}
-                <div className={popupStyles.heroSection}>
-                  <div className={popupStyles.heroHeader}>
-                    <div className={popupStyles.priceAndStatus}>
-                      <h1 className={popupStyles.heroPrice}>
-                        ${formattedPrice}
-                        {selectedProperty.operation_status_id === 2 && <span className={popupStyles.pricePeriod}>/mo</span>}
-                      </h1>
-                      <div className={popupStyles.availabilityBadge} data-available={isAvailable}>
-                        <span className={popupStyles.availabilityDot}></span>
-                        {isAvailable ? 'Available' : 'Not Available'}
-                      </div>
+                {/* ===== HERO SECTION: MOBILE-FIRST ZILLOW-INSPIRED ===== */}
+                <div className={popupStyles.heroSectionMobile}>
+                  {/* Status Badge */}
+                  <div className={popupStyles.statusBadgeMobile} data-available={isAvailable}>
+                    <span className={popupStyles.statusDot}></span>
+                    <span className={popupStyles.statusText}>
+                      {selectedProperty.operation_status_id === 2 ? 'For rent' : 'For sale'}
+                    </span>
+                  </div>
+
+                  {/* Price */}
+                  <h1 className={popupStyles.heroPriceMobile}>
+                    ${formattedPrice}
+                    {selectedProperty.operation_status_id === 2 && <span className={popupStyles.pricePeriodMobile}>/mo</span>}
+                  </h1>
+
+                  {/* Beds & Baths in single row */}
+                  <div className={popupStyles.bedsAndBathsRow}>
+                    <div className={popupStyles.bedBathItem}>
+                      <span className={popupStyles.bedBathIcon}>🛏️</span>
+                      <span className={popupStyles.bedBathCount}>{selectedProperty.bedrooms}</span>
+                      <span className={popupStyles.bedBathLabel}>beds</span>
+                    </div>
+                    <div className={popupStyles.bedBathItem}>
+                      <span className={popupStyles.bedBathIcon}>🚿</span>
+                      <span className={popupStyles.bedBathCount}>{selectedProperty.bathrooms}</span>
+                      <span className={popupStyles.bedBathLabel}>baths</span>
                     </div>
                   </div>
+
+                  {/* Full Address */}
+                  <p className={popupStyles.addressLineHero}>{fullLocation}</p>
+
+                  {/* Action Button */}
+                  <button className={popupStyles.getPreQualifiedBtn}>
+                    <span className={popupStyles.dollarIcon}>$</span>
+                    <span>Get pre-qualified</span>
+                  </button>
                 </div>
 
-                {/* ===== MAIN INFO: BEDS, BATHS, SIZE IN CLEAN GRID ===== */}
+                {/* ===== MAIN INFO: ZILLOW-STYLE 2-COLUMN PROFESSIONAL STATS GRID ===== */}
                 <div className={popupStyles.mainInfoSection}>
-                  <div className={popupStyles.mainInfoGrid}>
-                    <div className={popupStyles.mainInfoCard}>
-                      <div className={popupStyles.mainInfoIcon}>🛏️</div>
-                      <div className={popupStyles.mainInfoContent}>
-                        <div className={popupStyles.mainInfoValue}>{selectedProperty.bedrooms}</div>
-                        <div className={popupStyles.mainInfoLabel}>Bedrooms</div>
+                  <div className={popupStyles.zilowStatsGrid}>
+                    {/* Row 1 - Column 1: Property Type */}
+                    {selectedProperty.property_type && (
+                      <div className={popupStyles.zilowStatCard}>
+                        <div className={popupStyles.zilowStatIcon}>🏢</div>
+                        <div className={popupStyles.zilowStatContent}>
+                          <div className={popupStyles.zilowStatValue}>{selectedProperty.property_type.display_name}</div>
+                          <div className={popupStyles.zilowStatLabel}>Property Type</div>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div className={popupStyles.mainInfoCard}>
-                      <div className={popupStyles.mainInfoIcon}>�</div>
-                      <div className={popupStyles.mainInfoContent}>
-                        <div className={popupStyles.mainInfoValue}>{selectedProperty.bathrooms}</div>
-                        <div className={popupStyles.mainInfoLabel}>Bathrooms</div>
+                    {/* Row 1 - Column 2: Built Year */}
+                    {yearBuilt && (
+                      <div className={popupStyles.zilowStatCard}>
+                        <div className={popupStyles.zilowStatIcon}>�</div>
+                        <div className={popupStyles.zilowStatContent}>
+                          <div className={popupStyles.zilowStatValue}>
+                            {yearBuilt}
+                            {propertyAge && <span className={popupStyles.ageTextSmall}> ({propertyAge}y)</span>}
+                          </div>
+                          <div className={popupStyles.zilowStatLabel}>Built in</div>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div className={popupStyles.mainInfoCard}>
-                      <div className={popupStyles.mainInfoIcon}>📐</div>
-                      <div className={popupStyles.mainInfoContent}>
-                        <div className={popupStyles.mainInfoValue}>{selectedProperty.sq_meters} m²</div>
-                        <div className={popupStyles.mainInfoLabel}>Square Meters</div>
+                    {/* Row 2 - Column 1: Square Meters */}
+                    {selectedProperty.sq_meters && (
+                      <div className={popupStyles.zilowStatCard}>
+                        <div className={popupStyles.zilowStatIcon}>📐</div>
+                        <div className={popupStyles.zilowStatContent}>
+                          <div className={popupStyles.zilowStatValue}>{selectedProperty.sq_meters} m²</div>
+                          <div className={popupStyles.zilowStatLabel}>Lot size</div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Row 2 - Column 2: Price per Square Meter */}
+                    {pricePerSqm && (
+                      <div className={popupStyles.zilowStatCard}>
+                        <div className={popupStyles.zilowStatIcon}>💰</div>
+                        <div className={popupStyles.zilowStatContent}>
+                          <div className={popupStyles.zilowStatValue}>${pricePerSqm.toLocaleString()}</div>
+                          <div className={popupStyles.zilowStatLabel}>Price/m²</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Row 3 - Column 1: Zestimate (Property Value Estimate) */}
+                    {selectedProperty.price && (
+                      <div className={popupStyles.zilowStatCard}>
+                        <div className={popupStyles.zilowStatIcon}>💎</div>
+                        <div className={popupStyles.zilowStatContent}>
+                          <div className={popupStyles.zilowStatValue}>${formattedPrice}</div>
+                          <div className={popupStyles.zilowStatLabel}>Estimate $</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Row 3 - Column 2: Monthly HOA/Community Cost */}
+                    {selectedProperty.operation_status_id === 2 && (
+                      <div className={popupStyles.zilowStatCard}>
+                        <div className={popupStyles.zilowStatIcon}>🏘️</div>
+                        <div className={popupStyles.zilowStatContent}>
+                          <div className={popupStyles.zilowStatValue}>${formattedPrice}/mo</div>
+                          <div className={popupStyles.zilowStatLabel}>Community Cost</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* ===== HIGHLIGHTS: DISPLAY AS TAGS ===== */}
                 {selectedProperty.features && selectedProperty.features.length > 0 && (
                   <div className={popupStyles.highlightsSection}>
-                    <h3 className={popupStyles.sectionHeading}>✨ Highlights</h3>
+                    <h3 className={popupStyles.sectionHeading}>What's special</h3>
                     <div className={popupStyles.highlightsTags}>
-                      {selectedProperty.features.slice(0, 8).map((feature) => (
+                      {selectedProperty.features.slice(0, 10).map((feature) => (
                         <span key={feature.id} className={popupStyles.highlightTag}>
-                          {feature.name}
+                          {feature.name.toUpperCase()}
                         </span>
                       ))}
                     </div>
@@ -276,7 +398,71 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                 {selectedProperty.description && (
                   <div className={popupStyles.descriptionSection}>
                     <h3 className={popupStyles.sectionHeading}>📝 About This Property</h3>
-                    <p className={popupStyles.descriptionText}>{selectedProperty.description}</p>
+                    <p className={popupStyles.descriptionText}>
+                      {expandedDescription ? selectedProperty.description : truncatedDescription}
+                    </p>
+                    {hasMoreDescription && (
+                      <button
+                        onClick={() => setExpandedDescription(!expandedDescription)}
+                        className={popupStyles.readMoreBtn}
+                      >
+                        {expandedDescription ? 'Show Less' : 'Read More'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* ===== LOCATION INFO SECTION ===== */}
+                {fullLocation && (
+                  <div className={popupStyles.locationInfoSection}>
+                    <h3 className={popupStyles.sectionHeading}>📍 Location</h3>
+                    <div className={popupStyles.locationInfoCard}>
+                      <div className={popupStyles.locationDetails}>
+                        <div className={popupStyles.addressBlock}>
+                          <p className={popupStyles.addressText}>{fullLocation}</p>
+                        </div>
+                        {selectedProperty.lat && selectedProperty.lng && (
+                          <div className={popupStyles.coordinatesBlock}>
+                            <span className={popupStyles.coordinateItem}>Lat: {selectedProperty.lat.toFixed(4)}</span>
+                            <span className={popupStyles.coordinateItem}>Lng: {selectedProperty.lng.toFixed(4)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ===== GOOGLE MAP SECTION ===== */}
+                {selectedProperty.lat && selectedProperty.lng && isLoaded && (
+                  <div className={popupStyles.mapSection}>
+                    <h3 className={popupStyles.sectionHeading}>🗺️ Map</h3>
+                    <div className={popupStyles.mapContainer}>
+                      <GoogleMap
+                        zoom={15}
+                        center={mapCenter}
+                        mapContainerClassName={popupStyles.googleMap}
+                        options={{
+                          disableDefaultUI: false,
+                          zoomControl: true,
+                          mapTypeControl: false,
+                          fullscreenControl: true,
+                          streetViewControl: false,
+                        }}
+                      >
+                        <Marker
+                          position={mapCenter}
+                          title={selectedProperty.title}
+                          icon={{
+                            path: 'M12 0C7.04 0 3 4.04 3 9c0 5.85 9 23 9 23s9-17.15 9-23c0-4.96-4.04-9-9-9zm0 12c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+                            fillColor: '#667eea',
+                            fillOpacity: 1,
+                            strokeColor: '#fff',
+                            strokeWeight: 2,
+                            scale: 2,
+                          }}
+                        />
+                      </GoogleMap>
+                    </div>
                   </div>
                 )}
 
