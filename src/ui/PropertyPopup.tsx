@@ -431,11 +431,11 @@ export default function PropertyPopup({
                     </div>
                     
                     {/* Additional Info Banner */}
-                    <div className={popupStyles.additionalBanner}>
+                    {/* <div className={popupStyles.additionalBanner}>
                       <div className={popupStyles.bannerIcon}>🏆</div>
                       <h5 className={popupStyles.bannerTitle}>Premium Property Features</h5>
                       <p className={popupStyles.bannerText}>This property includes high-end finishes, energy-efficient systems, and smart home integration</p>
-                    </div>
+                    </div> */}
                   </div>
                   
                   {/* Location Section */}
