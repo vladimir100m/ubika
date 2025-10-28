@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useLoadScript } from '@react-google-maps/api';
+import { useGoogleMaps } from '../app/providers';
 import styles from '../styles/SimpleSearchBar.module.css';
 
 interface SimpleSearchBarProps {
@@ -22,11 +22,8 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
     const [address, setAddress] = useState('');
     const [autocompleteInstance, setAutocompleteInstance] = useState<any>(null);
 
-    // Load Google Maps API with Places library
-    const { isLoaded } = useLoadScript({
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        libraries: ['places'],
-    });
+    // Use shared Google Maps loader from app providers
+    const { isLoaded } = useGoogleMaps();
 
     // Initialize Google Places Autocomplete once API is loaded
     useEffect(() => {

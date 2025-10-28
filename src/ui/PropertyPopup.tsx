@@ -6,7 +6,8 @@ import { getAllPropertyImagesRaw } from '../lib/propertyImageUtils';
 import PropertyImageGrid from './PropertyImageGrid';
 import { formatNumberWithCommas } from '../lib/formatPropertyUtils';
 import PropertyImageCarousel from './PropertyImageCarousel';
-import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
+import { useGoogleMaps } from '../app/providers';
 
 /**
  * Utility function to extract and filter features by category
@@ -50,10 +51,8 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
   // Description expansion state
   const [expandedDescription, setExpandedDescription] = useState(false);
 
-  // Load Google Maps
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-  });
+  // Use shared Google Maps loader from app providers
+  const { isLoaded } = useGoogleMaps();
   
   // ============ MEMOIZED COMPUTATIONS ============
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useGoogleMaps } from '../app/providers';
 import styles from '../styles/SearchBar.module.css';
 
 interface SearchBarProps {
@@ -55,6 +56,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         maxArea: ''
     });
 
+    // Use shared Google Maps loader
+    const { isLoaded } = useGoogleMaps();
+
     // Load property types and neighborhoods on component mount
     useEffect(() => {
         const fetchData = async () => {
@@ -82,23 +86,27 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
     // Initialize Google Places Autocomplete
     useEffect(() => {
-        if (window.google) {
+        if (window?.google?.maps?.places?.Autocomplete) {
             const input = document.getElementById('autocomplete-input') as HTMLInputElement;
             if (input) {
-                const autocomplete = new window.google.maps.places.Autocomplete(input, {
-                    componentRestrictions: { country: 'ar' }, // Restrict to Argentina
-                    fields: ['formatted_address', 'geometry']
-                });
-                
-                autocomplete.addListener('place_changed', () => {
-                    const place = autocomplete.getPlace();
-                    if (place.formatted_address) {
-                        setAddress(place.formatted_address);
-                    }
-                });
+                try {
+                    const autocomplete = new window.google.maps.places.Autocomplete(input, {
+                        componentRestrictions: { country: 'ar' }, // Restrict to Argentina
+                        fields: ['formatted_address', 'geometry']
+                    });
+                    
+                    autocomplete.addListener('place_changed', () => {
+                        const place = autocomplete.getPlace();
+                        if (place.formatted_address) {
+                            setAddress(place.formatted_address);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error initializing Google Places Autocomplete:', error);
+                }
             }
         }
-    }, []);
+    }, [isLoaded]);
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
