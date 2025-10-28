@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
       file_size, 
       mime_type, 
       original_filename, 
-      blob_path, 
       alt_text 
     } = body;
     
@@ -53,12 +52,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // If this is meant to be a cover image, unset any existing cover for this property
+    // If this is meant to be a primary/cover media, unset any existing primary for this property
     if (is_cover) {
-      log.info('Unsetting existing cover image for property', { property_id });
+      log.info('Unsetting existing primary/cover media for property', { property_id });
       await query(
-        'UPDATE property_images SET is_cover = false, updated_at = NOW() WHERE property_id = $1 AND is_cover = true',
-        [property_id]
+        'UPDATE property_media SET is_primary = false, updated_at = NOW() WHERE property_id = $1 AND is_primary = true AND media_type = $2',
+        [property_id, 'image']
       );
     }
 
@@ -66,8 +65,8 @@ export async function POST(req: NextRequest) {
     let finalDisplayOrder = display_order;
     if (finalDisplayOrder === undefined || finalDisplayOrder === null) {
       const maxOrderResult = await query(
-        'SELECT COALESCE(MAX(display_order), -1) + 1 as next_order FROM property_images WHERE property_id = $1',
-        [property_id]
+        'SELECT COALESCE(MAX(display_order), -1) + 1 as next_order FROM property_media WHERE property_id = $1 AND media_type = $2',
+        [property_id, 'image']
       );
       finalDisplayOrder = maxOrderResult.rows[0]?.next_order || 0;
       log.info('Auto-assigned display order', { property_id, display_order: finalDisplayOrder });
@@ -97,28 +96,29 @@ export async function POST(req: NextRequest) {
     
     log.info('Property ownership verified', { property_id, userId });
 
-    // Insert image record in database with enhanced metadata
+    // Insert media record in database with enhanced metadata
     const insertQuery = `
-      INSERT INTO property_images (
-        property_id, image_url, is_cover, display_order, 
-        file_size, mime_type, original_filename, alt_text,
-        created_at, updated_at
+      INSERT INTO property_media (
+        id, property_id, media_type, url, storage_key, file_name, 
+        file_size, mime_type, alt_text, is_primary, display_order,
+        created_at, updated_at, uploaded_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
-      RETURNING id, property_id, image_url, is_cover, display_order, 
-                file_size, mime_type, original_filename, alt_text,
+      VALUES (gen_random_uuid(), $1, $2, $3, NULL, $4, $5, $6, $7, $8, $9, NOW(), NOW(), NOW())
+      RETURNING id, property_id, media_type, url, url as image_url, file_name as original_filename,
+                file_size, mime_type, alt_text, is_primary, is_primary as is_cover, display_order,
                 created_at, updated_at
     `;
 
     const values = [
       property_id,
+      'image',
       image_url,
-      is_cover || false,
-      finalDisplayOrder,
+      original_filename || null,
       file_size || null,
       mime_type || null,
-      original_filename || null,
       alt_text || null,
+      is_cover || false,
+      finalDisplayOrder,
     ];
 
     log.info('Executing database insert', { query: insertQuery, values });

@@ -27,23 +27,23 @@ export async function DELETE(
 
     const userId = (session.user as any).sub || session.user.email;
 
-    // Get the image and property to verify ownership
-    const getImageQuery = `
-      SELECT pi.id, pi.image_url, pi.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.bedrooms as rooms
-      FROM property_images pi
-      JOIN properties p ON pi.property_id = p.id
-      WHERE pi.id = $1
+    // Get the media record and property to verify ownership
+    const getMediaQuery = `
+      SELECT pm.id, pm.url as image_url, pm.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.bedrooms as rooms
+      FROM property_media pm
+      JOIN properties p ON pm.property_id = p.id
+      WHERE pm.id = $1 AND pm.media_type = $2
     `;
-    const getImageResult = await query(getImageQuery, [imageId]);
+    const getMediaResult = await query(getMediaQuery, [imageId, 'image']);
 
-    if (getImageResult.rows.length === 0) {
+    if (getMediaResult.rows.length === 0) {
       return NextResponse.json(
         { error: 'Image not found' },
         { status: 404 }
       );
     }
 
-    const image = getImageResult.rows[0];
+    const image = getMediaResult.rows[0];
     
     // Verify ownership
     if (image.seller_id !== userId) {
@@ -53,12 +53,12 @@ export async function DELETE(
 
     log.info('Found image to delete', { imageId, imageUrl: image.image_url });
 
-    // Delete the image record from database
-    const deleteImageQuery = `
-      DELETE FROM property_images WHERE id = $1
+    // Delete the media record from database
+    const deleteMediaQuery = `
+      DELETE FROM property_media WHERE id = $1 AND media_type = $2
       RETURNING id, property_id
     `;
-    const result = await query(deleteImageQuery, [imageId]);
+    const result = await query(deleteMediaQuery, [imageId, 'image']);
     const propertyId = result.rows[0]?.property_id;
 
     // Invalidate property cache when image is deleted

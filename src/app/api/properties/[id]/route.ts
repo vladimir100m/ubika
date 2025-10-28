@@ -66,8 +66,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       const imgLog = createLogger(`${reqId}-img-${property.id}`);
       imgLog.debug('Fetching images for property');
       const imagesResult = await query(
-        'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
-        [property.id]
+        'SELECT id, property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order, created_at, updated_at FROM property_media WHERE property_id = $1 AND media_type = $2 ORDER BY is_primary DESC, display_order ASC',
+        [property.id, 'image']
       );
       const imgs = imagesResult.rows;
       for (const img of imgs) {
@@ -246,8 +246,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     try {
       const imagesResult = await query(
-        'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
-        [property.id]
+        'SELECT id, property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order, created_at, updated_at FROM property_media WHERE property_id = $1 AND media_type = $2 ORDER BY is_primary DESC, display_order ASC',
+        [property.id, 'image']
       );
       property.images = imagesResult.rows || [];
     } catch (e) {

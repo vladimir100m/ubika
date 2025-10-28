@@ -43,15 +43,38 @@ export interface Neighborhood {
   highway_access: string;
 }
 
-export interface PropertyImage {
-  id: string | number;
-  property_id: string | number;
-  image_url: string;
-  is_cover: boolean;
+/**
+ * Unified media interface replaces PropertyImage and PropertyMedia
+ * media_type defaults to 'image' for backward compatibility
+ */
+export interface PropertyMedia {
+  id: string;
+  property_id: string;
+  media_type: 'image' | 'video' | 'document' | string;
+  url: string;
+  storage_key?: string;
+  file_name?: string;
+  file_size?: number;
+  mime_type?: string;
+  checksum?: string;
+  // Image-specific metadata
+  width?: number;
+  height?: number;
+  alt_text?: string;
+  // Presentation
+  is_primary: boolean;
   display_order: number;
+  // Timestamps
   created_at: string;
   updated_at: string;
+  uploaded_at: string;
+  // Backward compatibility mapped fields
+  image_url?: string;
+  is_cover?: boolean;
 }
+
+// Backward compatibility alias
+export type PropertyImage = PropertyMedia;
 
 export interface PropertyOperationStatus {
   id: number;

@@ -148,11 +148,11 @@ export async function GET(req: NextRequest) {
         let images: any[] = [];
         if (propertyIds.length > 0) {
           const imageQuery = `
-        SELECT property_id, image_url, is_cover, display_order
-        FROM property_images
-        WHERE property_id = ANY($1)
+        SELECT property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order
+        FROM property_media
+        WHERE property_id = ANY($1) AND media_type = $2
       `;
-          const { rows: imageRows } = await query(imageQuery, [propertyIds]);
+          const { rows: imageRows } = await query(imageQuery, [propertyIds, 'image']);
           images = imageRows;
         }
 
@@ -209,11 +209,11 @@ export async function GET(req: NextRequest) {
     let images: any[] = [];
     if (propertyIds.length > 0) {
       const imageQuery = `
-        SELECT property_id, image_url, is_cover, display_order
-        FROM property_images
-        WHERE property_id = ANY($1)
+        SELECT property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order
+        FROM property_media
+        WHERE property_id = ANY($1) AND media_type = $2
       `;
-      const { rows: imageRows } = await query(imageQuery, [propertyIds]);
+      const { rows: imageRows } = await query(imageQuery, [propertyIds, 'image']);
       images = imageRows;
     }
 
