@@ -282,7 +282,6 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
         <PropertyPopup
           selectedProperty={selectedProperty}
           onClose={handleClosePropertyDetail}
-          mapRef={popupMapRef}
         />
       )}
 

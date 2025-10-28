@@ -1,25 +1,79 @@
+/* ============================================================================
+   PROPERTY POPUP V2 - CLEAN, MODERN DESIGN SYSTEM
+   ============================================================================
+   
+   Design Pattern: Match PropertyDetailCard V2 with clean layout, hero section,
+   main info cards, highlight tags, features organized by category, location
+   with embedded map, and contact CTA.
+   
+   Color System:
+   - Hero Gradient: #667eea → #764ba2 (primary gradient)
+   - Action: #1277e1 (primary button)
+   - Text Primary: #1f2937
+   - Text Secondary: #6b7280
+   - Borders: #e5e7eb
+   - Backgrounds: #f9fafb (light), #ffffff (white)
+   
+   Typography:
+   - Hero Price: 48px bold
+   - Hero Title: 28px semi-bold
+   - Section Heading: 20px semi-bold
+   - Card Value: 32px bold
+   - Card Label: 14px medium
+   
+   Spacing:
+   - Section Gap: 32px
+   - Card Gap: 16px
+   - Component Padding: 24px
+   
+   ============================================================================ */
+
+/* ===== OVERLAY & CONTAINER ===== */
+.contentNoPadding {
+  padding: 0;
+}
+
+.bodyConstrained {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.whiteBg {
+  background-color: #ffffff;
+}
+
+/* ===== HEADER TOP BUTTONS ===== */
 .topRightButtons {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 16px;
+  right: 16px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   z-index: 60;
 }
 
 .iconButton {
-  background: rgba(255,255,255,0.9);
-  border: 1px solid rgba(0,0,0,0.1);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  width: 44px;
-  height: 44px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .headerFixedHeight {
@@ -271,22 +325,48 @@
 /* Single-row quick actions with equal-width buttons */
 .quickActionsRow {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  justify-content: stretch;
-  width: 100%;
+  justify-content: flex-end;
+  width: auto;
+  flex-shrink: 0;
 }
+
 .quickActionsRow > button {
-  flex: 1 1 0;
+  flex: 0 1 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 5px;
+  padding: 8px 14px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .quickActionsRow {
+    width: 100%;
+    justify-content: stretch;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .quickActionsRow > button {
+    flex: 1 1 0;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
 }
 
 @media (max-width: 420px) {
-  .quickActionsRow { gap: 8px; }
-  .quickActionsRow > button { padding: 12px 10px; font-size: 14px; }
+  .quickActionsRow {
+    gap: 6px;
+  }
+
+  .quickActionsRow > button {
+    padding: 8px 8px;
+    font-size: 11px;
+  }
 }
 
 .highlightsSection {
@@ -747,4 +827,595 @@
   .priceAmount { font-size: 28px; text-align: left; }
   .priceRow { justify-content: flex-start; }
   .quickActions { justify-content: center; }
+}
+
+/* ============================================================================
+   NEW HERO SECTION STYLES - PROPERTY POPUP V2 (MINIMALISTIC & EFFICIENT)
+   ============================================================================ */
+
+.heroSection {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Subtle gradient overlay effect for depth */
+.heroSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -40%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.heroSection > * {
+  position: relative;
+  z-index: 1;
+}
+
+.heroHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;
+}
+
+.priceAndStatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.heroPrice {
+  font-size: 40px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+  color: white;
+  letter-spacing: -1px;
+}
+
+.pricePeriod {
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.availabilityBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 5px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: fit-content;
+}
+
+.availabilityBadge[data-available="true"] {
+  background: rgba(34, 197, 94, 0.12);
+  color: #d1fae5;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.availabilityBadge[data-available="false"] {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fee2e2;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.availabilityDot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.heroTitle {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: white;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+}
+
+.heroLocation {
+  font-size: 12px;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.zipCode {
+  margin-left: 4px;
+  opacity: 0.7;
+  font-size: 11px;
+  display: inline;
+}
+
+/* ===== MAIN INFO SECTION ===== */
+.mainInfoSection {
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.mainInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.mainInfoCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.25s ease;
+  cursor: default;
+}
+
+.mainInfoCard:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+  transform: translateY(-1px);
+}
+
+.mainInfoIcon {
+  font-size: 28px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.mainInfoContent {
+  flex: 1;
+}
+
+.mainInfoValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.mainInfoLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* ===== HIGHLIGHTS SECTION ===== */
+.highlightsSection {
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.sectionHeading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.highlightsTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.highlightTag {
+  background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+  border: 1px solid #667eea20;
+  color: #667eea;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.highlightTag:hover {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-color: #667eea40;
+  transform: translateY(-1px);
+}
+
+/* ===== FEATURES SECTION ===== */
+.featuresSection {
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+.featuresCategoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.featureCategory {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.featureCategoryTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.featureList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.featureItem {
+  font-size: 12px;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== DESCRIPTION SECTION ===== */
+.descriptionSection {
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.descriptionText {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+  margin: 0;
+}
+
+/* ===== LOCATION SECTION ===== */
+.locationSection {
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.locationGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.locationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locationDetail {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.locationDetail strong {
+  color: #1f2937;
+  font-weight: 700;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.mapContainer {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.mapContainer iframe {
+  display: block;
+  height: 250px;
+}
+
+/* ===== CONTACT CTA SECTION ===== */
+.contactCTASection {
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  color: white;
+  text-align: center;
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+.contactCTASection .sectionHeading {
+  color: white;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.contactCTAButtons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btnPrimary,
+.btnPrimaryLarge {
+  background: linear-gradient(135deg, #1277e1 0%, #0e5fc4 100%);
+  color: white;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 6px rgba(18, 119, 225, 0.15);
+}
+
+.btnPrimary:hover,
+.btnPrimaryLarge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(18, 119, 225, 0.25);
+}
+
+.btnSecondary,
+.btnSecondaryLarge {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.btnSecondary:hover,
+.btnSecondaryLarge:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.btnPrimaryLarge {
+  padding: 11px 20px;
+  font-size: 14px;
+}
+
+.btnSecondaryLarge {
+  padding: 11px 20px;
+  font-size: 14px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .mainInfoGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .heroSection {
+    padding: 20px 20px;
+    margin-bottom: 16px;
+  }
+
+  .heroHeader {
+    flex-direction: row;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .heroPrice {
+    font-size: 36px;
+  }
+
+  .heroTitle {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .mainInfoSection,
+  .highlightsSection,
+  .descriptionSection,
+  .locationSection {
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+
+  .quickActionsRow {
+    width: 100%;
+  }
+
+  .quickActionsRow button {
+    flex: 1;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .locationGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .featuresCategoryGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .contactCTAButtons {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .contactCTASection {
+    margin-left: 20px;
+    margin-right: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .featuresSection {
+    margin-left: 20px;
+    margin-right: 20px;
+    padding: 16px 20px;
+  }
+
+  .mapContainer iframe {
+    height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroPrice {
+    font-size: 32px;
+  }
+
+  .heroTitle {
+    font-size: 18px;
+  }
+
+  .heroLocation {
+    font-size: 12px;
+  }
+
+  .heroSection {
+    padding: 16px 16px;
+    margin-bottom: 12px;
+  }
+
+  .mainInfoSection,
+  .highlightsSection,
+  .descriptionSection,
+  .locationSection {
+    padding: 0 16px;
+    margin-bottom: 12px;
+  }
+
+  .mainInfoCard {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .mainInfoValue {
+    font-size: 20px;
+  }
+
+  .mainInfoIcon {
+    font-size: 24px;
+  }
+
+  .mainInfoLabel {
+    font-size: 11px;
+  }
+
+  .sectionHeading {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .highlightTag {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .contactCTASection {
+    padding: 16px;
+    margin-bottom: 12px;
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .featuresSection {
+    padding: 16px;
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 12px;
+  }
+
+  .featureCategoryTitle {
+    font-size: 12px;
+  }
+
+  .featureItem {
+    font-size: 11px;
+  }
+
+  .locationDetail {
+    font-size: 12px;
+  }
+
+  .descriptionText {
+    font-size: 13px;
+  }
+
+  .mapContainer iframe {
+    height: 200px;
+  }
+
+  .contactCTAButtons {
+    flex-direction: column;
+  }
+
+  .contactCTAButtons button {
+    width: 100%;
+  }
 }

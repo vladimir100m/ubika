@@ -195,7 +195,6 @@ const Home: React.FC = () => {
         <PropertyPopup
           selectedProperty={selectedProperty}
           onClose={handleClosePropertyDetail}
-          mapRef={popupMapRef}
         />
       )}
     </StandardLayout>

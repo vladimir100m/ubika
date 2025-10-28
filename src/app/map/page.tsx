@@ -327,7 +327,6 @@ const MapPage: React.FC = () => {
         <PropertyPopup
           selectedProperty={selectedProperty}
           onClose={handleClosePropertyDetail}
-          mapRef={mapRef}
         />
       )}
     </StandardLayout>
