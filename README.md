@@ -9,6 +9,7 @@ A modern Next.js real estate application with serverless PostgreSQL (Neon) backe
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Database](#database)
+- [Property Features System](#property-features-system) 🆕
 - [Architecture](#architecture)
 - [Cache System](#cache-system) ⭐ NEW
 - [Grid Layouts & Property Display](#grid-layouts--property-display)
@@ -358,7 +359,99 @@ docker run --rm postgres:17 psql "$DATABASE_URL" -c "\copy (SELECT ...) TO STDOU
 
 ---
 
-## 🏗️ Architecture
+## � Property Features System
+
+### Overview
+
+The property features system enables dynamic feature/amenity management for properties. Features are stored in a database-driven system with intelligent simulation for automatic feature assignment.
+
+### Quick Start
+
+#### Run Feature Simulation
+```bash
+# Populate features for all existing properties
+npx dotenv -e .env.local -- node scripts/simulate-features.js
+```
+
+#### What Gets Created
+- **37 unique features** across 3 categories (Interior, Outdoor, Amenities)
+- **Intelligent assignment** based on property type, size, and characteristics
+- **Feature distribution**: 11 properties → 66 feature assignments
+
+### Feature Categories
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| **Interior** (13) | 13 | Air Conditioning, Heating, Dishwasher, Fireplace, Hardwood Floors, Walk-in Closet |
+| **Outdoor** (10) | 10 | Balcony, Patio, Garden, Parking, Driveway, Deck, BBQ Grill |
+| **Amenities** (14) | 14 | Pool, Gym, Elevator, Security System, Doorman, Concierge, Spa, Sauna |
+
+### Database Schema
+
+```sql
+-- Master feature catalog
+CREATE TABLE property_features (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,      -- "air_conditioning"
+  display_name VARCHAR(200),              -- "Air Conditioning"
+  category VARCHAR(50),                   -- "Interior", "Outdoor", "Amenities"
+  icon VARCHAR(50),                       -- "❄️"
+  created_at TIMESTAMPTZ
+);
+
+-- Many-to-many relationship
+CREATE TABLE property_feature_assignments (
+  id SERIAL PRIMARY KEY,
+  property_id UUID REFERENCES properties(id),
+  feature_id INTEGER REFERENCES property_features(id),
+  created_at TIMESTAMPTZ
+);
+```
+
+### Assignment Logic
+
+Features are intelligently assigned based on:
+
+1. **Property Type**
+   - **Apartments**: Elevator, Security System, 40% Balcony
+   - **Houses**: Driveway, Yard, Patio (50%), Deck (60%)
+   - **Townhouses**: Patio + optional Yard
+
+2. **Property Size**
+   - **2+ Bathrooms**: Granite Counters, 50% Walk-in Closet
+   - **3+ Bedrooms**: Fireplace, 40% Garden
+   - **>150m²**: 50% Spa
+
+3. **Random Selection**
+   - 1-3 additional random features per property
+   - Ensures variety and avoids duplicates
+
+### Usage in Components
+
+#### PropertyPopup (`src/ui/PropertyPopup.tsx`)
+- **"What's special" section**: Displays first 10 features as tags (lines 370-382)
+- **"Features & Amenities" section**: Organized by category with checkmarks (lines 384-415)
+
+#### PropertyCard (`src/ui/PropertyCard.tsx`)
+- **Features tags**: Displays first 5 features for compact card view (lines 163-172)
+- **Responsive**: Shows feature icons and names in scrollable row
+
+### Full Documentation
+
+Comprehensive documentation available in:
+📖 **[`doc/03-features-simulation.md`](doc/03-features-simulation.md)**
+
+Includes:
+- Complete feature catalog with icons
+- Database relationship diagrams
+- Simulation algorithm details
+- API integration examples
+- TypeScript types
+- Troubleshooting guide
+
+---
+
+## �🏗️ Architecture
 
 ### Component Architecture
 
