@@ -131,30 +131,33 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         </div>
 
         {/* Title */}
-        <h3 className={styles.title}>
+        {/* <h3 className={styles.title}>
           {property.title}
-        </h3>
-
-        {/* Property Details */}
-        <div className={styles.details}>
-          <div className={styles.detailItem}>
-            <span className={styles.detailIcon}>🛏️</span>
-            <span>{property.bedrooms} beds</span>
-          </div>
-          <div className={styles.detailItem}>
-            <span className={styles.detailIcon}>🚿</span>
-            <span>{property.bathrooms} baths</span>
-          </div>
-          <div className={styles.detailItem}>
-            <span className={styles.detailIcon}>📐</span>
-            <span>{property.sq_meters} m²</span>
-          </div>
-        </div>
+        </h3> */}
 
         {/* Location */}
         <div className={styles.location}>
           <span className={styles.locationIcon}>📍</span>
           <span>{property.address}, {property.city}</span>
+        </div>
+        
+        {/* Beds & Baths in single row */}
+        <div className={styles.bedsAndBathsRow}>
+          <div className={styles.bedBathItem}>
+            <span className={styles.bedBathIcon}>🛏️</span>
+            <span className={styles.bedBathCount}>{property.bedrooms}</span>
+            {/* <span className={styles.bedBathLabel}>beds</span> */}
+          </div>
+          <div className={styles.bedBathItem}>
+            <span className={styles.bedBathIcon}>🚿</span>
+            <span className={styles.bedBathCount}>{property.bathrooms}</span>
+            {/* <span className={styles.bedBathLabel}>baths</span> */}
+          </div>
+          <div className={styles.bedBathItem}>
+            <span className={styles.bedBathIcon}>📐</span>
+            <span className={styles.bedBathCount}>{property.sq_meters}</span>
+            {/* <span className={styles.bedBathLabel}>m²</span> */}
+          </div>
         </div>
 
         {/* Property Type */}
