@@ -293,7 +293,7 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                 <div className={popupStyles.mainInfoSection}>
                   <div className={popupStyles.zilowStatsGrid}>
                     {/* Row 1 - Column 1: Property Type */}
-                    {selectedProperty.property_type && (
+                    {isLoaded && (
                       <div className={popupStyles.zilowStatCard}>
                         <div className={popupStyles.zilowStatIcon}>🏢</div>
                         <div className={popupStyles.zilowStatContent}>
@@ -318,7 +318,7 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                     )}
 
                     {/* Row 2 - Column 1: Square Meters */}
-                    {selectedProperty.sq_meters && (
+                    {isLoaded && (
                       <div className={popupStyles.zilowStatCard}>
                         <div className={popupStyles.zilowStatIcon}>📐</div>
                         <div className={popupStyles.zilowStatContent}>
@@ -351,7 +351,7 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                     )}
 
                     {/* Row 3 - Column 2: Monthly HOA/Community Cost */}
-                    {selectedProperty.operation_status_id === 2 && (
+                    {isLoaded && (
                       <div className={popupStyles.zilowStatCard}>
                         <div className={popupStyles.zilowStatIcon}>🏘️</div>
                         <div className={popupStyles.zilowStatContent}>
@@ -438,7 +438,7 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                 )}
 
                 {/* ===== LOCATION INFO SECTION ===== */}
-                {fullLocation && (
+                {/* {fullLocation && (
                   <div className={popupStyles.locationInfoSection}>
                     <h3 className={popupStyles.sectionHeading}>📍 Location</h3>
                     <div className={popupStyles.locationInfoCard}>
@@ -455,22 +455,20 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* ===== GOOGLE MAP SECTION ===== */}
                 {isLoaded && (
                   <div className={popupStyles.mapSection}>
-                    <h3 className={popupStyles.sectionHeading}>🗺️ Map</h3>
-                    
                     {/* Fallback location indicator */}
-                    {!mapCenter.hasCoordinates && (
+                    {/* {!mapCenter.hasCoordinates && (
                       <div className={popupStyles.mapFallbackNotice}>
                         <span className={popupStyles.fallbackIcon}>ℹ️</span>
                         <span className={popupStyles.fallbackText}>
                           Showing approximate location in {mapCenter.fallbackCity}
                         </span>
                       </div>
-                    )}
+                    )} */}
                     
                     <div className={popupStyles.mapContainer}>
                       <GoogleMap
