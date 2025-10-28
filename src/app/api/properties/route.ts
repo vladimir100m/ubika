@@ -146,14 +146,28 @@ export async function GET(req: NextRequest) {
 
         const propertyIds = freshRows.map((p: Property) => p.id);
         let images: any[] = [];
+        let features: any[] = [];
+        
         if (propertyIds.length > 0) {
+          // Fetch images
           const imageQuery = `
-        SELECT property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order
-        FROM property_media
-        WHERE property_id = ANY($1) AND media_type = $2
-      `;
+            SELECT property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order
+            FROM property_media
+            WHERE property_id = ANY($1) AND media_type = $2
+          `;
           const { rows: imageRows } = await query(imageQuery, [propertyIds, 'image']);
           images = imageRows;
+
+          // Fetch features
+          const featuresQuery = `
+            SELECT pfa.property_id, f.id, f.name, f.category
+            FROM property_feature_assignments pfa
+            JOIN property_features f ON pfa.feature_id = f.id
+            WHERE pfa.property_id = ANY($1)
+            ORDER BY f.name
+          `;
+          const { rows: featureRows } = await query(featuresQuery, [propertyIds]);
+          features = featureRows;
         }
 
         const propertiesWithImages = await Promise.all(freshRows.map(async (p: Property) => {
@@ -162,9 +176,13 @@ export async function GET(req: NextRequest) {
             ...img,
             image_url: await resolveImageUrl(img.image_url)
           })));
+          
+          const propertyFeatures = features.filter(f => f.property_id === p.id);
+          
           return {
             ...p,
             images: resolvedImages,
+            features: propertyFeatures,
           };
         }));
 
@@ -207,7 +225,10 @@ export async function GET(req: NextRequest) {
 
     const propertyIds = rows.map((p: Property) => p.id);
     let images: any[] = [];
+    let features: any[] = [];
+    
     if (propertyIds.length > 0) {
+      // Fetch images
       const imageQuery = `
         SELECT property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order
         FROM property_media
@@ -215,6 +236,17 @@ export async function GET(req: NextRequest) {
       `;
       const { rows: imageRows } = await query(imageQuery, [propertyIds, 'image']);
       images = imageRows;
+
+      // Fetch features
+      const featuresQuery = `
+        SELECT pfa.property_id, f.id, f.name, f.category
+        FROM property_feature_assignments pfa
+        JOIN property_features f ON pfa.feature_id = f.id
+        WHERE pfa.property_id = ANY($1)
+        ORDER BY f.name
+      `;
+      const { rows: featureRows } = await query(featuresQuery, [propertyIds]);
+      features = featureRows;
     }
 
     const propertiesWithImages = await Promise.all(rows.map(async (p: Property) => {
@@ -223,9 +255,13 @@ export async function GET(req: NextRequest) {
         ...img,
         image_url: await resolveImageUrl(img.image_url)
       })));
+      
+      const propertyFeatures = features.filter(f => f.property_id === p.id);
+      
       return {
         ...p,
         images: resolvedImages,
+        features: propertyFeatures,
       };
     }));
 
