@@ -1858,6 +1858,30 @@
   height: 100%;
 }
 
+/* Map fallback location notice */
+.mapFallbackNotice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background-color: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+.fallbackIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.fallbackText {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 /* Responsive map height adjustments */
 @media (max-width: 768px) {
   .mapContainer {

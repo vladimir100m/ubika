@@ -97,11 +97,37 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
     return parts.join(', ');
   }, [selectedProperty.address, selectedProperty.city, selectedProperty.state, selectedProperty.zip_code]);
 
-  // Map center coordinates
-  const mapCenter = useMemo(
-    () => ({ lat: selectedProperty.lat || 0, lng: selectedProperty.lng || 0 }),
-    [selectedProperty.lat, selectedProperty.lng]
-  );
+  // Map center coordinates with fallback to random location
+  // Fallback locations (Argentina major cities) for when coordinates are not available
+  const FALLBACK_LOCATIONS = [
+    { lat: -34.6037, lng: -58.3816, city: 'Buenos Aires' },
+    { lat: -31.4201, lng: -64.1888, city: 'Córdoba' },
+    { lat: -34.9011, lng: -56.1645, city: 'La Plata' },
+    { lat: -32.8895, lng: -68.8458, city: 'Mendoza' },
+    { lat: -27.4898, lng: -55.5032, city: 'Misiones' },
+  ];
+
+  const mapCenter = useMemo(() => {
+    // If coordinates are available, use them
+    if (selectedProperty.lat && selectedProperty.lng) {
+      return { 
+        lat: selectedProperty.lat, 
+        lng: selectedProperty.lng,
+        hasCoordinates: true 
+      };
+    }
+    
+    // If not, use a random fallback location
+    const randomFallback = FALLBACK_LOCATIONS[
+      Math.floor(Math.random() * FALLBACK_LOCATIONS.length)
+    ];
+    return {
+      lat: randomFallback.lat,
+      lng: randomFallback.lng,
+      hasCoordinates: false,
+      fallbackCity: randomFallback.city
+    };
+  }, [selectedProperty.lat, selectedProperty.lng]);
 
   // Price per square meter
   const pricePerSqm = useMemo(() => {
@@ -432,29 +458,51 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                 )}
 
                 {/* ===== GOOGLE MAP SECTION ===== */}
-                {selectedProperty.lat && selectedProperty.lng && isLoaded && (
+                {isLoaded && (
                   <div className={popupStyles.mapSection}>
                     <h3 className={popupStyles.sectionHeading}>🗺️ Map</h3>
+                    
+                    {/* Fallback location indicator */}
+                    {!mapCenter.hasCoordinates && (
+                      <div className={popupStyles.mapFallbackNotice}>
+                        <span className={popupStyles.fallbackIcon}>ℹ️</span>
+                        <span className={popupStyles.fallbackText}>
+                          Showing approximate location in {mapCenter.fallbackCity}
+                        </span>
+                      </div>
+                    )}
+                    
                     <div className={popupStyles.mapContainer}>
                       <GoogleMap
-                        zoom={15}
-                        center={mapCenter}
+                        zoom={mapCenter.hasCoordinates ? 15 : 11}
+                        center={{ lat: mapCenter.lat, lng: mapCenter.lng }}
                         mapContainerClassName={popupStyles.googleMap}
                         options={{
                           disableDefaultUI: false,
                           zoomControl: true,
-                          mapTypeControl: false,
+                          mapTypeControl: true,
                           fullscreenControl: true,
-                          streetViewControl: false,
+                          streetViewControl: true,
+                          styles: [
+                            {
+                              featureType: 'all',
+                              elementType: 'labels.text.fill',
+                              stylers: [{ color: '#1f2937' }],
+                            },
+                          ],
                         }}
                       >
                         <Marker
-                          position={mapCenter}
-                          title={selectedProperty.title}
+                          position={{ lat: mapCenter.lat, lng: mapCenter.lng }}
+                          title={
+                            mapCenter.hasCoordinates
+                              ? selectedProperty.title
+                              : `Approximate location in ${mapCenter.fallbackCity}`
+                          }
                           icon={{
                             path: 'M12 0C7.04 0 3 4.04 3 9c0 5.85 9 23 9 23s9-17.15 9-23c0-4.96-4.04-9-9-9zm0 12c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
-                            fillColor: '#667eea',
-                            fillOpacity: 1,
+                            fillColor: mapCenter.hasCoordinates ? '#667eea' : '#9ca3af',
+                            fillOpacity: mapCenter.hasCoordinates ? 1 : 0.7,
                             strokeColor: '#fff',
                             strokeWeight: 2,
                             scale: 2,
