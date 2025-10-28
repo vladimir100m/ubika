@@ -134,6 +134,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         {/* <h3 className={styles.title}>
           {property.title}
         </h3> */}
+        {/* Property Type */}
+        {/* <div className={styles.propertyType}>
+          <span className={styles.typeIcon}>🏠</span>
+          <span>{property.property_type?.display_name || 'Property'}</span>
+        </div> */}
 
         {/* Location */}
         <div className={styles.location}>
@@ -160,11 +165,16 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </div>
         </div>
 
-        {/* Property Type */}
-        <div className={styles.propertyType}>
-          <span className={styles.typeIcon}>🏠</span>
-          <span>{property.property_type?.display_name || 'Property'}</span>
-        </div>
+        {/* Features of the Property like tag style and list */}
+        {property.features && property.features.length > 0 && (
+          <div className={styles.features}>
+            {property.features.slice(0, 5).map((feature) => (
+              <span key={feature.id} className={styles.featureItem}>
+                {feature.name}
+              </span>
+            ))}
+          </div>
+        )}
 
         {showFullDetails && (
           <>
