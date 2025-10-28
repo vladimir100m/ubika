@@ -13,7 +13,6 @@ interface BatchImageData {
   file_size?: number;
   mime_type?: string;
   original_filename?: string;
-  blob_path?: string;
   alt_text?: string;
 }
 
@@ -97,12 +96,12 @@ export async function POST(req: NextRequest) {
         const insertQuery = `
           INSERT INTO property_images (
             property_id, image_url, is_cover, display_order,
-            file_size, mime_type, original_filename, blob_path, alt_text,
+            file_size, mime_type, original_filename, alt_text,
             created_at, updated_at
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
           RETURNING id, property_id, image_url, is_cover, display_order,
-                    file_size, mime_type, original_filename, blob_path, alt_text,
+                    file_size, mime_type, original_filename, alt_text,
                     created_at, updated_at
         `;
 
@@ -114,7 +113,6 @@ export async function POST(req: NextRequest) {
           img.file_size || null,
           img.mime_type || null,
           img.original_filename || null,
-          img.blob_path || null,
           img.alt_text || null,
         ];
 

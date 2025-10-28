@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     // Verify property belongs to user
     const propertyCheck = await query(
-      `SELECT id, seller_id, city, operation_status_id, price, room as rooms
+      `SELECT id, seller_id, city, operation_status_id, price, bedrooms as rooms
        FROM properties WHERE id = $1`,
       [property_id]
     );
@@ -101,12 +101,12 @@ export async function POST(req: NextRequest) {
     const insertQuery = `
       INSERT INTO property_images (
         property_id, image_url, is_cover, display_order, 
-        file_size, mime_type, original_filename, blob_path, alt_text,
+        file_size, mime_type, original_filename, alt_text,
         created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
       RETURNING id, property_id, image_url, is_cover, display_order, 
-                file_size, mime_type, original_filename, blob_path, alt_text,
+                file_size, mime_type, original_filename, alt_text,
                 created_at, updated_at
     `;
 
@@ -118,7 +118,6 @@ export async function POST(req: NextRequest) {
       file_size || null,
       mime_type || null,
       original_filename || null,
-      blob_path || null,
       alt_text || null,
     ];
 

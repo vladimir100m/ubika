@@ -218,15 +218,15 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                 <span className={styles.infoLabel}>Address</span>
                 <span className={styles.infoValue}>{property.address}, {property.city}</span>
               </div>
-              {property.lat !== undefined && property.lng !== undefined && (
+              {property.lat != null && property.lng != null && (
                 <>
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>Lat</span>
-                    <span className={styles.infoValue}>{property.lat.toFixed(4)}</span>
+                    <span className={styles.infoValue}>{(property.lat as number).toFixed(4)}</span>
                   </div>
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>Lng</span>
-                    <span className={styles.infoValue}>{property.lng.toFixed(4)}</span>
+                    <span className={styles.infoValue}>{(property.lng as number).toFixed(4)}</span>
                   </div>
                 </>
               )}

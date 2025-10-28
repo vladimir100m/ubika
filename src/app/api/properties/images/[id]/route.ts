@@ -29,7 +29,7 @@ export async function DELETE(
 
     // Get the image and property to verify ownership
     const getImageQuery = `
-      SELECT pi.id, pi.image_url, pi.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.room as rooms
+      SELECT pi.id, pi.image_url, pi.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.bedrooms as rooms
       FROM property_images pi
       JOIN properties p ON pi.property_id = p.id
       WHERE pi.id = $1

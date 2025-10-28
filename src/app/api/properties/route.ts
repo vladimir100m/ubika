@@ -45,13 +45,15 @@ export async function GET(req: NextRequest) {
     let queryText = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
-        p.status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id,
         pos.name as operation_status, pos.display_name as operation_status_display
       FROM properties p
       LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
+      LEFT JOIN property_types pt ON p.property_type_id = pt.id
+      LEFT JOIN property_statuses ps ON p.property_status_id = ps.id
       WHERE 1=1
     `;
 
@@ -71,7 +73,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (filters.bedrooms) {
-      queryText += ` AND p.room >= $${paramIndex}`;
+      queryText += ` AND p.bedrooms >= $${paramIndex}`;
       queryParams.push(parseInt(filters.bedrooms, 10));
       paramIndex++;
     }
@@ -83,8 +85,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (filters.propertyType) {
-      queryText += ` AND LOWER(p.type) LIKE LOWER($${paramIndex})`;
-      queryParams.push(filters.propertyType);
+      // filter by property type name (case-insensitive)
+      queryText += ` AND LOWER(pt.name) LIKE LOWER($${paramIndex})`;
+      queryParams.push(`%${filters.propertyType}%`);
       paramIndex++;
     }
 
@@ -261,9 +264,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Map legacy fields to normalized schema
+    const property_type_id = body.property_type_id || null;
+    const property_status_id = body.property_status_id || 2; // default to 'published'
+    const bedrooms = body.bedrooms || body.room || 0;
+    const bathrooms = body.bathrooms || 0;
+    const square_meters = body.sq_meters || body.square_meters || 0;
+    const state = body.state || null;
+    const country = body.country || null;
+    const zip_code = body.zip_code || null;
+    const yearbuilt = body.yearbuilt || body.year_built || null;
+    const operation_status_id = body.operation_status_id || null;
+    const geocode = body.geocode || null;
+
     const insertQuery = `
-      INSERT INTO properties (title, description, price, address, city, type, room, bathrooms, square_meters, seller_id, status, created_at, updated_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'available', NOW(), NOW())
+      INSERT INTO properties (
+        title, description, price, address, city, state, country, zip_code,
+        property_type_id, property_status_id, bedrooms, bathrooms, square_meters,
+        seller_id, year_built, operation_status_id, geocode, created_at, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
       RETURNING id
     `;
 
@@ -273,12 +293,27 @@ export async function POST(req: NextRequest) {
       price,
       address,
       city,
-      body.property_type_id ? String(body.property_type_id) : body.type || null,
-      body.bedrooms || 0,
-      body.bathrooms || 0,
-      body.sq_meters || 0,
-      seller_id
+      state,
+      country,
+      zip_code,
+      property_type_id,
+      property_status_id,
+      bedrooms,
+      bathrooms,
+      square_meters,
+      seller_id,
+      yearbuilt,
+      operation_status_id,
+      geocode,
     ];
+
+    log.info('Inserting property', { 
+      title, 
+      seller_id, 
+      property_type_id, 
+      property_status_id, 
+      bedrooms 
+    });
 
     const result = await query(insertQuery, values);
     const newId = result.rows[0].id;
@@ -286,10 +321,13 @@ export async function POST(req: NextRequest) {
     // Return the full property via select used in GET (single property)
     const propertyQuery = `
       SELECT p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
-        p.status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id
-      FROM properties p WHERE p.id = $1`;
+      FROM properties p
+      LEFT JOIN property_types pt ON p.property_type_id = pt.id
+      LEFT JOIN property_statuses ps ON p.property_status_id = ps.id
+      WHERE p.id = $1`;
 
     const propRes = await query(propertyQuery, [newId]);
     const prop = propRes.rows[0];

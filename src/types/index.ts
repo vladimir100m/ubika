@@ -44,8 +44,8 @@ export interface Neighborhood {
 }
 
 export interface PropertyImage {
-  id: number;
-  property_id: number;
+  id: string | number;
+  property_id: string | number;
   image_url: string;
   is_cover: boolean;
   display_order: number;
@@ -62,7 +62,7 @@ export interface PropertyOperationStatus {
 }
 
 export interface Property {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   price: number;
@@ -70,9 +70,11 @@ export interface Property {
   city: string;
   bedrooms: number;
   bathrooms: number;
-  sq_meters: number;
-  lat: number;
-  lng: number;
+  // keep both naming conventions used across the codebase
+  squareMeters?: number;
+  sq_meters?: number;
+  lat?: number | null;
+  lng?: number | null;
   property_type: PropertyType;
   property_status: PropertyStatus;
   features: PropertyFeature[];
@@ -80,7 +82,8 @@ export interface Property {
   state?: string;
   country?: string;
   zip_code?: string;
-  year_built?: number;
+  yearbuilt?: number | null;
+  year_built?: number | null;
   created_at?: string;
   updated_at?: string;
   seller_id?: string;
@@ -88,7 +91,7 @@ export interface Property {
 }
 
 export interface PropertyFormData {
-  id: number;
+  id?: string | number;
   title: string;
   description: string;
   price: number;
