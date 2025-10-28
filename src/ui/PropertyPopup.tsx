@@ -292,74 +292,78 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                 {/* ===== MAIN INFO: ZILLOW-STYLE 2-COLUMN PROFESSIONAL STATS GRID ===== */}
                 <div className={popupStyles.mainInfoSection}>
                   <div className={popupStyles.zilowStatsGrid}>
-                    {/* Row 1 - Column 1: Property Type */}
-                    {isLoaded && (
-                      <div className={popupStyles.zilowStatCard}>
-                        <div className={popupStyles.zilowStatIcon}>🏢</div>
-                        <div className={popupStyles.zilowStatContent}>
-                          <div className={popupStyles.zilowStatValue}>{selectedProperty.property_type.display_name}</div>
-                          <div className={popupStyles.zilowStatLabel}>Property Type</div>
+                    {/* Row 1 - Column 1: Property Type - ALWAYS SHOW */}
+                    <div className={`${popupStyles.zilowStatCard} ${!selectedProperty.property_type ? popupStyles.zilowStatCardNull : ''}`}>
+                      <div className={popupStyles.zilowStatIcon}>🏢</div>
+                      <div className={popupStyles.zilowStatContent}>
+                        <div className={popupStyles.zilowStatValue}>
+                          {selectedProperty.property_type?.display_name || <span className={popupStyles.nullValue}>—</span>}
                         </div>
+                        <div className={popupStyles.zilowStatLabel}>Property Type</div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Row 1 - Column 2: Built Year */}
-                    {yearBuilt && (
-                      <div className={popupStyles.zilowStatCard}>
-                        <div className={popupStyles.zilowStatIcon}>�</div>
-                        <div className={popupStyles.zilowStatContent}>
-                          <div className={popupStyles.zilowStatValue}>
-                            {yearBuilt}
-                            {propertyAge && <span className={popupStyles.ageTextSmall}> ({propertyAge}y)</span>}
-                          </div>
-                          <div className={popupStyles.zilowStatLabel}>Built in</div>
+                    {/* Row 1 - Column 2: Built Year - ALWAYS SHOW */}
+                    <div className={`${popupStyles.zilowStatCard} ${!yearBuilt ? popupStyles.zilowStatCardNull : ''}`}>
+                      <div className={popupStyles.zilowStatIcon}>🔨</div>
+                      <div className={popupStyles.zilowStatContent}>
+                        <div className={popupStyles.zilowStatValue}>
+                          {yearBuilt ? (
+                            <>
+                              {yearBuilt}
+                              {propertyAge && <span className={popupStyles.ageTextSmall}> ({propertyAge}y)</span>}
+                            </>
+                          ) : (
+                            <span className={popupStyles.nullValue}>—</span>
+                          )}
                         </div>
+                        <div className={popupStyles.zilowStatLabel}>Built in</div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Row 2 - Column 1: Square Meters */}
-                    {isLoaded && (
-                      <div className={popupStyles.zilowStatCard}>
-                        <div className={popupStyles.zilowStatIcon}>📐</div>
-                        <div className={popupStyles.zilowStatContent}>
-                          <div className={popupStyles.zilowStatValue}>{selectedProperty.sq_meters} m²</div>
-                          <div className={popupStyles.zilowStatLabel}>Lot size</div>
+                    {/* Row 2 - Column 1: Square Meters - ALWAYS SHOW */}
+                    <div className={`${popupStyles.zilowStatCard} ${!selectedProperty.sq_meters ? popupStyles.zilowStatCardNull : ''}`}>
+                      <div className={popupStyles.zilowStatIcon}>📐</div>
+                      <div className={popupStyles.zilowStatContent}>
+                        <div className={popupStyles.zilowStatValue}>
+                          {selectedProperty.sq_meters ? `${selectedProperty.sq_meters} m²` : <span className={popupStyles.nullValue}>—</span>}
                         </div>
+                        <div className={popupStyles.zilowStatLabel}>Lot size</div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Row 2 - Column 2: Price per Square Meter */}
-                    {pricePerSqm && (
-                      <div className={popupStyles.zilowStatCard}>
-                        <div className={popupStyles.zilowStatIcon}>💰</div>
-                        <div className={popupStyles.zilowStatContent}>
-                          <div className={popupStyles.zilowStatValue}>${pricePerSqm.toLocaleString()}</div>
-                          <div className={popupStyles.zilowStatLabel}>Price/m²</div>
+                    {/* Row 2 - Column 2: Price per Square Meter - ALWAYS SHOW */}
+                    <div className={`${popupStyles.zilowStatCard} ${!pricePerSqm ? popupStyles.zilowStatCardNull : ''}`}>
+                      <div className={popupStyles.zilowStatIcon}>💰</div>
+                      <div className={popupStyles.zilowStatContent}>
+                        <div className={popupStyles.zilowStatValue}>
+                          {pricePerSqm ? `$${pricePerSqm.toLocaleString()}` : <span className={popupStyles.nullValue}>—</span>}
                         </div>
+                        <div className={popupStyles.zilowStatLabel}>Price/m²</div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Row 3 - Column 1: Zestimate (Property Value Estimate) */}
-                    {selectedProperty.price && (
-                      <div className={popupStyles.zilowStatCard}>
-                        <div className={popupStyles.zilowStatIcon}>💎</div>
-                        <div className={popupStyles.zilowStatContent}>
-                          <div className={popupStyles.zilowStatValue}>${formattedPrice}</div>
-                          <div className={popupStyles.zilowStatLabel}>Estimate $</div>
+                    {/* Row 3 - Column 1: Estimate - ALWAYS SHOW */}
+                    <div className={`${popupStyles.zilowStatCard} ${!selectedProperty.price ? popupStyles.zilowStatCardNull : ''}`}>
+                      <div className={popupStyles.zilowStatIcon}>💎</div>
+                      <div className={popupStyles.zilowStatContent}>
+                        <div className={popupStyles.zilowStatValue}>
+                          {selectedProperty.price ? `$${formattedPrice}` : <span className={popupStyles.nullValue}>—</span>}
                         </div>
+                        <div className={popupStyles.zilowStatLabel}>Estimate $</div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Row 3 - Column 2: Monthly HOA/Community Cost */}
-                    {isLoaded && (
-                      <div className={popupStyles.zilowStatCard}>
-                        <div className={popupStyles.zilowStatIcon}>🏘️</div>
-                        <div className={popupStyles.zilowStatContent}>
-                          <div className={popupStyles.zilowStatValue}>${formattedPrice}/mo</div>
-                          <div className={popupStyles.zilowStatLabel}>Community Cost</div>
+                    {/* Row 3 - Column 2: Community Cost - ALWAYS SHOW */}
+                    <div className={`${popupStyles.zilowStatCard} ${selectedProperty.operation_status_id !== 2 ? popupStyles.zilowStatCardNull : ''}`}>
+                      <div className={popupStyles.zilowStatIcon}>🏘️</div>
+                      <div className={popupStyles.zilowStatContent}>
+                        <div className={popupStyles.zilowStatValue}>
+                          {selectedProperty.operation_status_id === 2 ? `$${formattedPrice}/mo` : <span className={popupStyles.nullValue}>—</span>}
                         </div>
+                        <div className={popupStyles.zilowStatLabel}>Community Cost</div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
 

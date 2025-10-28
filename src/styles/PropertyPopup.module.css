@@ -1206,6 +1206,37 @@
   word-break: break-word;
 }
 
+.nullValue {
+  color: #d1d5db;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.zilowStatCardNull {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 1px dashed #d1d5db;
+  opacity: 0.6;
+}
+
+.zilowStatCardNull .zilowStatIcon {
+  opacity: 0.4;
+}
+
+.zilowStatCardNull .zilowStatValue {
+  color: #9ca3af;
+}
+
+.zilowStatCardNull .zilowStatLabel {
+  color: #9ca3af;
+}
+
+.zilowStatCardNull:hover {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  border-color: #b3b9c4;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
 .ageTextSmall {
   font-size: 12px;
   font-weight: 500;
