@@ -111,6 +111,7 @@ export interface Property {
   updated_at?: string;
   seller_id?: string;
   operation_status_id?: number;
+  operation_status?: PropertyOperationStatus;
 }
 
 export interface PropertyFormData {

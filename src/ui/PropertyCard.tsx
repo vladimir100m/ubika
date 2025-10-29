@@ -115,12 +115,22 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </>
         )}
 
-        {/* Status Badge */}
-        {property.property_status && (
-          <div className={`${styles.statusBadge} ${styles[property.property_status.name || '']}`}>
-            {property.property_status?.display_name || 'Status'}
-          </div>
-        )}
+        {/* Status Badges - Property Status and Operation Status */}
+        <div className={styles.badgesContainer}>
+          {/* Property Status Badge (Published, Draft, etc.) */}
+          {property.property_status && (
+            <div className={`${styles.statusBadge} ${styles[property.property_status.name || '']}`}>
+              {property.property_status?.display_name || 'Status'}
+            </div>
+          )}
+          
+          {/* Operation Status Badge (For Sale, For Rent) */}
+          {property.operation_status && (
+            <div className={`${styles.operationBadge} ${styles[property.operation_status.name || '']}`}>
+              {property.operation_status?.display_name || 'Operation'}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content Section */}
