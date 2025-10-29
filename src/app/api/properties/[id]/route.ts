@@ -42,9 +42,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
         p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
-        ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        ps.id as property_status_id, ps.name as property_status, ps.display_name as property_status_display, ps.color as property_status_color,
+        p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id,
-        pos.name as operation_status, pos.display_name as operation_status_display
+        pos.id as operation_status_id, pos.name as operation_status, pos.display_name as operation_status_display, pos.description as operation_status_description
       FROM properties p
       LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
       LEFT JOIN property_types pt ON p.property_type_id = pt.id
@@ -60,7 +61,24 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
-    const property = result.rows[0];
+    const rawProperty = result.rows[0];
+    
+    // Transform flattened DB response to nested object structure
+    const property = {
+      ...rawProperty,
+      property_status: rawProperty.property_status_id ? {
+        id: rawProperty.property_status_id,
+        name: rawProperty.property_status,
+        display_name: rawProperty.property_status_display,
+        color: rawProperty.property_status_color,
+      } : null,
+      operation_status: rawProperty.operation_status_id ? {
+        id: rawProperty.operation_status_id,
+        name: rawProperty.operation_status,
+        display_name: rawProperty.operation_status_display,
+        description: rawProperty.operation_status_description,
+      } : null,
+    };
 
     try {
       const imgLog = createLogger(`${reqId}-img-${property.id}`);

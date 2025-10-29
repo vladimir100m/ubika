@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../styles/MapFilters.module.css';
+import dynamic from 'next/dynamic';
 
 export interface FilterOptions {
   sold: boolean;
@@ -49,6 +50,8 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [hideSearchForm, setHideSearchForm] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const addressInputRef = useRef<HTMLInputElement | null>(null);
+  const autocompleteInstanceRef = useRef<any>(null);
   
   // Applied filters (what's currently active in the database)
   const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
@@ -173,6 +176,74 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     };
   }, [searchValue]);
 
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    if (!addressInputRef.current) return;
+
+    const initializeAutocomplete = () => {
+      if (!addressInputRef.current) return;
+
+      const autocompleteOptions: any = {
+        types: ['address'],
+        fields: ['address_components', 'geometry', 'formatted_address', 'place_id'],
+        strictBounds: false,
+      };
+
+      const autocomplete = new (window as any).google.maps.places.Autocomplete(
+        addressInputRef.current,
+        autocompleteOptions
+      );
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+          setSearchValue(place.formatted_address || '');
+          return;
+        }
+
+        const formattedAddress = place.formatted_address || '';
+        setSearchValue(formattedAddress);
+
+        if (onSearchLocationChange) {
+          onSearchLocationChange(formattedAddress.trim());
+        }
+        setIsSearching(false);
+      });
+
+      autocompleteInstanceRef.current = autocomplete;
+    };
+
+    const loadGoogleMapsScript = () => {
+      if ((window as any).google?.maps?.places) {
+        initializeAutocomplete();
+        return;
+      }
+
+      const existingScript = document.querySelector(
+        `script[src*="maps.googleapis.com/maps/api/js"]`
+      );
+
+      if (existingScript) {
+        const checkInterval = setInterval(() => {
+          if ((window as any).google?.maps?.places) {
+            clearInterval(checkInterval);
+            initializeAutocomplete();
+          }
+        }, 100);
+        setTimeout(() => clearInterval(checkInterval), 10000);
+      } else {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeAutocomplete;
+        document.head.appendChild(script);
+      }
+    };
+
+    loadGoogleMapsScript();
+  }, [onSearchLocationChange]);
+
   const handleRemoveBoundary = () => {
     setSearchValue('');
     if (onRemoveBoundary) {
@@ -251,8 +322,9 @@ const MapFilters: React.FC<MapFiltersProps> = ({
       {!hideSearchForm && (
         <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
           <div className={styles.searchBarWrapper}>
-            <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+            <span className={styles.searchIcon} aria-hidden="true">�</span>
             <input
+              ref={addressInputRef}
               type="text"
               placeholder="Search city, neighborhood or address"
               value={searchValue}
@@ -267,12 +339,13 @@ const MapFilters: React.FC<MapFiltersProps> = ({
                 className={styles.clearSearchButton}
                 onClick={handleClearSearch}
                 aria-label="Clear search"
+                title="Clear search (ESC)"
               >
                 ✕
               </button>
             )}
-            <button type="submit" className={styles.submitSearchButton} aria-label="Submit search">
-              Go
+            <button type="submit" className={styles.submitSearchButton} aria-label="Submit search" title="Search location">
+              🔍
             </button>
           </div>
         </form>

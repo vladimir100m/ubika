@@ -259,56 +259,88 @@
   left: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   max-width: calc(100% - 24px);
+  z-index: 10;
 }
 
 /* Status Badge - Property Status (Published, Draft) */
 .statusBadge {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   background: #f0f0f0;
   color: #333;
   border: 1px solid #ddd;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   width: fit-content;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.statusBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 /* Operation Status Badge (For Sale, For Rent) */
 .operationBadge {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
   width: fit-content;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.operationBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+}
+
+/* Badge Icon and Text */
+.badgeIcon {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.badgeText {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 /* Property Status Badge Variants */
 .statusBadge.published {
-  background: #d4edda;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   color: #155724;
-  border-color: #c3e6cb;
+  border-color: #b1dfb8;
 }
 
 .statusBadge.draft {
-  background: #fff3cd;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
   color: #856404;
-  border-color: #ffeaa7;
+  border-color: #ffdbac;
 }
 
 .statusBadge.archived {
-  background: #e2e3e5;
+  background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%);
   color: #383d41;
-  border-color: #d6d8db;
+  border-color: #c6c8cb;
 }
 
 /* Operation Status Badge Variants */

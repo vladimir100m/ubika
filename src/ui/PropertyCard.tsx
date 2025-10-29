@@ -119,15 +119,26 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className={styles.badgesContainer}>
           {/* Property Status Badge (Published, Draft, etc.) */}
           {property.property_status && (
-            <div className={`${styles.statusBadge} ${styles[property.property_status.name || '']}`}>
-              {property.property_status?.display_name || 'Status'}
+            <div className={`${styles.statusBadge} ${styles[property.property_status.name?.toLowerCase() || 'published']}`} title={property.property_status?.display_name || 'Property Status'}>
+              <span className={styles.badgeIcon}>
+                {property.property_status.name?.toLowerCase() === 'published' && '✓'}
+                {property.property_status.name?.toLowerCase() === 'draft' && '✎'}
+                {property.property_status.name?.toLowerCase() === 'archived' && '🗂️'}
+              </span>
+              <span className={styles.badgeText}>{property.property_status?.display_name || 'Status'}</span>
             </div>
           )}
           
           {/* Operation Status Badge (For Sale, For Rent) */}
           {property.operation_status && (
-            <div className={`${styles.operationBadge} ${styles[property.operation_status.name || '']}`}>
-              {property.operation_status?.display_name || 'Operation'}
+            <div className={`${styles.operationBadge} ${styles[property.operation_status.name?.toLowerCase() || 'sale']}`} title={property.operation_status?.display_name || 'Operation Type'}>
+              <span className={styles.badgeIcon}>
+                {property.operation_status.name?.toLowerCase() === 'sale' && '💰'}
+                {property.operation_status.name?.toLowerCase() === 'buy' && '💰'}
+                {property.operation_status.name?.toLowerCase() === 'rent' && '🔑'}
+                {property.operation_status.name?.toLowerCase() === 'lease' && '🔑'}
+              </span>
+              <span className={styles.badgeText}>{property.operation_status?.display_name || 'Operation'}</span>
             </div>
           )}
         </div>

@@ -47,9 +47,10 @@ export async function GET(req: NextRequest) {
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
         p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
-        ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        ps.id as property_status_id, ps.name as property_status, ps.display_name as property_status_display, ps.color as property_status_color,
+        p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id,
-        pos.name as operation_status, pos.display_name as operation_status_display
+        pos.id as operation_status_id, pos.name as operation_status, pos.display_name as operation_status_display, pos.description as operation_status_description
       FROM properties p
       LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
       LEFT JOIN property_types pt ON p.property_type_id = pt.id
@@ -144,7 +145,7 @@ export async function GET(req: NextRequest) {
         log.info('Background cache refresh started', { cacheKey });
         const { rows: freshRows } = await query(queryText, queryParams);
 
-        const propertyIds = freshRows.map((p: Property) => p.id);
+        const propertyIds = freshRows.map((p: any) => p.id);
         let images: any[] = [];
         let features: any[] = [];
         
@@ -170,13 +171,34 @@ export async function GET(req: NextRequest) {
           features = featureRows;
         }
 
-        const propertiesWithImages = await Promise.all(freshRows.map(async (p: Property) => {
+        const propertiesWithImages = await Promise.all(freshRows.map(async (p: any) => {
           const propertyImages = images.filter(img => img.property_id === p.id);
           const resolvedImages = await Promise.all(propertyImages.map(async (img) => ({
             ...img,
             image_url: await resolveImageUrl(img.image_url)
           })));
           
+          const propertyFeatures = features.filter(f => f.property_id === p.id);
+          
+          // Transform flattened DB response to nested object structure
+          return {
+            ...p,
+            images: resolvedImages,
+            features: propertyFeatures,
+            property_status: p.property_status_id ? {
+              id: p.property_status_id,
+              name: p.property_status,
+              display_name: p.property_status_display,
+              color: p.property_status_color,
+            } : null,
+            operation_status: p.operation_status_id ? {
+              id: p.operation_status_id,
+              name: p.operation_status,
+              display_name: p.operation_status_display,
+              description: p.operation_status_description,
+            } : null,
+          };
+        }));
           const propertyFeatures = features.filter(f => f.property_id === p.id);
           
           return {
@@ -249,7 +271,7 @@ export async function GET(req: NextRequest) {
       features = featureRows;
     }
 
-    const propertiesWithImages = await Promise.all(rows.map(async (p: Property) => {
+    const propertiesWithImages = await Promise.all(rows.map(async (p: any) => {
       const propertyImages = images.filter(img => img.property_id === p.id);
       const resolvedImages = await Promise.all(propertyImages.map(async (img) => ({
         ...img,
@@ -258,10 +280,23 @@ export async function GET(req: NextRequest) {
       
       const propertyFeatures = features.filter(f => f.property_id === p.id);
       
+      // Transform flattened DB response to nested object structure
       return {
         ...p,
         images: resolvedImages,
         features: propertyFeatures,
+        property_status: p.property_status_id ? {
+          id: p.property_status_id,
+          name: p.property_status,
+          display_name: p.property_status_display,
+          color: p.property_status_color,
+        } : null,
+        operation_status: p.operation_status_id ? {
+          id: p.operation_status_id,
+          name: p.operation_status,
+          display_name: p.operation_status_display,
+          description: p.operation_status_description,
+        } : null,
       };
     }));
 
