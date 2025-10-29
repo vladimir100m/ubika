@@ -147,8 +147,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     // Fields that map directly to DB columns (after normalization)
     const directFields = ['title', 'description', 'price', 'address', 'city', 'state', 'country', 
-                         'zip_code', 'bathrooms', 'square_meters', 'lat', 'lng', 'operation_status_id', 
-                         'property_type_id', 'property_status_id', 'seller_id', 'bedrooms', 'year_built', 'geocode'];
+                         'zip_code', 'bathrooms', 'square_meters', 'latitude', 'longitude', 'lat', 'lng', 
+                         'operation_status_id', 'property_type_id', 'property_status_id', 'seller_id', 
+                         'bedrooms', 'year_built', 'geocode'];
 
     const fields: string[] = [];
     const values: any[] = [];
@@ -172,6 +173,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         dbValue = value;
       } else if (key === 'year_built' || key === 'yearbuilt') {
         dbColumn = 'year_built';
+        dbValue = value;
+      } else if (key === 'lat') {
+        dbColumn = 'latitude';
+        dbValue = value;
+      } else if (key === 'lng') {
+        dbColumn = 'longitude';
         dbValue = value;
       }
       // Skip legacy type and status if provided without IDs (would need lookup)
