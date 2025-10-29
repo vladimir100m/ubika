@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useGoogleMapsLoader } from '../lib/useGoogleMapsLoader';
 import { useRouter } from 'next/navigation';
 import styles from '../styles/MapFilters.module.css';
 import dynamic from 'next/dynamic';
@@ -176,41 +177,63 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     };
   }, [searchValue]);
 
-  // Initialize Google Places Autocomplete
+  // Restore manual Google Maps script injection for autocomplete
   useEffect(() => {
     if (!addressInputRef.current) return;
 
     const initializeAutocomplete = () => {
       if (!addressInputRef.current) return;
 
-      const autocompleteOptions: any = {
-        types: ['address'],
-        fields: ['address_components', 'geometry', 'formatted_address', 'place_id'],
-        strictBounds: false,
-      };
+      // Use the new PlaceAutocompleteElement web component recommended by Google
+      // Create the element only once and attach an event listener for place changes
+      if (autocompleteInstanceRef.current && (autocompleteInstanceRef.current as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+        return;
+      }
 
-      const autocomplete = new (window as any).google.maps.places.Autocomplete(
-        addressInputRef.current,
-        autocompleteOptions
-      );
+      const autocompleteEl = document.createElement('gmp-place-autocomplete');
+      // Provide some sensible defaults; the web component renders its own input.
+      try {
+        autocompleteEl.setAttribute('inputmode', 'text');
+        autocompleteEl.setAttribute('placeholder', 'Search city, neighborhood or address');
+        // Keep the element visually hidden if you want to use the existing input,
+        // but we'll append it next to the existing input and sync values on selection.
+      } catch (e) {
+        // ignore attribute set errors in older browsers
+      }
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) {
-          setSearchValue(place.formatted_address || '');
-          return;
-        }
+      const onPlaceChange = (ev: any) => {
+        const place = ev?.detail;
+        if (!place) return;
 
         const formattedAddress = place.formatted_address || '';
+
+        // Populate search state and call handlers
         setSearchValue(formattedAddress);
-
-        if (onSearchLocationChange) {
-          onSearchLocationChange(formattedAddress.trim());
-        }
+        if (onSearchLocationChange) onSearchLocationChange(formattedAddress.trim());
         setIsSearching(false);
-      });
 
-      autocompleteInstanceRef.current = autocomplete;
+        // Sync native hidden input value
+        if (addressInputRef.current) addressInputRef.current.value = formattedAddress;
+
+        // Sync web component visible value if possible
+        try {
+          (autocompleteEl as any).value = formattedAddress;
+          (autocompleteEl as any).setAttribute && (autocompleteEl as any).setAttribute('value', formattedAddress);
+        } catch (e) {}
+      };
+
+      autocompleteEl.addEventListener('gmp-placeautocomplete-placechange', onPlaceChange as EventListener);
+
+      // Insert the web component right after the existing input so users see suggestions.
+      const parent = addressInputRef.current.parentElement;
+      if (parent) {
+        parent.insertBefore(autocompleteEl, addressInputRef.current.nextSibling);
+      }
+
+      // Store references so we can cleanup later
+      autocompleteInstanceRef.current = autocompleteEl;
+      // Also keep a reference to the handler to remove later
+      (autocompleteInstanceRef.current as any).__onPlaceChange = onPlaceChange;
     };
 
     const loadGoogleMapsScript = () => {
@@ -242,6 +265,17 @@ const MapFilters: React.FC<MapFiltersProps> = ({
     };
 
     loadGoogleMapsScript();
+
+    return () => {
+      // Cleanup the web component and listener if created
+      const el = autocompleteInstanceRef.current as any;
+      if (el && el.tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+        const handler = el.__onPlaceChange as EventListener | undefined;
+        if (handler) el.removeEventListener('gmp-placeautocomplete-placechange', handler);
+        if (el.parentElement) el.parentElement.removeChild(el);
+        autocompleteInstanceRef.current = null;
+      }
+    };
   }, [onSearchLocationChange]);
 
   const handleRemoveBoundary = () => {
@@ -323,14 +357,16 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
           <div className={styles.searchBarWrapper}>
             <span className={styles.searchIcon} aria-hidden="true">�</span>
+            {/* Native input is hidden; we use the Place Autocomplete web component for UX */}
             <input
               ref={addressInputRef}
               type="text"
               placeholder="Search city, neighborhood or address"
               value={searchValue}
               onChange={handleSearchChange}
-              className={styles.searchInput}
-              aria-label="Search location"
+              className={styles.searchInput + ' ' + styles.visuallyHidden}
+              aria-hidden={true}
+              tabIndex={-1}
               autoComplete="off"
             />
             {searchValue && (

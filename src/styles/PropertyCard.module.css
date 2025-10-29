@@ -578,12 +578,12 @@
   padding: 8px 0;
 }
 
-/* Feature Item - Unified Alert Style with Sophisticated Navy Blue */
+/* Feature Item - Unified Style with Lighter Navy Variant */
 .featureItem {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, var(--color-primary-700) 0%, var(--color-primary-800) 100%);
+  background: linear-gradient(135deg, rgba(58, 74, 112, 0.8) 0%, rgba(42, 58, 85, 0.7) 100%);
   color: var(--color-text-inverse);
   padding: 8px 16px;
   border-radius: 20px;
@@ -591,17 +591,17 @@
   font-weight: 700;
   text-transform: uppercase;
   white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(42, 58, 85, 0.3);
+  box-shadow: 0 3px 10px rgba(58, 74, 112, 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.5px;
-  border: 1.5px solid var(--color-primary-700);
+  border: 1.5px solid rgba(58, 74, 112, 0.6);
 }
 
 .featureItem:hover {
   transform: translateY(-3px);
-  background: linear-gradient(135deg, var(--color-primary-800) 0%, var(--color-primary-900) 100%);
-  border-color: var(--color-primary-800);
-  box-shadow: 0 6px 16px rgba(10, 20, 40, 0.4);
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 6px 16px rgba(58, 74, 112, 0.25);
 }
 
 /* Additional Details */

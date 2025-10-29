@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useGoogleMapsLoader } from '../lib/useGoogleMapsLoader';
 import { useSession } from 'next-auth/react';
 import PropertyImageEditor from './PropertyImageEditor';
 import { Property } from '../types';
@@ -92,6 +93,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
   // Google Places Autocomplete
   const addressInputRef = useRef<HTMLInputElement>(null);
   const [autocompleteInstance, setAutocompleteInstance] = useState<any>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [coverImageId, setCoverImageId] = useState<string | number | null>(null);
   const [coverImageIndex, setCoverImageIndex] = useState<number>(0);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
@@ -209,41 +211,43 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     }
   }, [isOpen, editingProperty]);
 
-  // Initialize Google Places Autocomplete following Google's best practices
+  // Restore manual Google Maps script injection for autocomplete
   useEffect(() => {
     if (!isOpen || !addressInputRef.current) return;
 
     const initializeAutocomplete = () => {
       if (!addressInputRef.current) return;
 
-      // Create autocomplete with optimized options
-      const autocompleteOptions: any = {
-        types: ['address'],
-        fields: ['address_components', 'geometry', 'formatted_address', 'place_id'],
-        strictBounds: false,
-      };
+      // Use the new PlaceAutocompleteElement web component
+      if (autocompleteInstance && (autocompleteInstance as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') return;
 
-      const autocomplete = new (window as any).google.maps.places.Autocomplete(
-        addressInputRef.current,
-        autocompleteOptions
-      );
+      const autocompleteEl = document.createElement('gmp-place-autocomplete');
+      try {
+        autocompleteEl.setAttribute('inputmode', 'text');
+        autocompleteEl.setAttribute('placeholder', 'Street address or location');
+      } catch (e) {}
 
-      // Handle place selection
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        
-        // Validate place has geometry
+      const onPlaceChange = (ev: any) => {
+        const place = ev?.detail;
+        if (!place) return;
+
         if (!place.geometry || !place.geometry.location) {
           setError('Please select a valid address from the suggestions');
           return;
         }
 
-        // Extract and parse address components following Google's example
         fillInFormFromPlace(place);
         setError(null);
-      });
+      };
 
-      setAutocompleteInstance(autocomplete);
+      autocompleteEl.addEventListener('gmp-placeautocomplete-placechange', onPlaceChange as EventListener);
+
+      // Insert the web component after the input so suggestions are visible.
+      const parent = addressInputRef.current.parentElement;
+      if (parent) parent.insertBefore(autocompleteEl, addressInputRef.current.nextSibling);
+
+      setAutocompleteInstance(autocompleteEl as any);
+      (autocompleteEl as any).__onPlaceChange = onPlaceChange;
     };
 
     // Lazy load Google Maps script if not already present
@@ -265,7 +269,6 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             initializeAutocomplete();
           }
         }, 100);
-        
         // Timeout after 10 seconds
         setTimeout(() => clearInterval(checkInterval), 10000);
       } else {
@@ -276,17 +279,50 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         script.defer = true;
         script.onload = initializeAutocomplete;
         script.onerror = () => {
-          setError('Failed to load Google Maps. Please try again.');
+          setError('Failed to load Google Maps. Please check your internet connection and try again.');
         };
         document.head.appendChild(script);
       }
     };
 
-    loadGoogleMapsScript();
+    // If we're offline, show a friendly error and wait for the connection to come back
+    if (!isOnline) {
+      setError('You appear to be offline. Autocomplete will be available when your connection is restored.');
+    } else {
+      loadGoogleMapsScript();
+    }
+
+    // Listen for online/offline events to retry
+    const onOnline = () => {
+      setIsOnline(true);
+      setError(null);
+      // Try to initialize again
+      loadGoogleMapsScript();
+    };
+
+    const onOffline = () => {
+      setIsOnline(false);
+      setError('You are offline. Autocomplete is unavailable.');
+    };
+
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+      // Cleanup web component if it was inserted
+      if (autocompleteInstance && (autocompleteInstance as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+        const handler = (autocompleteInstance as any).__onPlaceChange as EventListener | undefined;
+        if (handler) (autocompleteInstance as any).removeEventListener('gmp-placeautocomplete-placechange', handler);
+        if ((autocompleteInstance as any).parentElement) (autocompleteInstance as any).parentElement.removeChild(autocompleteInstance as any);
+        setAutocompleteInstance(null);
+      }
+    };
   }, [isOpen]);
 
   // Fill in address form from Google Place
-  const fillInFormFromPlace = (place: any) => {
+  const fillInFormFromPlace = async (place: any) => {
     let streetNumber = '';
     let streetName = '';
     let city = '';
@@ -308,6 +344,8 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
           streetName = component.short_name;
           break;
         case 'locality':
+        case 'postal_town':
+        case 'neighborhood':
           city = component.long_name;
           break;
         case 'administrative_area_level_1':
@@ -319,6 +357,10 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         case 'postal_code':
           zipCode = component.long_name;
           break;
+        case 'administrative_area_level_2':
+          // fallback to a broader admin area if locality not present
+          if (!city) city = component.long_name;
+          break;
       }
     }
 
@@ -326,6 +368,30 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     const fullAddress = `${streetNumber} ${streetName}`.trim();
 
     // Update form with all extracted data
+    // Extract lat/lng robustly — PlaceAutocompleteElement or legacy API may expose different shapes
+    let latVal: number | null = null;
+    let lngVal: number | null = null;
+    try {
+      const loc = place.geometry && place.geometry.location;
+      if (!loc) {
+        latVal = null;
+        lngVal = null;
+      } else if (typeof loc.lat === 'function' && typeof loc.lng === 'function') {
+        latVal = loc.lat();
+        lngVal = loc.lng();
+      } else if (typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+        latVal = loc.lat;
+        lngVal = loc.lng;
+      } else if (typeof loc.lat === 'function' && typeof loc.lng === 'number') {
+        latVal = loc.lat();
+        lngVal = loc.lng;
+      }
+    } catch (e) {
+      // fallback: keep nulls
+      latVal = null;
+      lngVal = null;
+    }
+
     setFormData(prev => ({
       ...prev,
       address: fullAddress || place.formatted_address || '',
@@ -333,9 +399,92 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
       state: state || prev.state,
       country: country || prev.country,
       zip_code: zipCode || prev.zip_code,
-      lat: place.geometry.location.lat().toString(),
-      lng: place.geometry.location.lng().toString(),
+      lat: latVal !== null ? String(latVal) : (prev.lat || ''),
+      lng: lngVal !== null ? String(lngVal) : (prev.lng || ''),
     }));
+
+    // Keep the hidden native input in sync for form bindings
+    if (addressInputRef.current) {
+      const formattedAddress = fullAddress || place.formatted_address || '';
+      addressInputRef.current.value = formattedAddress;
+    }
+
+    // If the web component instance exists, try to set its visible value too (best-effort)
+    if (autocompleteInstance && (autocompleteInstance as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+      try {
+        // Many web components expose a 'value' property or reflect attribute
+        (autocompleteInstance as any).value = fullAddress || place.formatted_address || '';
+        (autocompleteInstance as any).setAttribute && (autocompleteInstance as any).setAttribute('value', fullAddress || place.formatted_address || '');
+      } catch (e) {
+        // ignore if not supported
+      }
+    }
+
+    // Try to auto-fill full property information (images, features, other metadata)
+    // by querying the backend for an existing property that matches this address.
+    // This is a best-effort lookup using the public GET /api/properties?zone=... endpoint
+    // which performs a LIKE search against address/city/state. If a match is found,
+    // merge its data into the form (without destructively wiping user-typed fields).
+    try {
+      const searchAddress = (place.formatted_address || fullAddress || '').trim();
+      if (searchAddress) {
+        const url = `/api/properties?zone=${encodeURIComponent(searchAddress)}`;
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const candidates = await resp.json();
+          if (Array.isArray(candidates) && candidates.length > 0) {
+            // Prefer an exact address match (case-insensitive), otherwise take first
+            const normalize = (s: string) => s ? s.toLowerCase().replace(/\s+/g, ' ').trim() : '';
+            const normFull = normalize(fullAddress || place.formatted_address || '');
+            let match = candidates.find((p: any) => normalize(p.address || '') === normFull) || candidates[0];
+
+            if (match) {
+              // Merge non-empty fields into form data, but don't overwrite values the user already entered
+              setFormData(prev => ({
+                ...prev,
+                title: prev.title || match.title || '',
+                description: prev.description || match.description || '',
+                price: prev.price || (match.price ? String(match.price) : ''),
+                bedrooms: prev.bedrooms || (match.rooms ? String(match.rooms) : ''),
+                bathrooms: prev.bathrooms || (match.bathrooms ? String(match.bathrooms) : ''),
+                sq_meters: prev.sq_meters || (match.squareMeters ? String(match.squareMeters) : ''),
+                year_built: prev.year_built || (match.yearBuilt ? String(match.yearBuilt) : ''),
+                // Keep address/city/state/country/zip as already set above
+              }));
+
+              // Features
+              if (match.features && Array.isArray(match.features)) {
+                const featureIds = match.features.map((f: any) => f.id).filter(Boolean);
+                if (featureIds.length > 0) setSelectedFeatures(featureIds);
+              }
+
+              // Images
+              if (match.images && Array.isArray(match.images) && match.images.length > 0) {
+                const sorted = [...match.images].sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
+                const urls = sorted.map((img: any) => img.image_url || img.url || '');
+                const ids = sorted.map((img: any) => img.id);
+                setExistingImages(urls);
+                setExistingImageIds(ids);
+
+                const coverImg = sorted.find((img: any) => img.is_cover || img.is_primary || img.is_primary);
+                if (coverImg) {
+                  setCoverImageId(coverImg.id);
+                  const idx = sorted.findIndex((img: any) => img.id === coverImg.id);
+                  setCoverImageIndex(idx >= 0 ? idx : 0);
+                } else {
+                  setCoverImageId(ids[0] || null);
+                  setCoverImageIndex(0);
+                }
+              }
+
+              console.log('Auto-filled property data from existing record', match.id || match);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Property autofill lookup failed', e);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -794,6 +943,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             
             <div className={styles.formGroup}>
               <label htmlFor="address">Address <span className={styles.requiredAsterisk}>*</span></label>
+              {/* Native input hidden — the web component will provide the visible input and suggestions */}
               <input
                 ref={addressInputRef}
                 type="text"
@@ -804,6 +954,9 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                 onChange={handleInputChange}
                 required
                 autoComplete="off"
+                className={styles.hiddenInput}
+                aria-hidden={true}
+                tabIndex={-1}
               />
               <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '4px 0 0 0' }}>
                 Start typing to see address suggestions
@@ -862,6 +1015,40 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                 />
               </div>
             </div>
+
+            <div className={styles.formRow}>
+              {/* Latitude and Longitude could go here if needed */}
+              <div className={styles.formSection}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lat">Latitude</label>
+                    <input
+                      type="number"
+                      id="lat"
+                      name="lat"
+                      placeholder="e.g., -34.6037"
+                      step="0.0001"
+                      value={formData.lat}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lng">Longitude</label>
+                    <input
+                      type="number"
+                      id="lng"
+                      name="lng"
+                      placeholder="e.g., -58.3816"
+                      step="0.0001"
+                      value={formData.lng}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              </div> 
+            </div>      
+            
           </div>
 
           {/* Details Section */}
@@ -920,7 +1107,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
           </div>
 
           {/* Coordinates Section */}
-          <div className={styles.formSection}>
+          {/* <div className={styles.formSection}>
             <h3>📍 Coordinates (Optional)</h3>
             
             <div className={styles.formRow}>
@@ -950,7 +1137,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Features Section */}
           <div className={styles.formSection}>
