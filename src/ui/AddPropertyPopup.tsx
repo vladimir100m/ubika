@@ -88,6 +88,10 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [removedExistingImages, setRemovedExistingImages] = useState<string[]>([]);
   const [existingImageIds, setExistingImageIds] = useState<(string | number)[]>([]);
+  
+  // Google Places Autocomplete
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const [autocompleteInstance, setAutocompleteInstance] = useState<any>(null);
   const [coverImageId, setCoverImageId] = useState<string | number | null>(null);
   const [coverImageIndex, setCoverImageIndex] = useState<number>(0);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
@@ -204,6 +208,97 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
       setSuccess(false);
     }
   }, [isOpen, editingProperty]);
+
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    if (!isOpen || !addressInputRef.current) return;
+
+    const initializeAutocomplete = () => {
+      if (!addressInputRef.current) return;
+
+      const autocomplete = new (window as any).google.maps.places.Autocomplete(
+        addressInputRef.current,
+        {
+          componentRestrictions: { country: 'all' },
+          types: ['address'],
+          fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
+        }
+      );
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        
+        if (!place.geometry) {
+          setError('Please select a valid address from the suggestions');
+          return;
+        }
+
+        // Extract address components
+        const addressComponents = place.address_components || [];
+        let streetAddress = '';
+        let city = '';
+        let state = '';
+        let country = '';
+        let zipCode = '';
+
+        addressComponents.forEach((component) => {
+          const componentType = component.types[0];
+          const componentValue = component.long_name;
+
+          switch (componentType) {
+            case 'route':
+              streetAddress = component.short_name;
+              break;
+            case 'street_number':
+              streetAddress = component.short_name + ' ' + streetAddress;
+              break;
+            case 'locality':
+              city = componentValue;
+              break;
+            case 'administrative_area_level_1':
+              state = component.short_name;
+              break;
+            case 'country':
+              country = componentValue;
+              break;
+            case 'postal_code':
+              zipCode = componentValue;
+              break;
+          }
+        });
+
+        // Update form data with extracted information
+        setFormData(prev => ({
+          ...prev,
+          address: place.formatted_address || streetAddress,
+          city: city || prev.city,
+          state: state || prev.state,
+          country: country || prev.country,
+          zip_code: zipCode || prev.zip_code,
+          lat: place.geometry.location.lat().toString(),
+          lng: place.geometry.location.lng().toString(),
+        }));
+
+        setError(null);
+      });
+
+      setAutocompleteInstance(autocomplete);
+    };
+
+    // Load Google Maps script if not already loaded
+    if (!(window as any).google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        initializeAutocomplete();
+      };
+      document.head.appendChild(script);
+    } else {
+      initializeAutocomplete();
+    }
+  }, [isOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -662,14 +757,19 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             <div className={styles.formGroup}>
               <label htmlFor="address">Address <span className={styles.requiredAsterisk}>*</span></label>
               <input
+                ref={addressInputRef}
                 type="text"
                 id="address"
                 name="address"
-                placeholder="Street address"
+                placeholder="Street address or location"
                 value={formData.address}
                 onChange={handleInputChange}
                 required
+                autoComplete="off"
               />
+              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                Start typing to see address suggestions
+              </p>
             </div>
 
             <div className={styles.formRow}>
