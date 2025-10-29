@@ -1222,21 +1222,42 @@
   text-transform: capitalize;
 }
 
-/* Form Mode Badge */
+/* Form Mode Badge - Standardized Luxury Styling */
 .formModeBadge {
   display: inline-block;
-  padding: 4px 12px;
-  background: #dbeafe;
-  color: #0369a1;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.12) 0%, rgba(45, 217, 111, 0.06) 100%);
+  color: #1a5f3f;
+  border: 1.5px solid #2dd96f;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(45, 217, 111, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.formModeBadge:hover {
+  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
+  color: white;
+  border-color: #20b35f;
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
 }
 
 .formModeBadge.edit {
-  background: #fef3c7;
-  color: #b45309;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.06) 100%);
+  color: #8b5f00;
+  border-color: #ffc107;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
+}
+
+.formModeBadge.edit:hover {
+  background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+  color: white;
+  border-color: #ffb300;
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35);
 }
 
 /* Responsive for Add Property Modal */
@@ -1420,14 +1441,23 @@
 
 .coverBadge {
   position: absolute;
-  bottom: 4px;
-  left: 4px;
-  background: #10b981;
+  bottom: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #c9a961 0%, #b39451 100%);
   color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.coverBadge:hover {
+  background: linear-gradient(135deg, #b39451 0%, #9d7f45 100%);
+  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.4);
 }
 
 /* Upload Progress */

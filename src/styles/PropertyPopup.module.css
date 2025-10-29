@@ -844,23 +844,46 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  background-color: var(--color-bg-secondary);
-  border-radius: 6px;
+  padding: 10px 14px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid;
+  border-radius: 20px;
   margin-bottom: 16px;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .statusBadgeMobile[data-available="true"] {
-  background-color: rgba(45, 217, 111, 0.1);
-  color: var(--color-success-700);
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.12) 0%, rgba(45, 217, 111, 0.06) 100%);
+  color: #1a5f3f;
+  border-color: #2dd96f;
+  box-shadow: 0 2px 8px rgba(45, 217, 111, 0.1);
+}
+
+.statusBadgeMobile[data-available="true"]:hover {
+  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
+  color: white;
+  border-color: #20b35f;
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
 }
 
 .statusBadgeMobile[data-available="false"] {
-  background-color: rgba(255, 51, 51, 0.1);
-  color: var(--color-error-700);
+  background: linear-gradient(135deg, rgba(220, 51, 51, 0.12) 0%, rgba(220, 51, 51, 0.06) 100%);
+  color: #5f1a1a;
+  border-color: #dc3333;
+  box-shadow: 0 2px 8px rgba(220, 51, 51, 0.1);
+}
+
+.statusBadgeMobile[data-available="false"]:hover {
+  background: linear-gradient(135deg, #dc3333 0%, #b52828 100%);
+  color: white;
+  border-color: #b52828;
+  box-shadow: 0 8px 24px rgba(220, 51, 51, 0.35);
 }
 
 .statusDot {
@@ -1042,28 +1065,43 @@
   align-items: center;
   gap: 5px;
   background: rgba(255, 255, 255, 0.12);
-  padding: 5px 10px;
-  border-radius: 14px;
-  font-size: 11px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 700;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: fit-content;
 }
 
 .availabilityBadge[data-available="true"] {
-  background: rgba(45, 217, 111, 0.12);
-  color: var(--color-success-700);
-  border-color: rgba(45, 217, 111, 0.35);
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.15) 0%, rgba(45, 217, 111, 0.08) 100%);
+  border-color: #2dd96f;
+  color: #1a5f3f;
+}
+
+.availabilityBadge[data-available="true"]:hover {
+  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
+  border-color: #20b35f;
+  color: white;
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
 }
 
 .availabilityBadge[data-available="false"] {
-  background: rgba(255, 51, 51, 0.12);
-  color: var(--color-error-700);
-  border-color: rgba(255, 51, 51, 0.35);
+  background: linear-gradient(135deg, rgba(220, 51, 51, 0.15) 0%, rgba(220, 51, 51, 0.08) 100%);
+  border-color: #dc3333;
+  color: #5f1a1a;
+}
+
+.availabilityBadge[data-available="false"]:hover {
+  background: linear-gradient(135deg, #dc3333 0%, #b52828 100%);
+  border-color: #b52828;
+  color: white;
+  box-shadow: 0 8px 24px rgba(220, 51, 51, 0.35);
 }
 
 .availabilityDot {

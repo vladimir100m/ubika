@@ -266,6 +266,7 @@
 }
 
 /* Status Badge - Property Status (Published, Draft) */
+/* Inherits base from globals.css .badge + .statusBadge styles */
 .statusBadge {
   display: inline-flex;
   align-items: center;
@@ -276,23 +277,19 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  background: var(--color-secondary-700);
-  color: var(--color-text-primary);
-  border: 1.5px solid var(--color-border-light);
-  box-shadow: 0 3px 10px rgba(10, 20, 40, 0.12);
   width: fit-content;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid;
 }
 
 .statusBadge:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(10, 20, 40, 0.18);
-  border-color: var(--color-accent-700);
 }
 
 /* Operation Status Badge (For Sale, For Rent) */
+/* Inherits base from globals.css .operationBadge styles */
 .operationBadge {
   display: inline-flex;
   align-items: center;
@@ -303,17 +300,15 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: fit-content;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1.5px solid transparent;
+  border: 1.5px solid;
 }
 
 .operationBadge:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Badge Icon and Text */
@@ -329,7 +324,9 @@
   white-space: nowrap;
 }
 
-/* Property Status Badge Variants - Soft Light Style with Enhanced Luxury */
+/* Property Status Badge Variants - Luxury Soft Light Style */
+/* All variants use consistent 20px border-radius, backdrop blur, and luxury colors */
+
 .statusBadge.published {
   background: linear-gradient(135deg, rgba(45, 217, 111, 0.12) 0%, rgba(45, 217, 111, 0.06) 100%);
   color: #1a5f3f;
@@ -341,7 +338,7 @@
   background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
   color: white;
   border-color: #20b35f;
-  box-shadow: 0 6px 16px rgba(45, 217, 111, 0.3);
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
 }
 
 .statusBadge.draft {
@@ -355,7 +352,7 @@
   background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
   color: white;
   border-color: #ffb300;
-  box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35);
 }
 
 .statusBadge.archived {
@@ -369,10 +366,12 @@
   background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
   color: white;
   border-color: #757575;
-  box-shadow: 0 6px 16px rgba(120, 120, 120, 0.25);
+  box-shadow: 0 8px 24px rgba(120, 120, 120, 0.25);
 }
 
 /* Operation Status Badge Variants - Rich Luxury Gradients */
+/* Consistent green for sales, gold for rentals, enhanced shadows on hover */
+
 .operationBadge.sale {
   background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
   color: white;

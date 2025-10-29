@@ -940,13 +940,22 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #37b15a 0%, #2d8a47 100%);
+  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
   color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
   margin-right: 8px;
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.propertyStatusBadge:hover {
+  background: linear-gradient(135deg, #20b35f 0%, #1a934d 100%);
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.4);
 }
 
 .propertyStats {
