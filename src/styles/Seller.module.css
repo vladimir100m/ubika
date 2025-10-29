@@ -876,6 +876,67 @@
   margin-bottom: 16px;
 }
 
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.featureCheckbox {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.featureCheckbox:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.featureCheckbox input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-right: 10px;
+  accent-color: #0070f3;
+  flex-shrink: 0;
+}
+
+.featureCheckbox label {
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.featureName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.featureCategory {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.noFeatures {
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
 .successBanner {
   background: #dcfce7;
   border: 1px solid #86efac;

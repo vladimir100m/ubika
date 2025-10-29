@@ -38,8 +38,14 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     bedrooms: '',
     bathrooms: '',
     sq_meters: '',
+    year_built: '',
+    lat: '',
+    lng: '',
+    operation_status: '',
   });
 
+  const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
+  const [availableFeatures, setAvailableFeatures] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -57,7 +63,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Fetch property types
+    // Fetch property types and features
     const fetchPropertyTypes = async () => {
       try {
         const response = await fetch('/api/property-types');
@@ -70,8 +76,21 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
       }
     };
 
+    const fetchFeatures = async () => {
+      try {
+        const response = await fetch('/api/property-features');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableFeatures(data);
+        }
+      } catch (err) {
+        console.error('Error fetching features:', err);
+      }
+    };
+
     if (isOpen) {
       fetchPropertyTypes();
+      fetchFeatures();
       
       // If editing, populate form with property data
       if (editingProperty) {
@@ -88,7 +107,19 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
           bedrooms: editingProperty.bedrooms?.toString() || '',
           bathrooms: editingProperty.bathrooms?.toString() || '',
           sq_meters: editingProperty.sq_meters?.toString() || '',
+          year_built: editingProperty.year_built?.toString() || '',
+          lat: editingProperty.lat?.toString() || '',
+          lng: editingProperty.lng?.toString() || '',
+          operation_status: editingProperty.operation_status_id === 2 ? 'rent' : 'buy',
         });
+
+        // Populate selected features
+        if (editingProperty.features && editingProperty.features.length > 0) {
+          const featureIds = editingProperty.features.map(f => f.id);
+          setSelectedFeatures(featureIds);
+        } else {
+          setSelectedFeatures([]);
+        }
         
         // Populate existing images
         if (editingProperty.images && editingProperty.images.length > 0) {
@@ -122,7 +153,12 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
           bedrooms: '',
           bathrooms: '',
           sq_meters: '',
+          year_built: '',
+          lat: '',
+          lng: '',
+          operation_status: 'buy',
         });
+        setSelectedFeatures([]);
         setUploadedImages([]);
         setNewImagePreviews([]);
         setExistingImages([]);
@@ -330,6 +366,11 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         bedrooms: parseInt(formData.bedrooms) || 0,
         bathrooms: parseInt(formData.bathrooms) || 0,
         sq_meters: parseInt(formData.sq_meters) || 0,
+        year_built: formData.year_built ? parseInt(formData.year_built) : null,
+        lat: formData.lat ? parseFloat(formData.lat) : null,
+        lng: formData.lng ? parseFloat(formData.lng) : null,
+        operation_status_id: formData.operation_status === 'rent' ? 2 : 1,
+        feature_ids: selectedFeatures,
       };
 
       // Add seller_id only when creating new property
@@ -404,6 +445,10 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         bedrooms: '',
         bathrooms: '',
         sq_meters: '',
+        year_built: '',
+        lat: '',
+        lng: '',
+        operation_status: 'buy',
       });
       setUploadedImages([]);
       setNewImagePreviews([]);
@@ -541,6 +586,21 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                   required
                 />
               </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="operation_status">Operation *</label>
+                <select
+                  id="operation_status"
+                  name="operation_status"
+                  value={formData.operation_status}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select Operation</option>
+                  <option value="buy">For Sale</option>
+                  <option value="rent">For Rent</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -655,6 +715,83 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                   onChange={handleInputChange}
                 />
               </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="year_built">Year Built</label>
+                <input
+                  type="number"
+                  id="year_built"
+                  name="year_built"
+                  placeholder="e.g., 2020"
+                  value={formData.year_built}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Coordinates Section */}
+          <div className={styles.formSection}>
+            <h3>📍 Coordinates (Optional)</h3>
+            
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="lat">Latitude</label>
+                <input
+                  type="number"
+                  id="lat"
+                  name="lat"
+                  placeholder="e.g., -34.6037"
+                  step="0.0001"
+                  value={formData.lat}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="lng">Longitude</label>
+                <input
+                  type="number"
+                  id="lng"
+                  name="lng"
+                  placeholder="e.g., -58.3816"
+                  step="0.0001"
+                  value={formData.lng}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Features Section */}
+          <div className={styles.formSection}>
+            <h3>✨ Property Features</h3>
+            
+            <div className={styles.featuresGrid}>
+              {availableFeatures.length > 0 ? (
+                availableFeatures.map((feature) => (
+                  <div key={feature.id} className={styles.featureCheckbox}>
+                    <input
+                      type="checkbox"
+                      id={`feature-${feature.id}`}
+                      checked={selectedFeatures.includes(feature.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedFeatures([...selectedFeatures, feature.id]);
+                        } else {
+                          setSelectedFeatures(selectedFeatures.filter(id => id !== feature.id));
+                        }
+                      }}
+                    />
+                    <label htmlFor={`feature-${feature.id}`}>
+                      <span className={styles.featureName}>{feature.name}</span>
+                      {feature.category && <span className={styles.featureCategory}>{feature.category}</span>}
+                    </label>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.noFeatures}>Loading features...</p>
+              )}
             </div>
           </div>
 
