@@ -164,7 +164,7 @@
 }
 
 .closeBanner:hover {
-  color: #b91c1c;
+  color: var(--color-error-700);
 }
 
 /* Loading State */
@@ -353,7 +353,7 @@
   align-items: center;
   text-align: center;
   gap: 12px;
-  background: linear-gradient(135deg, var(--color-bg-primary) 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-secondary-700) 100%);
   border: 2px solid var(--color-border-light);
   border-radius: 16px;
   padding: 24px 16px;
@@ -367,7 +367,7 @@
   border-color: var(--color-accent-700);
   box-shadow: 0 8px 20px rgba(15, 127, 159, 0.15);
   transform: translateY(-4px);
-  background: linear-gradient(135deg, #f0f7ff 0%, var(--color-bg-primary) 100%);
+  background: linear-gradient(135deg, var(--color-secondary-800) 0%, var(--color-bg-primary) 100%);
 }
 
 .statIcon {
@@ -815,7 +815,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #64748b;
+  color: var(--color-text-secondary);
   width: 40px;
   height: 40px;
   display: flex;
@@ -827,25 +827,25 @@
 }
 
 .closeButton:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: var(--color-secondary-700);
+  color: var(--color-text-primary);
 }
 
 .modalHeader {
   padding: 32px 32px 20px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border-light);
 }
 
 .modalHeader h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .modalHeader p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -860,10 +860,10 @@
 .formSection h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 16px 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .formGroup {
@@ -874,7 +874,7 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin-bottom: 6px;
 }
 
@@ -883,19 +883,21 @@
 .formGroup select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.2s ease;
+  background: var(--color-secondary-700);
+  color: var(--color-text-primary);
 }
 
 .formGroup input:focus,
 .formGroup textarea:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: #0070f3;
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
 }
 
 .formGroup textarea {
@@ -921,16 +923,16 @@
   display: flex;
   align-items: center;
   padding: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--color-secondary-700);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .featureCheckbox:hover {
-  border-color: #cbd5e1;
-  background: #f1f5f9;
+  border-color: var(--color-border-light);
+  background: var(--color-secondary-800);
 }
 
 .featureCheckbox input[type="checkbox"] {
@@ -939,7 +941,7 @@
   height: 18px;
   cursor: pointer;
   margin-right: 10px;
-  accent-color: #0070f3;
+  accent-color: var(--color-accent-700);
   flex-shrink: 0;
 }
 
@@ -955,28 +957,28 @@
 .featureName {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text-primary);
 }
 
 .featureCategory {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .noFeatures {
   padding: 20px;
   text-align: center;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
 /* Toggle Features Button */
 .toggleFeaturesButton {
   padding: 6px 14px;
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-  color: #0369a1;
-  border: 1px solid #0ea5e9;
+  background: linear-gradient(135deg, var(--color-accent-200) 0%, var(--color-accent-100) 100%);
+  color: var(--color-accent-700);
+  border: 1px solid var(--color-accent-500);
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -985,9 +987,9 @@
 }
 
 .toggleFeaturesButton:hover {
-  background: linear-gradient(135deg, #bfdbfe 0%, #c7d2fe 100%);
-  border-color: #0284c7;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+  background: linear-gradient(135deg, var(--color-accent-300) 0%, var(--color-accent-200) 100%);
+  border-color: var(--color-accent-600);
+  box-shadow: 0 2px 8px rgba(201, 169, 97, 0.15);
 }
 
 .toggleFeaturesButton:active {
@@ -995,12 +997,12 @@
 }
 
 .successBanner {
-  background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
-  border: 1.5px solid #86efac;
+  background: linear-gradient(135deg, var(--color-success-200) 0%, var(--color-success-100) 100%);
+  border: 1.5px solid var(--color-success-500);
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 20px;
-  color: #15803d;
+  color: var(--color-success-700);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -1016,40 +1018,40 @@
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border-light);
 }
 
 .cancelButton {
   padding: 10px 24px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
-  background: white;
-  color: #1e293b;
+  background: var(--color-secondary-800);
+  color: var(--color-text-primary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .cancelButton:hover:not(:disabled) {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: var(--color-border-light);
+  background: var(--color-secondary-700);
 }
 
 .submitButton {
   padding: 10px 32px;
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
 }
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 112, 243, 0.4);
+  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.4);
 }
 
 .submitButton:disabled,
@@ -1065,15 +1067,15 @@
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border-light);
 }
 
 .cancelButton {
   padding: 11px 28px;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--color-border-light);
   border-radius: 8px;
-  background: white;
-  color: #1e293b;
+  background: var(--color-secondary-800);
+  color: var(--color-text-primary);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -1086,8 +1088,8 @@
 }
 
 .cancelButton:hover:not(:disabled) {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: var(--color-border-light);
+  background: var(--color-secondary-700);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -1097,7 +1099,7 @@
 
 .submitButton {
   padding: 11px 32px;
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1105,7 +1107,7 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1115,7 +1117,7 @@
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 112, 243, 0.4);
+  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.4);
 }
 
 .submitButton:active:not(:disabled) {
@@ -1141,7 +1143,7 @@
 
 /* Required Field Indicator */
 .requiredAsterisk {
-  color: #ef4444;
+  color: var(--color-error-600);
   font-weight: 700;
   margin-left: 2px;
 }
