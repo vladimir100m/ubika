@@ -141,6 +141,17 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
     setIsAddPropertyOpen(true);
   };
 
+  // Calculate statistics
+  const calculateAveragePrice = () => {
+    if (properties.length === 0) return 0;
+    const total = properties.reduce((sum, p) => sum + (parseFloat(p.price as any) || 0), 0);
+    return Math.round(total / properties.length);
+  };
+
+  const calculateTotalValue = () => {
+    return properties.reduce((sum, p) => sum + (parseFloat(p.price as any) || 0), 0);
+  };
+
   if (status === 'loading') {
     return (
       <div className={styles.loadingContainer}>
