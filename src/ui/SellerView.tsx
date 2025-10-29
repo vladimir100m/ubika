@@ -233,9 +233,17 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
                 <div className={styles.statContent}>
                   <div className={styles.statLabel}>Average Price</div>
                   <div className={styles.statValue}>
-                    ${(
-                      properties.reduce((sum, p) => sum + (p.price || 0), 0) / properties.length
-                    ).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    ${calculateAveragePrice().toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>📈</div>
+                <div className={styles.statContent}>
+                  <div className={styles.statLabel}>Total Value</div>
+                  <div className={styles.statValue}>
+                    ${calculateTotalValue().toLocaleString('en-US', { maximumFractionDigits: 0 })}
                   </div>
                 </div>
               </div>
