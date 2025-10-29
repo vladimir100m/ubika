@@ -199,14 +199,6 @@ export async function GET(req: NextRequest) {
             } : null,
           };
         }));
-          const propertyFeatures = features.filter(f => f.property_id === p.id);
-          
-          return {
-            ...p,
-            images: resolvedImages,
-            features: propertyFeatures,
-          };
-        }));
 
         await cacheSet(cacheKey, { payload: propertiesWithImages, cachedAt: Date.now() }, CACHE_STALE_TTL);
         log.info('Background cache refresh completed', { cacheKey, refreshedRows: propertiesWithImages.length });
