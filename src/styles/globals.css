@@ -264,3 +264,130 @@ input[type="text"]:focus, select:focus {
   font-weight: 600;
   color: #0070f3;
 }
+
+/* ============================================================================
+   STANDARDIZED BADGE STYLES - Luxury Real Estate Theme
+   ============================================================================
+   
+   These badge styles ensure consistent, luxury-focused design across all
+   property status and operation status indicators in the app.
+   
+   Usage:
+   - Base: .badge (for all badges)
+   - Status Variants: .badge.published, .badge.draft, .badge.archived
+   - Operation Variants: .badge.sale, .badge.rent, .badge.buy, .badge.lease
+   
+   Colors:
+   - Published: Green (available/active)
+   - Draft: Amber (pending/incomplete)
+   - Archived: Gray (inactive/archived)
+   - Sale/Buy: Green (purchase opportunity)
+   - Rent/Lease: Gold (rental opportunity)
+   
+   ============================================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  background: var(--color-secondary-700);
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-border-light);
+  box-shadow: 0 3px 10px rgba(10, 20, 40, 0.12);
+  width: fit-content;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.badge:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(10, 20, 40, 0.18);
+}
+
+/* Badge Icon and Text */
+.badge__icon {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.badge__text {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Status Badge Variants - Property Status (Soft Light Style) */
+.badge.published {
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.1) 0%, rgba(45, 217, 111, 0.05) 100%);
+  color: var(--color-success-700);
+  border-color: var(--color-success-500);
+}
+
+.badge.published:hover {
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-600) 100%);
+  color: white;
+  border-color: var(--color-success-700);
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
+}
+
+.badge.draft {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+  color: var(--color-warning-700);
+  border-color: var(--color-warning-500);
+}
+
+.badge.draft:hover {
+  background: linear-gradient(135deg, var(--color-warning-700) 0%, var(--color-warning-600) 100%);
+  color: white;
+  border-color: var(--color-warning-700);
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35);
+}
+
+.badge.archived {
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.1) 0%, rgba(128, 128, 128, 0.05) 100%);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-light);
+}
+
+.badge.archived:hover {
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.15) 0%, rgba(128, 128, 128, 0.08) 100%);
+  border-color: var(--color-text-secondary);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Operation Badge Variants - Rich Gradients */
+.badge.sale,
+.badge.buy {
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-600) 100%);
+  color: white;
+  border-color: var(--color-success-700);
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.25);
+}
+
+.badge.sale:hover,
+.badge.buy:hover {
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
+  background: linear-gradient(135deg, var(--color-success-800) 0%, var(--color-success-700) 100%);
+}
+
+.badge.rent,
+.badge.lease {
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: white;
+  border-color: var(--color-accent-700);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.25);
+}
+
+.badge.rent:hover,
+.badge.lease:hover {
+  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.35);
+  background: linear-gradient(135deg, var(--color-accent-800) 0%, var(--color-accent-700) 100%);
+}
