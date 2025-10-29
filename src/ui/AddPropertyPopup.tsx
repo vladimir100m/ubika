@@ -209,96 +209,134 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     }
   }, [isOpen, editingProperty]);
 
-  // Initialize Google Places Autocomplete
+  // Initialize Google Places Autocomplete following Google's best practices
   useEffect(() => {
     if (!isOpen || !addressInputRef.current) return;
 
     const initializeAutocomplete = () => {
       if (!addressInputRef.current) return;
 
+      // Create autocomplete with optimized options
+      const autocompleteOptions: any = {
+        types: ['address'],
+        fields: ['address_components', 'geometry', 'formatted_address', 'place_id'],
+        strictBounds: false,
+      };
+
       const autocomplete = new (window as any).google.maps.places.Autocomplete(
         addressInputRef.current,
-        {
-          componentRestrictions: { country: 'all' },
-          types: ['address'],
-          fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
-        }
+        autocompleteOptions
       );
 
+      // Handle place selection
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         
-        if (!place.geometry) {
+        // Validate place has geometry
+        if (!place.geometry || !place.geometry.location) {
           setError('Please select a valid address from the suggestions');
           return;
         }
 
-        // Extract address components
-        const addressComponents = place.address_components || [];
-        let streetAddress = '';
-        let city = '';
-        let state = '';
-        let country = '';
-        let zipCode = '';
-
-        addressComponents.forEach((component) => {
-          const componentType = component.types[0];
-          const componentValue = component.long_name;
-
-          switch (componentType) {
-            case 'route':
-              streetAddress = component.short_name;
-              break;
-            case 'street_number':
-              streetAddress = component.short_name + ' ' + streetAddress;
-              break;
-            case 'locality':
-              city = componentValue;
-              break;
-            case 'administrative_area_level_1':
-              state = component.short_name;
-              break;
-            case 'country':
-              country = componentValue;
-              break;
-            case 'postal_code':
-              zipCode = componentValue;
-              break;
-          }
-        });
-
-        // Update form data with extracted information
-        setFormData(prev => ({
-          ...prev,
-          address: place.formatted_address || streetAddress,
-          city: city || prev.city,
-          state: state || prev.state,
-          country: country || prev.country,
-          zip_code: zipCode || prev.zip_code,
-          lat: place.geometry.location.lat().toString(),
-          lng: place.geometry.location.lng().toString(),
-        }));
-
+        // Extract and parse address components following Google's example
+        fillInFormFromPlace(place);
         setError(null);
       });
 
       setAutocompleteInstance(autocomplete);
     };
 
-    // Load Google Maps script if not already loaded
-    if (!(window as any).google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
+    // Lazy load Google Maps script if not already present
+    const loadGoogleMapsScript = () => {
+      if ((window as any).google?.maps?.places) {
         initializeAutocomplete();
-      };
-      document.head.appendChild(script);
-    } else {
-      initializeAutocomplete();
-    }
+        return;
+      }
+
+      const existingScript = document.querySelector(
+        `script[src*="maps.googleapis.com/maps/api/js"]`
+      );
+
+      if (existingScript) {
+        // Script already loading or loaded, wait for it
+        const checkInterval = setInterval(() => {
+          if ((window as any).google?.maps?.places) {
+            clearInterval(checkInterval);
+            initializeAutocomplete();
+          }
+        }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => clearInterval(checkInterval), 10000);
+      } else {
+        // Create and load script
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeAutocomplete;
+        script.onerror = () => {
+          setError('Failed to load Google Maps. Please try again.');
+        };
+        document.head.appendChild(script);
+      }
+    };
+
+    loadGoogleMapsScript();
   }, [isOpen]);
+
+  // Fill in address form from Google Place
+  const fillInFormFromPlace = (place: any) => {
+    let streetNumber = '';
+    let streetName = '';
+    let city = '';
+    let state = '';
+    let country = '';
+    let zipCode = '';
+
+    // Parse address components using switch statement (Google's approach)
+    const addressComponents = place.address_components || [];
+    
+    for (const component of addressComponents) {
+      const componentType = component.types[0];
+
+      switch (componentType) {
+        case 'street_number':
+          streetNumber = component.long_name;
+          break;
+        case 'route':
+          streetName = component.short_name;
+          break;
+        case 'locality':
+          city = component.long_name;
+          break;
+        case 'administrative_area_level_1':
+          state = component.short_name;
+          break;
+        case 'country':
+          country = component.long_name;
+          break;
+        case 'postal_code':
+          zipCode = component.long_name;
+          break;
+      }
+    }
+
+    // Combine street number and name
+    const fullAddress = `${streetNumber} ${streetName}`.trim();
+
+    // Update form with all extracted data
+    setFormData(prev => ({
+      ...prev,
+      address: fullAddress || place.formatted_address || '',
+      city: city || prev.city,
+      state: state || prev.state,
+      country: country || prev.country,
+      zip_code: zipCode || prev.zip_code,
+      lat: place.geometry.location.lat().toString(),
+      lng: place.geometry.location.lng().toString(),
+    }));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
