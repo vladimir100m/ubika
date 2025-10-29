@@ -1,90 +1,92 @@
-/* Updated global styles - Ubika Premium Edition (Moco in London inspired) */
+/* Ubika Premium Edition - Inspired by Moco Museum London Aesthetic */
+/* Minimalist, high-contrast design with gallery-like presentation */
 :root {
-  /* === PRIMARY COLORS - Charcoal Black === */
-  --color-primary-900: #0d0d0d;
-  --color-primary-800: #1a1a1a;
-  --color-primary-700: #2d2d2d;
-  --color-primary-600: #3f3f3f;
+  /* === PRIMARY COLORS - Pure Black & Near-Black (Moco Gallery Aesthetic) === */
+  --color-primary-900: #000000;    /* Pure Black - Maximum contrast */
+  --color-primary-800: #0a0a0a;    /* Near Black - Main text & headers */
+  --color-primary-700: #1a1a1a;    /* Dark Charcoal - Secondary elements */
+  --color-primary-600: #2d2d2d;    /* Medium Dark - Hover states */
 
-  /* === SECONDARY COLORS - Warm Gold (Premium Accent) === */
-  --color-secondary-900: #8b6914;
-  --color-secondary-800: #a67c52;
-  --color-secondary-700: #c99a42;
-  --color-secondary-600: #d4a574;
-  --color-secondary-500: #e0b584;
+  /* === SECONDARY COLORS - Bright White & Clean Minimalist === */
+  --color-secondary-900: #e6e6e6;  /* Off-White - Subtle backgrounds */
+  --color-secondary-800: #f0f0f0;  /* Light Gray - Secondary backgrounds */
+  --color-secondary-700: #ffffff;  /* Pure White - Primary accent/text on dark */
+  --color-secondary-600: #fafafa;  /* Slightly off-white - Subtle surfaces */
 
-  /* === ACCENT COLORS - Deep Teal === */
-  --color-accent-900: #1a3a3f;
-  --color-accent-800: #2d5f6e;
-  --color-accent-700: #3b7f8f;
-  --color-accent-600: #4a9db5;
+  /* === ACCENT COLORS - Modern Teal/Blue (Contemporary Interactive) === */
+  --color-accent-900: #0a3a3f;     /* Deep Teal - Subtle backgrounds */
+  --color-accent-800: #0d5f6e;     /* Dark Teal - Links, interactive */
+  --color-accent-700: #0f7f9f;     /* Medium Teal - Hover states */
+  --color-accent-600: #1a9db5;     /* Bright Teal - CTAs, featured */
 
   /* === STATUS/SEMANTIC COLORS === */
-  /* Success - Green */
-  --color-success-900: #0a3e0a;
-  --color-success-800: #166534;
-  --color-success-700: #22c55e;
-  --color-success-600: #86efac;
+  /* Success - Vibrant Green */
+  --color-success-900: #0d4a2a;
+  --color-success-800: #1a7d42;
+  --color-success-700: #2dd96f;
+  --color-success-600: #4fdf8f;
 
-  /* Warning - Amber */
-  --color-warning-900: #541c04;
-  --color-warning-800: #b45309;
-  --color-warning-700: #f59e0b;
-  --color-warning-600: #fcd34d;
+  /* Warning - Bright Amber */
+  --color-warning-900: #663d00;
+  --color-warning-800: #cc7a00;
+  --color-warning-700: #ff9d00;
+  --color-warning-600: #ffc247;
 
-  /* Error - Red */
-  --color-error-900: #4c0519;
-  --color-error-800: #be123c;
-  --color-error-700: #f43f5e;
-  --color-error-600: #fb7185;
+  /* Error - Vibrant Red */
+  --color-error-900: #660000;
+  --color-error-800: #cc0000;
+  --color-error-700: #ff3333;
+  --color-error-600: #ff6b6b;
 
-  /* Info - Cyan/Teal */
-  --color-info-900: #164e63;
-  --color-info-800: #0e7490;
-  --color-info-700: #06b6d4;
-  --color-info-600: #67e8f9;
+  /* Info - Bright Cyan */
+  --color-info-900: #004466;
+  --color-info-800: #0088cc;
+  --color-info-700: #00bbff;
+  --color-info-600: #4dd9ff;
 
   /* === TEXT COLORS === */
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #4f4f4f;
-  --color-text-tertiary: #757575;
-  --color-text-disabled: #b0b0b0;
-  --color-text-inverse: #ffffff;
+  --color-text-primary: #0a0a0a;      /* Pure text (near-black) */
+  --color-text-secondary: #4d4d4d;    /* Secondary text (medium gray) */
+  --color-text-tertiary: #808080;     /* Tertiary text (light gray) */
+  --color-text-disabled: #cccccc;     /* Disabled text */
+  --color-text-inverse: #ffffff;      /* Text on dark backgrounds (white) */
 
-  /* === BACKGROUND COLORS === */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #fafafa;
-  --color-bg-tertiary: #f5f5f5;
-  --color-bg-quaternary: #e8e8e8;
-  --color-bg-dark: #1a1a1a;
-  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+  /* === BACKGROUND COLORS (Gallery Aesthetic) === */
+  --color-bg-primary: #ffffff;        /* Clean white primary background */
+  --color-bg-secondary: #fafafa;      /* Subtle off-white */
+  --color-bg-tertiary: #f5f5f5;       /* Light gallery gray */
+  --color-bg-quaternary: #e6e6e6;     /* Medium gray background */
+  --color-bg-dark: #0a0a0a;           /* Dark gallery background */
+  --color-bg-overlay: rgba(0, 0, 0, 0.8);  /* Dark overlay (80% opacity) */
 
   /* === BORDER COLORS === */
-  --color-border-light: #e8e8e8;
-  --color-border-medium: #d3d3d3;
-  --color-border-dark: #b0b0b0;
-  --color-border-strong: #1a1a1a;
+  --color-border-light: #e6e6e6;      /* Light, minimal borders */
+  --color-border-medium: #cccccc;     /* Medium-weight borders */
+  --color-border-dark: #999999;       /* Dark borders */
+  --color-border-strong: #0a0a0a;     /* Strong/active borders */
 
-  /* === SHADOW SYSTEM === */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.18);
-  --shadow-gold: 0 4px 12px rgba(201, 154, 66, 0.15);
-  --shadow-teal: 0 4px 12px rgba(59, 127, 143, 0.15);
+  /* === SHADOW SYSTEM (Gallery-Style Depth) === */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.20);
+
+  /* Colored shadows for accent elements */
+  --shadow-teal: 0 4px 16px rgba(15, 127, 159, 0.18);
+  --shadow-white: 0 4px 16px rgba(255, 255, 255, 0.10);
 
   /* === LEGACY SUPPORT (Backward Compatibility) === */
-  --primary-color: #1a1a1a;
-  --primary-hover: #2d2d2d;
-  --primary: #0074e4;
-  --secondary: #c99a42;
-  --accent: #3b7f8f;
-  --text-primary: #1a1a1a;
-  --text-secondary: #4f4f4f;
+  --primary-color: #0a0a0a;
+  --primary-hover: #1a1a1a;
+  --primary: #0a0a0a;
+  --secondary: #ffffff;
+  --accent: #0f7f9f;
+  --text-primary: #0a0a0a;
+  --text-secondary: #4d4d4d;
   --background-light: #ffffff;
   --background-dark: #fafafa;
-  --border-color: #e8e8e8;
+  --border-color: #e6e6e6;
 
   /* === SPACING === */
   --space-xs: 4px;

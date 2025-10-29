@@ -1,10 +1,12 @@
 # Color Palette Analysis & Standardization
-## Ubika Property Management Platform - Design System v2.0
+## Ubika Property Management Platform - Design System v2.1
+### Inspired by Moco Museum London (https://london.mocomuseum.com/)
 
-**Document Version**: 1.0  
+**Document Version**: 2.1  
 **Date**: October 29, 2025  
 **Author**: UI/UX Design Expert  
-**Status**: Active Design System
+**Status**: Active Design System - Moco Aligned  
+**Website Reference**: https://london.mocomuseum.com/ - Modern art museum with sophisticated minimalist design
 
 ---
 
@@ -71,105 +73,118 @@ Backgrounds:  Off-white (#fafafa) to light gray (#f5f5f5)
 
 ## Improved Standardized Palette
 
-### NEW DESIGN SYSTEM: "Ubika Premium Edition"
+### MOCO MUSEUM LONDON AESTHETIC ANALYSIS
 
-#### 1. **Primary Colors** (Core Brand)
+**Visual Characteristics**:
+- Minimalist, art-forward design philosophy
+- High contrast: Deep blacks with bright whites
+- Sophisticated and contemporary aesthetic
+- Focus on artwork visibility (clean backgrounds)
+- Professional typography hierarchy
+- Elegant white space utilization
+- Modern, gallery-like presentation
+
+### NEW DESIGN SYSTEM: "Ubika Premium Edition" (Moco Aligned)
+
+#### 1. **Primary Colors** (Core Brand - Moco Black Palette)
 ```css
-/* Primary: Sophisticated Charcoal Black */
---color-primary-900: #0d0d0d;    /* Darkest - Headers, navigation */
---color-primary-800: #1a1a1a;    /* Dark - Text, strong contrast */
---color-primary-700: #2d2d2d;    /* Medium dark - Secondary text */
---color-primary-600: #3f3f3f;    /* Medium - Interactive elements */
+/* Primary: Pure Black & Near-Black - Gallery Aesthetic */
+--color-primary-900: #000000;    /* Pure Black - Maximum contrast */
+--color-primary-800: #0a0a0a;    /* Near Black - Main text */
+--color-primary-700: #1a1a1a;    /* Dark Charcoal - Secondary elements */
+--color-primary-600: #2d2d2d;    /* Medium Dark - Hover states */
 ```
 
-**Usage**: Primary navigation, headlines, CTAs, main UI elements
+**Usage**: Navigation, headers, primary text, gallery-like backgrounds  
+**Moco Reference**: Dark backgrounds create premium, gallery aesthetic
 
-#### 2. **Secondary Colors** (Luxury Accent)
+#### 2. **Secondary Colors** (Accent - Bright White & Minimalist)
 ```css
-/* Secondary: Warm Gold - Premium touch */
---color-secondary-900: #8b6914;  /* Deep Gold - Hover states */
---color-secondary-800: #a67c52;  /* Rich Gold - Main accent */
---color-secondary-700: #c99a42;  /* Bright Gold - Featured elements */
---color-secondary-600: #d4a574;  /* Light Gold - Backgrounds */
---color-secondary-500: #e0b584;  /* Very Light - Subtle accents */
+/* Secondary: Bright White - Clean, Minimal Accent */
+--color-secondary-900: #e6e6e6;  /* Off-White - Subtle backgrounds */
+--color-secondary-800: #f0f0f0;  /* Light Gray - Secondary backgrounds */
+--color-secondary-700: #ffffff;  /* Pure White - Primary accent/text on dark */
+--color-secondary-600: #fafafa;  /* Slightly off-white - Subtle surfaces */
 ```
 
-**Usage**: Accent buttons, highlights, premium badges, luxury indicators
+**Usage**: Text on dark backgrounds, clean accents, featured elements  
+**Moco Reference**: High contrast white text on black backgrounds
 
-#### 3. **Accent Colors** (Depth & Interest)
+#### 3. **Accent Colors** (Interactive - Modern Teal/Blue)
 ```css
-/* Accent: Deep Teal - Professional depth */
---color-accent-900: #1a3a3f;     /* Very Dark Teal - Subtle backgrounds */
---color-accent-800: #2d5f6e;     /* Dark Teal - Interactive states */
---color-accent-700: #3b7f8f;     /* Medium Teal - Links, accents */
---color-accent-600: #4a9db5;     /* Light Teal - Hover states */
+/* Accent: Modern Teal - Contemporary Interactive Elements */
+--color-accent-900: #0a3a3f;     /* Deep Teal - Subtle backgrounds */
+--color-accent-800: #0d5f6e;     /* Dark Teal - Links, interactive */
+--color-accent-700: #0f7f9f;     /* Medium Teal - Hover states */
+--color-accent-600: #1a9db5;     /* Bright Teal - CTAs, featured */
 ```
 
-**Usage**: Links, secondary buttons, status badges, interactive elements
+**Usage**: Links, interactive elements, CTAs  
+**Moco Reference**: Contemporary minimalist accent color for interaction focus
 
 #### 4. **Status/Semantic Colors**
 ```css
-/* Success - Green (Property Published) */
---color-success-900: #0a3e0a;
---color-success-800: #166534;
---color-success-700: #22c55e;
---color-success-600: #86efac;
+/* Success - Vibrant Green (Property Published) */
+--color-success-900: #0d4a2a;
+--color-success-800: #1a7d42;
+--color-success-700: #2dd96f;
+--color-success-600: #4fdf8f;
 
-/* Warning - Amber (Property Draft) */
---color-warning-900: #541c04;
---color-warning-800: #b45309;
---color-warning-700: #f59e0b;
---color-warning-600: #fcd34d;
+/* Warning - Bright Amber (Property Draft) */
+--color-warning-900: #663d00;
+--color-warning-800: #cc7a00;
+--color-warning-700: #ff9d00;
+--color-warning-600: #ffc247;
 
-/* Error - Red (Property Archived/Issues) */
---color-error-900: #4c0519;
---color-error-800: #be123c;
---color-error-700: #f43f5e;
---color-error-600: #fb7185;
+/* Error - Vibrant Red (Property Archived/Issues) */
+--color-error-900: #660000;
+--color-error-800: #cc0000;
+--color-error-700: #ff3333;
+--color-error-600: #ff6b6b;
 
-/* Info - Updated Teal */
---color-info-900: #164e63;
---color-info-800: #0e7490;
---color-info-700: #06b6d4;
---color-info-600: #67e8f9;
+/* Info - Bright Cyan (Properties For Rent) */
+--color-info-900: #004466;
+--color-info-800: #0088cc;
+--color-info-700: #00bbff;
+--color-info-600: #4dd9ff;
 ```
 
-#### 5. **Neutral Colors** (Text & Backgrounds)
+#### 5. **Neutral Colors** (Text & Backgrounds - Moco Clean Aesthetic)
 ```css
 /* Text Colors */
---color-text-primary: #1a1a1a;      /* Main text (charcoal) */
---color-text-secondary: #4f4f4f;    /* Secondary text (gray) */
---color-text-tertiary: #757575;     /* Tertiary text (light gray) */
---color-text-disabled: #b0b0b0;     /* Disabled text */
---color-text-inverse: #ffffff;      /* Text on dark backgrounds */
+--color-text-primary: #0a0a0a;      /* Pure text (near-black) */
+--color-text-secondary: #4d4d4d;    /* Secondary text (medium gray) */
+--color-text-tertiary: #808080;     /* Tertiary text (light gray) */
+--color-text-disabled: #cccccc;     /* Disabled text */
+--color-text-inverse: #ffffff;      /* Text on dark backgrounds (white) */
 
-/* Background Colors */
---color-bg-primary: #ffffff;        /* Main background */
---color-bg-secondary: #fafafa;      /* Slightly off-white */
---color-bg-tertiary: #f5f5f5;       /* Light gray background */
---color-bg-quaternary: #e8e8e8;     /* Medium gray background */
---color-bg-dark: #1a1a1a;           /* Dark background (overlays) */
---color-bg-overlay: rgba(0, 0, 0, 0.7);  /* Overlay */
+/* Background Colors - Gallery Aesthetic */
+--color-bg-primary: #ffffff;        /* Clean white primary background */
+--color-bg-secondary: #fafafa;      /* Subtle off-white */
+--color-bg-tertiary: #f5f5f5;       /* Light gallery gray */
+--color-bg-quaternary: #e6e6e6;     /* Medium gray background */
+--color-bg-dark: #0a0a0a;           /* Dark gallery background */
+--color-bg-overlay: rgba(0, 0, 0, 0.8);  /* Dark overlay (80% opacity) */
 
 /* Border Colors */
---color-border-light: #e8e8e8;      /* Light borders */
---color-border-medium: #d3d3d3;     /* Medium borders */
---color-border-dark: #b0b0b0;       /* Dark borders */
---color-border-strong: #1a1a1a;     /* Strong borders (active) */
+--color-border-light: #e6e6e6;      /* Light, minimal borders */
+--color-border-medium: #cccccc;     /* Medium-weight borders */
+--color-border-dark: #999999;       /* Dark borders */
+--color-border-strong: #0a0a0a;     /* Strong/active borders */
 ```
 
-#### 6. **Shadow System** (Enhanced Depth)
+#### 6. **Shadow System** (Gallery-Style Depth)
 ```css
-/* Shadows aligned with premium aesthetic */
---shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
---shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10);
---shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
---shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
---shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.18);
+/* Shadows - Minimal and sophisticated (Moco aesthetic) */
+--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+--shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+--shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.20);
 
-/* Gold shadow for premium elements */
---shadow-gold: 0 4px 12px rgba(201, 154, 66, 0.15);
---shadow-teal: 0 4px 12px rgba(59, 127, 143, 0.15);
+/* Colored shadows for accent elements */
+--shadow-teal: 0 4px 16px rgba(15, 127, 159, 0.18);
+--shadow-white: 0 4px 16px rgba(255, 255, 255, 0.10);
 ```
 
 ---
