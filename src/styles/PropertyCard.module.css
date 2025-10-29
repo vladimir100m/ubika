@@ -270,23 +270,24 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
   width: fit-content;
-  backdrop-filter: blur(4px);
-  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .statusBadge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-md);
 }
 
 /* Operation Status Badge (For Sale, For Rent) */
@@ -295,20 +296,21 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-sm);
   width: fit-content;
-  backdrop-filter: blur(4px);
-  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .operationBadge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 /* Badge Icon and Text */
@@ -326,58 +328,90 @@
 
 /* Property Status Badge Variants */
 .statusBadge.published {
-  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-  color: #155724;
-  border-color: #b1dfb8;
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.12) 0%, rgba(45, 217, 111, 0.08) 100%);
+  color: var(--color-success-700);
+  border-color: rgba(45, 217, 111, 0.25);
+}
+
+.statusBadge.published:hover {
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.18) 0%, rgba(45, 217, 111, 0.12) 100%);
 }
 
 .statusBadge.draft {
-  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-  color: #856404;
-  border-color: #ffdbac;
+  background: linear-gradient(135deg, rgba(255, 157, 0, 0.12) 0%, rgba(255, 157, 0, 0.08) 100%);
+  color: var(--color-warning-700);
+  border-color: rgba(255, 157, 0, 0.25);
+}
+
+.statusBadge.draft:hover {
+  background: linear-gradient(135deg, rgba(255, 157, 0, 0.18) 0%, rgba(255, 157, 0, 0.12) 100%);
 }
 
 .statusBadge.archived {
-  background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%);
-  color: #383d41;
-  border-color: #c6c8cb;
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.12) 0%, rgba(128, 128, 128, 0.08) 100%);
+  color: var(--color-text-secondary);
+  border-color: rgba(128, 128, 128, 0.25);
+}
+
+.statusBadge.archived:hover {
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.18) 0%, rgba(128, 128, 128, 0.12) 100%);
 }
 
 /* Operation Status Badge Variants */
 .operationBadge.sale {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+}
+
+.operationBadge.sale:hover {
+  box-shadow: 0 4px 16px rgba(45, 217, 111, 0.3);
 }
 
 .operationBadge.rent {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-700);
+}
+
+.operationBadge.rent:hover {
+  box-shadow: 0 4px 16px rgba(15, 127, 159, 0.3);
 }
 
 .operationBadge.buy {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+}
+
+.operationBadge.buy:hover {
+  box-shadow: 0 4px 16px rgba(45, 217, 111, 0.3);
 }
 
 .operationBadge.lease {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-700);
+}
+
+.operationBadge.lease:hover {
+  box-shadow: 0 4px 16px rgba(15, 127, 159, 0.3);
 }
 
 /* Legacy status styles for backward compatibility */
 .sale {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
 }
 
 .rent {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
 }
 
 .not_available {
-  background: #e74c3c;
-  color: white;
+  background: linear-gradient(135deg, var(--color-error-700) 0%, var(--color-error-800) 100%);
+  color: var(--color-text-inverse);
 }
 
 /* Content Section */
@@ -509,44 +543,50 @@
 
 .featureItem {
   display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: capitalize;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.3px;
+  border: 1px solid rgba(15, 127, 159, 0.3);
 }
 
 .featureItem:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--color-accent-800) 0%, var(--color-accent-900) 100%);
 }
 
-/* Feature Item Variants for Visual Diversity */
+/* Feature Item Variants for Visual Diversity with Design System Colors */
 .featureItem:nth-child(1) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  border-color: rgba(15, 127, 159, 0.3);
 }
 
 .featureItem:nth-child(2) {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  border-color: rgba(45, 217, 111, 0.3);
 }
 
 .featureItem:nth-child(3) {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, var(--color-info-700) 0%, var(--color-info-800) 100%);
+  border-color: rgba(0, 187, 255, 0.3);
 }
 
 .featureItem:nth-child(4) {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: linear-gradient(135deg, var(--color-warning-700) 0%, var(--color-warning-800) 100%);
+  border-color: rgba(255, 157, 0, 0.3);
 }
 
 .featureItem:nth-child(5) {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, var(--color-error-700) 0%, var(--color-error-800) 100%);
+  border-color: rgba(255, 51, 51, 0.3);
 }
 
 .featureItem:nth-child(n+6) {
