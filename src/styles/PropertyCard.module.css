@@ -265,8 +265,8 @@
   z-index: 10;
 }
 
-/* Status Badge - Property Status (Published, Draft) */
-/* Inherits base from globals.css .badge + .statusBadge styles */
+/* Status Badge - Property Status (Published, Draft) - Alert Colors */
+/* Uses vibrant app design system palette for better visibility */
 .statusBadge {
   display: inline-flex;
   align-items: center;
@@ -281,15 +281,20 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1.5px solid;
+  border: 2px solid;
+  background: var(--color-secondary-700);
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.2);
 }
 
 .statusBadge:hover {
   transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(201, 169, 97, 0.3);
 }
 
-/* Operation Status Badge (For Sale, For Rent) */
-/* Inherits base from globals.css .operationBadge styles */
+/* Operation Status Badge (For Sale, For Rent) - Alert Colors */
+/* Vibrant gradients for maximum visibility */
 .operationBadge {
   display: inline-flex;
   align-items: center;
@@ -304,7 +309,7 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1.5px solid;
+  border: 2px solid;
 }
 
 .operationBadge:hover {
@@ -324,104 +329,104 @@
   white-space: nowrap;
 }
 
-/* Property Status Badge Variants - Luxury Soft Light Style */
-/* All variants use consistent 20px border-radius, backdrop blur, and luxury colors */
+/* Property Status Badge Variants - Alert Colors with Vibrant Palette */
+/* Enhanced visibility with bold gradients and strong borders */
 
 .statusBadge.published {
-  background: linear-gradient(135deg, rgba(45, 217, 111, 0.12) 0%, rgba(45, 217, 111, 0.06) 100%);
-  color: #1a5f3f;
-  border-color: #2dd96f;
-  box-shadow: 0 2px 8px rgba(45, 217, 111, 0.1);
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.3);
 }
 
 .statusBadge.published:hover {
-  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
-  color: white;
-  border-color: #20b35f;
-  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
+  background: linear-gradient(135deg, var(--color-success-600) 0%, var(--color-success-700) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-600);
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.5);
 }
 
 .statusBadge.draft {
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.06) 100%);
-  color: #8b5f00;
-  border-color: #ffc107;
-  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
+  background: linear-gradient(135deg, var(--color-warning-700) 0%, var(--color-warning-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-warning-700);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
 }
 
 .statusBadge.draft:hover {
-  background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-  color: white;
-  border-color: #ffb300;
-  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35);
+  background: linear-gradient(135deg, var(--color-warning-600) 0%, var(--color-warning-700) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-warning-600);
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.5);
 }
 
 .statusBadge.archived {
-  background: linear-gradient(135deg, rgba(120, 120, 120, 0.12) 0%, rgba(120, 120, 120, 0.06) 100%);
-  color: #4a4a4a;
-  border-color: #9e9e9e;
-  box-shadow: 0 2px 8px rgba(120, 120, 120, 0.1);
+  background: linear-gradient(135deg, #757575 0%, #616161 100%);
+  color: var(--color-text-inverse);
+  border-color: #616161;
+  box-shadow: 0 4px 12px rgba(120, 120, 120, 0.3);
 }
 
 .statusBadge.archived:hover {
-  background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
-  color: white;
-  border-color: #757575;
-  box-shadow: 0 8px 24px rgba(120, 120, 120, 0.25);
+  background: linear-gradient(135deg, #616161 0%, #424242 100%);
+  color: var(--color-text-inverse);
+  border-color: #424242;
+  box-shadow: 0 8px 24px rgba(120, 120, 120, 0.4);
 }
 
-/* Operation Status Badge Variants - Rich Luxury Gradients */
-/* Consistent green for sales, gold for rentals, enhanced shadows on hover */
+/* Operation Status Badge Variants - Alert Colors with Rich Gradients */
+/* Enhanced visibility for sale/rent operations */
 
 .operationBadge.sale {
-  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
-  color: white;
-  border-color: #20b35f;
-  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.3);
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.35);
 }
 
 .operationBadge.sale:hover {
-  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.4);
-  background: linear-gradient(135deg, #20b35f 0%, #1a934d 100%);
-  border-color: #1a934d;
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.5);
+  background: linear-gradient(135deg, var(--color-success-600) 0%, var(--color-success-700) 100%);
+  border-color: var(--color-success-600);
 }
 
 .operationBadge.rent {
-  background: linear-gradient(135deg, #c9a961 0%, #b39451 100%);
-  color: white;
-  border-color: #b39451;
-  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.35);
 }
 
 .operationBadge.rent:hover {
-  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.4);
-  background: linear-gradient(135deg, #b39451 0%, #9d7f45 100%);
-  border-color: #9d7f45;
+  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.5);
+  background: linear-gradient(135deg, var(--color-accent-600) 0%, var(--color-accent-700) 100%);
+  border-color: var(--color-accent-600);
 }
 
 .operationBadge.buy {
-  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
-  color: white;
-  border-color: #20b35f;
-  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.3);
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.35);
 }
 
 .operationBadge.buy:hover {
-  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.4);
-  background: linear-gradient(135deg, #20b35f 0%, #1a934d 100%);
-  border-color: #1a934d;
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.5);
+  background: linear-gradient(135deg, var(--color-success-600) 0%, var(--color-success-700) 100%);
+  border-color: var(--color-success-600);
 }
 
 .operationBadge.lease {
-  background: linear-gradient(135deg, #c9a961 0%, #b39451 100%);
-  color: white;
-  border-color: #b39451;
-  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.35);
 }
 
 .operationBadge.lease:hover {
-  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.4);
-  background: linear-gradient(135deg, #b39451 0%, #9d7f45 100%);
-  border-color: #9d7f45;
+  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.5);
+  background: linear-gradient(135deg, var(--color-accent-600) 0%, var(--color-accent-700) 100%);
+  border-color: var(--color-accent-600);
 }
 
 /* Legacy status styles for backward compatibility */
