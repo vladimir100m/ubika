@@ -4,7 +4,7 @@ export { default as SimpleSearchBar } from './SimpleSearchBar';
 export { default as PropertyGallery } from './PropertyGallery';
 export { default as PropertyCard } from './PropertyCard';
 export { default as PropertyCardGrid } from './PropertyCardGrid';
-export { default as PropertyDetailCard } from './PropertyDetailCard';
+// export { default as PropertyDetailCard } from './PropertyDetailCard';
 export { default as StandardLayout } from './StandardLayout';
 export { default as Header } from './Header';
 export { default as Footer } from './Footer';

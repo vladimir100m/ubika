@@ -382,7 +382,7 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                 )}
 
                 {/* ===== FEATURES: ORGANIZED BY CATEGORY ===== */}
-                {(indoorFeatures.length > 0 || outdoorFeatures.length > 0 || amenitiesFeatures.length > 0) && (
+                {/* {(indoorFeatures.length > 0 || outdoorFeatures.length > 0 || amenitiesFeatures.length > 0) && (
                   <div className={popupStyles.featuresSection}>
                     <h3 className={popupStyles.sectionHeading}>🏠 Features & Amenities</h3>
                     
@@ -421,7 +421,7 @@ export default function PropertyPopup({ selectedProperty, onClose }: PropertyPop
                       )}
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* ===== DESCRIPTION SECTION ===== */}
                 {selectedProperty.description && (

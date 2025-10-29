@@ -128,7 +128,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
       </div>
 
       {/* ===== HIGHLIGHTS: DISPLAY AS TAGS ===== */}
-      {property.features && property.features.length > 0 && (
+      {/* {property.features && property.features.length > 0 && (
         <div className={styles.highlightsSection}>
           <h3 className={styles.sectionHeading}>✨ Highlights</h3>
           <div className={styles.highlightsTags}>
@@ -139,7 +139,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ===== DESCRIPTION ===== */}
       {property.description && (
@@ -259,7 +259,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
           <h3 className={styles.sectionHeading}>🏠 Features</h3>
           
           <div className={styles.featuresCategoryGrid}>
-            {indoorFeatures.length > 0 && (
+            {/* {indoorFeatures.length > 0 && (
               <div className={styles.featureCategory}>
                 <h4 className={styles.featureCategoryTitle}>🏠 Interior</h4>
                 <ul className={styles.featureList}>
@@ -268,9 +268,9 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   ))}
                 </ul>
               </div>
-            )}
+            )} */}
             
-            {outdoorFeatures.length > 0 && (
+            {/* {outdoorFeatures.length > 0 && (
               <div className={styles.featureCategory}>
                 <h4 className={styles.featureCategoryTitle}>🌳 Outdoor</h4>
                 <ul className={styles.featureList}>
@@ -279,9 +279,9 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   ))}
                 </ul>
               </div>
-            )}
+            )} */}
             
-            {amenitiesFeatures.length > 0 && (
+            {/* {amenitiesFeatures.length > 0 && (
               <div className={styles.featureCategory}>
                 <h4 className={styles.featureCategoryTitle}>✨ Amenities</h4>
                 <ul className={styles.featureList}>
@@ -290,7 +290,7 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                   ))}
                 </ul>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       )}
