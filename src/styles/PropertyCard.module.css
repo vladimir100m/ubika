@@ -310,10 +310,15 @@
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid;
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.28);
 }
 
 .operationBadge:hover {
   transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(45, 217, 111, 0.35);
 }
 
 /* Badge Icon and Text */
@@ -573,97 +578,30 @@
   padding: 8px 0;
 }
 
+/* Feature Item - Unified Alert Style */
 .featureItem {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, var(--color-secondary-700) 0%, var(--color-secondary-800) 100%);
-  color: var(--color-text-primary);
-  padding: 7px 14px;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
+  padding: 8px 16px;
   border-radius: 20px;
   font-size: 12px;
-  font-weight: 600;
-  text-transform: capitalize;
+  font-weight: 700;
+  text-transform: uppercase;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(10, 20, 40, 0.12);
+  box-shadow: 0 3px 10px rgba(201, 169, 97, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  letter-spacing: 0.4px;
-  border: 1.5px solid var(--color-border-light);
+  letter-spacing: 0.5px;
+  border: 1.5px solid var(--color-accent-700);
 }
 
 .featureItem:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.18);
-  border-color: var(--color-accent-700);
-  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
-  color: var(--color-secondary-800);
-}
-
-/* Feature Item Variants for Visual Diversity with Design System Colors */
-.featureItem:nth-child(1) {
-  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
-  color: var(--color-secondary-800);
-  border-color: var(--color-accent-700);
-  box-shadow: 0 3px 10px rgba(201, 169, 97, 0.15);
-}
-
-.featureItem:nth-child(1):hover {
   background: linear-gradient(135deg, var(--color-accent-800) 0%, var(--color-accent-700) 100%);
-  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.25);
-}
-
-.featureItem:nth-child(2) {
-  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-600) 100%);
-  color: var(--color-secondary-800);
-  border-color: var(--color-success-700);
-  box-shadow: 0 3px 10px rgba(45, 217, 111, 0.15);
-}
-
-.featureItem:nth-child(2):hover {
-  background: linear-gradient(135deg, var(--color-success-800) 0%, var(--color-success-700) 100%);
-  box-shadow: 0 6px 16px rgba(45, 217, 111, 0.25);
-}
-
-.featureItem:nth-child(3) {
-  background: linear-gradient(135deg, var(--color-info-700) 0%, var(--color-info-600) 100%);
-  color: var(--color-secondary-800);
-  border-color: var(--color-info-700);
-  box-shadow: 0 3px 10px rgba(0, 187, 255, 0.15);
-}
-
-.featureItem:nth-child(3):hover {
-  background: linear-gradient(135deg, var(--color-info-800) 0%, var(--color-info-700) 100%);
-  box-shadow: 0 6px 16px rgba(0, 187, 255, 0.25);
-}
-
-.featureItem:nth-child(4) {
-  background: linear-gradient(135deg, var(--color-warning-700) 0%, var(--color-warning-600) 100%);
-  color: var(--color-secondary-800);
-  border-color: var(--color-warning-700);
-  box-shadow: 0 3px 10px rgba(255, 193, 7, 0.15);
-}
-
-.featureItem:nth-child(4):hover {
-  background: linear-gradient(135deg, var(--color-warning-800) 0%, var(--color-warning-700) 100%);
-  box-shadow: 0 6px 16px rgba(255, 193, 7, 0.25);
-}
-
-.featureItem:nth-child(5) {
-  background: linear-gradient(135deg, var(--color-error-700) 0%, var(--color-error-600) 100%);
-  color: var(--color-secondary-800);
-  border-color: var(--color-error-700);
-  box-shadow: 0 3px 10px rgba(220, 51, 51, 0.15);
-}
-
-.featureItem:nth-child(5):hover {
-  background: linear-gradient(135deg, var(--color-error-800) 0%, var(--color-error-700) 100%);
-  box-shadow: 0 6px 16px rgba(220, 51, 51, 0.25);
-}
-
-.featureItem:nth-child(n+6) {
-  background: linear-gradient(135deg, var(--color-secondary-700) 0%, var(--color-secondary-800) 100%);
-  color: var(--color-text-primary);
-  border-color: var(--color-border-light);
+  border-color: var(--color-accent-800);
+  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.3);
 }
 
 /* Additional Details */
