@@ -605,28 +605,28 @@
 
 .contactSection { padding: 24px; background-color: var(--color-bg-secondary); border-top: 1px solid var(--color-border-light); }
 .contactInner { max-width: 600px; margin: 0 auto; text-align: center; }
-.contactIntro h3 { font-size: 24px; font-weight: 600; margin-bottom: 16px; color: #2a2a33; }
-.contactIntro p { font-size: 16px; color: #666; margin-bottom: 24px; line-height: 1.5; }
-.contactPrimaryBtn { padding: 16px 32px; background-color: #1277e1; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(18, 119, 225, 0.3); }
-.contactCard { opacity: 1; transition: opacity 0.3s ease; background-color: white; padding: 32px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); text-align: left; }
-.contactCloseBtn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; line-height: 1; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+.contactIntro h3 { font-size: 24px; font-weight: 600; margin-bottom: 16px; color: var(--color-text-primary); }
+.contactIntro p { font-size: 16px; color: var(--color-text-secondary); margin-bottom: 24px; line-height: 1.5; }
+.contactPrimaryBtn { padding: 16px 32px; background-color: var(--color-accent-700); color: var(--color-text-inverse); border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-md); }
+.contactCard { opacity: 1; transition: opacity 0.3s ease; background-color: var(--color-bg-primary); padding: 32px; border-radius: 12px; box-shadow: var(--shadow-lg); text-align: left; }
+.contactCloseBtn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-text-secondary); padding: 0; line-height: 1; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
 .inputField, .textareaField { width: 100%; padding: 12px 16px; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 16px; transition: border-color 0.2s ease; box-sizing: border-box; }
 .textareaField { min-height: 100px; resize: vertical; }
 .formActions { display: flex; gap: 12px; justify-content: flex-end; }
-.btnCancel { padding: 12px 24px; background-color: #f5f5f5; color: #666; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s ease; }
-.btnSend { padding: 12px 24px; background-color: #1277e1; color: white; border: 2px solid #1277e1; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.btnCancel { padding: 12px 24px; background-color: var(--color-bg-secondary); color: var(--color-text-secondary); border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s ease; }
+.btnSend { padding: 12px 24px; background-color: var(--color-accent-700); color: var(--color-text-inverse); border: 2px solid var(--color-accent-700); border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 
 /* Additional layout for contact form */
 .contactHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.contactHeader h3 { font-size: 20px; font-weight: 600; margin: 0; color: #2a2a33; }
+.contactHeader h3 { font-size: 20px; font-weight: 600; margin: 0; color: var(--color-text-primary); }
 .contactFieldsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 16px; }
 .contactFieldSingle { margin-bottom: 24px; }
 
 /* Hover and focus states moved into CSS */
-.contactPrimaryBtn:hover { background-color: #0f6bc7; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(18, 119, 225, 0.4); }
-.btnCancel:hover { background-color: var(--color-border-light); border-color: var(--color-border-light); }
-.btnSend:hover { background-color: #0f6bc7; border-color: #0f6bc7; }
-.inputField:focus, .textareaField:focus { border-color: #1277e1; outline: none; }
+.contactPrimaryBtn:hover { background-color: var(--color-accent-600); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btnCancel:hover { background-color: var(--color-bg-tertiary); border-color: var(--color-border-light); }
+.btnSend:hover { background-color: var(--color-accent-600); border-color: var(--color-accent-600); }
+.inputField:focus, .textareaField:focus { border-color: var(--color-accent-600); outline: none; }
 
 @media (max-width: 768px) {
   .priceAmount { font-size: 20px; }
@@ -667,36 +667,36 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(40, 167, 69, 0.1);
+  background: rgba(45, 217, 111, 0.1);
   padding: 4px 8px;
   border-radius: 12px;
-  color: #28a745;
+  color: var(--color-success-700);
   font-weight: 600;
 }
 
 /* Utility and replacement classes for migrated inline styles */
 .whiteBg {
-  background-color: white;
+  background-color: var(--color-bg-primary);
 }
 
 .sectionTitle {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 24px;
-  color: #2a2a33;
+  color: var(--color-text-primary);
 }
 
 .subsectionTitle {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: #2a2a33;
+  color: var(--color-text-primary);
 }
 
 .neighborhoodParagraph {
   font-size: 14px;
   line-height: 1.6;
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 0 0 24px 0;
 }
 
@@ -704,7 +704,7 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: #2a2a33;
+  color: var(--color-text-primary);
   border-bottom: none;
   padding-bottom: 0;
 }
@@ -836,7 +836,7 @@
 .heroSectionMobile {
   padding: 20px;
   background-color: var(--color-bg-primary);
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border-light);
   margin-bottom: 0;
 }
 
@@ -845,7 +845,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background-color: #f3f4f6;
+  background-color: var(--color-bg-secondary);
   border-radius: 6px;
   margin-bottom: 16px;
   font-size: 13px;
@@ -854,13 +854,13 @@
 }
 
 .statusBadgeMobile[data-available="true"] {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: rgba(45, 217, 111, 0.1);
+  color: var(--color-success-700);
 }
 
 .statusBadgeMobile[data-available="false"] {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: rgba(255, 51, 51, 0.1);
+  color: var(--color-error-700);
 }
 
 .statusDot {
@@ -925,7 +925,7 @@
 
 .addressLineHero {
   font-size: 14px;
-  color: #374151;
+  color: var(--color-text-secondary);
   margin: 0 0 16px 0;
   line-height: 1.4;
   font-weight: 500;
@@ -938,21 +938,21 @@
   gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--color-accent-700);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 8px rgba(15, 127, 159, 0.2);
 }
 
 .getPreQualifiedBtn:hover {
-  background-color: #1d4ed8;
+  background-color: var(--color-accent-600);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 127, 159, 0.3);
 }
 
 .getPreQualifiedBtn:active {
@@ -1055,15 +1055,15 @@
 }
 
 .availabilityBadge[data-available="true"] {
-  background: rgba(34, 197, 94, 0.12);
-  color: #d1fae5;
-  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(45, 217, 111, 0.12);
+  color: var(--color-success-700);
+  border-color: rgba(45, 217, 111, 0.35);
 }
 
 .availabilityBadge[data-available="false"] {
-  background: rgba(239, 68, 68, 0.12);
-  color: #fee2e2;
-  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(255, 51, 51, 0.12);
+  color: var(--color-error-700);
+  border-color: rgba(255, 51, 51, 0.35);
 }
 
 .availabilityDot {
@@ -1115,7 +1115,7 @@
 
 .mainInfoCard {
   background: var(--color-bg-primary);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border-light);
   border-radius: 12px;
   padding: 18px 16px;
   display: flex;
@@ -1144,7 +1144,7 @@
 .mainInfoValue {
   font-size: 24px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text-primary);
   line-height: 1;
   margin-bottom: 2px;
 }
@@ -1165,8 +1165,8 @@
 }
 
 .zilowStatCard {
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-  border: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-secondary) 100%);
+  border: 1px solid var(--color-border-light);
   border-radius: 10px;
   padding: 14px 12px;
   display: flex;
@@ -1177,7 +1177,7 @@
 }
 
 .zilowStatCard:hover {
-  background: linear-gradient(135deg, var(--color-bg-primary) 0%, #f9fafb 100%);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
   border-color: #d1d5db;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
@@ -1201,7 +1201,7 @@
 .zilowStatValue {
   font-size: 15px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text-primary);
   line-height: 1.2;
   word-break: break-word;
 }
@@ -1213,7 +1213,7 @@
 }
 
 .zilowStatCardNull {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-border-light) 100%);
   border: 1px dashed #d1d5db;
   opacity: 0.6;
 }

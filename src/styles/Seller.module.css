@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--color-bg-secondary);
 }
 
 .sellerViewMain {
@@ -38,14 +38,14 @@
 .titleSection h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
   letter-spacing: -0.025em;
 }
 
 .subtitle {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
@@ -56,8 +56,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 12px;
   padding: 12px 24px;
@@ -65,14 +65,14 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 112, 243, 0.3);
+  box-shadow: var(--shadow-md);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .addPropertyButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 112, 243, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .addPropertyButton:active {
@@ -89,13 +89,13 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  background: linear-gradient(135deg, #fee2e2 0%, #fecdd3 100%);
-  border: 1.5px solid #fca5a5;
+  background: rgba(255, 51, 51, 0.1);
+  border: 1.5px solid rgba(255, 51, 51, 0.2);
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 24px;
   animation: slideDown 0.3s ease-out;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .errorIcon {
@@ -113,13 +113,13 @@
 
 .errorTitle {
   font-weight: 700;
-  color: #dc2626;
+  color: var(--color-error-700);
   margin: 0 0 4px 0;
   font-size: 0.95rem;
 }
 
 .errorMessage {
-  color: #991b1b;
+  color: var(--color-error-600);
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -133,7 +133,7 @@
   height: 28px;
   border: none;
   background: rgba(255, 255, 255, 0.5);
-  color: #dc2626;
+  color: var(--color-error-700);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 700;
@@ -143,11 +143,11 @@
 
 .errorClose:hover {
   background: rgba(255, 255, 255, 0.8);
-  color: #b91c1c;
+  color: var(--color-error-600);
 }
 
 .errorContent p {
-  color: #b91c1c;
+  color: var(--color-error-600);
   margin: 0;
   font-size: 0.95rem;
 }
@@ -155,7 +155,7 @@
 .closeBanner {
   background: none;
   border: none;
-  color: #dc2626;
+  color: var(--color-error-700);
   font-size: 1.25rem;
   cursor: pointer;
   padding: 4px;
@@ -181,8 +181,8 @@
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #0070f3;
+  border: 4px solid var(--color-border-light);
+  border-top-color: var(--color-accent-700);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -195,7 +195,7 @@
 
 .loadingState p {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
@@ -218,20 +218,20 @@
 .emptyState h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .emptyState p {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0 0 24px 0;
   max-width: 400px;
 }
 
 .emptyStateButton {
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 12px;
   padding: 12px 28px;
@@ -239,12 +239,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 15px rgba(15, 127, 159, 0.3);
 }
 
 .emptyStateButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 112, 243, 0.4);
+  box-shadow: 0 6px 20px rgba(15, 127, 159, 0.4);
 }
 
 /* Properties Section */
@@ -259,13 +259,13 @@
 .sectionHeader h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 4px 0;
 }
 
 .sectionSubtitle {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
@@ -305,8 +305,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 0.85rem;
@@ -317,7 +317,7 @@
 }
 
 .actionButton:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-secondary);
   border-color: #cbd5e1;
   transform: translateY(-1px);
 }
@@ -327,13 +327,13 @@
 }
 
 .deleteButton {
-  background: #fee2e2;
+  background: rgba(255, 51, 51, 0.1);
   border-color: #fecaca;
-  color: #dc2626;
+  color: var(--color-error-700);
 }
 
 .deleteButton:hover {
-  background: #fecaca;
+  background: rgba(255, 51, 51, 0.2);
   border-color: #fca5a5;
 }
 
@@ -344,7 +344,7 @@
   gap: 24px;
   margin-top: 40px;
   padding-top: 40px;
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid var(--color-border-light);
 }
 
 .statCard {
@@ -354,7 +354,7 @@
   text-align: center;
   gap: 12px;
   background: linear-gradient(135deg, var(--color-bg-primary) 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-border-light);
   border-radius: 16px;
   padding: 24px 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -364,8 +364,8 @@
 }
 
 .statCard:hover {
-  border-color: #0070f3;
-  box-shadow: 0 8px 20px rgba(0, 112, 243, 0.15);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 8px 20px rgba(15, 127, 159, 0.15);
   transform: translateY(-4px);
   background: linear-gradient(135deg, #f0f7ff 0%, var(--color-bg-primary) 100%);
 }
@@ -388,7 +388,7 @@
 
 .statLabel {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -398,7 +398,7 @@
 .statValue {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   line-height: 1.2;
 }
 
@@ -410,13 +410,13 @@
 .dashboard h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin-bottom: 24px;
 }
 
 .addNewButton {
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
@@ -428,7 +428,7 @@
 
 .addNewButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 127, 159, 0.3);
 }
 
 .propertyList {
@@ -438,8 +438,8 @@
 }
 
 .propertyCard {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
   border-radius: 12px;
   padding: 16px;
   transition: all 0.2s ease;
@@ -455,13 +455,13 @@
 .propertyInfo h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .propertyInfo p {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 4px 0;
 }
 
