@@ -1,92 +1,92 @@
 /* Ubika Premium Edition - Inspired by Moco Museum London Aesthetic */
 /* Minimalist, high-contrast design with gallery-like presentation */
 :root {
-  /* === PRIMARY COLORS - Pure Black & Near-Black (Moco Gallery Aesthetic) === */
-  --color-primary-900: #000000;    /* Pure Black - Maximum contrast */
-  --color-primary-800: #0a0a0a;    /* Near Black - Main text & headers */
-  --color-primary-700: #1a1a1a;    /* Dark Charcoal - Secondary elements */
-  --color-primary-600: #2d2d2d;    /* Medium Dark - Hover states */
+  /* === PRIMARY COLORS - Premium Navy (Trust, Professional) === */
+  --color-primary-900: #0a1428;    /* Deep Navy - Headers, primary text */
+  --color-primary-800: #1a2540;    /* Dark Navy - Main backgrounds */
+  --color-primary-700: #2a3a55;    /* Navy - Hover states */
+  --color-primary-600: #3a4a70;    /* Medium Navy - Secondary elements */
 
-  /* === SECONDARY COLORS - Bright White & Clean Minimalist === */
-  --color-secondary-900: #e6e6e6;  /* Off-White - Subtle backgrounds */
-  --color-secondary-800: #f0f0f0;  /* Light Gray - Secondary backgrounds */
-  --color-secondary-700: #ffffff;  /* Pure White - Primary accent/text on dark */
-  --color-secondary-600: #fafafa;  /* Slightly off-white - Subtle surfaces */
+  /* === SECONDARY COLORS - Warm Cream & White (Elegance, Luxury) === */
+  --color-secondary-900: #f5f3f0;  /* Warm Cream - Subtle backgrounds */
+  --color-secondary-800: #faf8f5;  /* Off-White - Cards, panels */
+  --color-secondary-700: #fffbf8;  /* Pure White - Primary surfaces */
+  --color-secondary-600: #fef9f6;  /* Nearly White - Hover states */
 
-  /* === ACCENT COLORS - Modern Teal/Blue (Contemporary Interactive) === */
-  --color-accent-900: #0a3a3f;     /* Deep Teal - Subtle backgrounds */
-  --color-accent-800: #0d5f6e;     /* Dark Teal - Links, interactive */
-  --color-accent-700: #0f7f9f;     /* Medium Teal - Hover states */
-  --color-accent-600: #1a9db5;     /* Bright Teal - CTAs, featured */
+  /* === ACCENT COLORS - Premium Gold (Luxury, Elegance) === */
+  --color-accent-900: #5c4033;     /* Deep Brown - Subtle backgrounds */
+  --color-accent-800: #8b6d4f;     /* Warm Brown - Secondary accents */
+  --color-accent-700: #c9a961;     /* Premium Gold - Primary accent, CTAs */
+  --color-accent-600: #e6c577;     /* Light Gold - Hover, highlights */
 
   /* === STATUS/SEMANTIC COLORS === */
-  /* Success - Vibrant Green */
-  --color-success-900: #0d4a2a;
-  --color-success-800: #1a7d42;
+  /* Success - Vibrant Green (Property Available) */
+  --color-success-900: #0d3a1f;
+  --color-success-800: #1a6d3a;
   --color-success-700: #2dd96f;
   --color-success-600: #4fdf8f;
 
-  /* Warning - Bright Amber */
-  --color-warning-900: #663d00;
-  --color-warning-800: #cc7a00;
-  --color-warning-700: #ff9d00;
-  --color-warning-600: #ffc247;
+  /* Warning - Warm Amber (Limited/Special) */
+  --color-warning-900: #664422;
+  --color-warning-800: #cc8844;
+  --color-warning-700: #ffa500;
+  --color-warning-600: #ffb84d;
 
-  /* Error - Vibrant Red */
-  --color-error-900: #660000;
-  --color-error-800: #cc0000;
-  --color-error-700: #ff3333;
+  /* Error - Sophisticated Red (Unavailable) */
+  --color-error-900: #5c1a1a;
+  --color-error-800: #b83a3a;
+  --color-error-700: #dc3333;
   --color-error-600: #ff6b6b;
 
-  /* Info - Bright Cyan */
-  --color-info-900: #004466;
-  --color-info-800: #0088cc;
-  --color-info-700: #00bbff;
-  --color-info-600: #4dd9ff;
+  /* Info - Soft Cyan (Information) */
+  --color-info-900: #1a3a4d;
+  --color-info-800: #2d6080;
+  --color-info-700: #4da6cc;
+  --color-info-600: #80c7e6;
 
   /* === TEXT COLORS === */
-  --color-text-primary: #0a0a0a;      /* Pure text (near-black) */
+  --color-text-primary: #0a1428;      /* Navy text (primary) */
   --color-text-secondary: #4d4d4d;    /* Secondary text (medium gray) */
   --color-text-tertiary: #808080;     /* Tertiary text (light gray) */
   --color-text-disabled: #cccccc;     /* Disabled text */
-  --color-text-inverse: #ffffff;      /* Text on dark backgrounds (white) */
+  --color-text-inverse: #fffbf8;      /* Text on dark backgrounds (warm white) */
 
-  /* === BACKGROUND COLORS (Gallery Aesthetic) === */
-  --color-bg-primary: #ffffff;        /* Clean white primary background */
-  --color-bg-secondary: #fafafa;      /* Subtle off-white */
-  --color-bg-tertiary: #f5f5f5;       /* Light gallery gray */
-  --color-bg-quaternary: #e6e6e6;     /* Medium gray background */
-  --color-bg-dark: #0a0a0a;           /* Dark gallery background */
-  --color-bg-overlay: rgba(0, 0, 0, 0.8);  /* Dark overlay (80% opacity) */
+  /* === BACKGROUND COLORS (Luxury Elegance) === */
+  --color-bg-primary: #fffbf8;        /* Warm white primary background */
+  --color-bg-secondary: #faf8f5;      /* Subtle warm off-white */
+  --color-bg-tertiary: #f5f3f0;       /* Light warm gray */
+  --color-bg-quaternary: #f0eeea;     /* Medium warm gray background */
+  --color-bg-dark: #0a1428;           /* Deep navy dark background */
+  --color-bg-overlay: rgba(10, 20, 40, 0.85);  /* Navy overlay (85% opacity) */
 
   /* === BORDER COLORS === */
-  --color-border-light: #e6e6e6;      /* Light, minimal borders */
-  --color-border-medium: #cccccc;     /* Medium-weight borders */
-  --color-border-dark: #999999;       /* Dark borders */
-  --color-border-strong: #0a0a0a;     /* Strong/active borders */
+  --color-border-light: #e6e3de;      /* Light warm borders */
+  --color-border-medium: #d9d3ca;     /* Medium-weight warm borders */
+  --color-border-dark: #8b8680;       /* Dark warm borders */
+  --color-border-strong: #0a1428;     /* Strong navy borders */
 
-  /* === SHADOW SYSTEM (Gallery-Style Depth) === */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
-  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.20);
+  /* === SHADOW SYSTEM (Premium Luxury Depth) === */
+  --shadow-xs: 0 1px 2px rgba(10, 20, 40, 0.08);
+  --shadow-sm: 0 2px 8px rgba(10, 20, 40, 0.12);
+  --shadow-md: 0 4px 16px rgba(10, 20, 40, 0.15);
+  --shadow-lg: 0 8px 32px rgba(10, 20, 40, 0.18);
+  --shadow-xl: 0 12px 48px rgba(10, 20, 40, 0.22);
 
   /* Colored shadows for accent elements */
-  --shadow-teal: 0 4px 16px rgba(15, 127, 159, 0.18);
-  --shadow-white: 0 4px 16px rgba(255, 255, 255, 0.10);
+  --shadow-gold: 0 4px 16px rgba(201, 169, 97, 0.2);
+  --shadow-navy: 0 4px 16px rgba(10, 20, 40, 0.2);
 
   /* === LEGACY SUPPORT (Backward Compatibility) === */
-  --primary-color: #0a0a0a;
-  --primary-hover: #1a1a1a;
-  --primary: #0a0a0a;
-  --secondary: #ffffff;
-  --accent: #0f7f9f;
-  --text-primary: #0a0a0a;
+  --primary-color: #0a1428;
+  --primary-hover: #1a2540;
+  --primary: #0a1428;
+  --secondary: #fffbf8;
+  --accent: #c9a961;
+  --text-primary: #0a1428;
   --text-secondary: #4d4d4d;
-  --background-light: #ffffff;
-  --background-dark: #fafafa;
-  --border-color: #e6e6e6;
+  --background-light: #fffbf8;
+  --background-dark: #faf8f5;
+  --border-color: #e6e3de;
 
   /* === SPACING === */
   --space-xs: 4px;
