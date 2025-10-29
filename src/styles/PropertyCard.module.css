@@ -282,15 +282,15 @@
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid;
-  background: var(--color-secondary-700);
-  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
   border-color: var(--color-accent-700);
-  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.2);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.25);
 }
 
 .statusBadge:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(201, 169, 97, 0.3);
+  box-shadow: 0 8px 20px rgba(201, 169, 97, 0.35);
 }
 
 /* Operation Status Badge (For Sale, For Rent) - Alert Colors */
