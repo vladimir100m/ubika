@@ -7,12 +7,12 @@
    with embedded map, and contact CTA.
    
    Color System:
-   - Hero Gradient: #667eea → #764ba2 (primary gradient)
+   - Hero Gradient: var(--color-accent-700) → var(--color-accent-600) (primary gradient)
    - Action: #1277e1 (primary button)
    - Text Primary: #1f2937
-   - Text Secondary: #6b7280
+   - Text Secondary: var(--color-text-secondary)
    - Borders: #e5e7eb
-   - Backgrounds: #f9fafb (light), #ffffff (white)
+   - Backgrounds: #f9fafb (light), var(--color-bg-primary) (white)
    
    Typography:
    - Hero Price: 48px bold
@@ -40,7 +40,7 @@
 }
 
 .whiteBg {
-  background-color: #ffffff;
+  background-color: var(--color-bg-primary);
 }
 
 /* ===== HEADER TOP BUTTONS ===== */
@@ -66,14 +66,14 @@
   justify-content: center;
   cursor: pointer;
   font-size: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
 }
 
 .iconButton:hover {
   background: rgba(255, 255, 255, 1);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 .headerFixedHeight {
@@ -90,7 +90,7 @@
 }
 
 .statusBadge {
-  color: #1f8daf;
+  color: var(--color-accent-600);
   padding: 8px 16px;
   border-radius: 25px;
   font-size: 13px;
@@ -100,19 +100,19 @@
   gap: 8px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .hotBadge {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-error-700) 0%, var(--color-error-600) 100%);
+  color: var(--color-text-inverse);
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .actionsGroup {
@@ -123,12 +123,12 @@
 }
 .actionButtonLight {
   background: rgba(255, 255, 255, 0.9);
-  border: 2px solid #f1f3f4;
+  border: 2px solid var(--color-border-light);
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -153,17 +153,17 @@
 
 .roomStatItem {
   padding: 20px 16px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  background: linear-gradient(135deg, rgba(15, 127, 159, 0.08) 0%, rgba(26, 157, 181, 0.08) 100%);
   border-radius: 16px;
   text-align: center;
-  border: 2px solid rgba(102, 126, 234, 0.1);
+  border: 2px solid rgba(15, 127, 159, 0.1);
   transition: all 0.25s ease;
   cursor: pointer;
 }
 
 .roomStatItem:hover {
   transform: scale(1.05);
-  border-color: #667eea;
+  border-color: var(--color-accent-600);
 }
 
 .roomStatIcon {
@@ -174,14 +174,14 @@
 .roomStatValue {
   font-size: 24px;
   font-weight: 800;
-  color: #2c3e50;
+  color: var(--color-primary-900);
   margin-bottom: 4px;
 }
 
 .roomStatLabel {
   font-size: 12px;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
 }
 .statCard {
@@ -202,14 +202,14 @@
 
 /* Minimalistic stat style: inline, no card chrome. Use alongside .statCard */
 .statTile {
-  background: #ffffff;
-  border: 1px solid #f1f3f4;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
   border-radius: 12px;
   padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  box-shadow: var(--shadow-xs);
   min-height: 64px;
 }
 .statTile .statInnerBg { display: none; }
@@ -225,10 +225,10 @@
   flex: 0 0 44px;
 }
 .statTile .statText { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
-.statTile .statValue { font-size: 16px; font-weight: 800; color: #111827; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.statTile .statValue { font-size: 16px; font-weight: 800; color: var(--color-text-primary); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .statTile .statLabel {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-top: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -266,7 +266,7 @@
 
 .statValue {
   font-weight: 800;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   font-size: 15px;
 }
 
@@ -277,7 +277,7 @@
 .statLabel {
   font-size: 12px;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   text-transform: none;
   opacity: 0.9;
 }
@@ -293,7 +293,7 @@
   flex-wrap: wrap;
 }
 .btnPrimary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -309,8 +309,8 @@
 }
 .btnSecondary {
   background: rgba(255, 255, 255, 0.9);
-  color: #2c3e50;
-  border: 2px solid #f1f3f4;
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border-light);
   border-radius: 12px;
   padding: 12px 24px;
   font-size: 14px;
@@ -371,9 +371,9 @@
 
 .highlightsSection {
   padding: 32px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f1f3f4;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background-color: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border-light);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
 }
 .highlightGrid {
   /* single-row horizontal tags with overflow scroll if needed */
@@ -394,7 +394,7 @@
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  color: #111827; /* darker for readability */
+  color: var(--color-text-primary); /* darker for readability */
   font-weight: 600;
   padding: 8px 14px;
   background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,249,250,0.98) 100%);
@@ -407,7 +407,7 @@
 .highlightCard:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 30px rgba(2,6,23,0.06);
-  background: linear-gradient(180deg, #ffffff 0%, #f7f7fb 100%);
+  background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
 }
 
 /* Replace emoji icon with a subtle colored dot using a pseudo-element */
@@ -417,7 +417,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   box-shadow: 0 2px 6px rgba(102,126,234,0.24);
   margin-left: -4px; /* tuck the dot slightly toward the text */
   margin-right: 6px;
@@ -426,8 +426,8 @@
 .detailsContainer {
   padding: 40px 32px;
   margin-bottom: 0;
-  border-top: 1px solid #f1f3f4;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-top: 1px solid var(--color-border-light);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
   position: relative;
 }
 .detailsHeader {
@@ -439,7 +439,7 @@
   font-size: 32px;
   font-weight: 800;
   margin: 0 0 12px 0;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,14 +449,14 @@
 }
 .detailsHeader p {
   font-size: 16px;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
 .detailsHeaderBar {
   width: 80px;
   height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   border-radius: 2px;
   margin: 16px auto 0;
 }
@@ -495,8 +495,8 @@
 .outdoorCard { grid-area: outdoor; }
 .additionalBanner { grid-area: banner; }
 .infoCard {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border: 2px solid #f1f3f4;
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+  border: 2px solid var(--color-border-light);
   border-radius: 20px;
   padding: 32px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -521,8 +521,8 @@
   font-size: 22px;
   font-weight: 800;
   margin-bottom: 24px;
-  color: #2c3e50;
-  border-bottom: 3px solid #667eea;
+  color: var(--color-text-primary);
+  border-bottom: 3px solid var(--color-accent-700);
   padding-bottom: 16px;
   display: flex;
   align-items: center;
@@ -545,8 +545,8 @@
   text-align: center;
 }
 .infoStatIcon { font-size: 24px; margin-bottom: 8px; }
-.infoStatLabel { font-size: 12px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.infoStatValue { font-size: 16px; font-weight: 700; color: #2c3e50; word-break: break-word; }
+.infoStatLabel { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.infoStatValue { font-size: 16px; font-weight: 700; color: var(--color-text-primary); word-break: break-word; }
 
 .featureItem {
   display: flex;
@@ -562,8 +562,8 @@
 }
 
 .outdoorCard {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border: 2px solid #f1f3f4;
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+  border: 2px solid var(--color-border-light);
   border-radius: 20px;
   padding: 32px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -575,7 +575,7 @@
 .outdoorItem { padding: 20px 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 16px; text-align: center; border: 2px solid rgba(102, 126, 234, 0.1); transition: all 0.3s ease; cursor: pointer; }
 
 .additionalBanner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   border-radius: 20px;
   padding: 24px 32px;
   color: white;
@@ -586,8 +586,8 @@
 .locationSection {
   margin-bottom: 0;
   padding: 24px;
-  border-top: 1px solid #e9e9e9;
-  background-color: #ffffff;
+  border-top: 1px solid var(--color-border-light);
+  background-color: var(--color-bg-primary);
 }
 .mapBox {
   width: 100%;
@@ -600,20 +600,20 @@
 .mapInner { width: 100%; height: 100%; }
 
 .neighborhoodGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-.neighborhoodCard { border: 1px solid #e9e9e9; border-radius: 8px; padding: 16px; background-color: #fafafa; }
+.neighborhoodCard { border: 1px solid var(--color-border-light); border-radius: 8px; padding: 16px; background-color: var(--color-bg-secondary); }
 .neighborhoodIcon { flex-shrink: 0; margin-top: 2px; }
 
-.contactSection { padding: 24px; background-color: #f8f9fa; border-top: 1px solid #e9e9e9; }
+.contactSection { padding: 24px; background-color: var(--color-bg-secondary); border-top: 1px solid var(--color-border-light); }
 .contactInner { max-width: 600px; margin: 0 auto; text-align: center; }
 .contactIntro h3 { font-size: 24px; font-weight: 600; margin-bottom: 16px; color: #2a2a33; }
 .contactIntro p { font-size: 16px; color: #666; margin-bottom: 24px; line-height: 1.5; }
 .contactPrimaryBtn { padding: 16px 32px; background-color: #1277e1; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(18, 119, 225, 0.3); }
 .contactCard { opacity: 1; transition: opacity 0.3s ease; background-color: white; padding: 32px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); text-align: left; }
 .contactCloseBtn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; line-height: 1; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-.inputField, .textareaField { width: 100%; padding: 12px 16px; border: 2px solid #e9e9e9; border-radius: 8px; font-size: 16px; transition: border-color 0.2s ease; box-sizing: border-box; }
+.inputField, .textareaField { width: 100%; padding: 12px 16px; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 16px; transition: border-color 0.2s ease; box-sizing: border-box; }
 .textareaField { min-height: 100px; resize: vertical; }
 .formActions { display: flex; gap: 12px; justify-content: flex-end; }
-.btnCancel { padding: 12px 24px; background-color: #f5f5f5; color: #666; border: 2px solid #e9e9e9; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s ease; }
+.btnCancel { padding: 12px 24px; background-color: #f5f5f5; color: #666; border: 2px solid var(--color-border-light); border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s ease; }
 .btnSend { padding: 12px 24px; background-color: #1277e1; color: white; border: 2px solid #1277e1; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 
 /* Additional layout for contact form */
@@ -624,7 +624,7 @@
 
 /* Hover and focus states moved into CSS */
 .contactPrimaryBtn:hover { background-color: #0f6bc7; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(18, 119, 225, 0.4); }
-.btnCancel:hover { background-color: #e9e9e9; border-color: #ddd; }
+.btnCancel:hover { background-color: var(--color-border-light); border-color: var(--color-border-light); }
 .btnSend:hover { background-color: #0f6bc7; border-color: #0f6bc7; }
 .inputField:focus, .textareaField:focus { border-color: #1277e1; outline: none; }
 
@@ -636,7 +636,7 @@
 .pricePerMonth {
   font-size: 18px;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   background: rgba(108, 117, 125, 0.1);
   padding: 4px 12px;
   border-radius: 20px;
@@ -645,7 +645,7 @@
 .pricePerSqm {
   font-size: 14px;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   background: rgba(102, 126, 234, 0.1);
   padding: 6px 12px;
   border-radius: 20px;
@@ -659,7 +659,7 @@
   gap: 16px;
   align-items: center;
   font-size: 13px;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   flex-wrap: wrap;
 }
 
@@ -718,7 +718,7 @@
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 16px;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: flex;
@@ -736,13 +736,13 @@
 .infoCard:hover {
   transform: translateY(-8px);
   box-shadow: 0 16px 48px rgba(102, 126, 234, 0.15);
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
 }
 
 .outdoorCard:hover {
   transform: translateY(-8px);
   box-shadow: 0 16px 48px rgba(102, 126, 234, 0.15);
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
 }
 
 .outdoorItem:hover {
@@ -806,13 +806,13 @@
   .statValue {
     font-size: 14px;
     font-weight: 800;
-    color: #2c3e50;
+    color: var(--color-text-primary);
   }
 
   .statLabel {
     font-size: 11px;
     font-weight: 600;
-    color: #6c757d;
+    color: var(--color-text-secondary);
     margin-left: 8px;
     text-transform: none;
     opacity: 0.9;
@@ -835,7 +835,7 @@
 
 .heroSectionMobile {
   padding: 20px;
-  background-color: #ffffff;
+  background-color: var(--color-bg-primary);
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 0;
 }
@@ -850,7 +850,7 @@
   margin-bottom: 16px;
   font-size: 13px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .statusBadgeMobile[data-available="true"] {
@@ -878,7 +878,7 @@
 .heroPriceMobile {
   font-size: 42px;
   font-weight: 800;
-  color: #111827;
+  color: var(--color-text-primary);
   margin: 0 0 12px 0;
   line-height: 1.1;
   letter-spacing: -0.5px;
@@ -887,7 +887,7 @@
 .pricePeriodMobile {
   font-size: 18px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-left: 4px;
 }
 
@@ -912,13 +912,13 @@
 .bedBathCount {
   font-size: 20px;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text-primary);
   min-width: 24px;
 }
 
 .bedBathLabel {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
   text-transform: lowercase;
 }
@@ -976,7 +976,7 @@
    ============================================================================ */
 
 .heroSection {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   padding: 24px 24px;
   border-radius: 12px;
@@ -1114,7 +1114,7 @@
 }
 
 .mainInfoCard {
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 18px 16px;
@@ -1126,7 +1126,7 @@
 }
 
 .mainInfoCard:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
   transform: translateY(-2px);
 }
@@ -1151,7 +1151,7 @@
 
 .mainInfoLabel {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
@@ -1177,7 +1177,7 @@
 }
 
 .zilowStatCard:hover {
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, #f9fafb 100%);
   border-color: #d1d5db;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
@@ -1240,13 +1240,13 @@
 .ageTextSmall {
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .zilowStatLabel {
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -1261,7 +1261,7 @@
 }
 
 .statCard {
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 16px;
@@ -1280,13 +1280,13 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
 
 .statCard:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
   transform: translateY(-2px);
 }
@@ -1297,7 +1297,7 @@
 
 .statLabel {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 600;
   text-transform: capitalize;
   letter-spacing: 0.3px;
@@ -1313,7 +1313,7 @@
 .ageText {
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   display: block;
   margin-top: 2px;
 }
@@ -1351,7 +1351,7 @@
 .highlightsSection {
   padding: 24px;
   margin-bottom: 24px;
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border-top: 1px solid #e5e7eb;
 }
 
@@ -1372,7 +1372,7 @@
 }
 
 .highlightTag {
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border: 1px solid #e5e7eb;
   color: #1f2937;
   padding: 8px 14px;
@@ -1386,9 +1386,9 @@
 }
 
 .highlightTag:hover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
@@ -1397,7 +1397,7 @@
 .featuresSection {
   padding: 24px;
   margin-bottom: 24px;
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border-top: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -1520,7 +1520,7 @@
 /* ===== CONTACT CTA SECTION ===== */
 .contactCTASection {
   padding: 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   border-radius: 10px;
   margin-bottom: 20px;
   color: white;
@@ -1782,7 +1782,7 @@
 /* ===== IMPROVED DESCRIPTION SECTION ===== */
 .descriptionSection {
   padding: 24px;
-  background-color: #ffffff;
+  background-color: var(--color-bg-primary);
   border-top: 1px solid #e5e7eb;
   margin-bottom: 0;
 }
@@ -1797,7 +1797,7 @@
 }
 
 .readMoreBtn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -1818,7 +1818,7 @@
 /* ===== LOCATION INFO SECTION ===== */
 .locationInfoSection {
   padding: 24px;
-  background-color: #ffffff;
+  background-color: var(--color-bg-primary);
   border-top: 1px solid #e5e7eb;
   margin-bottom: 0;
 }
@@ -1859,7 +1859,7 @@
 
 .coordinateItem {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
   background: rgba(255, 255, 255, 0.6);
   padding: 4px 10px;
@@ -1870,7 +1870,7 @@
 /* ===== GOOGLE MAP SECTION ===== */
 .mapSection {
   padding: 24px;
-  background-color: #ffffff;
+  background-color: var(--color-bg-primary);
   border-top: 1px solid #e5e7eb;
   margin-bottom: 0;
 }

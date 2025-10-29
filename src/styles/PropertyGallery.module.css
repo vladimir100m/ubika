@@ -4,7 +4,7 @@
 .galleryContainer {
   width: 100%;
   position: relative;
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -106,7 +106,7 @@
 /* Thumbnail Container */
 .thumbnailContainer {
   padding: 15px;
-  background: #fafafa;
+  background: var(--color-bg-secondary);
   border-top: 1px solid #e0e0e0;
 }
 
@@ -116,7 +116,7 @@
   overflow-x: auto;
   padding-bottom: 5px;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: var(--color-bg-tertiary) transparent;
 }
 
 .thumbnailStrip::-webkit-scrollbar {
@@ -128,7 +128,7 @@
 }
 
 .thumbnailStrip::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--color-bg-tertiary);
   border-radius: 3px;
 }
 
@@ -144,14 +144,14 @@
 }
 
 .thumbnail:hover {
-  border-color: #0074e4;
+  border-color: var(--color-accent-700);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 116, 228, 0.3);
 }
 
 .activeThumbnail {
-  border-color: #0074e4 !important;
-  box-shadow: 0 0 0 1px #0074e4;
+  border-color: var(--color-accent-700) !important;
+  box-shadow: 0 0 0 1px var(--color-accent-700);
 }
 
 .thumbnailCoverBadge {
@@ -189,7 +189,7 @@
   height: 40px;
   border: 3px solid rgba(0, 116, 228, 0.2);
   border-radius: 50%;
-  border-top-color: #0074e4;
+  border-top-color: var(--color-accent-700);
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -479,7 +479,7 @@
   padding-bottom: 8px;
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: var(--color-bg-tertiary) transparent;
   -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
 }
 
@@ -492,7 +492,7 @@
 }
 
 .thumbnailsRow::-webkit-scrollbar-thumb {
-  background-color: #ccc;
+  background-color: var(--color-bg-tertiary);
   border-radius: 10px;
 }
 
@@ -509,7 +509,7 @@
 }
 
 .activeThumbnail {
-  border-color: #0074e4;
+  border-color: var(--color-accent-700);
   transform: scale(1.05);
   box-shadow: 0 3px 8px rgba(0, 116, 228, 0.3);
 }
@@ -907,7 +907,7 @@
 @media (pointer: fine) {
   /* Desktop devices with precise pointers */
   .galleryContainer:focus {
-    outline: 2px solid #0074e4;
+    outline: 2px solid var(--color-accent-700);
     outline-offset: 2px;
   }
   

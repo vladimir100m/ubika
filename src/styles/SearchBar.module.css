@@ -132,23 +132,24 @@
     margin-bottom: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: #444;
+    color: var(--color-text-primary);
 }
 
 .filterInput, .filterSelect {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border-light);
     border-radius: 6px;
     font-size: 16px;
-    background-color: white;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .filterInput:focus, .filterSelect:focus {
-    border-color: #0074e4;
+    border-color: var(--color-accent-600);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 116, 228, 0.1);
+    box-shadow: 0 0 0 3px rgba(15, 127, 159, 0.1);
 }
 
 .filterActions {
@@ -160,8 +161,8 @@
 
 .clearButton {
     padding: 12px 20px;
-    background-color: #f44336;
-    color: white;
+    background-color: var(--color-error-700);
+    color: var(--color-text-inverse);
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -171,11 +172,11 @@
 }
 
 .clearButton:hover:not(:disabled) {
-    background-color: #d32f2f;
+    background-color: var(--color-error-600);
 }
 
 .clearButton:disabled {
-    background-color: #ccc;
+    background-color: var(--color-bg-tertiary);
     cursor: not-allowed;
     opacity: 0.6;
 }

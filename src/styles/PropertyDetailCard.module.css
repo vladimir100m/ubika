@@ -1,7 +1,7 @@
 /* ===== PROPERTY DETAIL CARD V2 - CLEAN & PRECISE ===== */
 
 .propertyDetailCard {
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -12,7 +12,7 @@
 
 /* ===== HERO SECTION ===== */
 .heroSection {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   padding: 48px 40px;
   position: relative;
@@ -83,13 +83,13 @@
 .availabilityBadge[data-available="true"] {
   background: rgba(39, 174, 96, 0.25);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  color: var(--color-bg-primary);
 }
 
 .availabilityBadge[data-available="false"] {
   background: rgba(231, 76, 60, 0.25);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  color: var(--color-bg-primary);
 }
 
 .availabilityDot {
@@ -138,7 +138,7 @@
 .mainInfoSection {
   padding: 40px;
   border-bottom: 1px solid #f0f0f0;
-  background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #fafbfc 0%, var(--color-bg-primary) 100%);
 }
 
 .mainInfoGrid {
@@ -174,7 +174,7 @@
 }
 
 .mainInfoCard:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
 }
@@ -193,7 +193,7 @@
 .mainInfoValue {
   font-size: 22px;
   font-weight: 800;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   line-height: 1;
   letter-spacing: -0.5px;
 }
@@ -215,7 +215,7 @@
 .sectionHeading {
   font-size: 20px;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   margin: 0 0 20px;
   display: flex;
   align-items: center;
@@ -230,7 +230,7 @@
 
 .highlightTag {
   display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   padding: 10px 16px;
   border-radius: 20px;
@@ -273,7 +273,7 @@
 }
 
 .featureCategory {
-  background: linear-gradient(135deg, #f8fafb 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #f8fafb 0%, var(--color-bg-primary) 100%);
   border: 2px solid #e8e8e8;
   border-radius: 16px;
   padding: 24px;
@@ -281,14 +281,14 @@
 }
 
 .featureCategory:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.08);
 }
 
 .featureCategoryTitle {
   font-size: 15px;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   margin: 0 0 16px;
   display: flex;
   align-items: center;
@@ -353,7 +353,7 @@
 
 .locationValue {
   font-size: 15px;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   font-weight: 600;
   line-height: 1.4;
 }
@@ -362,7 +362,7 @@
   background: linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%);
   padding: 14px 16px;
   border-radius: 12px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--color-accent-700);
 }
 
 .mapPlaceholder {
@@ -384,7 +384,7 @@
 }
 
 .detailsGridItem {
-  background: linear-gradient(135deg, #f8fafb 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #f8fafb 0%, var(--color-bg-primary) 100%);
   border: 2px solid #e8e8e8;
   border-radius: 12px;
   padding: 16px;
@@ -395,7 +395,7 @@
 }
 
 .detailsGridItem:hover {
-  border-color: #667eea;
+  border-color: var(--color-accent-700);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
 }
 
@@ -409,14 +409,14 @@
 
 .detailsValue {
   font-size: 16px;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   font-weight: 700;
 }
 
 /* ===== CONTACT SECTION ===== */
 .contactSection {
   padding: 40px;
-  background: linear-gradient(135deg, #f8fafb 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #f8fafb 0%, var(--color-bg-primary) 100%);
   border-top: 2px solid #e8e8e8;
   display: flex;
   flex-direction: column;
@@ -455,7 +455,7 @@
 }
 
 .ctaButtonPrimary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
@@ -467,8 +467,8 @@
 
 .ctaButtonSecondary {
   background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: var(--color-accent-700);
+  border: 2px solid var(--color-accent-700);
 }
 
 .ctaButtonSecondary:hover {
@@ -501,7 +501,7 @@
 .agentName {
   font-size: 15px;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
