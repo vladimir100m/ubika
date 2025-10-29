@@ -341,6 +341,7 @@
 .rent {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
+}
 
 .not_available {
   background: #e74c3c;
