@@ -493,8 +493,13 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
 
         {/* Header */}
         <div className={styles.modalHeader}>
+          {isEditMode && (
+            <div className={styles.formModeBadge + ' ' + styles.edit}>
+              📝 EDITING MODE
+            </div>
+          )}
           <h2>{isEditMode ? '✏️ Edit Property' : '➕ Add New Property'}</h2>
-          <p>{isEditMode ? 'Update the property details' : 'Fill in the details to list your property'}</p>
+          <p>{isEditMode ? 'Update the property details below' : 'Fill in all required fields to list your property'}</p>
         </div>
 
         {/* Success Message */}
@@ -520,8 +525,21 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         {/* Error Message */}
         {error && (
           <div className={styles.errorBanner}>
-            <span className={styles.errorIcon}>⚠️</span>
-            <p>{error}</p>
+            <div className={styles.errorContent}>
+              <span className={styles.errorIcon}>⚠️</span>
+              <div>
+                <p className={styles.errorTitle}>Error</p>
+                <p className={styles.errorMessage}>{error}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className={styles.errorClose}
+              onClick={() => setError(null)}
+              aria-label="Close error"
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -532,7 +550,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             <h3>Basic Information</h3>
             
             <div className={styles.formGroup}>
-              <label htmlFor="title">Title *</label>
+              <label htmlFor="title">Title <span className={styles.requiredAsterisk}>*</span></label>
               <input
                 type="text"
                 id="title"
@@ -575,7 +593,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="price">Price *</label>
+                <label htmlFor="price">Price <span className={styles.requiredAsterisk}>*</span></label>
                 <input
                   type="number"
                   id="price"
@@ -588,7 +606,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="operation_status">Operation *</label>
+                <label htmlFor="operation_status">Operation <span className={styles.requiredAsterisk}>*</span></label>
                 <select
                   id="operation_status"
                   name="operation_status"
@@ -609,7 +627,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             <h3>Location</h3>
             
             <div className={styles.formGroup}>
-              <label htmlFor="address">Address *</label>
+              <label htmlFor="address">Address <span className={styles.requiredAsterisk}>*</span></label>
               <input
                 type="text"
                 id="address"
@@ -623,7 +641,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
 
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label htmlFor="city">City *</label>
+                <label htmlFor="city">City <span className={styles.requiredAsterisk}>*</span></label>
                 <input
                   type="text"
                   id="city"
@@ -902,15 +920,28 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
               className={styles.cancelButton}
               onClick={onClose}
               disabled={isSubmitting}
+              title={isSubmitting ? 'Cannot cancel while submitting' : 'Cancel and discard changes'}
             >
-              Cancel
+              <span>✕</span>
+              <span>Cancel</span>
             </button>
             <button
               type="submit"
               className={styles.submitButton}
               disabled={isSubmitting}
+              title={isEditMode ? 'Save property changes' : 'Create new property'}
             >
-              {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Property' : 'Create Property')}
+              {isSubmitting ? (
+                <>
+                  <span className={styles.loadingSpinner}>⟳</span>
+                  <span>{isEditMode ? 'Updating...' : 'Creating...'}</span>
+                </>
+              ) : (
+                <>
+                  <span>{isEditMode ? '💾' : '✚'}</span>
+                  <span>{isEditMode ? 'Update Property' : 'Create Property'}</span>
+                </>
+              )}
             </button>
           </div>
         </form>
