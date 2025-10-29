@@ -1,10 +1,42 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import PropertyImageEditor from './PropertyImageEditor';
 import { Property } from '../types';
 import styles from '../styles/Seller.module.css';
+
+// Feature priority ranking (4 most important features)
+const FEATURE_PRIORITY: { [key: string]: number } = {
+  // Top 4 most important (essential features)
+  'parking': 1,
+  'air_conditioning': 2,
+  'pool': 3,
+  'gym': 4,
+  // Secondary features
+  'heating': 5,
+  'elevator': 6,
+  'security_system': 7,
+  'doorman': 8,
+  'dishwasher': 9,
+  'hardwood_floors': 10,
+  'walk_in_closet': 11,
+  'garden': 12,
+  'patio': 13,
+  'balcony': 14,
+  'washer': 15,
+  'dryer': 16,
+};
+
+// Function to get priority score for a feature
+const getFeaturePriority = (feature: any): number => {
+  return FEATURE_PRIORITY[feature.name] ?? 999; // Higher number = lower priority
+};
+
+// Function to get top N features sorted by priority
+const getTopFeatures = (features: any[], count: number = 4): any[] => {
+  return [...features].sort((a, b) => getFeaturePriority(a) - getFeaturePriority(b)).slice(0, count);
+};
 
 interface AddPropertyPopupProps {
   isOpen: boolean;
@@ -46,6 +78,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
 
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
   const [availableFeatures, setAvailableFeatures] = useState<any[]>([]);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -783,11 +816,29 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
 
           {/* Features Section */}
           <div className={styles.formSection}>
-            <h3>✨ Property Features</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0 }}>✨ Important Features</h3>
+              {availableFeatures.length > 4 && (
+                <button
+                  type="button"
+                  className={styles.toggleFeaturesButton}
+                  onClick={() => setShowAllFeatures(!showAllFeatures)}
+                  title={showAllFeatures ? 'Show top 4 features' : 'Show all available features'}
+                >
+                  {showAllFeatures ? 'Show Less' : 'Show More'}
+                </button>
+              )}
+            </div>
+            
+            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 12px 0' }}>
+              {showAllFeatures 
+                ? 'Select any features that apply to this property' 
+                : 'Top 4 essential features for your property'}
+            </p>
             
             <div className={styles.featuresGrid}>
               {availableFeatures.length > 0 ? (
-                availableFeatures.map((feature) => (
+                (showAllFeatures ? availableFeatures : getTopFeatures(availableFeatures, 4)).map((feature) => (
                   <div key={feature.id} className={styles.featureCheckbox}>
                     <input
                       type="checkbox"

@@ -971,6 +971,29 @@
   font-size: 0.95rem;
 }
 
+/* Toggle Features Button */
+.toggleFeaturesButton {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  color: #0369a1;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleFeaturesButton:hover {
+  background: linear-gradient(135deg, #bfdbfe 0%, #c7d2fe 100%);
+  border-color: #0284c7;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+
+.toggleFeaturesButton:active {
+  transform: scale(0.98);
+}
+
 .successBanner {
   background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
   border: 1.5px solid #86efac;
