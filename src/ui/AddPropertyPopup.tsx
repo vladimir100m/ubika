@@ -130,84 +130,132 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     if (isOpen) {
       fetchPropertyTypes();
       fetchFeatures();
-      
-      // If editing, populate form with property data
-      if (editingProperty) {
-        setFormData({
-          title: editingProperty.title || '',
-          description: editingProperty.description || '',
-          price: editingProperty.price?.toString() || '',
-          address: editingProperty.address || '',
-          city: editingProperty.city || '',
-          state: editingProperty.state || '',
-          country: editingProperty.country || '',
-          zip_code: editingProperty.zip_code || '',
-          type: editingProperty.property_type?.name || '',
-          bedrooms: editingProperty.bedrooms?.toString() || '',
-          bathrooms: editingProperty.bathrooms?.toString() || '',
-          sq_meters: editingProperty.sq_meters?.toString() || '',
-          year_built: editingProperty.year_built?.toString() || '',
-          lat: editingProperty.lat?.toString() || '',
-          lng: editingProperty.lng?.toString() || '',
-          operation_status: editingProperty.operation_status_id === 2 ? 'rent' : 'buy',
-        });
 
-        // Populate selected features
-        if (editingProperty.features && editingProperty.features.length > 0) {
-          const featureIds = editingProperty.features.map(f => f.id);
-          setSelectedFeatures(featureIds);
-        } else {
-          setSelectedFeatures([]);
-        }
-        
-        // Populate existing images
-        if (editingProperty.images && editingProperty.images.length > 0) {
-          const sortedImages = editingProperty.images
-            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-          const existingImageUrls = sortedImages.map(img => img.image_url || '');
-          const existingIds = sortedImages.map(img => img.id);
-          const coverImg = editingProperty.images.find(img => img.is_cover);
-          
-          setExistingImages(existingImageUrls);
-          setExistingImageIds(existingIds);
-          
-          if (coverImg) {
-            setCoverImageId(coverImg.id);
-            const coverIndex = sortedImages.findIndex(img => img.id === coverImg.id);
-            setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
+      // If editing, try to fetch freshest property data from the server
+      const loadEditProperty = async (): Promise<Property | null> => {
+        if (editingProperty && (editingProperty as any).id) {
+          try {
+            const res = await fetch(`/api/properties/${(editingProperty as any).id}`);
+            if (res.ok) return await res.json();
+            return editingProperty;
+          } catch (err) {
+            console.warn('Failed to fetch up-to-date property for edit view, falling back to provided editingProperty', err);
+            return editingProperty;
           }
         }
-      } else {
-        // Reset form for new property
-        setFormData({
-          title: '',
-          description: '',
-          price: '',
-          address: '',
-          city: '',
-          state: '',
-          country: '',
-          zip_code: '',
-          type: '',
-          bedrooms: '',
-          bathrooms: '',
-          sq_meters: '',
-          year_built: '',
-          lat: '',
-          lng: '',
-          operation_status: 'buy',
+        return editingProperty ?? null;
+      };
+
+      loadEditProperty()
+        .then((propertyData) => {
+          if (propertyData) {
+            setFormData({
+              title: propertyData.title || '',
+              description: propertyData.description || '',
+              price: propertyData.price?.toString() || '',
+              address: propertyData.address || '',
+              city: propertyData.city || '',
+              state: propertyData.state || '',
+              country: propertyData.country || '',
+              zip_code: propertyData.zip_code || '',
+              type: propertyData.property_type?.name || '',
+              bedrooms: (propertyData.bedrooms ?? (propertyData as any).rooms)?.toString() || '',
+              bathrooms: propertyData.bathrooms?.toString() || '',
+              sq_meters: (propertyData.sq_meters ?? (propertyData as any).squareMeters)?.toString() || '',
+              year_built: propertyData.year_built?.toString() || '',
+              lat: propertyData.lat?.toString() || '',
+              lng: propertyData.lng?.toString() || '',
+              operation_status: propertyData.operation_status_id === 2 ? 'rent' : 'buy',
+            });
+
+            // Populate selected features
+            if (propertyData.features && propertyData.features.length > 0) {
+              const featureIds = propertyData.features.map(f => f.id);
+              setSelectedFeatures(featureIds);
+            } else {
+              setSelectedFeatures([]);
+            }
+
+            // Populate existing images
+            if (propertyData.images && propertyData.images.length > 0) {
+              const sortedImages = propertyData.images
+                .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+              const existingImageUrls = sortedImages.map(img => img.image_url || '');
+              const existingIds = sortedImages.map(img => img.id);
+              const coverImg = propertyData.images.find(img => img.is_cover);
+
+              setExistingImages(existingImageUrls);
+              setExistingImageIds(existingIds);
+
+              if (coverImg) {
+                setCoverImageId(coverImg.id);
+                const coverIndex = sortedImages.findIndex(img => img.id === coverImg.id);
+                setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
+              }
+            }
+          } else {
+            // Reset form for new property
+            setFormData({
+              title: '',
+              description: '',
+              price: '',
+              address: '',
+              city: '',
+              state: '',
+              country: '',
+              zip_code: '',
+              type: '',
+              bedrooms: '',
+              bathrooms: '',
+              sq_meters: '',
+              year_built: '',
+              lat: '',
+              lng: '',
+              operation_status: 'buy',
+            });
+            setSelectedFeatures([]);
+            setUploadedImages([]);
+            setNewImagePreviews([]);
+            setExistingImages([]);
+            setExistingImageIds([]);
+            setCoverImageId(null);
+            setCoverImageIndex(0);
+          }
+
+          setError(null);
+          setSuccess(false);
+        })
+        .catch((err) => {
+          console.warn('Error loading property for edit view', err);
+          // Reset state on failure
+          setFormData({
+            title: '',
+            description: '',
+            price: '',
+            address: '',
+            city: '',
+            state: '',
+            country: '',
+            zip_code: '',
+            type: '',
+            bedrooms: '',
+            bathrooms: '',
+            sq_meters: '',
+            year_built: '',
+            lat: '',
+            lng: '',
+            operation_status: 'buy',
+          });
+          setSelectedFeatures([]);
+          setUploadedImages([]);
+          setNewImagePreviews([]);
+          setExistingImages([]);
+          setExistingImageIds([]);
+          setCoverImageId(null);
+          setCoverImageIndex(0);
+          setError(null);
+          setSuccess(false);
         });
-        setSelectedFeatures([]);
-        setUploadedImages([]);
-        setNewImagePreviews([]);
-        setExistingImages([]);
-        setExistingImageIds([]);
-        setCoverImageId(null);
-        setCoverImageIndex(0);
-      }
-      
-      setError(null);
-      setSuccess(false);
     }
   }, [isOpen, editingProperty]);
 
@@ -1161,6 +1209,22 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                 : 'Top 4 essential features for your property'}
             </p>
             
+            {/* Show selected features as badges for quick visibility in edit mode */}
+            {/* {selectedFeatures.length > 0 && (
+              <div className={styles.selectedFeaturesRow} style={{ marginBottom: 12 }}>
+                {selectedFeatures.map((fid) => {
+                  const f = availableFeatures.find((af) => af.id === fid);
+                  if (!f) return null;
+                  return (
+                    <span key={`sel-${fid}`} className={styles.featureItem} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>{f.name}</span>
+                      <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setSelectedFeatures(selectedFeatures.filter(id => id !== fid))} className={styles.removeFeatureBtn}>✕</button>
+                    </span>
+                  );
+                })}
+              </div>
+            )} */}
+
             <div className={styles.featuresGrid}>
               {availableFeatures.length > 0 ? (
                 (showAllFeatures ? availableFeatures : getTopFeatures(availableFeatures, 4)).map((feature) => (

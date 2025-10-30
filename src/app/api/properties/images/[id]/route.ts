@@ -29,7 +29,7 @@ export async function DELETE(
 
     // Get the media record and property to verify ownership
     const getMediaQuery = `
-      SELECT pm.id, pm.url as image_url, pm.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.bedrooms as rooms
+  SELECT pm.id, pm.url as image_url, pm.property_id, p.seller_id, p.city, p.operation_status_id, p.price, p.bedrooms as bedrooms
       FROM property_media pm
       JOIN properties p ON pm.property_id = p.id
       WHERE pm.id = $1 AND pm.media_type = $2

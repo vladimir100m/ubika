@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     let queryText = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
+  p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
         ps.id as property_status_id, ps.name as property_status, ps.display_name as property_status_display, ps.color as property_status_color,
         p.created_at, p.updated_at, p.year_built as yearBuilt, 
@@ -384,7 +384,7 @@ export async function POST(req: NextRequest) {
     // Return the full property via select used in GET (single property)
     const propertyQuery = `
       SELECT p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
+  p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id
       FROM properties p

@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const propertyQuery = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, pt.name as property_type, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
         ps.id as property_status_id, ps.name as property_status, ps.display_name as property_status_display, ps.color as property_status_color,
         p.created_at, p.updated_at, p.year_built as yearBuilt, 
@@ -102,6 +102,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     } catch (imageError) {
       log.error('Failed to fetch images for property', { propertyId: property.id, error: imageError });
       property.images = [];
+    }
+
+    // Fetch features assigned to this property (from property_feature_assignments)
+    try {
+      const feats = await query(
+        'SELECT f.id, f.name FROM property_features f JOIN property_feature_assignments a ON a.feature_id = f.id WHERE a.property_id = $1',
+        [property.id]
+      );
+      property.features = feats.rows || [];
+      log.debug('Features fetched', { count: property.features.length });
+    } catch (featErr) {
+      log.warn('Failed to fetch features for property, defaulting to empty', { error: featErr });
+      property.features = [];
     }
 
     try {
@@ -237,13 +250,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     // Handle features update (optional)
-    if (Array.isArray(body.features)) {
-      log.info('Updating features', { count: body.features.length });
-      // Delete existing
+    // Accept either `feature_ids` (client) or legacy `features` array
+    const featureIds = Array.isArray(body.feature_ids)
+      ? body.feature_ids
+      : Array.isArray(body.features)
+        ? body.features
+        : null;
+
+    if (Array.isArray(featureIds)) {
+      log.info('Updating features', { count: featureIds.length });
+      // Delete existing assignments
       await query('DELETE FROM property_feature_assignments WHERE property_id = $1', [id]);
-      // Insert new
-      for (const f of body.features) {
-        await query('INSERT INTO property_feature_assignments(property_id, feature_id) VALUES($1, $2)', [id, f]);
+      // Insert new assignments (support either numbers or objects with id)
+      for (const f of featureIds) {
+        const fid = (f && typeof f === 'object' && ('id' in f)) ? (f as any).id : f;
+        await query('INSERT INTO property_feature_assignments(property_id, feature_id) VALUES($1, $2)', [id, fid]);
       }
       log.info('Features updated successfully');
     }
@@ -252,7 +273,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const propertyQuery = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, pt.name as property_type, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
         ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id,
@@ -342,7 +363,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     log.info('Verifying ownership for user', { userId, propertyId: id });
 
     // First, verify property exists and belongs to the user
-    const checkQuery = `SELECT id, seller_id, city, operation_status_id, price, bedrooms as rooms FROM properties WHERE id = $1`;
+  const checkQuery = `SELECT id, seller_id, city, operation_status_id, price,, bedrooms as bedrooms FROM properties WHERE id = $1`;
     const checkResult = await query(checkQuery, [id]);
     
     if (checkResult.rows.length === 0) {

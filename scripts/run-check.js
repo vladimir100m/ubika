@@ -10,7 +10,7 @@ async function run() {
     const query = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country,
-        p.zip_code, pt.name as property_type, p.bedrooms as rooms, p.bathrooms, p.square_meters as "squareMeters",
+  p.zip_code, pt.name as property_type, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
         ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt,
         p.geocode, p.seller_id, p.operation_status_id,

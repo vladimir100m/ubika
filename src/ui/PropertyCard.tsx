@@ -200,12 +200,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
         {/* Features of the Property like tag style and list */}
         {property.features && property.features.length > 0 && (
-          <div className={styles.features}>
+          <div className={styles.features} aria-label={`Features: ${property.features.slice(0,5).map(f=>f.name).join(', ')}`}>
             {property.features.slice(0, 5).map((feature) => (
-              <span key={feature.id} className={styles.featureItem}>
+              <span key={feature.id} className={styles.featureItem} title={feature.name}>
                 {feature.name}
               </span>
             ))}
+
+            {/* If there are more than 5 features, show a small "+N" indicator */}
+            {property.features.length > 5 && (
+              <span className={styles.moreCount} title={`${property.features.length - 5} more features`} aria-hidden={false}>
+                +{property.features.length - 5}
+              </span>
+            )}
           </div>
         )}
 

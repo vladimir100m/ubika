@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     // Verify property belongs to user
     const propertyCheck = await query(
-      `SELECT id, seller_id, city, operation_status_id, price, bedrooms as rooms
+      `SELECT id, seller_id, city, operation_status_id, price, bedrooms as bedrooms
        FROM properties WHERE id = $1`,
       [property_id]
     );
