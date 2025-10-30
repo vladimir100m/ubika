@@ -78,6 +78,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     callback?.();
   };
 
+  // Helper: return black or white depending on background hex color for contrast
+  const getContrastColor = (hex?: string) => {
+    if (!hex) return '#000';
+    const cleaned = hex.replace('#', '');
+    const bigint = parseInt(cleaned.length === 3 ? cleaned.split('').map(c => c + c).join('') : cleaned, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    // Perceived luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#000' : '#fff';
+  };
+
   return (
     <div className={styles.propertyCard} onClick={handleCardClick} role="button" tabIndex={0} onKeyDown={handleKeyDown} aria-label={property.title || `View property ${property.id}`}>
       {/* Image Section */}
@@ -117,21 +130,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
         {/* Status Badges - Property Status and Operation Status */}
         <div className={styles.badgesContainer}>
-          {/* Property Status Badge (Published, Draft, etc.) */}
-          {property.property_status && (
-            <div className={`${styles.statusBadge} ${styles[property.property_status.name?.toLowerCase() || 'published']}`} title={property.property_status?.display_name || 'Property Status'}>
-              <span className={styles.badgeIcon}>
-                {property.property_status.name?.toLowerCase() === 'published' && '✓'}
-                {property.property_status.name?.toLowerCase() === 'draft' && '✎'}
-                {property.property_status.name?.toLowerCase() === 'archived' && '🗂️'}
-              </span>
-              <span className={styles.badgeText}>{property.property_status?.display_name || 'Status'}</span>
-            </div>
-          )}
           
           {/* Operation Status Badge (For Sale, For Rent) */}
           {property.operation_status && (
-            <div className={`${styles.operationBadge} ${styles[property.operation_status.name?.toLowerCase() || 'sale']}`} title={property.operation_status?.display_name || 'Operation Type'}>
+            <div
+              className={`${styles.operationBadge} ${styles[property.operation_status.name?.toLowerCase() || 'sale']}`}
+              title={property.operation_status?.display_name || 'Operation Type'}
+              style={{
+                background: property.operation_status.color || undefined,
+                borderColor: property.operation_status.color || undefined,
+                color: getContrastColor(property.operation_status.color || undefined),
+              }}
+            >
               <span className={styles.badgeIcon}>
                 {property.operation_status.name?.toLowerCase() === 'sale' && '💰'}
                 {property.operation_status.name?.toLowerCase() === 'buy' && '💰'}
@@ -151,39 +161,40 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {formatPropertyPriceCompact(property.price)}
         </div>
 
-        {/* Title */}
-        {/* <h3 className={styles.title}>
-          {property.title}
-        </h3> */}
-        {/* Property Type */}
-        {/* <div className={styles.propertyType}>
-          <span className={styles.typeIcon}>🏠</span>
-          <span>{property.property_type?.display_name || 'Property'}</span>
-        </div> */}
 
         {/* Location */}
         <div className={styles.location}>
-          <span className={styles.locationIcon}>📍</span>
-          <span>{property.address}, {property.city}</span>
+          <span className={styles.locationIcon} aria-hidden>📍</span>
+          <div className={styles.locationText}>
+            <div className={styles.locationLine}>{property.address}</div>
+            <div className={styles.locationCity}>{property.city}{property.state ? `, ${property.state}` : ''}</div>
+          </div>
         </div>
         
         {/* Beds & Baths in single row */}
         <div className={styles.bedsAndBathsRow}>
           <div className={styles.bedBathItem}>
-            <span className={styles.bedBathIcon}>🛏️</span>
-            <span className={styles.bedBathCount}>{property.bedrooms}</span>
-            {/* <span className={styles.bedBathLabel}>beds</span> */}
+            <span className={styles.bedBathIcon} aria-hidden>🛏️</span>
+            <div className={styles.bedBathMeta}>
+              <span className={styles.bedBathCount}>{property.bedrooms ?? '—'}</span>
+              <span className={styles.bedBathLabel}>beds</span>
+            </div>
           </div>
-          
+
           <div className={styles.bedBathItem}>
-            <span className={styles.bedBathIcon}>🚿</span>
-            <span className={styles.bedBathCount}>{property.bathrooms}</span>
-            {/* <span className={styles.bedBathLabel}>baths</span> */}
+            <span className={styles.bedBathIcon} aria-hidden>🚿</span>
+            <div className={styles.bedBathMeta}>
+              <span className={styles.bedBathCount}>{property.bathrooms ?? '—'}</span>
+              <span className={styles.bedBathLabel}>baths</span>
+            </div>
           </div>
+
           <div className={styles.bedBathItem}>
-            <span className={styles.bedBathIcon}>📐</span>
-            <span className={styles.bedBathCount}>{property.sq_meters}</span>
-            {/* <span className={styles.bedBathLabel}>m²</span> */}
+            <span className={styles.bedBathIcon} aria-hidden>📐</span>
+            <div className={styles.bedBathMeta}>
+              <span className={styles.bedBathCount}>{property.sq_meters ?? property.squareMeters ?? '—'}</span>
+              <span className={styles.bedBathLabel}>m²</span>
+            </div>
           </div>
         </div>
 

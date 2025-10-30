@@ -275,10 +275,7 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
           {!isLoading && properties.length > 0 && (
             <div className={styles.propertiesSection}>
               <div className={styles.sectionHeader}>
-                <h2>Your Properties ({properties.length})</h2>
-                <p className={styles.sectionSubtitle}>
-                  {properties.length} listing{properties.length !== 1 ? 's' : ''} active
-                </p>
+
               </div>
 
               {/* Property Cards Grid - Reusing PropertyCardGrid component */}

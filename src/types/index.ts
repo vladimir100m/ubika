@@ -81,6 +81,7 @@ export interface PropertyOperationStatus {
   name: string;
   display_name: string;
   description: string;
+  color?: string;
   created_at?: string;
 }
 
