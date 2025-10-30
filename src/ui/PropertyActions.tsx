@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import styles from '../styles/PropertyDetailCard.module.css';
 
 interface PropertyActionsProps {
-  propertyId: number;
+  propertyId: string | number;
 }
 
 const PropertyActions: React.FC<PropertyActionsProps> = ({ propertyId }) => {

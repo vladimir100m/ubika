@@ -44,7 +44,7 @@
 
 .sectionDescription {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin: 0 0 24px 0;
   line-height: 1.6;
 }
@@ -118,7 +118,7 @@
 }
 
 .emptyState p {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin: 0 0 24px 0;
 }
 
@@ -211,7 +211,7 @@
 .propertyLocation {
   margin: 0 0 8px 0;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .propertyMeta {
@@ -222,7 +222,7 @@
 
 .metaItem {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .propertyThumbnail {
@@ -272,7 +272,7 @@
   min-height: 300px;
   padding: 40px;
   text-align: center;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .promptIcon {

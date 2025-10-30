@@ -1,10 +1,43 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useGoogleMapsLoader } from '../lib/useGoogleMapsLoader';
 import { useSession } from 'next-auth/react';
 import PropertyImageEditor from './PropertyImageEditor';
 import { Property } from '../types';
 import styles from '../styles/Seller.module.css';
+
+// Feature priority ranking (4 most important features)
+const FEATURE_PRIORITY: { [key: string]: number } = {
+  // Top 4 most important (essential features)
+  'parking': 1,
+  'air_conditioning': 2,
+  'pool': 3,
+  'gym': 4,
+  // Secondary features
+  'heating': 5,
+  'elevator': 6,
+  'security_system': 7,
+  'doorman': 8,
+  'dishwasher': 9,
+  'hardwood_floors': 10,
+  'walk_in_closet': 11,
+  'garden': 12,
+  'patio': 13,
+  'balcony': 14,
+  'washer': 15,
+  'dryer': 16,
+};
+
+// Function to get priority score for a feature
+const getFeaturePriority = (feature: any): number => {
+  return FEATURE_PRIORITY[feature.name] ?? 999; // Higher number = lower priority
+};
+
+// Function to get top N features sorted by priority
+const getTopFeatures = (features: any[], count: number = 4): any[] => {
+  return [...features].sort((a, b) => getFeaturePriority(a) - getFeaturePriority(b)).slice(0, count);
+};
 
 interface AddPropertyPopupProps {
   isOpen: boolean;
@@ -38,8 +71,15 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
     bedrooms: '',
     bathrooms: '',
     sq_meters: '',
+    year_built: '',
+    lat: '',
+    lng: '',
+    operation_status: '',
   });
 
+  const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
+  const [availableFeatures, setAvailableFeatures] = useState<any[]>([]);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -48,8 +88,13 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [removedExistingImages, setRemovedExistingImages] = useState<string[]>([]);
-  const [existingImageIds, setExistingImageIds] = useState<number[]>([]);
-  const [coverImageId, setCoverImageId] = useState<number | null>(null);
+  const [existingImageIds, setExistingImageIds] = useState<(string | number)[]>([]);
+  
+  // Google Places Autocomplete
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const [autocompleteInstance, setAutocompleteInstance] = useState<any>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [coverImageId, setCoverImageId] = useState<string | number | null>(null);
   const [coverImageIndex, setCoverImageIndex] = useState<number>(0);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -57,7 +102,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Fetch property types
+    // Fetch property types and features
     const fetchPropertyTypes = async () => {
       try {
         const response = await fetch('/api/property-types');
@@ -70,71 +115,425 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
       }
     };
 
+    const fetchFeatures = async () => {
+      try {
+        const response = await fetch('/api/property-features');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableFeatures(data);
+        }
+      } catch (err) {
+        console.error('Error fetching features:', err);
+      }
+    };
+
     if (isOpen) {
       fetchPropertyTypes();
-      
-      // If editing, populate form with property data
-      if (editingProperty) {
-        setFormData({
-          title: editingProperty.title || '',
-          description: editingProperty.description || '',
-          price: editingProperty.price?.toString() || '',
-          address: editingProperty.address || '',
-          city: editingProperty.city || '',
-          state: editingProperty.state || '',
-          country: editingProperty.country || '',
-          zip_code: editingProperty.zip_code || '',
-          type: editingProperty.property_type?.name || '',
-          bedrooms: editingProperty.bedrooms?.toString() || '',
-          bathrooms: editingProperty.bathrooms?.toString() || '',
-          sq_meters: editingProperty.sq_meters?.toString() || '',
-        });
-        
-        // Populate existing images
-        if (editingProperty.images && editingProperty.images.length > 0) {
-          const sortedImages = editingProperty.images
-            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-          const existingImageUrls = sortedImages.map(img => img.image_url || '');
-          const existingIds = sortedImages.map(img => img.id);
-          const coverImg = editingProperty.images.find(img => img.is_cover);
-          
-          setExistingImages(existingImageUrls);
-          setExistingImageIds(existingIds);
-          
-          if (coverImg) {
-            setCoverImageId(coverImg.id);
-            const coverIndex = sortedImages.findIndex(img => img.id === coverImg.id);
-            setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
+      fetchFeatures();
+
+      // If editing, try to fetch freshest property data from the server
+      const loadEditProperty = async (): Promise<Property | null> => {
+        if (editingProperty && (editingProperty as any).id) {
+          try {
+            const res = await fetch(`/api/properties/${(editingProperty as any).id}`);
+            if (res.ok) return await res.json();
+            return editingProperty;
+          } catch (err) {
+            console.warn('Failed to fetch up-to-date property for edit view, falling back to provided editingProperty', err);
+            return editingProperty;
           }
         }
-      } else {
-        // Reset form for new property
-        setFormData({
-          title: '',
-          description: '',
-          price: '',
-          address: '',
-          city: '',
-          state: '',
-          country: '',
-          zip_code: '',
-          type: '',
-          bedrooms: '',
-          bathrooms: '',
-          sq_meters: '',
+        return editingProperty ?? null;
+      };
+
+      loadEditProperty()
+        .then((propertyData) => {
+          if (propertyData) {
+            setFormData({
+              title: propertyData.title || '',
+              description: propertyData.description || '',
+              price: propertyData.price?.toString() || '',
+              address: propertyData.address || '',
+              city: propertyData.city || '',
+              state: propertyData.state || '',
+              country: propertyData.country || '',
+              zip_code: propertyData.zip_code || '',
+              type: propertyData.property_type?.name || '',
+              bedrooms: (propertyData.bedrooms ?? (propertyData as any).rooms)?.toString() || '',
+              bathrooms: propertyData.bathrooms?.toString() || '',
+              sq_meters: (propertyData.sq_meters ?? (propertyData as any).squareMeters)?.toString() || '',
+              year_built: propertyData.year_built?.toString() || '',
+              lat: propertyData.lat?.toString() || '',
+              lng: propertyData.lng?.toString() || '',
+              operation_status: propertyData.operation_status_id === 2 ? 'rent' : 'buy',
+            });
+
+            // Populate selected features
+            if (propertyData.features && propertyData.features.length > 0) {
+              const featureIds = propertyData.features.map(f => f.id);
+              setSelectedFeatures(featureIds);
+            } else {
+              setSelectedFeatures([]);
+            }
+
+            // Populate existing images
+            if (propertyData.images && propertyData.images.length > 0) {
+              const sortedImages = propertyData.images
+                .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+              const existingImageUrls = sortedImages.map(img => img.image_url || '');
+              const existingIds = sortedImages.map(img => img.id);
+              const coverImg = propertyData.images.find(img => img.is_cover);
+
+              setExistingImages(existingImageUrls);
+              setExistingImageIds(existingIds);
+
+              if (coverImg) {
+                setCoverImageId(coverImg.id);
+                const coverIndex = sortedImages.findIndex(img => img.id === coverImg.id);
+                setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
+              }
+            }
+          } else {
+            // Reset form for new property
+            setFormData({
+              title: '',
+              description: '',
+              price: '',
+              address: '',
+              city: '',
+              state: '',
+              country: '',
+              zip_code: '',
+              type: '',
+              bedrooms: '',
+              bathrooms: '',
+              sq_meters: '',
+              year_built: '',
+              lat: '',
+              lng: '',
+              operation_status: 'buy',
+            });
+            setSelectedFeatures([]);
+            setUploadedImages([]);
+            setNewImagePreviews([]);
+            setExistingImages([]);
+            setExistingImageIds([]);
+            setCoverImageId(null);
+            setCoverImageIndex(0);
+          }
+
+          setError(null);
+          setSuccess(false);
+        })
+        .catch((err) => {
+          console.warn('Error loading property for edit view', err);
+          // Reset state on failure
+          setFormData({
+            title: '',
+            description: '',
+            price: '',
+            address: '',
+            city: '',
+            state: '',
+            country: '',
+            zip_code: '',
+            type: '',
+            bedrooms: '',
+            bathrooms: '',
+            sq_meters: '',
+            year_built: '',
+            lat: '',
+            lng: '',
+            operation_status: 'buy',
+          });
+          setSelectedFeatures([]);
+          setUploadedImages([]);
+          setNewImagePreviews([]);
+          setExistingImages([]);
+          setExistingImageIds([]);
+          setCoverImageId(null);
+          setCoverImageIndex(0);
+          setError(null);
+          setSuccess(false);
         });
-        setUploadedImages([]);
-        setNewImagePreviews([]);
-        setExistingImages([]);
-        setExistingImageIds([]);
-        setCoverImageId(null);
-        setCoverImageIndex(0);
-      }
-      
-      setError(null);
-      setSuccess(false);
     }
   }, [isOpen, editingProperty]);
+
+  // Restore manual Google Maps script injection for autocomplete
+  useEffect(() => {
+    if (!isOpen || !addressInputRef.current) return;
+
+    const initializeAutocomplete = () => {
+      if (!addressInputRef.current) return;
+
+      // Use the new PlaceAutocompleteElement web component
+      if (autocompleteInstance && (autocompleteInstance as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') return;
+
+      const autocompleteEl = document.createElement('gmp-place-autocomplete');
+      try {
+        autocompleteEl.setAttribute('inputmode', 'text');
+        autocompleteEl.setAttribute('placeholder', 'Street address or location');
+      } catch (e) {}
+
+      const onPlaceChange = (ev: any) => {
+        const place = ev?.detail;
+        if (!place) return;
+
+        if (!place.geometry || !place.geometry.location) {
+          setError('Please select a valid address from the suggestions');
+          return;
+        }
+
+        fillInFormFromPlace(place);
+        setError(null);
+      };
+
+      autocompleteEl.addEventListener('gmp-placeautocomplete-placechange', onPlaceChange as EventListener);
+
+      // Insert the web component after the input so suggestions are visible.
+      const parent = addressInputRef.current.parentElement;
+      if (parent) parent.insertBefore(autocompleteEl, addressInputRef.current.nextSibling);
+
+      setAutocompleteInstance(autocompleteEl as any);
+      (autocompleteEl as any).__onPlaceChange = onPlaceChange;
+    };
+
+    // Lazy load Google Maps script if not already present
+    const loadGoogleMapsScript = () => {
+      if ((window as any).google?.maps?.places) {
+        initializeAutocomplete();
+        return;
+      }
+
+      const existingScript = document.querySelector(
+        `script[src*="maps.googleapis.com/maps/api/js"]`
+      );
+
+      if (existingScript) {
+        // Script already loading or loaded, wait for it
+        const checkInterval = setInterval(() => {
+          if ((window as any).google?.maps?.places) {
+            clearInterval(checkInterval);
+            initializeAutocomplete();
+          }
+        }, 100);
+        // Timeout after 10 seconds
+        setTimeout(() => clearInterval(checkInterval), 10000);
+      } else {
+        // Create and load script
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeAutocomplete;
+        script.onerror = () => {
+          setError('Failed to load Google Maps. Please check your internet connection and try again.');
+        };
+        document.head.appendChild(script);
+      }
+    };
+
+    // If we're offline, show a friendly error and wait for the connection to come back
+    if (!isOnline) {
+      setError('You appear to be offline. Autocomplete will be available when your connection is restored.');
+    } else {
+      loadGoogleMapsScript();
+    }
+
+    // Listen for online/offline events to retry
+    const onOnline = () => {
+      setIsOnline(true);
+      setError(null);
+      // Try to initialize again
+      loadGoogleMapsScript();
+    };
+
+    const onOffline = () => {
+      setIsOnline(false);
+      setError('You are offline. Autocomplete is unavailable.');
+    };
+
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+      // Cleanup web component if it was inserted
+      if (autocompleteInstance && (autocompleteInstance as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+        const handler = (autocompleteInstance as any).__onPlaceChange as EventListener | undefined;
+        if (handler) (autocompleteInstance as any).removeEventListener('gmp-placeautocomplete-placechange', handler);
+        if ((autocompleteInstance as any).parentElement) (autocompleteInstance as any).parentElement.removeChild(autocompleteInstance as any);
+        setAutocompleteInstance(null);
+      }
+    };
+  }, [isOpen]);
+
+  // Fill in address form from Google Place
+  const fillInFormFromPlace = async (place: any) => {
+    let streetNumber = '';
+    let streetName = '';
+    let city = '';
+    let state = '';
+    let country = '';
+    let zipCode = '';
+
+    // Parse address components using switch statement (Google's approach)
+    const addressComponents = place.address_components || [];
+    
+    for (const component of addressComponents) {
+      const componentType = component.types[0];
+
+      switch (componentType) {
+        case 'street_number':
+          streetNumber = component.long_name;
+          break;
+        case 'route':
+          streetName = component.short_name;
+          break;
+        case 'locality':
+        case 'postal_town':
+        case 'neighborhood':
+          city = component.long_name;
+          break;
+        case 'administrative_area_level_1':
+          state = component.short_name;
+          break;
+        case 'country':
+          country = component.long_name;
+          break;
+        case 'postal_code':
+          zipCode = component.long_name;
+          break;
+        case 'administrative_area_level_2':
+          // fallback to a broader admin area if locality not present
+          if (!city) city = component.long_name;
+          break;
+      }
+    }
+
+    // Combine street number and name
+    const fullAddress = `${streetNumber} ${streetName}`.trim();
+
+    // Update form with all extracted data
+    // Extract lat/lng robustly — PlaceAutocompleteElement or legacy API may expose different shapes
+    let latVal: number | null = null;
+    let lngVal: number | null = null;
+    try {
+      const loc = place.geometry && place.geometry.location;
+      if (!loc) {
+        latVal = null;
+        lngVal = null;
+      } else if (typeof loc.lat === 'function' && typeof loc.lng === 'function') {
+        latVal = loc.lat();
+        lngVal = loc.lng();
+      } else if (typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+        latVal = loc.lat;
+        lngVal = loc.lng;
+      } else if (typeof loc.lat === 'function' && typeof loc.lng === 'number') {
+        latVal = loc.lat();
+        lngVal = loc.lng;
+      }
+    } catch (e) {
+      // fallback: keep nulls
+      latVal = null;
+      lngVal = null;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      address: fullAddress || place.formatted_address || '',
+      city: city || prev.city,
+      state: state || prev.state,
+      country: country || prev.country,
+      zip_code: zipCode || prev.zip_code,
+      lat: latVal !== null ? String(latVal) : (prev.lat || ''),
+      lng: lngVal !== null ? String(lngVal) : (prev.lng || ''),
+    }));
+
+    // Keep the hidden native input in sync for form bindings
+    if (addressInputRef.current) {
+      const formattedAddress = fullAddress || place.formatted_address || '';
+      addressInputRef.current.value = formattedAddress;
+    }
+
+    // If the web component instance exists, try to set its visible value too (best-effort)
+    if (autocompleteInstance && (autocompleteInstance as any).tagName === 'GMP-PLACE-AUTOCOMPLETE') {
+      try {
+        // Many web components expose a 'value' property or reflect attribute
+        (autocompleteInstance as any).value = fullAddress || place.formatted_address || '';
+        (autocompleteInstance as any).setAttribute && (autocompleteInstance as any).setAttribute('value', fullAddress || place.formatted_address || '');
+      } catch (e) {
+        // ignore if not supported
+      }
+    }
+
+    // Try to auto-fill full property information (images, features, other metadata)
+    // by querying the backend for an existing property that matches this address.
+    // This is a best-effort lookup using the public GET /api/properties?zone=... endpoint
+    // which performs a LIKE search against address/city/state. If a match is found,
+    // merge its data into the form (without destructively wiping user-typed fields).
+    try {
+      const searchAddress = (place.formatted_address || fullAddress || '').trim();
+      if (searchAddress) {
+        const url = `/api/properties?zone=${encodeURIComponent(searchAddress)}`;
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const candidates = await resp.json();
+          if (Array.isArray(candidates) && candidates.length > 0) {
+            // Prefer an exact address match (case-insensitive), otherwise take first
+            const normalize = (s: string) => s ? s.toLowerCase().replace(/\s+/g, ' ').trim() : '';
+            const normFull = normalize(fullAddress || place.formatted_address || '');
+            let match = candidates.find((p: any) => normalize(p.address || '') === normFull) || candidates[0];
+
+            if (match) {
+              // Merge non-empty fields into form data, but don't overwrite values the user already entered
+              setFormData(prev => ({
+                ...prev,
+                title: prev.title || match.title || '',
+                description: prev.description || match.description || '',
+                price: prev.price || (match.price ? String(match.price) : ''),
+                bedrooms: prev.bedrooms || (match.rooms ? String(match.rooms) : ''),
+                bathrooms: prev.bathrooms || (match.bathrooms ? String(match.bathrooms) : ''),
+                sq_meters: prev.sq_meters || (match.squareMeters ? String(match.squareMeters) : ''),
+                year_built: prev.year_built || (match.yearBuilt ? String(match.yearBuilt) : ''),
+                // Keep address/city/state/country/zip as already set above
+              }));
+
+              // Features
+              if (match.features && Array.isArray(match.features)) {
+                const featureIds = match.features.map((f: any) => f.id).filter(Boolean);
+                if (featureIds.length > 0) setSelectedFeatures(featureIds);
+              }
+
+              // Images
+              if (match.images && Array.isArray(match.images) && match.images.length > 0) {
+                const sorted = [...match.images].sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
+                const urls = sorted.map((img: any) => img.image_url || img.url || '');
+                const ids = sorted.map((img: any) => img.id);
+                setExistingImages(urls);
+                setExistingImageIds(ids);
+
+                const coverImg = sorted.find((img: any) => img.is_cover || img.is_primary || img.is_primary);
+                if (coverImg) {
+                  setCoverImageId(coverImg.id);
+                  const idx = sorted.findIndex((img: any) => img.id === coverImg.id);
+                  setCoverImageIndex(idx >= 0 ? idx : 0);
+                } else {
+                  setCoverImageId(ids[0] || null);
+                  setCoverImageIndex(0);
+                }
+              }
+
+              console.log('Auto-filled property data from existing record', match.id || match);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Property autofill lookup failed', e);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -330,6 +729,11 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         bedrooms: parseInt(formData.bedrooms) || 0,
         bathrooms: parseInt(formData.bathrooms) || 0,
         sq_meters: parseInt(formData.sq_meters) || 0,
+        year_built: formData.year_built ? parseInt(formData.year_built) : null,
+        lat: formData.lat ? parseFloat(formData.lat) : null,
+        lng: formData.lng ? parseFloat(formData.lng) : null,
+        operation_status_id: formData.operation_status === 'rent' ? 2 : 1,
+        feature_ids: selectedFeatures,
       };
 
       // Add seller_id only when creating new property
@@ -404,6 +808,10 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         bedrooms: '',
         bathrooms: '',
         sq_meters: '',
+        year_built: '',
+        lat: '',
+        lng: '',
+        operation_status: 'buy',
       });
       setUploadedImages([]);
       setNewImagePreviews([]);
@@ -448,8 +856,13 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
 
         {/* Header */}
         <div className={styles.modalHeader}>
+          {isEditMode && (
+            <div className={styles.formModeBadge + ' ' + styles.edit}>
+              📝 EDITING MODE
+            </div>
+          )}
           <h2>{isEditMode ? '✏️ Edit Property' : '➕ Add New Property'}</h2>
-          <p>{isEditMode ? 'Update the property details' : 'Fill in the details to list your property'}</p>
+          <p>{isEditMode ? 'Update the property details below' : 'Fill in all required fields to list your property'}</p>
         </div>
 
         {/* Success Message */}
@@ -475,8 +888,21 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
         {/* Error Message */}
         {error && (
           <div className={styles.errorBanner}>
-            <span className={styles.errorIcon}>⚠️</span>
-            <p>{error}</p>
+            <div className={styles.errorContent}>
+              <span className={styles.errorIcon}>⚠️</span>
+              <div>
+                <p className={styles.errorTitle}>Error</p>
+                <p className={styles.errorMessage}>{error}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className={styles.errorClose}
+              onClick={() => setError(null)}
+              aria-label="Close error"
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -487,7 +913,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             <h3>Basic Information</h3>
             
             <div className={styles.formGroup}>
-              <label htmlFor="title">Title *</label>
+              <label htmlFor="title">Title <span className={styles.requiredAsterisk}>*</span></label>
               <input
                 type="text"
                 id="title"
@@ -530,7 +956,7 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="price">Price *</label>
+                <label htmlFor="price">Price <span className={styles.requiredAsterisk}>*</span></label>
                 <input
                   type="number"
                   id="price"
@@ -541,6 +967,21 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                   required
                 />
               </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="operation_status">Operation <span className={styles.requiredAsterisk}>*</span></label>
+                <select
+                  id="operation_status"
+                  name="operation_status"
+                  value={formData.operation_status}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select Operation</option>
+                  <option value="buy">For Sale</option>
+                  <option value="rent">For Rent</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -549,21 +990,30 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
             <h3>Location</h3>
             
             <div className={styles.formGroup}>
-              <label htmlFor="address">Address *</label>
+              <label htmlFor="address">Address <span className={styles.requiredAsterisk}>*</span></label>
+              {/* Native input hidden — the web component will provide the visible input and suggestions */}
               <input
+                ref={addressInputRef}
                 type="text"
                 id="address"
                 name="address"
-                placeholder="Street address"
+                placeholder="Street address or location"
                 value={formData.address}
                 onChange={handleInputChange}
                 required
+                autoComplete="off"
+                className={styles.hiddenInput}
+                aria-hidden={true}
+                tabIndex={-1}
               />
+              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                Start typing to see address suggestions
+              </p>
             </div>
 
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label htmlFor="city">City *</label>
+                <label htmlFor="city">City <span className={styles.requiredAsterisk}>*</span></label>
                 <input
                   type="text"
                   id="city"
@@ -613,6 +1063,40 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                 />
               </div>
             </div>
+
+            <div className={styles.formRow}>
+              {/* Latitude and Longitude could go here if needed */}
+              <div className={styles.formSection}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lat">Latitude</label>
+                    <input
+                      type="number"
+                      id="lat"
+                      name="lat"
+                      placeholder="e.g., -34.6037"
+                      step="0.0001"
+                      value={formData.lat}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lng">Longitude</label>
+                    <input
+                      type="number"
+                      id="lng"
+                      name="lng"
+                      placeholder="e.g., -58.3816"
+                      step="0.0001"
+                      value={formData.lng}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              </div> 
+            </div>      
+            
           </div>
 
           {/* Details Section */}
@@ -655,6 +1139,117 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
                   onChange={handleInputChange}
                 />
               </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="year_built">Year Built</label>
+                <input
+                  type="number"
+                  id="year_built"
+                  name="year_built"
+                  placeholder="e.g., 2020"
+                  value={formData.year_built}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Coordinates Section */}
+          {/* <div className={styles.formSection}>
+            <h3>📍 Coordinates (Optional)</h3>
+            
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="lat">Latitude</label>
+                <input
+                  type="number"
+                  id="lat"
+                  name="lat"
+                  placeholder="e.g., -34.6037"
+                  step="0.0001"
+                  value={formData.lat}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="lng">Longitude</label>
+                <input
+                  type="number"
+                  id="lng"
+                  name="lng"
+                  placeholder="e.g., -58.3816"
+                  step="0.0001"
+                  value={formData.lng}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div> */}
+
+          {/* Features Section */}
+          <div className={styles.formSection}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0 }}>✨ Important Features</h3>
+              {availableFeatures.length > 4 && (
+                <button
+                  type="button"
+                  className={styles.toggleFeaturesButton}
+                  onClick={() => setShowAllFeatures(!showAllFeatures)}
+                  title={showAllFeatures ? 'Show top 4 features' : 'Show all available features'}
+                >
+                  {showAllFeatures ? 'Show Less' : 'Show More'}
+                </button>
+              )}
+            </div>
+            
+            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 12px 0' }}>
+              {showAllFeatures 
+                ? 'Select any features that apply to this property' 
+                : 'Top 4 essential features for your property'}
+            </p>
+            
+            {/* Show selected features as badges for quick visibility in edit mode */}
+            {/* {selectedFeatures.length > 0 && (
+              <div className={styles.selectedFeaturesRow} style={{ marginBottom: 12 }}>
+                {selectedFeatures.map((fid) => {
+                  const f = availableFeatures.find((af) => af.id === fid);
+                  if (!f) return null;
+                  return (
+                    <span key={`sel-${fid}`} className={styles.featureItem} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>{f.name}</span>
+                      <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setSelectedFeatures(selectedFeatures.filter(id => id !== fid))} className={styles.removeFeatureBtn}>✕</button>
+                    </span>
+                  );
+                })}
+              </div>
+            )} */}
+
+            <div className={styles.featuresGrid}>
+              {availableFeatures.length > 0 ? (
+                (showAllFeatures ? availableFeatures : getTopFeatures(availableFeatures, 4)).map((feature) => (
+                  <div key={feature.id} className={styles.featureCheckbox}>
+                    <input
+                      type="checkbox"
+                      id={`feature-${feature.id}`}
+                      checked={selectedFeatures.includes(feature.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedFeatures([...selectedFeatures, feature.id]);
+                        } else {
+                          setSelectedFeatures(selectedFeatures.filter(id => id !== feature.id));
+                        }
+                      }}
+                    />
+                    <label htmlFor={`feature-${feature.id}`}>
+                      <span className={styles.featureName}>{feature.name}</span>
+                      {feature.category && <span className={styles.featureCategory}>{feature.category}</span>}
+                    </label>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.noFeatures}>Loading features...</p>
+              )}
             </div>
           </div>
 
@@ -765,15 +1360,28 @@ const AddPropertyPopup: React.FC<AddPropertyPopupProps> = ({
               className={styles.cancelButton}
               onClick={onClose}
               disabled={isSubmitting}
+              title={isSubmitting ? 'Cannot cancel while submitting' : 'Cancel and discard changes'}
             >
-              Cancel
+              <span>✕</span>
+              <span>Cancel</span>
             </button>
             <button
               type="submit"
               className={styles.submitButton}
               disabled={isSubmitting}
+              title={isEditMode ? 'Save property changes' : 'Create new property'}
             >
-              {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Property' : 'Create Property')}
+              {isSubmitting ? (
+                <>
+                  <span className={styles.loadingSpinner}>⟳</span>
+                  <span>{isEditMode ? 'Updating...' : 'Creating...'}</span>
+                </>
+              ) : (
+                <>
+                  <span>{isEditMode ? '💾' : '✚'}</span>
+                  <span>{isEditMode ? 'Update Property' : 'Create Property'}</span>
+                </>
+              )}
             </button>
           </div>
         </form>

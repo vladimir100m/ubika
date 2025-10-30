@@ -14,6 +14,12 @@ interface PropertyDetailCardProps {
   showContact?: boolean;
 }
 
+interface MainInfoItem {
+  icon: string;
+  label: string;
+  value: string | number;
+}
+
 const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
   property,
   showContact = true
@@ -59,98 +65,87 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
 
   const images = getPropertyImagesRaw(property);
 
+  // Helper function to determine availability status
+  const isAvailable = property.property_status?.display_name?.toLowerCase() !== 'not_available';
+  
+  // Build main info items array
+  const mainInfoItems: MainInfoItem[] = [
+    { icon: '🛏️', label: 'Bedrooms', value: property.bedrooms || 'N/A' },
+    { icon: '🚿', label: 'Bathrooms', value: property.bathrooms || 'N/A' },
+    { icon: '📐', label: 'Square Meters', value: property.sq_meters ? `${property.sq_meters} m²` : 'N/A' }
+  ];
+
+  // Filter features into categories for highlights
+  const getFeaturesByCategory = (category: string) => {
+    return property.features?.filter(f => f.category === category).map(f => f.name) || [];
+  };
+
+  const indoorFeatures = getFeaturesByCategory('Interior');
+  const outdoorFeatures = getFeaturesByCategory('Outdoor');
+  const amenitiesFeatures = getFeaturesByCategory('Amenities');
+
   return (
     <div className={styles.propertyDetailCard}>
-      {/* Header Section */}
-      <div className={styles.header}>
-        <div className={styles.priceSection}>
-          <div className={styles.price}>
-            💰 {formatPropertyPriceCompact(property.price)}
-            {property.operation_status_id === 2 && <span className={styles.period}>/mo</span>}
-          </div>
-          {property.property_status && (
-            <div className={`${styles.statusBadge} ${styles[property.property_status.display_name?.toLowerCase() || '']}`}>
-              {property.property_status.display_name}
+      {/* ===== HERO SECTION: PRICE, AVAILABILITY, LOCATION ===== */}
+      <div className={styles.heroSection}>
+        <div className={styles.heroHeader}>
+          <div className={styles.priceAndStatus}>
+            <h1 className={styles.heroPrice}>
+              {formatPropertyPriceCompact(property.price)}
+              {property.operation_status_id === 2 && <span className={styles.pricePeriod}>/mo</span>}
+            </h1>
+            <div className={styles.availabilityBadge} data-available={isAvailable}>
+              <span className={styles.availabilityDot}></span>
+              {isAvailable ? 'Available' : 'Not Available'}
             </div>
-          )}
+          </div>
+          <PropertyActions propertyId={property.id} />
         </div>
-        
-        <h1 className={styles.title}>
-          🏠 {property.title || `${property.property_type?.display_name || 'Home'} in ${property.city}`}
-        </h1>
-        
-        <div className={styles.location}>
-          📍 {property.address}, {property.city}
-        </div>
-      </div>
 
-      {/* Actions */}
-      <PropertyActions 
-        propertyId={property.id}
-      />
+        <h2 className={styles.heroTitle}>
+          {property.title || `${property.property_type?.display_name || 'Home'} in ${property.city}`}
+        </h2>
 
-      {/* Main Details */}
-      <div className={styles.mainDetails}>
-        <div className={styles.keyDetails}>
-          <div className={styles.detailItem}>
-            <div className={styles.detailIcon}>🛏️</div>
-            <div>
-              <div className={styles.detailValue}>{property.bedrooms}</div>
-              <div className={styles.detailLabel}>Beds</div>
-            </div>
-          </div>
-          
-          <div className={styles.detailItem}>
-            <div className={styles.detailIcon}>🚿</div>
-            <div>
-              <div className={styles.detailValue}>{property.bathrooms}</div>
-              <div className={styles.detailLabel}>Baths</div>
-            </div>
-          </div>
-          
-          <div className={styles.detailItem}>
-            <div className={styles.detailIcon}>📐</div>
-            <div>
-              <div className={styles.detailValue}>{property.sq_meters}</div>
-              <div className={styles.detailLabel}>m²</div>
-            </div>
-          </div>
-          
-          <div className={styles.detailItem}>
-            <div className={styles.detailIcon}>🏠</div>
-            <div>
-              <div className={styles.detailValue}>{property.property_type?.display_name || 'N/A'}</div>
-              <div className={styles.detailLabel}>Type</div>
-            </div>
-          </div>
+        <div className={styles.heroLocation}>
+          📍 {property.address} • {property.city}
+          {property.zip_code && <span className={styles.zipCode}>{property.zip_code}</span>}
         </div>
       </div>
 
-      {/* What's Special - Highlight Key Features (Zillow style) */}
-      {property.features && property.features.length > 0 && (
-        <div className={styles.section}>
-          <div className={styles.specialHighlightsHeader}>
-            <h2 className={styles.propertyTitle}>✨ Highlights</h2>
-          </div>
-          <div className={styles.specialHighlights}>
-            {property.features.slice(0, 6).map((feature) => (
-              <div key={feature.id} className={styles.highlightBullet}>
-                ⭐ {feature.name}
+      {/* ===== MAIN INFO: BEDS, BATHS, SIZE IN CLEAN GRID ===== */}
+      <div className={styles.mainInfoSection}>
+        <div className={styles.mainInfoGrid}>
+          {mainInfoItems.map((item, idx) => (
+            <div key={idx} className={styles.mainInfoCard}>
+              <div className={styles.mainInfoIcon}>{item.icon}</div>
+              <div className={styles.mainInfoContent}>
+                <div className={styles.mainInfoValue}>{item.value}</div>
+                <div className={styles.mainInfoLabel}>{item.label}</div>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== HIGHLIGHTS: DISPLAY AS TAGS ===== */}
+      {/* {property.features && property.features.length > 0 && (
+        <div className={styles.highlightsSection}>
+          <h3 className={styles.sectionHeading}>✨ Highlights</h3>
+          <div className={styles.highlightsTags}>
+            {property.features.slice(0, 8).map((feature) => (
+              <span key={feature.id} className={styles.highlightTag}>
+                {feature.name}
+              </span>
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
-      {/* Description */}
+      {/* ===== DESCRIPTION ===== */}
       {property.description && (
-        <div className={styles.section}>
-          <div className={`${styles.collapsibleHeader}`}>
-            <h2 className={styles.propertyTitle}>📋 About</h2>
-          </div>
-          <div id="section-description" className={styles.sectionBodyFade}>
-            <p className={styles.description}>{property.description}</p>
-          </div>
+        <div className={styles.descriptionSection}>
+          <h3 className={styles.sectionHeading}>📋 About This Property</h3>
+          <p className={styles.descriptionText}>{property.description}</p>
         </div>
       )}
 
@@ -218,15 +213,15 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
                 <span className={styles.infoLabel}>Address</span>
                 <span className={styles.infoValue}>{property.address}, {property.city}</span>
               </div>
-              {property.lat !== undefined && property.lng !== undefined && (
+              {property.lat != null && property.lng != null && (
                 <>
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>Lat</span>
-                    <span className={styles.infoValue}>{property.lat.toFixed(4)}</span>
+                    <span className={styles.infoValue}>{(property.lat as number).toFixed(4)}</span>
                   </div>
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>Lng</span>
-                    <span className={styles.infoValue}>{property.lng.toFixed(4)}</span>
+                    <span className={styles.infoValue}>{(property.lng as number).toFixed(4)}</span>
                   </div>
                 </>
               )}
@@ -258,202 +253,140 @@ const PropertyDetailCard: React.FC<PropertyDetailCardProps> = ({
         </div>
       </div>
 
-      {/* Property Features */}
-      {property.features && property.features.length > 0 && (
-        <div className={styles.section}>
-          <div className={styles.collapsibleHeader}>
-            <h2 className={styles.propertyTitle}>🔧 Features ({property.features.length})</h2>
-          </div>
-          <div id="section-features" className={styles.sectionBodyFade}>
-            <div className={styles.featuresContainer}>
-              {Object.entries(
-                property.features.reduce((acc, feature) => {
-                  const category = feature.category || 'Other';
-                  if (!acc[category]) acc[category] = [];
-                  acc[category].push(feature);
-                  return acc;
-                }, {} as Record<string, any[]>)
-              ).map(([category, features]) => (
-                <div key={category} className={styles.featureCategory}>
-                  <h4 className={styles.featureCategoryTitle}>⚡ {category}</h4>
-                  <div className={styles.featuresList}>
-                    {features.map((feature) => (
-                      <div key={feature.id} className={styles.featureItemBullet}>
-                        ✓ {feature.name}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Neighborhood Information */}
-      {neighborhoodData && (
-        <div className={styles.section}>
-          <div className={styles.collapsibleHeader}>
-            <h2 className={styles.propertyTitle}>🏘️ Neighborhood: {neighborhoodData.name}</h2>
-          </div>
-          <div id="section-neighborhood" className={styles.sectionBodyFade}>
-            <div className={styles.neighborhoodInfo}>
-              <p className={styles.neighborhoodDescription}>
-                {neighborhoodData.description}
-              </p>
-              <div className={styles.neighborhoodDetails}>
-                <div className={styles.neighborhoodItem}>
-                  <h4>🚇 Transit</h4>
-                  <p>{neighborhoodData.subway_access}</p>
-                </div>
-                <div className={styles.neighborhoodItem}>
-                  <h4>🍽️ Dining</h4>
-                  <p>{neighborhoodData.dining_options}</p>
-                </div>
-                <div className={styles.neighborhoodItem}>
-                  <h4>🛍️ Shopping</h4>
-                  <p>{neighborhoodData.shopping_access}</p>
-                </div>
-                <div className={styles.neighborhoodItem}>
-                  <h4>🛣️ Roads</h4>
-                  <p>{neighborhoodData.highway_access}</p>
-                </div>
+      {/* ===== FEATURES BY CATEGORY: CLEAN CARDS ===== */}
+      {(indoorFeatures.length > 0 || outdoorFeatures.length > 0 || amenitiesFeatures.length > 0) && (
+        <div className={styles.featuresSection}>
+          <h3 className={styles.sectionHeading}>🏠 Features</h3>
+          
+          <div className={styles.featuresCategoryGrid}>
+            {/* {indoorFeatures.length > 0 && (
+              <div className={styles.featureCategory}>
+                <h4 className={styles.featureCategoryTitle}>🏠 Interior</h4>
+                <ul className={styles.featureList}>
+                  {indoorFeatures.map((name, idx) => (
+                    <li key={idx}>✓ {name}</li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )} */}
+            
+            {/* {outdoorFeatures.length > 0 && (
+              <div className={styles.featureCategory}>
+                <h4 className={styles.featureCategoryTitle}>🌳 Outdoor</h4>
+                <ul className={styles.featureList}>
+                  {outdoorFeatures.map((name, idx) => (
+                    <li key={idx}>✓ {name}</li>
+                  ))}
+                </ul>
+              </div>
+            )} */}
+            
+            {/* {amenitiesFeatures.length > 0 && (
+              <div className={styles.featureCategory}>
+                <h4 className={styles.featureCategoryTitle}>✨ Amenities</h4>
+                <ul className={styles.featureList}>
+                  {amenitiesFeatures.map((name, idx) => (
+                    <li key={idx}>✓ {name}</li>
+                  ))}
+                </ul>
+              </div>
+            )} */}
           </div>
         </div>
       )}
 
-      {/* HOA & Amenities Section */}
-      <div className={styles.section}>
-        <div className={styles.collapsibleHeader}>
-          <h2 className={styles.propertyTitle}>🏘️ Community</h2>
+      {/* ===== LOCATION WITH MAP ===== */}
+      <div className={styles.locationSection}>
+        <h3 className={styles.sectionHeading}>📍 Location</h3>
+        
+        <div className={styles.locationContent}>
+          <div className={styles.locationInfo}>
+            <div className={styles.locationItem}>
+              <span className={styles.locationLabel}>Address</span>
+              <span className={styles.locationValue}>{property.address}</span>
+            </div>
+            <div className={styles.locationItem}>
+              <span className={styles.locationLabel}>City</span>
+              <span className={styles.locationValue}>{property.city}</span>
+            </div>
+            {property.zip_code && (
+              <div className={styles.locationItem}>
+                <span className={styles.locationLabel}>ZIP Code</span>
+                <span className={styles.locationValue}>{property.zip_code}</span>
+              </div>
+            )}
+            {property.lat && property.lng && (
+              <div className={styles.locationCoordinates}>
+                <span className={styles.locationLabel}>Coordinates</span>
+                <span className={styles.locationValue}>{(property.lat as number).toFixed(4)}, {(property.lng as number).toFixed(4)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Simple embedded map placeholder - can integrate with Google Maps */}
+          {property.lat && property.lng && (
+            <div className={styles.mapPlaceholder}>
+              <iframe
+                width="100%"
+                height="300"
+                style={{ border: 0, borderRadius: '12px' }}
+                loading="lazy"
+                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&q=${property.lat},${property.lng}`}
+              ></iframe>
+            </div>
+          )}
         </div>
-        <div id="section-hoa" className={styles.sectionBodyFade}>
-          <div className={styles.hoaGrid}>
-            <div className={styles.hoaItem}>
-              <h4>� Amenities</h4>
-              <ul className={styles.amenitiesList}>
-                <li>🚗 Parking</li>
-                <li>💪 Fitness center</li>
-                <li>👥 Community room</li>
-                <li>🏨 Guest suites</li>
-              </ul>
+      </div>
+
+      {/* ===== ADDITIONAL DETAILS ===== */}
+      <div className={styles.additionalDetailsSection}>
+        <h3 className={styles.sectionHeading}>ℹ️ Additional Details</h3>
+        
+        <div className={styles.detailsGrid}>
+          <div className={styles.detailsGridItem}>
+            <span className={styles.detailsLabel}>Property Type</span>
+            <span className={styles.detailsValue}>{property.property_type?.display_name || 'N/A'}</span>
+          </div>
+          
+          <div className={styles.detailsGridItem}>
+            <span className={styles.detailsLabel}>Status</span>
+            <span className={styles.detailsValue}>{property.property_status?.display_name || 'N/A'}</span>
+          </div>
+          
+          {property.year_built && (
+            <div className={styles.detailsGridItem}>
+              <span className={styles.detailsLabel}>Year Built</span>
+              <span className={styles.detailsValue}>{property.year_built}</span>
             </div>
-            <div className={styles.hoaItem}>
-              <h4>�️ Services</h4>
-              <ul className={styles.servicesList}>
-                <li>🏠 Building insurance</li>
-                <li>🔧 Maintenance</li>
-                <li>🔒 24/7 security</li>
-                <li>🅿️ Visitor parking</li>
-              </ul>
-            </div>
+          )}
+          
+          <div className={styles.detailsGridItem}>
+            <span className={styles.detailsLabel}>Listed Date</span>
+            <span className={styles.detailsValue}>{formatPropertyDate(property.created_at)}</span>
           </div>
         </div>
       </div>
 
-      {/* Financial & Listing Details Section */}
-      <div className={styles.section}>
-        <div className={styles.collapsibleHeader}>
-          <h2 className={styles.propertyTitle}>💰 Financials</h2>
-        </div>
-        <div id="section-financial" className={styles.sectionBodyFade}>
-          <div className={styles.financialGrid}>
-            <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>🏠 HOA</span>
-              <span className={styles.financialValue}>$1,304/mo</span>
-            </div>
-            <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>🧾 Tax</span>
-              <span className={styles.financialValue}>$3,460/yr</span>
-            </div>
-            <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>📅 Days Listed</span>
-              <span className={styles.financialValue}>51</span>
-            </div>
-            <div className={styles.financialItem}>
-              <span className={styles.financialLabel}>👀 Views</span>
-              <span className={styles.financialValue}>136</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Contact Section */}
+      {/* ===== CONTACT CTA ===== */}
       {showContact && (
-        <div className={styles.section}>
-          <div className={styles.collapsibleHeader}>
-            <h2 className={styles.propertyTitle}>📞 Contact</h2>
+        <div className={styles.contactSection}>
+          <h3 className={styles.sectionHeading}>📞 Interested in This Property?</h3>
+          <p className={styles.contactSubtext}>Contact the seller to schedule a viewing or ask questions</p>
+          
+          <div className={styles.contactCTA}>
+            <button className={styles.ctaButtonPrimary}>
+              💬 Schedule Viewing
+            </button>
+            <button className={styles.ctaButtonSecondary}>
+              ❓ Ask Question
+            </button>
           </div>
-          <div id="section-contact" className={styles.sectionBodyFade}>
-            <div className={styles.contactSection}>
-              <p className={styles.contactDescription}>
-                Get info, schedule viewing, or ask questions 👋
-              </p>
-              <form className={styles.contactForm}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>👤 Name *</label>
-                  <input
-                    type="text"
-                    placeholder="Your name"
-                    value={contactForm.name}
-                    onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
-                    className={styles.formInput}
-                    required
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>📧 Email *</label>
-                  <input
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={contactForm.email}
-                    onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                    className={styles.formInput}
-                    required
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>📱 Phone</label>
-                  <input
-                    type="tel"
-                    placeholder="+1 (555) 123-4567"
-                    value={contactForm.phone}
-                    onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>💬 Message</label>
-                  <textarea
-                    placeholder="I'm interested in this property..."
-                    value={contactForm.message}
-                    onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                    className={styles.formTextarea}
-                    rows={4}
-                  />
-                </div>
-                <div className={styles.formActions}>
-                  <button 
-                    type="submit" 
-                    className={styles.submitButton}
-                    disabled={submitStatus === 'loading'}
-                  >
-                    {submitStatus === 'loading' ? '📤 Sending...' : '🚀 Send Message'}
-                  </button>
-                  <div className={styles.contactInfo}>
-                    <p><strong>🏢 Ubika Real Estate</strong></p>
-                    <p>📧 info@ubika.com | 📞 +1 (555) 123-4567</p>
-                  </div>
-                </div>
-                {submitStatus === 'success' && (
-                  <div className={styles.successMessage}>✅ Message sent!</div>
-                )}
-                {submitStatus === 'error' && (
-                  <div className={styles.errorMessage}>❌ Error. Try again.</div>
-                )}
-              </form>
+
+          <div className={styles.agentInfo}>
+            <div className={styles.agentAvatar}>🏢</div>
+            <div className={styles.agentDetails}>
+              <p className={styles.agentName}>Ubika Real Estate</p>
+              <p className={styles.agentContact}>info@ubika.com • +1 (555) 123-4567</p>
             </div>
           </div>
         </div>

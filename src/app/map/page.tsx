@@ -25,7 +25,7 @@ const MapPage: React.FC = () => {
   const isLoading = status === 'loading';
   const [properties, setProperties] = useState<Property[]>([]);
   const [mapCenter, setMapCenter] = useState<Geocode>({ lat: -34.5897318, lng: -58.4232065 });
-  const [markers, setMarkers] = useState<{ id: number; lat: number; lng: number }[]>([]);
+  const [markers, setMarkers] = useState<{ id: string | number; lat: number; lng: number }[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,8 +54,8 @@ const MapPage: React.FC = () => {
           
           const selectedPropertyId = searchParams?.get('selectedPropertyId');
           if (selectedPropertyId) {
-            const propertyId = parseInt(selectedPropertyId, 10);
-            const property = response.data.find(p => p.id === propertyId);
+            const propertyId = selectedPropertyId;
+            const property = response.data.find(p => String(p.id) === propertyId);
             if (property) {
               setSelectedProperty(property);
               if (property.lat && property.lng) {
@@ -86,8 +86,8 @@ const MapPage: React.FC = () => {
         setMapCenter({ lat: firstProperty.lat, lng: firstProperty.lng });
       }
       const propertyMarkers = properties
-        .filter((property) => property.lat && property.lng)
-        .map((property) => ({ id: property.id, lat: property.lat, lng: property.lng }));
+        .filter((property) => property.lat != null && property.lng != null)
+        .map((property) => ({ id: property.id, lat: property.lat as number, lng: property.lng as number }));
       setMarkers(propertyMarkers);
     } else {
       setMarkers([]);
@@ -327,7 +327,6 @@ const MapPage: React.FC = () => {
         <PropertyPopup
           selectedProperty={selectedProperty}
           onClose={handleClosePropertyDetail}
-          mapRef={mapRef}
         />
       )}
     </StandardLayout>

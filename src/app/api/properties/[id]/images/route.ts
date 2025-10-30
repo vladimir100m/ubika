@@ -6,14 +6,13 @@ import { createRequestId, createLogger } from '../../../../../lib/logger';
 import { cacheInvalidatePattern } from '../../../../../lib/cache';
 import { CACHE_KEYS } from '../../../../../lib/cacheKeyBuilder';
 
-interface BatchImageData {
+interface BatchMediaData {
   image_url: string;
   is_cover?: boolean;
   display_order?: number;
   file_size?: number;
   mime_type?: string;
   original_filename?: string;
-  blob_path?: string;
   alt_text?: string;
 }
 
@@ -31,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const userId = (session.user as any).sub || session.user.email;
     const body = await req.json();
-    const { property_id, images }: { property_id: string | number; images: BatchImageData[] } = body;
+    const { property_id, images }: { property_id: string | number; images: BatchMediaData[] } = body;
 
     log.info('Batch image upload request', { property_id, imageCount: images?.length });
 
@@ -76,15 +75,15 @@ export async function POST(req: NextRequest) {
       const hasCover = images.some(img => img.is_cover);
       if (hasCover) {
         await query(
-          'UPDATE property_images SET is_cover = false, updated_at = NOW() WHERE property_id = $1 AND is_cover = true',
-          [property_id]
+          'UPDATE property_media SET is_primary = false, updated_at = NOW() WHERE property_id = $1 AND is_primary = true AND media_type = $2',
+          [property_id, 'image']
         );
       }
 
       // Get next available display order
       const maxOrderResult = await query(
-        'SELECT COALESCE(MAX(display_order), -1) as max_order FROM property_images WHERE property_id = $1',
-        [property_id]
+        'SELECT COALESCE(MAX(display_order), -1) as max_order FROM property_media WHERE property_id = $1 AND media_type = $2',
+        [property_id, 'image']
       );
       let nextOrder = (maxOrderResult.rows[0]?.max_order || -1) + 1;
 
@@ -95,27 +94,27 @@ export async function POST(req: NextRequest) {
         const displayOrder = img.display_order !== undefined ? img.display_order : nextOrder++;
         
         const insertQuery = `
-          INSERT INTO property_images (
-            property_id, image_url, is_cover, display_order,
-            file_size, mime_type, original_filename, blob_path, alt_text,
-            created_at, updated_at
+          INSERT INTO property_media (
+            id, property_id, media_type, url, file_name,
+            file_size, mime_type, alt_text, is_primary, display_order,
+            created_at, updated_at, uploaded_at
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
-          RETURNING id, property_id, image_url, is_cover, display_order,
-                    file_size, mime_type, original_filename, blob_path, alt_text,
+          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW(), NOW())
+          RETURNING id, property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order,
+                    file_size, mime_type, alt_text,
                     created_at, updated_at
         `;
 
         const values = [
           property_id,
+          'image',
           img.image_url,
-          img.is_cover || false,
-          displayOrder,
+          img.original_filename || null,
           img.file_size || null,
           img.mime_type || null,
-          img.original_filename || null,
-          img.blob_path || null,
           img.alt_text || null,
+          img.is_cover || false,
+          displayOrder,
         ];
 
         const result = await query(insertQuery, values);
@@ -191,13 +190,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const propertyId = params.id;
     
     const result = await query(
-      `SELECT id, property_id, image_url, is_cover, display_order,
-              file_size, mime_type, original_filename, blob_path, alt_text,
+      `SELECT id, property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order,
+              file_size, mime_type, alt_text,
               created_at, updated_at
-       FROM property_images 
-       WHERE property_id = $1 
-       ORDER BY is_cover DESC, display_order ASC`,
-      [propertyId]
+       FROM property_media 
+       WHERE property_id = $1 AND media_type = $2
+       ORDER BY is_primary DESC, display_order ASC`,
+      [propertyId, 'image']
     );
 
     log.info('Fetched property images', { propertyId, count: result.rows.length });

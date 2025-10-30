@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useGoogleMaps } from '../app/providers';
 import styles from '../styles/SimpleSearchBar.module.css';
 
 interface SimpleSearchBarProps {
@@ -19,12 +20,18 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
     placeholder = "Buscar dirección..."
 }) => {
     const [address, setAddress] = useState('');
+    const [autocompleteInstance, setAutocompleteInstance] = useState<any>(null);
 
-    // Initialize Google Places Autocomplete
+    // Use shared Google Maps loader from app providers
+    const { isLoaded } = useGoogleMaps();
+
+    // Initialize Google Places Autocomplete once API is loaded
     useEffect(() => {
-        if (window.google) {
-            const input = document.getElementById('simple-autocomplete-input') as HTMLInputElement;
-            if (input) {
+        if (!isLoaded || autocompleteInstance) return;
+
+        const input = document.getElementById('simple-autocomplete-input') as HTMLInputElement;
+        if (input && window?.google?.maps?.places?.Autocomplete) {
+            try {
                 const autocomplete = new window.google.maps.places.Autocomplete(input, {
                     componentRestrictions: { country: 'ar' }, // Restrict to Argentina
                     fields: ['formatted_address', 'geometry']
@@ -34,11 +41,18 @@ const SimpleSearchBar: React.FC<SimpleSearchBarProps> = ({
                     const place = autocomplete.getPlace();
                     if (place.formatted_address) {
                         setAddress(place.formatted_address);
+                        if (onSearch) {
+                            onSearch(place.formatted_address);
+                        }
                     }
                 });
+
+                setAutocompleteInstance(autocomplete);
+            } catch (error) {
+                console.error('Error initializing Google Places Autocomplete:', error);
             }
         }
-    }, []);
+    }, [isLoaded]);
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();

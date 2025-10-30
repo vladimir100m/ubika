@@ -141,6 +141,17 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
     setIsAddPropertyOpen(true);
   };
 
+  // Calculate statistics
+  const calculateAveragePrice = () => {
+    if (properties.length === 0) return 0;
+    const total = properties.reduce((sum, p) => sum + (parseFloat(p.price as any) || 0), 0);
+    return Math.round(total / properties.length);
+  };
+
+  const calculateTotalValue = () => {
+    return properties.reduce((sum, p) => sum + (parseFloat(p.price as any) || 0), 0);
+  };
+
   if (status === 'loading') {
     return (
       <div className={styles.loadingContainer}>
@@ -233,9 +244,17 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
                 <div className={styles.statContent}>
                   <div className={styles.statLabel}>Average Price</div>
                   <div className={styles.statValue}>
-                    ${(
-                      properties.reduce((sum, p) => sum + (p.price || 0), 0) / properties.length
-                    ).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    ${calculateAveragePrice().toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>📈</div>
+                <div className={styles.statContent}>
+                  <div className={styles.statLabel}>Total Value</div>
+                  <div className={styles.statValue}>
+                    ${calculateTotalValue().toLocaleString('en-US', { maximumFractionDigits: 0 })}
                   </div>
                 </div>
               </div>
@@ -256,10 +275,7 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
           {!isLoading && properties.length > 0 && (
             <div className={styles.propertiesSection}>
               <div className={styles.sectionHeader}>
-                <h2>Your Properties ({properties.length})</h2>
-                <p className={styles.sectionSubtitle}>
-                  {properties.length} listing{properties.length !== 1 ? 's' : ''} active
-                </p>
+
               </div>
 
               {/* Property Cards Grid - Reusing PropertyCardGrid component */}
@@ -282,7 +298,6 @@ const SellerView: React.FC<SellerViewProps> = ({ initialProperties = [] }) => {
         <PropertyPopup
           selectedProperty={selectedProperty}
           onClose={handleClosePropertyDetail}
-          mapRef={popupMapRef}
         />
       )}
 

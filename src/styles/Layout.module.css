@@ -3,7 +3,7 @@
 .pageContainer {
   min-height: 100vh;
   padding-top: 64px; /* Default header height */
-  background-color: #f9f9f9;
+  background-color: var(--color-bg-primary);
   /* Ensure smooth scrolling */
   overflow-x: hidden;
   overflow-y: auto;

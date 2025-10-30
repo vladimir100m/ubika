@@ -1,9 +1,9 @@
 .propertyCard {
-  background-color: white;
+  background-color: var(--color-secondary-800);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: none;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   cursor: pointer;
   height: 100%;
@@ -13,8 +13,9 @@
 }
 
 .propertyCard:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-accent-700);
 }
 
 /* Image Section */
@@ -35,7 +36,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background-color: #f7f7f7;
+  background-color: var(--color-bg-tertiary);
   position: relative;
 }
 
@@ -204,8 +205,8 @@
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  background: rgba(10, 20, 40, 0.8);
+  color: var(--color-secondary-700);
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -218,8 +219,8 @@
   position: absolute;
   bottom: 12px;
   left: 12px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  background: rgba(10, 20, 40, 0.8);
+  color: var(--color-secondary-700);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -232,12 +233,12 @@
   top: 12px;
   right: 12px;
   z-index: 15; /* Higher z-index to ensure it's always on top */
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 251, 248, 0.95);
   border-radius: 50%;
   padding: 4px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 12px rgba(10, 20, 40, 0.2);
   backdrop-filter: blur(8px);
-  border: 3px solid #ff385c; /* Visible red border */
+  border: 3px solid var(--color-accent-700);
   transition: all 0.3s ease;
   display: block;
   width: 44px;
@@ -247,36 +248,196 @@
 }
 
 .propertyCard .favoriteBtn:hover {
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 251, 248, 1);
+  box-shadow: 0 4px 16px rgba(201, 169, 97, 0.3);
   transform: scale(1.05);
 }
 
-/* Status Badge */
-.statusBadge {
+/* Status Badges Container */
+.badgesContainer {
   position: absolute;
   top: 12px;
   left: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  z-index: 10;
 }
 
+/* Status Badge - Property Status (Published, Draft) - Alert Colors */
+/* Uses vibrant app design system palette for better visibility */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  width: fit-content;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.25);
+}
+
+.statusBadge:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(201, 169, 97, 0.35);
+}
+
+/* Operation Status Badge (For Sale, For Rent) - Alert Colors */
+/* Vibrant gradients for maximum visibility */
+.operationBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: fit-content;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.22s;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.7);
+  color: var(--color-primary-800);
+  box-shadow: 0 2px 8px rgba(10,20,40,0.06);
+}
+
+.operationBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(10,20,40,0.08);
+}
+
+/* Badge Icon and Text */
+.badgeIcon {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.badgeText {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Property Status Badge Variants - Alert Colors with Vibrant Palette */
+/* Enhanced visibility with bold gradients and strong borders */
+
+.statusBadge.published {
+  background: linear-gradient(135deg, var(--color-success-700) 0%, var(--color-success-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-700);
+  box-shadow: 0 4px 12px rgba(45, 217, 111, 0.3);
+}
+
+.statusBadge.published:hover {
+  background: linear-gradient(135deg, var(--color-success-600) 0%, var(--color-success-700) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-success-600);
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.5);
+}
+
+.statusBadge.draft {
+  background: linear-gradient(135deg, var(--color-warning-700) 0%, var(--color-warning-800) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-warning-700);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.statusBadge.draft:hover {
+  background: linear-gradient(135deg, var(--color-warning-600) 0%, var(--color-warning-700) 100%);
+  color: var(--color-text-inverse);
+  border-color: var(--color-warning-600);
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.5);
+}
+
+.statusBadge.archived {
+  background: linear-gradient(135deg, #757575 0%, #616161 100%);
+  color: var(--color-text-inverse);
+  border-color: #616161;
+  box-shadow: 0 4px 12px rgba(120, 120, 120, 0.3);
+}
+
+.statusBadge.archived:hover {
+  background: linear-gradient(135deg, #616161 0%, #424242 100%);
+  color: var(--color-text-inverse);
+  border-color: #424242;
+  box-shadow: 0 8px 24px rgba(120, 120, 120, 0.4);
+}
+
+/* Operation Status Badge Variants - Alert Colors with Rich Gradients */
+/* Enhanced visibility for sale/rent operations */
+
+.operationBadge.sale {
+  background: linear-gradient(135deg, #eaf9ee 0%, #dff2e6 100%); /* pastel green */
+  color: var(--color-primary-800);
+  border-color: rgba(46, 204, 113, 0.25);
+  box-shadow: 0 4px 10px rgba(34, 139, 56, 0.06);
+}
+
+.operationBadge.sale:hover {
+  box-shadow: 0 8px 20px rgba(34, 139, 56, 0.08);
+}
+
+.operationBadge.rent {
+  background: linear-gradient(135deg, #eef7ff 0%, #e6f0ff 100%); /* pastel blue */
+  color: var(--color-primary-800);
+  border-color: rgba(0, 123, 255, 0.12);
+  box-shadow: 0 4px 10px rgba(0, 105, 217, 0.06);
+}
+
+.operationBadge.rent:hover {
+  box-shadow: 0 8px 20px rgba(0, 105, 217, 0.08);
+}
+
+.operationBadge.buy {
+  background: linear-gradient(135deg, #fffdf0 0%, #fff6d8 100%); /* pastel yellow */
+  color: var(--color-primary-800);
+  border-color: rgba(255, 223, 0, 0.14);
+  box-shadow: 0 4px 10px rgba(204, 153, 0, 0.06);
+}
+
+.operationBadge.buy:hover {
+  box-shadow: 0 8px 20px rgba(204, 153, 0, 0.08);
+}
+
+.operationBadge.lease {
+  background: linear-gradient(135deg, #fbf5ff 0%, #f3e8ff 100%); /* pastel purple */
+  color: var(--color-primary-800);
+  border-color: rgba(177, 13, 201, 0.08);
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.06);
+}
+
+.operationBadge.lease:hover {
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.08);
+}
+
+/* Legacy status styles for backward compatibility */
 .sale {
-  background: #27ae60;
+  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
   color: white;
 }
 
 .rent {
-  background: #3498db;
+  background: linear-gradient(135deg, #c9a961 0%, #b39451 100%);
   color: white;
 }
 
 .not_available {
-  background: #e74c3c;
+  background: linear-gradient(135deg, #dc3333 0%, #bb2222 100%);
   color: white;
 }
 
@@ -292,7 +453,7 @@
 .price {
   font-size: 24px;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--color-accent-700);
   margin-bottom: 8px;
   display: flex;
   align-items: baseline;
@@ -302,14 +463,14 @@
 .period {
   font-size: 16px;
   font-weight: 400;
-  color: #7f8c8d;
+  color: var(--color-text-secondary);
 }
 
 /* Title */
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-primary-800);
   margin-bottom: 12px;
   line-height: 1.3;
   display: -webkit-box;
@@ -319,25 +480,80 @@
   overflow: hidden;
 }
 
-/* Property Details */
-.details {
+/* Beds & Baths in single row */
+.bedsAndBathsRow {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
+  align-items: center;
 }
 
-.detailItem {
+.bedBathItem {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: #34495e;
-  font-weight: 500;
+  gap: 6px;
 }
 
-.detailIcon {
-  font-size: 16px;
+.bedBathIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bedBathCount {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary-800);
+  min-width: 24px;
+}
+
+/* Improved Location styles */
+.locationText {
+  display: flex;
+  flex-direction: column;
+}
+
+.locationLine {
+  font-weight: 700;
+  color: var(--color-primary-800);
+  font-size: 14px;
+  line-height: 1.1;
+  text-transform: capitalize;
+}
+
+.locationCity {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  text-transform: none;
+}
+
+/* Improved Beds & Baths */
+.bedBathMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.bedBathLabel {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.bedBathIcon {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-accent-700);
+}
+
+.bedBathLabel {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  text-transform: lowercase;
 }
 
 /* Location */
@@ -347,7 +563,7 @@
   gap: 6px;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #7f8c8d;
+  color: var(--color-text-secondary);
 }
 
 .locationIcon {
@@ -361,7 +577,7 @@
   gap: 6px;
   margin-bottom: 16px;
   font-size: 14px;
-  color: #34495e;
+  color: var(--color-primary-700);
   font-weight: 500;
 }
 
@@ -376,7 +592,7 @@
 
 .description p {
   font-size: 14px;
-  color: #7f8c8d;
+  color: var(--color-text-secondary);
   line-height: 1.5;
   margin: 0;
   display: -webkit-box;
@@ -384,6 +600,59 @@
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Feature Tags Section - Luxury Style */
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  margin-top: 10px;
+  padding: 8px 0;
+}
+
+/* Feature Item - Unified Style with Lighter Navy Variant */
+.featureItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(58, 74, 112, 0.8) 0%, rgba(42, 58, 85, 0.7) 100%);
+  color: var(--color-text-inverse);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(58, 74, 112, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.5px;
+  border: 1.5px solid rgba(58, 74, 112, 0.6);
+}
+
+.featureItem:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 6px 16px rgba(58, 74, 112, 0.25);
+}
+
+/* More-count indicator when features exceed visible limit */
+.moreCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 32px;
+  background: linear-gradient(135deg, rgba(10,20,40,0.06) 0%, rgba(10,20,40,0.04) 100%);
+  color: var(--color-primary-800);
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid rgba(10,20,40,0.06);
+  box-shadow: 0 2px 8px rgba(10,20,40,0.04);
 }
 
 /* Additional Details */
@@ -426,36 +695,54 @@
 }
 
 .viewDetailsBtn {
-  background: #3498db;
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-800) 100%);
+  color: var(--color-text-inverse);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 12px 16px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--shadow-md);
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .viewDetailsBtn:hover {
-  background: #2980b9;
+  background: linear-gradient(135deg, var(--color-accent-800) 0%, var(--color-accent-900) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.viewDetailsBtn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .contactBtn {
-  background: transparent;
-  color: #3498db;
-  border: 2px solid #3498db;
-  border-radius: 6px;
+  background: var(--color-secondary-800);
+  color: var(--color-accent-700);
+  border: 2px solid var(--color-accent-700);
+  border-radius: 8px;
   padding: 10px 16px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  letter-spacing: 0.3px;
 }
 
 .contactBtn:hover {
-  background: #3498db;
-  color: white;
+  background: var(--color-accent-700);
+  color: var(--color-text-inverse);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.contactBtn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Responsive Design */
@@ -480,11 +767,11 @@
     font-size: 16px;
   }
 
-  .details {
-    gap: 12px;
+  .bedsAndBathsRow {
+    gap: 16px;
   }
 
-  .detailItem {
+  .bedBathItem {
     font-size: 13px;
   }
 
@@ -517,13 +804,14 @@
 }
 
 @media (max-width: 480px) {
-  .details {
-    flex-direction: column;
-    gap: 8px;
+  .bedsAndBathsRow {
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
-  .detailItem {
-    justify-content: space-between;
+  .bedBathItem {
+    flex: 1;
+    min-width: 60px;
   }
 
   .imageContainer {

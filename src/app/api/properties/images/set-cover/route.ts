@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Verify property belongs to user
     const propertyCheck = await query(
-      `SELECT id, seller_id, city, operation_status_id, price, room as rooms
+      `SELECT id, seller_id, city, operation_status_id, price, bedrooms as bedrooms
        FROM properties WHERE id = $1`,
       [propertyId]
     );
@@ -46,19 +46,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'You can only edit your own properties' }, { status: 403 });
     }
 
-    // Verify the image exists and belongs to this property
-    const checkQuery = 'SELECT id, property_id FROM property_images WHERE id = $1 AND property_id = $2';
-    const checkResult = await query(checkQuery, [imageId, propertyId]);
+    // Verify the media record exists and belongs to this property
+    const checkQuery = 'SELECT id, property_id FROM property_media WHERE id = $1 AND property_id = $2 AND media_type = $3';
+    const checkResult = await query(checkQuery, [imageId, propertyId, 'image']);
     
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'Image not found or does not belong to this property' }, { status: 404 });
     }
 
-    // Update: Set all images for this property to is_cover = false
-    await query('UPDATE property_images SET is_cover = false WHERE property_id = $1', [propertyId]);
+    // Update: Set all images for this property to is_primary = false
+    await query('UPDATE property_media SET is_primary = false WHERE property_id = $1 AND media_type = $2', [propertyId, 'image']);
     
-    // Then: Set the selected image to is_cover = true
-    await query('UPDATE property_images SET is_cover = true WHERE id = $1', [imageId]);
+    // Then: Set the selected image to is_primary = true
+    await query('UPDATE property_media SET is_primary = true WHERE id = $1', [imageId]);
 
     // Invalidate property cache when cover image is changed
     try {

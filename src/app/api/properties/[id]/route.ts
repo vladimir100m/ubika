@@ -40,13 +40,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const propertyQuery = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, pt.name as property_type, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
-        p.status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        ps.id as property_status_id, ps.name as property_status, ps.display_name as property_status_display, ps.color as property_status_color,
+        p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id,
-        pos.name as operation_status, pos.display_name as operation_status_display
+        pos.id as operation_status_id, pos.name as operation_status, pos.display_name as operation_status_display, pos.description as operation_status_description
       FROM properties p
       LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
+      LEFT JOIN property_types pt ON p.property_type_id = pt.id
+      LEFT JOIN property_statuses ps ON p.property_status_id = ps.id
       WHERE p.id = $1
     `;
 
@@ -58,14 +61,31 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
-    const property = result.rows[0];
+    const rawProperty = result.rows[0];
+    
+    // Transform flattened DB response to nested object structure
+    const property = {
+      ...rawProperty,
+      property_status: rawProperty.property_status_id ? {
+        id: rawProperty.property_status_id,
+        name: rawProperty.property_status,
+        display_name: rawProperty.property_status_display,
+        color: rawProperty.property_status_color,
+      } : null,
+      operation_status: rawProperty.operation_status_id ? {
+        id: rawProperty.operation_status_id,
+        name: rawProperty.operation_status,
+        display_name: rawProperty.operation_status_display,
+        description: rawProperty.operation_status_description,
+      } : null,
+    };
 
     try {
       const imgLog = createLogger(`${reqId}-img-${property.id}`);
       imgLog.debug('Fetching images for property');
       const imagesResult = await query(
-        'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
-        [property.id]
+        'SELECT id, property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order, created_at, updated_at FROM property_media WHERE property_id = $1 AND media_type = $2 ORDER BY is_primary DESC, display_order ASC',
+        [property.id, 'image']
       );
       const imgs = imagesResult.rows;
       for (const img of imgs) {
@@ -82,6 +102,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     } catch (imageError) {
       log.error('Failed to fetch images for property', { propertyId: property.id, error: imageError });
       property.images = [];
+    }
+
+    // Fetch features assigned to this property (from property_feature_assignments)
+    try {
+      const feats = await query(
+        'SELECT f.id, f.name FROM property_features f JOIN property_feature_assignments a ON a.feature_id = f.id WHERE a.property_id = $1',
+        [property.id]
+      );
+      property.features = feats.rows || [];
+      log.debug('Features fetched', { count: property.features.length });
+    } catch (featErr) {
+      log.warn('Failed to fetch features for property, defaulting to empty', { error: featErr });
+      property.features = [];
     }
 
     try {
@@ -141,48 +174,113 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     log.info('Ownership verified, proceeding with update', { propertyId: id });
 
     const body = await req.json();
+    log.info('Update request body received', { keys: Object.keys(body) });
 
-
-    // Basic payload validation (keep minimal to avoid blocking)
-    const allowedFields = ['title','description','price','address','city','state','country','zip_code','type','room','bathrooms','square_meters','lat','lng','status','operation_status_id','property_type_id','property_status_id','seller_id'];
+    // Fields that map directly to DB columns (after normalization)
+    const directFields = ['title', 'description', 'price', 'address', 'city', 'state', 'country', 
+                         'zip_code', 'bathrooms', 'square_meters', 'latitude', 'longitude', 'lat', 'lng', 
+                         'operation_status_id', 'property_type_id', 'property_status_id', 'seller_id', 
+                         'bedrooms', 'year_built', 'geocode'];
 
     const fields: string[] = [];
     const values: any[] = [];
     let idx = 1;
-    for (const key of Object.keys(body)) {
-      if (allowedFields.includes(key)) {
-        fields.push(`${key} = $${idx}`);
-        values.push((body as any)[key]);
+
+    for (const [key, value] of Object.entries(body)) {
+      if (value === undefined || value === null) {
+        log.debug('Skipping null/undefined field', { key });
+        continue;
+      }
+
+      let dbColumn = key;
+      let dbValue = value;
+
+      // Handle legacy field name mappings
+      if (key === 'room') {
+        dbColumn = 'bedrooms';
+        dbValue = value;
+      } else if (key === 'sq_meters' || key === 'square_meters') {
+        dbColumn = 'square_meters';
+        dbValue = value;
+      } else if (key === 'year_built' || key === 'yearbuilt') {
+        dbColumn = 'year_built';
+        dbValue = value;
+      } else if (key === 'lat') {
+        dbColumn = 'latitude';
+        dbValue = value;
+      } else if (key === 'lng') {
+        dbColumn = 'longitude';
+        dbValue = value;
+      }
+      // Skip legacy type and status if provided without IDs (would need lookup)
+      // These should be provided as property_type_id and property_status_id instead
+      else if (key === 'type' || key === 'status') {
+        log.warn('Legacy field provided without ID lookup - skipping', { key, value });
+        continue;
+      }
+      // Skip features - handled separately
+      else if (key === 'features') {
+        log.debug('Skipping features field - will be handled separately');
+        continue;
+      }
+
+      if (directFields.includes(dbColumn)) {
+        fields.push(`${dbColumn} = $${idx}`);
+        values.push(dbValue);
         idx++;
+        log.debug('Added field to update', { dbColumn, idx: idx - 1 });
+      } else {
+        log.warn('Field not in allowed list', { key, dbColumn });
       }
     }
 
     if (fields.length > 0) {
-      const updateQuery = `UPDATE properties SET ${fields.join(', ')} , updated_at = NOW() WHERE id = $${idx} RETURNING id`;
+      const updateQuery = `UPDATE properties SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id`;
       values.push(id);
-      await query(updateQuery, values);
+      log.info('Executing update query', { fields: fields.length, query: updateQuery.substring(0, 100), valueCount: values.length });
+      try {
+        await query(updateQuery, values);
+        log.info('Update query executed successfully', { propertyId: id });
+      } catch (updateError) {
+        log.error('Update query failed', { error: updateError, query: updateQuery, values });
+        throw updateError;
+      }
+    } else {
+      log.warn('No fields to update', { propertyId: id });
     }
 
     // Handle features update (optional)
-    if (Array.isArray(body.features)) {
-      // Delete existing
+    // Accept either `feature_ids` (client) or legacy `features` array
+    const featureIds = Array.isArray(body.feature_ids)
+      ? body.feature_ids
+      : Array.isArray(body.features)
+        ? body.features
+        : null;
+
+    if (Array.isArray(featureIds)) {
+      log.info('Updating features', { count: featureIds.length });
+      // Delete existing assignments
       await query('DELETE FROM property_feature_assignments WHERE property_id = $1', [id]);
-      // Insert new
-      for (const f of body.features) {
-        await query('INSERT INTO property_feature_assignments(property_id, feature_id) VALUES($1, $2)', [id, f]);
+      // Insert new assignments (support either numbers or objects with id)
+      for (const f of featureIds) {
+        const fid = (f && typeof f === 'object' && ('id' in f)) ? (f as any).id : f;
+        await query('INSERT INTO property_feature_assignments(property_id, feature_id) VALUES($1, $2)', [id, fid]);
       }
+      log.info('Features updated successfully');
     }
 
     // Return the updated property using same logic as GET (call DB)
     const propertyQuery = `
       SELECT 
         p.id, p.title, p.description, p.price, p.address, p.city, p.state, p.country, 
-        p.zip_code, p.type, p.room as rooms, p.bathrooms, p.square_meters as "squareMeters",
+        p.zip_code, pt.name as property_type, p.bedrooms as bedrooms, p.bathrooms, p.square_meters as "squareMeters",
         NULL as image_url,
-        p.status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
+        ps.name as property_status, p.created_at, p.updated_at, p.year_built as yearBuilt, 
         p.geocode, p.seller_id, p.operation_status_id,
         pos.name as operation_status, pos.display_name as operation_status_display
       FROM properties p
+      LEFT JOIN property_types pt ON p.property_type_id = pt.id
+      LEFT JOIN property_statuses ps ON p.property_status_id = ps.id
       LEFT JOIN property_operation_statuses pos ON p.operation_status_id = pos.id
       WHERE p.id = $1
     `;
@@ -194,8 +292,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     try {
       const imagesResult = await query(
-        'SELECT id, property_id, image_url, is_cover, display_order, created_at, updated_at FROM property_images WHERE property_id = $1 ORDER BY is_cover DESC, display_order ASC',
-        [property.id]
+        'SELECT id, property_id, url, url as image_url, is_primary, is_primary as is_cover, display_order, created_at, updated_at FROM property_media WHERE property_id = $1 AND media_type = $2 ORDER BY is_primary DESC, display_order ASC',
+        [property.id, 'image']
       );
       property.images = imagesResult.rows || [];
     } catch (e) {
@@ -237,8 +335,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     log.info('property update handler finished', { propertyId: id });
     return NextResponse.json(property);
   } catch (error) {
-    log.error('Error updating property', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    log.error('Error updating property', { error, message: error instanceof Error ? error.message : 'Unknown error' });
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ error: errorMessage, details: 'Failed to update property' }, { status: 500 });
   }
 }
 
@@ -263,9 +362,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const userId = (session.user as any).sub || session.user.email;
     log.info('Verifying ownership for user', { userId, propertyId: id });
 
-  // First, verify property exists and belongs to the user
-  const checkQuery = `SELECT id, seller_id, city, operation_status_id, price, room as rooms FROM properties WHERE id = $1`;
-  const checkResult = await query(checkQuery, [id]);
+    // First, verify property exists and belongs to the user
+  const checkQuery = `SELECT id, seller_id, city, operation_status_id, price,, bedrooms as bedrooms FROM properties WHERE id = $1`;
+    const checkResult = await query(checkQuery, [id]);
     
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });

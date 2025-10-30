@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--color-bg-secondary);
 }
 
 .sellerViewMain {
@@ -38,14 +38,14 @@
 .titleSection h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
   letter-spacing: -0.025em;
 }
 
 .subtitle {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
@@ -56,8 +56,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 12px;
   padding: 12px 24px;
@@ -65,14 +65,14 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 112, 243, 0.3);
+  box-shadow: var(--shadow-md);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .addPropertyButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 112, 243, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .addPropertyButton:active {
@@ -86,34 +86,81 @@
 /* Error Banner */
 .errorBanner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
-  background: #fee2e2;
-  border: 1px solid #fecaca;
+  background: rgba(255, 51, 51, 0.1);
+  border: 1.5px solid rgba(255, 51, 51, 0.2);
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 24px;
   animation: slideDown 0.3s ease-out;
+  box-shadow: var(--shadow-sm);
 }
 
 .errorIcon {
   font-size: 1.5rem;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .errorContent {
   flex: 1;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
 }
 
-.errorContent strong {
-  display: block;
-  color: #dc2626;
-  font-weight: 600;
-  margin-bottom: 4px;
+.errorTitle {
+  font-weight: 700;
+  color: var(--color-error-700);
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+}
+
+/* Hidden input utility for accessibility while using web components */
+.hiddenInput {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.errorMessage {
+  color: var(--color-error-600);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.errorClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--color-error-700);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.errorClose:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--color-error-600);
 }
 
 .errorContent p {
-  color: #b91c1c;
+  color: var(--color-error-600);
   margin: 0;
   font-size: 0.95rem;
 }
@@ -121,7 +168,7 @@
 .closeBanner {
   background: none;
   border: none;
-  color: #dc2626;
+  color: var(--color-error-700);
   font-size: 1.25rem;
   cursor: pointer;
   padding: 4px;
@@ -130,7 +177,7 @@
 }
 
 .closeBanner:hover {
-  color: #b91c1c;
+  color: var(--color-error-700);
 }
 
 /* Loading State */
@@ -147,8 +194,8 @@
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #0070f3;
+  border: 4px solid var(--color-border-light);
+  border-top-color: var(--color-accent-700);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -161,7 +208,7 @@
 
 .loadingState p {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
@@ -184,20 +231,20 @@
 .emptyState h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .emptyState p {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0 0 24px 0;
   max-width: 400px;
 }
 
 .emptyStateButton {
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 12px;
   padding: 12px 28px;
@@ -205,12 +252,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 15px rgba(15, 127, 159, 0.3);
 }
 
 .emptyStateButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 112, 243, 0.4);
+  box-shadow: 0 6px 20px rgba(15, 127, 159, 0.4);
 }
 
 /* Properties Section */
@@ -225,13 +272,13 @@
 .sectionHeader h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 4px 0;
 }
 
 .sectionSubtitle {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 500;
 }
@@ -271,8 +318,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 0.85rem;
@@ -283,7 +330,7 @@
 }
 
 .actionButton:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-secondary);
   border-color: #cbd5e1;
   transform: translateY(-1px);
 }
@@ -293,24 +340,24 @@
 }
 
 .deleteButton {
-  background: #fee2e2;
+  background: rgba(255, 51, 51, 0.1);
   border-color: #fecaca;
-  color: #dc2626;
+  color: var(--color-error-700);
 }
 
 .deleteButton:hover {
-  background: #fecaca;
+  background: rgba(255, 51, 51, 0.2);
   border-color: #fca5a5;
 }
 
 /* Statistics Section */
 .statsSection {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
   margin-top: 40px;
   padding-top: 40px;
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid var(--color-border-light);
 }
 
 .statCard {
@@ -319,8 +366,8 @@
   align-items: center;
   text-align: center;
   gap: 12px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-secondary-700) 100%);
+  border: 2px solid var(--color-border-light);
   border-radius: 16px;
   padding: 24px 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -330,10 +377,10 @@
 }
 
 .statCard:hover {
-  border-color: #0070f3;
-  box-shadow: 0 8px 20px rgba(0, 112, 243, 0.15);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 8px 20px rgba(15, 127, 159, 0.15);
   transform: translateY(-4px);
-  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--color-secondary-800) 0%, var(--color-bg-primary) 100%);
 }
 
 .statIcon {
@@ -354,7 +401,7 @@
 
 .statLabel {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -364,7 +411,7 @@
 .statValue {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   line-height: 1.2;
 }
 
@@ -376,13 +423,13 @@
 .dashboard h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin-bottom: 24px;
 }
 
 .addNewButton {
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
@@ -394,7 +441,7 @@
 
 .addNewButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 127, 159, 0.3);
 }
 
 .propertyList {
@@ -404,8 +451,8 @@
 }
 
 .propertyCard {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
   border-radius: 12px;
   padding: 16px;
   transition: all 0.2s ease;
@@ -421,13 +468,13 @@
 .propertyInfo h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .propertyInfo p {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 4px 0;
 }
 
@@ -465,7 +512,7 @@
   }
 
   .statsSection {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
     margin-top: 36px;
     padding-top: 36px;
@@ -519,7 +566,7 @@
   }
 
   .statsSection {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     margin-top: 28px;
     padding-top: 28px;
@@ -582,7 +629,7 @@
   }
 
   .statsSection {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-top: 20px;
     padding-top: 20px;
@@ -645,7 +692,7 @@
   }
 
   .statsSection {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-top: 32px;
     padding-top: 32px;
@@ -700,7 +747,7 @@
   }
 
   .statsSection {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     margin-top: 24px;
     padding-top: 24px;
@@ -781,7 +828,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #64748b;
+  color: var(--color-text-secondary);
   width: 40px;
   height: 40px;
   display: flex;
@@ -793,25 +840,25 @@
 }
 
 .closeButton:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: var(--color-secondary-700);
+  color: var(--color-text-primary);
 }
 
 .modalHeader {
   padding: 32px 32px 20px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border-light);
 }
 
 .modalHeader h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .modalHeader p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -826,10 +873,10 @@
 .formSection h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin: 0 0 16px 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .formGroup {
@@ -840,7 +887,7 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text-primary);
   margin-bottom: 6px;
 }
 
@@ -849,19 +896,21 @@
 .formGroup select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.2s ease;
+  background: var(--color-secondary-700);
+  color: var(--color-text-primary);
 }
 
 .formGroup input:focus,
 .formGroup textarea:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: #0070f3;
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+  border-color: var(--color-accent-700);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
 }
 
 .formGroup textarea {
@@ -876,17 +925,104 @@
   margin-bottom: 16px;
 }
 
-.successBanner {
-  background: #dcfce7;
-  border: 1px solid #86efac;
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.featureCheckbox {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
-  padding: 12px 16px;
+  background: var(--color-secondary-700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.featureCheckbox:hover {
+  border-color: var(--color-border-light);
+  background: var(--color-secondary-800);
+}
+
+.featureCheckbox input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-right: 10px;
+  accent-color: var(--color-accent-700);
+  flex-shrink: 0;
+}
+
+.featureCheckbox label {
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.featureName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.featureCategory {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.noFeatures {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Toggle Features Button */
+.toggleFeaturesButton {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, var(--color-accent-200) 0%, var(--color-accent-100) 100%);
+  color: var(--color-accent-700);
+  border: 1px solid var(--color-accent-500);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleFeaturesButton:hover {
+  background: linear-gradient(135deg, var(--color-accent-300) 0%, var(--color-accent-200) 100%);
+  border-color: var(--color-accent-600);
+  box-shadow: 0 2px 8px rgba(201, 169, 97, 0.15);
+}
+
+.toggleFeaturesButton:active {
+  transform: scale(0.98);
+}
+
+.successBanner {
+  background: linear-gradient(135deg, var(--color-success-200) 0%, var(--color-success-100) 100%);
+  border: 1.5px solid var(--color-success-500);
+  border-radius: 12px;
+  padding: 16px 20px;
   margin-bottom: 20px;
-  color: #15803d;
+  color: var(--color-success-700);
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+  animation: slideDown 0.3s ease-out;
 }
 
 .formActions {
@@ -895,46 +1031,246 @@
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border-light);
 }
 
 .cancelButton {
   padding: 10px 24px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
-  background: white;
-  color: #1e293b;
+  background: var(--color-secondary-800);
+  color: var(--color-text-primary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .cancelButton:hover:not(:disabled) {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: var(--color-border-light);
+  background: var(--color-secondary-700);
 }
 
 .submitButton {
   padding: 10px 32px;
-  background: linear-gradient(135deg, #0070f3 0%, #0099ff 100%);
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
 }
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 112, 243, 0.4);
+  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.4);
 }
 
 .submitButton:disabled,
 .cancelButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Enhanced Form Buttons */
+.formActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.cancelButton {
+  padding: 11px 28px;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: 8px;
+  background: var(--color-secondary-800);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.cancelButton:hover:not(:disabled) {
+  border-color: var(--color-border-light);
+  background: var(--color-secondary-700);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cancelButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.submitButton {
+  padding: 11px 32px;
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(201, 169, 97, 0.4);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading Spinner Animation */
+.loadingSpinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 1.1em;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Required Field Indicator */
+.requiredAsterisk {
+  color: var(--color-error-600);
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.formGroup.required > label::after {
+  content: " *";
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* Section Headers with Icons */
+.formSection h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Features Grid Improvements */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.featureCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.featureCheckbox:hover {
+  border-color: #0070f3;
+  background: #f0f7ff;
+  box-shadow: 0 2px 6px rgba(0, 112, 243, 0.1);
+}
+
+.featureCheckbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #0070f3;
+}
+
+.featureCheckbox label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  margin: 0;
+  cursor: pointer;
+}
+
+.featureName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.featureCategory {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Form Mode Badge - Standardized Luxury Styling */
+.formModeBadge {
+  display: inline-block;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(45, 217, 111, 0.12) 0%, rgba(45, 217, 111, 0.06) 100%);
+  color: #1a5f3f;
+  border: 1.5px solid #2dd96f;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(45, 217, 111, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.formModeBadge:hover {
+  background: linear-gradient(135deg, #2dd96f 0%, #20b35f 100%);
+  color: white;
+  border-color: #20b35f;
+  box-shadow: 0 8px 24px rgba(45, 217, 111, 0.35);
+}
+
+.formModeBadge.edit {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.06) 100%);
+  color: #8b5f00;
+  border-color: #ffc107;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
+}
+
+.formModeBadge.edit:hover {
+  background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+  color: white;
+  border-color: #ffb300;
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35);
 }
 
 /* Responsive for Add Property Modal */
@@ -1118,14 +1454,23 @@
 
 .coverBadge {
   position: absolute;
-  bottom: 4px;
-  left: 4px;
-  background: #10b981;
+  bottom: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #c9a961 0%, #b39451 100%);
   color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.coverBadge:hover {
+  background: linear-gradient(135deg, #b39451 0%, #9d7f45 100%);
+  box-shadow: 0 8px 24px rgba(201, 169, 97, 0.4);
 }
 
 /* Upload Progress */

@@ -78,6 +78,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     callback?.();
   };
 
+  // Helper: return black or white depending on background hex color for contrast
+  const getContrastColor = (hex?: string) => {
+    if (!hex) return '#000';
+    const cleaned = hex.replace('#', '');
+    const bigint = parseInt(cleaned.length === 3 ? cleaned.split('').map(c => c + c).join('') : cleaned, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    // Perceived luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#000' : '#fff';
+  };
+
   return (
     <div className={styles.propertyCard} onClick={handleCardClick} role="button" tabIndex={0} onKeyDown={handleKeyDown} aria-label={property.title || `View property ${property.id}`}>
       {/* Image Section */}
@@ -115,12 +128,30 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </>
         )}
 
-        {/* Status Badge */}
-        {property.property_status && (
-          <div className={`${styles.statusBadge} ${styles[property.property_status.name || '']}`}>
-            {property.property_status?.display_name || 'Status'}
-          </div>
-        )}
+        {/* Status Badges - Property Status and Operation Status */}
+        <div className={styles.badgesContainer}>
+          
+          {/* Operation Status Badge (For Sale, For Rent) */}
+          {property.operation_status && (
+            <div
+              className={`${styles.operationBadge} ${styles[property.operation_status.name?.toLowerCase() || 'sale']}`}
+              title={property.operation_status?.display_name || 'Operation Type'}
+              style={{
+                background: property.operation_status.color || undefined,
+                borderColor: property.operation_status.color || undefined,
+                color: getContrastColor(property.operation_status.color || undefined),
+              }}
+            >
+              <span className={styles.badgeIcon}>
+                {property.operation_status.name?.toLowerCase() === 'sale' && '💰'}
+                {property.operation_status.name?.toLowerCase() === 'buy' && '💰'}
+                {property.operation_status.name?.toLowerCase() === 'rent' && '🔑'}
+                {property.operation_status.name?.toLowerCase() === 'lease' && '🔑'}
+              </span>
+              <span className={styles.badgeText}>{property.operation_status?.display_name || 'Operation'}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content Section */}
@@ -130,38 +161,60 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {formatPropertyPriceCompact(property.price)}
         </div>
 
-        {/* Title */}
-        <h3 className={styles.title}>
-          {property.title}
-        </h3>
-
-        {/* Property Details */}
-        <div className={styles.details}>
-          <div className={styles.detailItem}>
-            <span className={styles.detailIcon}>🛏️</span>
-            <span>{property.bedrooms} beds</span>
-          </div>
-          <div className={styles.detailItem}>
-            <span className={styles.detailIcon}>🚿</span>
-            <span>{property.bathrooms} baths</span>
-          </div>
-          <div className={styles.detailItem}>
-            <span className={styles.detailIcon}>📐</span>
-            <span>{property.sq_meters} m²</span>
-          </div>
-        </div>
 
         {/* Location */}
         <div className={styles.location}>
-          <span className={styles.locationIcon}>📍</span>
-          <span>{property.address}, {property.city}</span>
+          <span className={styles.locationIcon} aria-hidden>📍</span>
+          <div className={styles.locationText}>
+            <div className={styles.locationLine}>{property.address}</div>
+            <div className={styles.locationCity}>{property.city}{property.state ? `, ${property.state}` : ''}</div>
+          </div>
+        </div>
+        
+        {/* Beds & Baths in single row */}
+        <div className={styles.bedsAndBathsRow}>
+          <div className={styles.bedBathItem}>
+            <span className={styles.bedBathIcon} aria-hidden>🛏️</span>
+            <div className={styles.bedBathMeta}>
+              <span className={styles.bedBathCount}>{property.bedrooms ?? '—'}</span>
+              <span className={styles.bedBathLabel}>beds</span>
+            </div>
+          </div>
+
+          <div className={styles.bedBathItem}>
+            <span className={styles.bedBathIcon} aria-hidden>🚿</span>
+            <div className={styles.bedBathMeta}>
+              <span className={styles.bedBathCount}>{property.bathrooms ?? '—'}</span>
+              <span className={styles.bedBathLabel}>baths</span>
+            </div>
+          </div>
+
+          <div className={styles.bedBathItem}>
+            <span className={styles.bedBathIcon} aria-hidden>📐</span>
+            <div className={styles.bedBathMeta}>
+              <span className={styles.bedBathCount}>{property.sq_meters ?? property.squareMeters ?? '—'}</span>
+              <span className={styles.bedBathLabel}>m²</span>
+            </div>
+          </div>
         </div>
 
-        {/* Property Type */}
-        <div className={styles.propertyType}>
-          <span className={styles.typeIcon}>🏠</span>
-          <span>{property.property_type?.display_name || 'Property'}</span>
-        </div>
+        {/* Features of the Property like tag style and list */}
+        {property.features && property.features.length > 0 && (
+          <div className={styles.features} aria-label={`Features: ${property.features.slice(0,5).map(f=>f.name).join(', ')}`}>
+            {property.features.slice(0, 5).map((feature) => (
+              <span key={feature.id} className={styles.featureItem} title={feature.name}>
+                {feature.name}
+              </span>
+            ))}
+
+            {/* If there are more than 5 features, show a small "+N" indicator */}
+            {property.features.length > 5 && (
+              <span className={styles.moreCount} title={`${property.features.length - 5} more features`} aria-hidden={false}>
+                +{property.features.length - 5}
+              </span>
+            )}
+          </div>
+        )}
 
         {showFullDetails && (
           <>

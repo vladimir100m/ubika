@@ -14,8 +14,8 @@ export const FALLBACK_IMAGE = '/ubika-logo.png';
  */
 export function sortPropertyImages(images: PropertyImage[]): PropertyImage[] {
   return [...images].sort((a, b) => {
-    if (a.is_cover && !b.is_cover) return -1;
-    if (!a.is_cover && b.is_cover) return 1;
+    if (a.is_primary && !b.is_primary) return -1;
+    if (!a.is_primary && b.is_primary) return 1;
     return a.display_order - b.display_order;
   });
 }
