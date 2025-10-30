@@ -352,51 +352,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 
   return (
   <div className={styles.searchSection}>
-      {/* Search Bar Section (now at the top) */}
-      {!hideSearchForm && (
-        <form onSubmit={handleSearchSubmit} className={styles.searchForm} role="search" aria-label="Property location search">
-          <div className={styles.searchBarWrapper}>
-            <span className={styles.searchIcon} aria-hidden="true">�</span>
-            {/* Native input is hidden; we use the Place Autocomplete web component for UX */}
-            <input
-              ref={addressInputRef}
-              type="text"
-              placeholder="Search city, neighborhood or address"
-              value={searchValue}
-              onChange={handleSearchChange}
-              className={styles.searchInput + ' ' + styles.visuallyHidden}
-              aria-hidden={true}
-              tabIndex={-1}
-              autoComplete="off"
-            />
-            {searchValue && (
-              <button
-                type="button"
-                className={styles.clearSearchButton}
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-                title="Clear search (ESC)"
-              >
-                ✕
-              </button>
-            )}
-            <button type="submit" className={styles.submitSearchButton} aria-label="Submit search" title="Search location">
-              🔍
-            </button>
-          </div>
-        </form>
-      )}
-      {isSearching && (
-        <span className={styles.searchStatus} aria-live="polite">Searching…</span>
-      )}
-      {showBoundaryButton && (
-        <button 
-          className={styles.removeBoundaryButton}
-          onClick={handleRemoveBoundary}
-        >
-          ✕ Remove Search Area
-        </button>
-      )}
+
 
       {/* Operation Type Filter Section */}
       <div className={styles.filterSection} style={{ marginBottom: 18 }}>
